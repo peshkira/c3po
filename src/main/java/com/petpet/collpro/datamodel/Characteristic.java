@@ -12,29 +12,39 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.SequenceGenerator;
 
 
-@Entity(name="CHARACTERISTIC")
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@MappedSuperclass
 public abstract class Characteristic<T> implements Serializable {
 
     private static final long serialVersionUID = 6769620816517625541L;
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO, generator="SEQ_CHAR")
-    @SequenceGenerator(name="SEQ_CHAR", sequenceName = "SEQ_CHAR")
-    @Column(name = "ID", updatable = false, insertable = false, nullable = false)
-    @SuppressWarnings("unused")
+    @SequenceGenerator(name="SEQ_CHAR", sequenceName = "characteristic_sequence")
     private long id;
+
+    protected T value;
     
     @Basic
-    @Column(name = "NAME", nullable=false)
+    @Column(name = "NAME", nullable = false)
     protected String name;
     
     @Enumerated(EnumType.STRING)
+    @Column(name = "TYPE", nullable = false)
     protected Type type;
     
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
@@ -51,9 +61,41 @@ public abstract class Characteristic<T> implements Serializable {
         this.type = type;
     }
 
-    public abstract void setValue(T value);
+    public void setValue(T value) {
+        this.value = value;
+    }
 
     public abstract T getValue();
-    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (id ^ (id >>> 32));
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Characteristic<?> other = (Characteristic<?>) obj;
+        if (id != other.id)
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (type != other.type)
+            return false;
+        return true;
+    }
     
 }

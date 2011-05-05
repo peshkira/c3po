@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+
+    <persistence-unit name="CollProPersistenceUnit">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.petpet.collpro.datamodel.Characteristic</class>
+        <class>com.petpet.collpro.datamodel.StringCharacteristic</class>
+        <class>com.petpet.collpro.datamodel.BoolCharacteristic</class>
+        <class>com.petpet.collpro.datamodel.NumericCharacteristic</class>
+        <class>com.petpet.collpro.datamodel.CharCharacteristic</class>
+        <class>com.petpet.collpro.datamodel.Element</class>
+        
+        <properties>
+            <property name="javax.persistence.transactionType" value="RESOURCE_LOCAL" />
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://127.0.0.1:5432/collpro"/>
+            <property name="javax.persistence.jdbc.user" value="collpro"/>
+            <property name="javax.persistence.jdbc.password" value="collpro"/>
+            <property name="eclipselink.target-database" value="POSTGRESQL" />
+            <property name="eclipselink.ddl-generation" value="create-tables" />
+        </properties>
+    </persistence-unit>
+</persistence>

@@ -11,10 +11,6 @@ public class StringCharacteristic extends Characteristic<String> {
 
     private static final long serialVersionUID = -4254678614945423398L;
     
-    @Basic
-    @Column(name = "VALUE", nullable=false)
-    private String value;
-
     public StringCharacteristic() {
         this.setType(Type.STRING);
     }
@@ -26,6 +22,8 @@ public class StringCharacteristic extends Characteristic<String> {
     }
     
     @Override
+    @Basic
+    @Column(name = "VALUE", nullable=false)
     public String getValue() {
         return this.value;
     }
