@@ -45,7 +45,7 @@ public class CharacteristicTest {
     }
 
     @Test
-    public void shouldDeleteCharacteristic() throws Exception {
+    public void shouldDeleteStringCharacteristic() throws Exception {
         StringCharacteristic sc = new StringCharacteristic("Test", "TestValue");
         this.em.getTransaction().begin();
         this.em.persist(sc);
@@ -63,6 +63,32 @@ public class CharacteristicTest {
 
         Assert.assertEquals(1, update);
         Assert.assertEquals(0, list.size());
+    }
+    
+    @Test
+    public void shouldUpdateStringCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldPersistCharCharacteristic() throws Exception {
+        
+        StringCharacteristic sc = new StringCharacteristic("string.char", "test"); 
+        this.em.getTransaction().begin();
+        this.em.persist(sc);
+        CharCharacteristic cc = new CharCharacteristic("char.char", sc.getId(), sc.getType());
+        this.em.persist(cc);
+        this.em.getTransaction().commit();
+        
+        List<CharCharacteristic> list = this.em.createQuery("select c from CharCharacteristic c", CharCharacteristic.class).getResultList();
+        Assert.assertFalse(list.isEmpty());
+        
+        CharCharacteristic characteristic = list.get(0);
+        Characteristic dbSC = characteristic.getValue();
+        Assert.assertNotNull(dbSC);
+        Assert.assertEquals("string.char", dbSC.getName());
+        Assert.assertEquals("test", dbSC.getValue());
+        
     }
 
 }

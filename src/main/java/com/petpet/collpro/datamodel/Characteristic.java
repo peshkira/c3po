@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
@@ -11,12 +12,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.MappedSuperclass;
 
 
 @Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
-@MappedSuperclass
-public abstract class Characteristic<T> implements Serializable {
+@Entity
+public abstract class Characteristic implements Serializable {
 
     private static final long serialVersionUID = 6769620816517625541L;
 
@@ -24,8 +24,6 @@ public abstract class Characteristic<T> implements Serializable {
     @GeneratedValue(strategy=GenerationType.AUTO)
     protected long id;
 
-    protected T value;
-    
     @Basic
     @Column(name = "NAME", nullable = false)
     protected String name;
@@ -57,12 +55,8 @@ public abstract class Characteristic<T> implements Serializable {
     public void setType(Type type) {
         this.type = type;
     }
-
-    public void setValue(T value) {
-        this.value = value;
-    }
-
-    public abstract T getValue();
+    
+    public abstract Object getValue();
 
     @Override
     public int hashCode() {
@@ -76,23 +70,34 @@ public abstract class Characteristic<T> implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
-        Characteristic<?> other = (Characteristic<?>) obj;
-        if (id != other.id)
+        }
+        Characteristic other = (Characteristic) obj;
+        if (id != other.id) {
             return false;
+        }
         if (name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                 return false;
-        } else if (!name.equals(other.name))
+            }
+        } else if (!name.equals(other.name)) {
             return false;
-        if (type != other.type)
+        }
+        if (type == null) {
+            if (other.type != null) {
+                return false;
+            }
+        } else if (!type.equals(other.type)) {
             return false;
+        }
         return true;
     }
-    
+
 }

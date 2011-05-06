@@ -9,6 +9,7 @@
         <class>com.petpet.collpro.datamodel.NumericCharacteristic</class>
         <class>com.petpet.collpro.datamodel.CharCharacteristic</class>
         <class>com.petpet.collpro.datamodel.Element</class>
+        <class>com.petpet.collpro.datamodel.Collection</class>
         
         <properties>
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver" />

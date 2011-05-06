@@ -7,10 +7,14 @@ import javax.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("NUMERIC")
-public class NumericCharacteristic extends Characteristic<Long> {
+public class NumericCharacteristic extends Characteristic {
 
     private static final long serialVersionUID = 5810711735788927861L;
 
+    @Basic
+    @Column(name="VALUE", nullable=false)
+    private Long value;
+    
     public NumericCharacteristic() {
         this.setType(Type.NUMERIC);
     }
@@ -21,14 +25,10 @@ public class NumericCharacteristic extends Characteristic<Long> {
         this.setValue(value);
     }
 
-    @Override
-    public void setValue(Long value) {
+    public void setValue(long value) {
         this.value = value;
     }
 
-    @Override
-    @Basic
-    @Column(name="VALUE", nullable=false)
     public Long getValue() {
         return this.value;
     }

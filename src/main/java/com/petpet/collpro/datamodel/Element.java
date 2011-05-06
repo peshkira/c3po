@@ -32,18 +32,18 @@ public class Element {
     private Collection collection;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private Set<Characteristic<?>> info;
+    private Set<Characteristic> info;
     
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private Set<Characteristic<?>> identification;
+    private Set<Characteristic> identification;
     
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private Set<Characteristic<?>> metadata;
+    private Set<Characteristic> metadata;
     
     public Element() {
-        this.setInfo(new HashSet<Characteristic<?>>());
-        this.setIdentification(new HashSet<Characteristic<?>>());
-        this.setMetadata(new HashSet<Characteristic<?>>());
+        this.setInfo(new HashSet<Characteristic>());
+        this.setIdentification(new HashSet<Characteristic>());
+        this.setMetadata(new HashSet<Characteristic>());
     }
     
     public Element(String name, String filepath) {
@@ -84,27 +84,27 @@ public class Element {
         return collection;
     }
 
-    public void setInfo(Set<Characteristic<?>> info) {
+    public void setInfo(Set<Characteristic> info) {
         this.info = info;
     }
 
-    public Set<Characteristic<?>> getInfo() {
+    public Set<Characteristic> getInfo() {
         return info;
     }
 
-    public void setIdentification(Set<Characteristic<?>> identification) {
+    public void setIdentification(Set<Characteristic> identification) {
         this.identification = identification;
     }
 
-    public Set<Characteristic<?>> getIdentification() {
+    public Set<Characteristic> getIdentification() {
         return identification;
     }
 
-    public void setMetadata(Set<Characteristic<?>> metadata) {
+    public void setMetadata(Set<Characteristic> metadata) {
         this.metadata = metadata;
     }
 
-    public Set<Characteristic<?>> getMetadata() {
+    public Set<Characteristic> getMetadata() {
         return metadata;
     }
     
