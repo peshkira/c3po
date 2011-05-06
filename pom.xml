@@ -19,23 +19,15 @@
 	</developers>
 
 	<repositories>
-<!-- 		<repository>
+		<repository>
 			<id>jboss</id>
 			<name>JBOSS Nexus Repository</name>
 			<url>http://repository.jboss.org/nexus/content/groups/public-jboss/</url>
-		</repository> -->
-		<repository>
-            <id>EclipseLink Repo</id>
-            <!-- <url>http://ftp-stud.fht-esslingen.de/pub/Mirrors/eclipse/rt/eclipselink/maven.repo</url>-->
-            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
-            <layout>default</layout>
-        </repository>
+		</repository>
 	</repositories>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<org.eclipse.persistence.eclipselink-version>2.0.0</org.eclipse.persistence.eclipselink-version>
-		<org.eclipse.persistence.javax.persistence-version>2.0.0</org.eclipse.persistence.javax.persistence-version>
 		<postgresql-jdbc-version>8.3-603.jdbc4</postgresql-jdbc-version>
 	</properties>
 
@@ -54,14 +46,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>javax.persistence</artifactId>
-			<version>${org.eclipse.persistence.javax.persistence-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>eclipselink</artifactId>
-			<version>${org.eclipse.persistence.eclipselink-version}</version>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>3.6.3.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>postgresql</groupId>

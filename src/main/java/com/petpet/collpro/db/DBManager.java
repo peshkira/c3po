@@ -35,6 +35,16 @@ public final class DBManager {
         return this.em;
     }
     
+    public void close() {
+        if (this.em != null) {
+            this.em.close();
+        }
+        
+        if (this.emf != null) {
+            this.emf.close();
+        }
+    }
+    
     private void createEntityManagerFactory() {
         this.emf = Persistence.createEntityManagerFactory("CollProPersistenceUnit");
     }

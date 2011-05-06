@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
 
-    <persistence-unit name="CollProPersistenceUnit">
-        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <persistence-unit name="CollProPersistenceUnit" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <class>com.petpet.collpro.datamodel.Characteristic</class>
         <class>com.petpet.collpro.datamodel.StringCharacteristic</class>
         <class>com.petpet.collpro.datamodel.BoolCharacteristic</class>
@@ -11,13 +11,13 @@
         <class>com.petpet.collpro.datamodel.Element</class>
         
         <properties>
-            <property name="javax.persistence.transactionType" value="RESOURCE_LOCAL" />
-            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://127.0.0.1:5432/collpro"/>
-            <property name="javax.persistence.jdbc.user" value="collpro"/>
-            <property name="javax.persistence.jdbc.password" value="collpro"/>
-            <property name="eclipselink.target-database" value="POSTGRESQL" />
-            <property name="eclipselink.ddl-generation" value="create-tables" />
+            <property name="hibernate.connection.driver_class" value="org.postgresql.Driver" />
+            <property name="hibernate.connection.url" value="jdbc:postgresql://127.0.0.1:5432/collpro"/>
+            <property name="hibernate.connection.username" value="collpro"/>
+            <property name="hibernate.connection.password" value="collpro"/>
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
         </properties>
     </persistence-unit>
 </persistence>
