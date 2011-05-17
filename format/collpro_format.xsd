@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://scape-project.eu/cp/schemas" xmlns:cp="http://scape-project.eu/cp/schemas">
+  <xs:element name="profile">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="cp:settings"/>
+        <xs:element maxOccurs="1" minOccurs="1" ref="cp:collection"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="settings">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="cp:size-unit"/>
+        <xs:element ref="cp:extid-spec"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="size-unit" type="xs:string"/>
+  <xs:element name="extid-spec">
+    <xs:complexType>
+      <xs:attribute name="tool" use="required" type="xs:string"/>
+      <xs:attribute name="toolversion" use="required" type="xs:decimal"/>
+      <xs:attribute name="type" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="collection">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="1" minOccurs="1" ref="cp:general"/>
+        <xs:element maxOccurs="1" minOccurs="1" ref="cp:characteristics"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="general">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="cp:largest"/>
+        <xs:element ref="cp:smallest"/>
+        <xs:element ref="cp:mimes"/>
+        <xs:element ref="cp:formats"/>
+      </xs:sequence>
+      <xs:attribute name="elements" use="required" type="xs:integer"/>
+      <xs:attribute name="formats" use="required" type="xs:integer"/>
+      <xs:attribute name="homogeneous" use="required" type="xs:boolean"/>
+      <xs:attribute name="mimes" use="required" type="xs:integer"/>
+      <xs:attribute name="size" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="largest">
+    <xs:complexType>
+      <xs:attribute name="eid" use="required"/>
+      <xs:attribute name="formatName" use="required"/>
+      <xs:attribute name="path" use="required"/>
+      <xs:attribute name="size" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="smallest">
+    <xs:complexType>
+      <xs:attribute name="eid" use="required"/>
+      <xs:attribute name="formatName" use="required"/>
+      <xs:attribute name="path" use="required"/>
+      <xs:attribute name="size" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="mimes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="cp:mime"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="mime">
+    <xs:complexType>
+      <xs:attribute name="elements" use="required" type="xs:integer"/>
+      <xs:attribute name="name" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="formats">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="cp:format"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="format">
+    <xs:complexType>
+      <xs:attribute name="eid" use="required"/>
+      <xs:attribute name="elements" use="required" type="xs:integer"/>
+      <xs:attribute name="name" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="characteristics">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="cp:characteristic"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="characteristic">
+    <xs:complexType>
+      <xs:sequence minOccurs="0">
+        <xs:element ref="cp:min"/>
+        <xs:element ref="cp:max"/>
+      </xs:sequence>
+      <xs:attribute name="avg" type="xs:integer"/>
+      <xs:attribute name="elements" use="required" type="xs:integer"/>
+      <xs:attribute name="name" use="required" type="xs:string"/>
+      <xs:attribute name="sd" type="xs:integer"/>
+      <xs:attribute name="type" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="min">
+    <xs:complexType>
+      <xs:attribute name="path" use="required"/>
+      <xs:attribute name="value" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="max">
+    <xs:complexType>
+      <xs:attribute name="path" use="required"/>
+      <xs:attribute name="value" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

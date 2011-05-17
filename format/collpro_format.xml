@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile xmlns="http://scape-project.eu/cp/schemas">
+  <settings>
+    <size-unit>bytes</size-unit>
+    <extid-spec tool="Droid" toolversion="3.0" type="puid"/>
+    <!-- problem if you feed in different inputs... -->
+  </settings>
+  <collection name="some name">
+    <general elements="123" size="148882123" mimes="13" formats="27" homogeneous="false">
+      <largest path="/path/to/file" size="236323" formatName="Name of Format" eid="fmt/xx"/>
+      <smallest path="/path/to/other/file" size="13" formatName="Name of Other Format" eid="fmt/yy"/>
+      <mimes>
+        <mime name="image/png" elements="13"/>
+        <mime name="audio/wav" elements="27"/>
+        <mime name="video/mpeg" elements="8"/>
+        <!-- ... -->
+      </mimes>
+      <formats>
+        <format name="Name of Format" elements="12" eid="fmt/xx"/>
+        <format name="Name of Other Format" elements="12" eid="fmt/yy"/>
+        <!-- ... -->
+      </formats>
+    </general>
+    <characteristics>
+      <characteristic name="propertyA" type="numeric" avg="734445" sd="13892" elements="22">
+        <min path="/some/file" value="124"/>
+        <max path="/other/file" value="53211245"/>
+      </characteristic>
+      <characteristic name="propertyB" type="string" elements="432"/>
+      <!-- other characteristics... -->
+    </characteristics>
+  </collection>
+  <!--
+    further collections...
+    Not sure if more collections are neeeded/possible..
+    I'd say no...
+    <collection name="other name">
+        ...
+    </collection>-->
+</profile>
