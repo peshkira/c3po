@@ -28,14 +28,14 @@ public class CharCharacteristic extends Characteristic {
         this.setType(Type.CHARACTERISTIC);
     }
     
-    public CharCharacteristic(String name, long charId, Type characteristicType) {
+    public CharCharacteristic(String name, Long charId, Type characteristicType) {
         this();
         this.setName(name);
         this.setCharacteristicId(charId);
         this.setCharacteristicType(characteristicType);
     }
 
-    public void setCharacteristicId(long charId) {
+    public void setCharacteristicId(Long charId) {
         this.characteristicId = charId;
     }
 

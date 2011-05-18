@@ -72,7 +72,6 @@ public class CharacteristicTest {
     
     @Test
     public void shouldPersistCharCharacteristic() throws Exception {
-        
         StringCharacteristic sc = new StringCharacteristic("string.char", "test"); 
         this.em.getTransaction().begin();
         this.em.persist(sc);
@@ -88,6 +87,46 @@ public class CharacteristicTest {
         Assert.assertNotNull(dbSC);
         Assert.assertEquals("string.char", dbSC.getName());
         Assert.assertEquals("test", dbSC.getValue());
+        
+    }
+    
+    @Test
+    public void shouldDeleteCharCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldUpdateCharCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldPersistBoolCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldDeleteBoolCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldUpdateBoolCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldPersistNumericCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldDeleteNumericCharacteristic() throws Exception {
+        
+    }
+    
+    @Test
+    public void shouldUpdateNumericCharacteristic() throws Exception {
         
     }
 
