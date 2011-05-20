@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<profile xmlns="http://scape-project.eu/cp/schemas">
+<profile xmlns="http://scape-project.eu/cp/schemas" timestamp="yyyyMMdd" generated="user">
   <settings>
     <size-unit>bytes</size-unit>
     <extid-spec tool="Droid" toolversion="3.0" type="puid"/>
-    <!-- problem if you feed in different inputs... -->
+    <!-- 
+	problem if you feed in different inputs... 
+	consider adding more extid-spec tags and adding
+	a ref attribute in each format tag
+    -->
   </settings>
   <collection name="some name">
     <general elements="123" size="148882123" mimes="13" formats="27" homogeneous="false">
@@ -30,11 +34,14 @@
       <!-- other characteristics... -->
     </characteristics>
   </collection>
-  <!--
+<!--
+############################################################
     further collections...
     Not sure if more collections are neeeded/possible..
-    I'd say no...
+    I'd say no... KISS
+############################################################
     <collection name="other name">
         ...
-    </collection>-->
+    </collection>
+-->
 </profile>
