@@ -3,13 +3,11 @@
 
     <persistence-unit name="CollProPersistenceUnit" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <class>com.petpet.collpro.datamodel.Characteristic</class>
-        <class>com.petpet.collpro.datamodel.StringCharacteristic</class>
-        <class>com.petpet.collpro.datamodel.BoolCharacteristic</class>
-        <class>com.petpet.collpro.datamodel.NumericCharacteristic</class>
-        <class>com.petpet.collpro.datamodel.CharCharacteristic</class>
+        
         <class>com.petpet.collpro.datamodel.Element</class>
-        <class>com.petpet.collpro.datamodel.Collection</class>
+        <class>com.petpet.collpro.datamodel.Property</class>
+        <class>com.petpet.collpro.datamodel.Value</class>
+        <class>com.petpet.collpro.datamodel.ValueSource</class>
         
         <properties>
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver" />

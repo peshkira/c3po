@@ -45,6 +45,24 @@ public final class DBManager {
         }
     }
     
+    public void persist(Object o) {
+        if (o != null) {
+            EntityManager em = this.getEntityManager();
+            em.getTransaction().begin();
+            em.persist(o);
+            em.getTransaction().commit();
+        }
+    }
+    
+    public void remove(Object o) {
+        if (o != null) {
+            EntityManager em = this.getEntityManager();
+            em.getTransaction().begin();
+            em.remove(o);
+            em.getTransaction().commit();
+        }
+    }
+    
     private void createEntityManagerFactory() {
         this.emf = Persistence.createEntityManagerFactory("CollProPersistenceUnit");
     }

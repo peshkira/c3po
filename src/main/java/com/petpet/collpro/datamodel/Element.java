@@ -1,57 +1,29 @@
 package com.petpet.collpro.datamodel;
 
-import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 @Entity
 public class Element {
-
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    
+    @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;
     
-    @Basic
-    @Column(name = "NAME", nullable = false)
     private String name;
     
-    @Basic
-    @Column(name = "FILEPATH", nullable = false)
-    private String filepath;
-    
-    @ManyToOne
-    private Collection collection;
+    private String path;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private Set<Characteristic> info;
+    @OneToMany
+    private Set<Element> elements;
     
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private Set<Characteristic> identification;
-    
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private Set<Characteristic> metadata;
-    
-    public Element() {
-        this.setInfo(new HashSet<Characteristic>());
-        this.setIdentification(new HashSet<Characteristic>());
-        this.setMetadata(new HashSet<Characteristic>());
-    }
-    
-    public Element(String name, String filepath) {
-        this();
-        this.setName(name);
-        this.setFilepath(filepath);
-    }
-    
+    @OneToMany(mappedBy = "element")
+    private Set<Property> properties;
+
     public void setId(long id) {
         this.id = id;
     }
@@ -68,45 +40,27 @@ public class Element {
         return name;
     }
 
-    public void setFilepath(String filepath) {
-        this.filepath = filepath;
+    public void setPath(String path) {
+        this.path = path;
     }
 
-    public String getFilepath() {
-        return filepath;
+    public String getPath() {
+        return path;
     }
 
-    public void setCollection(Collection collection) {
-        this.collection = collection;
+    public void setElements(Set<Element> elements) {
+        this.elements = elements;
     }
 
-    public Collection getCollection() {
-        return collection;
+    public Set<Element> getElements() {
+        return elements;
     }
 
-    public void setInfo(Set<Characteristic> info) {
-        this.info = info;
+    public void setProperties(Set<Property> properties) {
+        this.properties = properties;
     }
 
-    public Set<Characteristic> getInfo() {
-        return info;
-    }
-
-    public void setIdentification(Set<Characteristic> identification) {
-        this.identification = identification;
-    }
-
-    public Set<Characteristic> getIdentification() {
-        return identification;
-    }
-
-    public void setMetadata(Set<Characteristic> metadata) {
-        this.metadata = metadata;
-    }
-
-    public Set<Characteristic> getMetadata() {
-        return metadata;
-    }
-    
-    
+    public Set<Property> getProperties() {
+        return properties;
+    } 
 }
