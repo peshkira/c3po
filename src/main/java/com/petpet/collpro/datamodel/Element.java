@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Element {
@@ -14,8 +15,10 @@ public class Element {
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;
     
+    @NotNull
     private String name;
     
+    @NotNull
     private String path;
 
     @OneToMany

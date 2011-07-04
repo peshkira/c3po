@@ -6,6 +6,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Value<T> {
@@ -13,10 +16,13 @@ public class Value<T> {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     
+    @NotNull
     private String jsonValue;
     
     private long measuredAt;
     
+    @Min(0)
+    @Max(100)
     private int reliability;
 
     @ManyToOne
