@@ -1,5 +1,6 @@
 package com.petpet.collpro.datamodel;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -25,6 +26,12 @@ public class Property {
     
     @OneToMany(mappedBy = "property")
     private Set<Value<?>> values;
+    
+    public Property() {
+        super();
+        this.properties = new HashSet<Property>();
+        this.values = new HashSet<Value<?>>();
+    }
 
     public void setId(long id) {
         this.id = id;
