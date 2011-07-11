@@ -26,12 +26,12 @@ public class Element {
     private Set<Element> elements;
     
     @OneToMany(mappedBy = "element")
-    private Set<Property> properties;
+    private Set<Value<?>> values;
     
     public Element() {
         super();
         this.elements = new HashSet<Element>();
-        this.properties = new HashSet<Property>();
+        this.values = new HashSet<Value<?>>();
     }
 
     public void setId(long id) {
@@ -66,11 +66,11 @@ public class Element {
         return elements;
     }
 
-    public void setProperties(Set<Property> properties) {
-        this.properties = properties;
+    public void setValues(Set<Value<?>> values) {
+        this.values = values;
     }
 
-    public Set<Property> getProperties() {
-        return properties;
+    public Set<Value<?>> getValues() {
+        return this.values;
     } 
 }

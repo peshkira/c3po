@@ -9,7 +9,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,23 +79,20 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             String mime = identity.attributeValue(FITSConstants.MIMETYPE_ATTR);
 
             // TODO manage value source conflict/single_result
+            Property p1 = new Property();
+            p1.setName(FITSConstants.FORMAT_ATTR);
+
+            Property p2 = new Property();
+            p2.setName(FITSConstants.MIMETYPE_ATTR);
 
             Value v1 = new Value();
             v1.setValue(format);
             v1.setMeasuredAt(this.measuredAt.getTime());
-
-            Property p1 = new Property();
-            p1.setName(FITSConstants.FORMAT_ATTR);
-            p1.getValues().add(v1);
             v1.setProperty(p1);
 
             Value v2 = new Value();
             v2.setValue(mime);
             v2.setMeasuredAt(this.measuredAt.getTime());
-
-            Property p2 = new Property();
-            p2.setName(FITSConstants.MIMETYPE_ATTR);
-            p2.getValues().add(v2);
             v2.setProperty(p1);
 
             props.add(p1);
@@ -119,6 +115,9 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             while (iter.hasNext()) {
                 Element e = iter.next();
 
+                Property p = new Property();
+                p.setName(e.getName());
+
                 ValueSource vs = new ValueSource();
                 vs.setName(e.attributeValue("toolname"));
                 vs.setVersion(e.attributeValue("toolversion"));
@@ -127,10 +126,6 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 v.setValue(e.getText());
                 v.setMeasuredAt(this.measuredAt.getTime());
                 v.setSource(vs);
-
-                Property p = new Property();
-                p.setName(e.getName());
-                p.getValues().add(v);
                 v.setProperty(p);
 
                 System.out.println(p.getName() + ":" + v.getValue() + " - " + vs.getName() + ":" + vs.getVersion());

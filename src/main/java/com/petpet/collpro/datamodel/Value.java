@@ -31,6 +31,9 @@ public class Value<T> {
     @ManyToOne
     private ValueSource source;
     
+    @ManyToOne
+    private Element element;
+    
     @Transient
     private transient T value;
 
@@ -88,5 +91,13 @@ public class Value<T> {
 
     public T getValue() {
         return value;
+    }
+
+    public void setElement(Element element) {
+        this.element = element;
+    }
+
+    public Element getElement() {
+        return element;
     }
 }

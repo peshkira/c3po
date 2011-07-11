@@ -7,10 +7,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 @Entity
+@NamedQuery(name="ALL_PROPERTIES", query="SELECT p FROM Property")
 public class Property {
     
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,19 +19,12 @@ public class Property {
     
     private String name;
     
-    @ManyToOne
-    private Element element;
-
     @OneToMany
     private Set<Property> properties;
-    
-    @OneToMany(mappedBy = "property")
-    private Set<Value<?>> values;
     
     public Property() {
         super();
         this.properties = new HashSet<Property>();
-        this.values = new HashSet<Value<?>>();
     }
 
     public void setId(long id) {
@@ -55,21 +49,5 @@ public class Property {
 
     public Set<Property> getProperties() {
         return properties;
-    }
-
-    public void setValues(Set<Value<?>> values) {
-        this.values = values;
-    }
-
-    public Set<Value<?>> getValues() {
-        return values;
-    }
-
-    public void setElement(Element element) {
-        this.element = element;
-    }
-
-    public Element getElement() {
-        return element;
     }
 }
