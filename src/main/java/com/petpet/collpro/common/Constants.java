@@ -1,6 +1,6 @@
 package com.petpet.collpro.common;
 
-import java.util.List;
+import java.util.Map;
 
 import com.petpet.collpro.datamodel.Property;
 
@@ -12,7 +12,7 @@ public final class Constants {
     
     public static final String ALL_PROPERTIES_QUERY = "ALL_PROPERTIES";
     
-    public static List<Property> KNOWN_PROPERTIES;
+    public static Map<String, Property> KNOWN_PROPERTIES;
     
     private Constants() {
         

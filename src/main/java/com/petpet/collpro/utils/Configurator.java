@@ -1,5 +1,6 @@
 package com.petpet.collpro.utils;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -36,8 +37,15 @@ public final class Configurator {
     }
 
     private void loadKnownProperties() {
-        Constants.KNOWN_PROPERTIES = DBManager.getInstance().getEntityManager()
+//        Constants.KNOWN_PROPERTIES; 
+            
+            List<Property> props = DBManager.getInstance().getEntityManager()
                 .createNamedQuery(Constants.ALL_PROPERTIES_QUERY, Property.class).getResultList();
+            
+            Constants.KNOWN_PROPERTIES = new HashMap<String, Property>();
+            for (Property p : props) {
+                Constants.KNOWN_PROPERTIES.put(p.getName(), p);
+            }
     }
 
     private Configurator() {

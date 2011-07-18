@@ -1,11 +1,13 @@
 package com.petpet.collpro;
 
 import java.io.File;
+import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
+import com.petpet.collpro.datamodel.Property;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
 import com.petpet.collpro.utils.Configurator;
 import com.petpet.collpro.utils.XMLUtils;
@@ -28,7 +30,7 @@ public class App {
             SAXReader reader = new SAXReader();
             Document document = reader.read(file);
             new FITSMetaDataConverter().getProperties(document);
-
+            
         } catch (DocumentException e) {
             System.err.println(e.getMessage());
         }
