@@ -54,10 +54,10 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         // TODO check null values
         Element metadata = (Element) root.element(FITSConstants.METADATA).elements().get(0); 
 
+        props.addAll(this.getIdentification(identification));
         props.addAll(this.getFlatProperties(fileinfo));
         props.addAll(this.getFlatProperties(filestatus));
         props.addAll(this.getFlatProperties(metadata));
-        this.getIdentification(identification);
 
         return props;
     }

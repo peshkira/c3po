@@ -11,7 +11,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 @Entity
-@NamedQuery(name="ALL_PROPERTIES", query="SELECT p FROM Property")
+@NamedQuery(name="ALL_PROPERTIES", query="SELECT p FROM Property p")
 public class Property {
     
     @Id @GeneratedValue(strategy = GenerationType.AUTO)

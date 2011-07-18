@@ -15,7 +15,7 @@
             <property name="hibernate.connection.username" value="collpro"/>
             <property name="hibernate.connection.password" value="collpro"/>
             <property name="hibernate.hbm2ddl.auto" value="update" />
-            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.show_sql" value="false" />
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
         </properties>
     </persistence-unit>
