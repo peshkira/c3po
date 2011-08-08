@@ -8,8 +8,6 @@ import com.petpet.collpro.db.DBManager;
 
 import junit.framework.Assert;
 
-import static org.junit.Assert.*;
-
 public class ValueTest {
     
     @Test
@@ -17,8 +15,7 @@ public class ValueTest {
         String name = "Test";
         Date date = new Date();
         
-        Value v = new Value();
-        v.setJsonValue(name);
+        Value v = new StringValue();
         v.setMeasuredAt(date.getTime());
         v.setReliability(100);
         
@@ -28,7 +25,6 @@ public class ValueTest {
      
         Value value = db.getEntityManager().find(Value.class, 1L);
         Assert.assertNotNull(value);
-        Assert.assertEquals(name, value.getJsonValue());
         Assert.assertEquals(date.getTime(), value.getMeasuredAt());
         Assert.assertEquals(100, value.getReliability());
     }
@@ -39,12 +35,11 @@ public class ValueTest {
         String updated = "updated";
         
         Value value = db.getEntityManager().find(Value.class, 1L);
-        value.setJsonValue(updated);
         db.persist(value);
         db.getEntityManager().clear();
         
         value = db.getEntityManager().find(Value.class, 1L);
-        Assert.assertEquals(updated, value.getJsonValue());
+        //TODO assert
     }
     
     @Test
@@ -64,18 +59,16 @@ public class ValueTest {
         String name = "Test";
         Date date = new Date();
         
-        Value<Integer> v = new Value<Integer>();
-        v.setJsonValue(name);
+        NumericValue v = new NumericValue();
         v.setMeasuredAt(date.getTime());
         v.setReliability(100);
-        v.setValue(100);
+        v.setValue(100L);
         DBManager db = DBManager.getInstance();
         db.persist(v);
         db.getEntityManager().clear();
      
-        Value<Integer> value = db.getEntityManager().find(Value.class, 2L);
+        Value<Long> value = db.getEntityManager().find(Value.class, 2L);
         Assert.assertNotNull(value);
-        Assert.assertEquals(name, value.getJsonValue());
         Assert.assertEquals(date.getTime(), value.getMeasuredAt());
         Assert.assertEquals(100, value.getReliability());
         Assert.assertNull(value.getValue());

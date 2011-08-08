@@ -4,21 +4,22 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Entity
-public class Value<T> {
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+public abstract class Value<T> {
     
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
-    
+
     @NotNull
-    private String jsonValue;
-    
     private long measuredAt;
     
     @Min(0)
@@ -34,9 +35,6 @@ public class Value<T> {
     @ManyToOne
     private Element element;
     
-    @Transient
-    private transient T value;
-
     public void setId(long id) {
         this.id = id;
     }
@@ -77,21 +75,9 @@ public class Value<T> {
         return source;
     }
 
-    public void setJsonValue(String jsonValue) {
-        this.jsonValue = jsonValue;
-    }
+    public abstract void setValue(T value);
 
-    public String getJsonValue() {
-        return jsonValue;
-    }
-
-    public void setValue(T value) {
-        this.value = value;
-    }
-
-    public T getValue() {
-        return value;
-    }
+    public abstract T getValue();
 
     public void setElement(Element element) {
         this.element = element;

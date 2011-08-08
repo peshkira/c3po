@@ -14,7 +14,7 @@ import javax.persistence.OneToMany;
 @NamedQuery(name="ALL_PROPERTIES", query="SELECT p FROM Property p")
 public class Property {
     
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
     
     private String name;

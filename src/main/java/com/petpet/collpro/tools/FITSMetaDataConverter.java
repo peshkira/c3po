@@ -1,9 +1,7 @@
 package com.petpet.collpro.tools;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -15,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.common.FITSConstants;
 import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.datamodel.ValueSource;
 import com.petpet.collpro.db.DBManager;
@@ -31,21 +30,18 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
     }
     
     @Override
-    public List<Property> getProperties(String xml) {
+    public void extractValues(String xml) {
         try {
             Document doc = DocumentHelper.parseText(xml);
-            return this.getProperties(doc);
+            this.extractValues(doc);
             
         } catch (DocumentException e) {
             LOG.error("Could not parse string, {}", e.getMessage());
         }
-        return null;
     }
     
     @Override
-    public List<Property> getProperties(Document xml) {
-        
-        List<Property> props = new ArrayList<Property>();
+    public void extractValues(Document xml) {
         this.measuredAt = new Date();
         
         Element root = xml.getRootElement();
@@ -56,17 +52,14 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         // TODO check null values
         Element metadata = (Element) root.element(FITSConstants.METADATA).elements().get(0);
         
-        props.addAll(this.getIdentification(identification));
-        props.addAll(this.getFlatProperties(fileinfo));
-        props.addAll(this.getFlatProperties(filestatus));
-        props.addAll(this.getFlatProperties(metadata));
+        this.getIdentification(identification);
+        this.getFlatProperties(fileinfo);
+        this.getFlatProperties(filestatus);
+        this.getFlatProperties(metadata);
         
-        return props;
     }
     
-    private List<Property> getIdentification(Element identification) {
-        List<Property> props = new ArrayList<Property>();
-        
+    private void getIdentification(Element identification) {
         // conflict
         if (identification.elements().size() > 1) {
             LOG.warn("There must be a conflict");
@@ -99,13 +92,12 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 DBManager.getInstance().persist(p2);
             }
             
-            Value v1 = new Value();
+            StringValue v1 = new StringValue();
             v1.setValue(format);
             v1.setMeasuredAt(this.measuredAt.getTime());
             v1.setProperty(p1);
             
-            
-            Value v2 = new Value();
+            Value v2 = new StringValue();
             v2.setValue(mime);
             v2.setMeasuredAt(this.measuredAt.getTime());
             v2.setProperty(p1);
@@ -113,43 +105,45 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             DBManager.getInstance().persist(v1);
             DBManager.getInstance().persist(v2);
             
-            props.add(p1);
-            props.add(p2);
-            
             System.out.println(p1.getName() + ":" + v1.getValue());
             System.out.println(p2.getName() + ":" + v2.getValue());
         }
-        
-        return props;
     }
     
     // TODO datatypes ...
     // TODO set reliability
-    private List<Property> getFlatProperties(Element info) {
-        List<Property> props = new ArrayList<Property>();
+    private void getFlatProperties(Element info) {
         
         if (info != null) {
             Iterator<Element> iter = (Iterator<Element>) info.elementIterator();
             while (iter.hasNext()) {
                 Element e = iter.next();
                 
-                Property p = new Property();
-                p.setName(e.getName());
+                Property p = Constants.KNOWN_PROPERTIES.get(e.getName());
+                
+                if (p == null) {
+                    p = new Property();
+                    p.setName(e.getName());
+                    Constants.KNOWN_PROPERTIES.put(p.getName(), p);
+                    DBManager.getInstance().persist(p);
+                }
                 
                 ValueSource vs = new ValueSource();
                 vs.setName(e.attributeValue("toolname"));
                 vs.setVersion(e.attributeValue("toolversion"));
                 
-                Value v = new Value();
+                Value v = new StringValue();
                 v.setValue(e.getText());
                 v.setMeasuredAt(this.measuredAt.getTime());
                 v.setSource(vs);
                 v.setProperty(p);
                 
+                DBManager.getInstance().persist(vs);
+                DBManager.getInstance().persist(v);
+                
                 System.out.println(p.getName() + ":" + v.getValue() + " - " + vs.getName() + ":" + vs.getVersion());
             }
         }
         
-        return props;
     }
 }

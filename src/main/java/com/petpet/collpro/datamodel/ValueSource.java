@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @Entity
 public class ValueSource {
     
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
     
     private String name;

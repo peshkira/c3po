@@ -29,7 +29,7 @@ public class App {
         try {
             SAXReader reader = new SAXReader();
             Document document = reader.read(file);
-            new FITSMetaDataConverter().getProperties(document);
+            new FITSMetaDataConverter().extractValues(document);
             
         } catch (DocumentException e) {
             System.err.println(e.getMessage());
