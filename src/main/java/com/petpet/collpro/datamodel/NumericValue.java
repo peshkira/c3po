@@ -9,6 +9,18 @@ public class NumericValue extends Value<Long> {
     @NotNull
     private Long lValue;
     
+    public NumericValue() {
+        
+    }
+    
+    public NumericValue(Long v) {
+        this.lValue = v;
+    }
+   
+    public NumericValue(String v) {
+        this(Long.valueOf(v));
+    }
+    
     @Override
     public Long getValue() {
         return this.lValue;

@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,12 +21,16 @@ public class Property {
     
     private String name;
     
+    @Enumerated(EnumType.STRING)
+    private PropertyType type;
+    
     @OneToMany
     private Set<Property> properties;
     
     public Property() {
         super();
         this.properties = new HashSet<Property>();
+        this.type = PropertyType.DEFAULT;
     }
 
     public void setId(long id) {
@@ -49,5 +55,13 @@ public class Property {
 
     public Set<Property> getProperties() {
         return properties;
+    }
+
+    public void setType(PropertyType type) {
+        this.type = type;
+    }
+
+    public PropertyType getType() {
+        return type;
     }
 }

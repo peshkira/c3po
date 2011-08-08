@@ -18,6 +18,8 @@ import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.datamodel.ValueSource;
 import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
+import com.petpet.collpro.utils.Configurator;
+import com.petpet.collpro.utils.Helper;
 
 public class FITSMetaDataConverter implements IMetaDataConverter {
     
@@ -60,10 +62,12 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
     }
     
     private void getIdentification(Element identification) {
-        // conflict
+        // TODO handle conflict
         if (identification.elements().size() > 1) {
             LOG.warn("There must be a conflict");
         }
+        
+        // TODO check for version conflict in identity tag
         
         Iterator<Element> iter = (Iterator<Element>) identification.elementIterator();
         
@@ -112,6 +116,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
     
     // TODO datatypes ...
     // TODO set reliability
+    // TODO handle conflicts
     private void getFlatProperties(Element info) {
         
         if (info != null) {
@@ -124,6 +129,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 if (p == null) {
                     p = new Property();
                     p.setName(e.getName());
+                    p.setType(Helper.getType(p.getName()));
                     Constants.KNOWN_PROPERTIES.put(p.getName(), p);
                     DBManager.getInstance().persist(p);
                 }
@@ -132,8 +138,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 vs.setName(e.attributeValue("toolname"));
                 vs.setVersion(e.attributeValue("toolversion"));
                 
-                Value v = new StringValue();
-                v.setValue(e.getText());
+                System.out.println("Value of property: " + p.getName() + " " + p.getType());
+                Value v = Helper.getTypedValue(p.getType(), e.getText());
                 v.setMeasuredAt(this.measuredAt.getTime());
                 v.setSource(vs);
                 v.setProperty(p);
