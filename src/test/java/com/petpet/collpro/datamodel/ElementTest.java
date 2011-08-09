@@ -8,7 +8,7 @@ import junit.framework.Assert;
 public class ElementTest {
     
     @Test
-    public void shouldStoreElement() {
+    public void shouldStoreElement() throws Exception {
         String name = "Test";
         String path = "path/to/file";
         Element e = new Element();
@@ -17,7 +17,6 @@ public class ElementTest {
         
         DBManager db = DBManager.getInstance();
         db.persist(e);
-        db.getEntityManager().clear();
      
         Element element = db.getEntityManager().find(Element.class, 1L);
         Assert.assertNotNull(element);
@@ -26,17 +25,18 @@ public class ElementTest {
     }
     
     @Test
-    public void shouldUpdateElement() {
+    public void shouldUpdateElement() throws Exception {
         DBManager db = DBManager.getInstance();
         Element element = db.getEntityManager().find(Element.class, 1L);
         Assert.assertNotNull(element);
-        
+
         String name = "New";
         element.setName(name);
         db.persist(element);
         db.getEntityManager().clear();
         
         element = db.getEntityManager().find(Element.class, 1L);
+        System.out.println(element.getName());
         Assert.assertNotNull(element);
         Assert.assertEquals(name, element.getName());
     }

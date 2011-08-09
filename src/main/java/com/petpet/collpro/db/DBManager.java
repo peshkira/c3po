@@ -51,6 +51,8 @@ public final class DBManager {
             em.getTransaction().begin();
             em.persist(o);
             em.getTransaction().commit();
+        } else {
+            LOGGER.warn("Cannot persist a null object reference, skipping");
         }
     }
     

@@ -7,6 +7,9 @@
         <class>com.petpet.collpro.datamodel.Element</class>
         <class>com.petpet.collpro.datamodel.Property</class>
         <class>com.petpet.collpro.datamodel.Value</class>
+        <class>com.petpet.collpro.datamodel.StringValue</class>
+        <class>com.petpet.collpro.datamodel.NumericValue</class>
+        <class>com.petpet.collpro.datamodel.BooleanValue</class>
         <class>com.petpet.collpro.datamodel.ValueSource</class>
         
         <properties>

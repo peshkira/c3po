@@ -17,7 +17,8 @@
     <size toolname="Jhove" toolversion="1.5">466028</size>
     <creatingApplicationName toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">Mac OS X 10.6 Quartz PDFContext/Preview</creatingApplicationName>
     <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2011:03:08 12:50:49+01:00</lastmodified>
-    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">../../../About Stacks.pdf</filename>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">About Stacks.pdf</filename>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/peter/About Stacks.pdf</filepath>
     <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">6e7c8416a293ba2d83bc8dd20c6ccf51</md5checksum>
     <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1299585049000</fslastmodified>
   </fileinfo>

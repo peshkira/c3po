@@ -16,7 +16,7 @@
         <level value="WARN" />
     </logger>
   	<logger name="org.hibernate.type.descriptor.sql">  
-    	<level value="TRACE"/>  
+    	<level value="WARN"/>  
   	</logger>  
 
     <root>

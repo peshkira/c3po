@@ -4,9 +4,12 @@
     <persistence-unit name="CollProPersistenceUnit" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         
-        <class>com.petpet.collpro.datamodel.Element</class>
+         <class>com.petpet.collpro.datamodel.Element</class>
         <class>com.petpet.collpro.datamodel.Property</class>
         <class>com.petpet.collpro.datamodel.Value</class>
+        <class>com.petpet.collpro.datamodel.StringValue</class>
+        <class>com.petpet.collpro.datamodel.NumericValue</class>
+        <class>com.petpet.collpro.datamodel.BooleanValue</class>
         <class>com.petpet.collpro.datamodel.ValueSource</class>
         
         <properties>
@@ -14,7 +17,7 @@
             <property name="hibernate.connection.url" value="jdbc:postgresql://127.0.0.1:5432/collpro"/>
             <property name="hibernate.connection.username" value="collpro"/>
             <property name="hibernate.connection.password" value="collpro"/>
-            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
             <property name="hibernate.show_sql" value="false" />
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
         </properties>

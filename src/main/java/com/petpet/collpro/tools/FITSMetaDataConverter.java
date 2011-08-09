@@ -2,7 +2,6 @@ package com.petpet.collpro.tools;
 
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -52,33 +51,41 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         
         Element root = xml.getRootElement();
         Element fileinfo = root.element(FITSConstants.FILEINFO);
-        boolean processed = this.isAlreadyProcessed(fileinfo.element(FITSConstants.MD5CHECKSUM));
-        if (processed) {
-            LOG.info("Element {} is already processed", ""); // TODO set element
-                                                             // name
-            return;
-        }
-        
         Element identification = root.element(FITSConstants.IDENTIFICATION);
         Element filestatus = root.element(FITSConstants.FILESTATUS);
-        // TODO check null values
         Element metadata = (Element) root.element(FITSConstants.METADATA).elements().get(0);
+        // TODO check null values in metadata
         
-        this.getIdentification(identification);
-        this.getFlatProperties(fileinfo);
-        this.getFlatProperties(filestatus);
-        this.getFlatProperties(metadata);
+        String md5 = fileinfo.element(FITSConstants.MD5CHECKSUM).getText();
+        String filename = fileinfo.element(FITSConstants.FILENAME).getText();
+        String filepath = fileinfo.element(FITSConstants.FILEPATH).getText();
+        
+        boolean processed = this.isAlreadyProcessed(md5);
+        if (processed) {
+            LOG.info("Element '{}' is already processed", filename);
+            return;
+        }
+
+        com.petpet.collpro.datamodel.Element e = new com.petpet.collpro.datamodel.Element();
+        e.setName(filename);
+        e.setPath(filepath);
+        
+        DBManager.getInstance().persist(e);
+        
+        this.getIdentification(identification, e);
+        this.getFlatProperties(fileinfo, e);
+        this.getFlatProperties(filestatus, e);
+        this.getFlatProperties(metadata, e);
         
     }
     
-    private boolean isAlreadyProcessed(Element md5checksum) {
-        if (md5checksum == null) {
+    private boolean isAlreadyProcessed(String md5) {
+        if (md5 == null || md5.equals("")) {
             LOG.warn("No checksum provided, assuming element is not processed.");
             return false;
         }
         
         boolean isDone = false;
-        String md5 = md5checksum.getText();
         LOG.debug("MD5: {}", md5);
         
         try {
@@ -97,7 +104,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         return isDone;
     }
     
-    private void getIdentification(Element identification) {
+    private void getIdentification(Element identification, com.petpet.collpro.datamodel.Element e) {
         // TODO handle conflict
         if (identification.elements().size() > 1) {
             LOG.warn("There must be a conflict");
@@ -138,14 +145,20 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             v1.setValue(format);
             v1.setMeasuredAt(this.measuredAt.getTime());
             v1.setProperty(p1);
+            v1.setElement(e);
             
             Value v2 = new StringValue();
             v2.setValue(mime);
             v2.setMeasuredAt(this.measuredAt.getTime());
             v2.setProperty(p1);
+            v2.setElement(e);
             
             DBManager.getInstance().persist(v1);
             DBManager.getInstance().persist(v2);
+            
+            e.getValues().add(v1);
+            e.getValues().add(v2);
+            DBManager.getInstance().getEntityManager().merge(e);
             
             System.out.println(p1.getName() + ":" + v1.getValue());
             System.out.println(p2.getName() + ":" + v2.getValue());
@@ -154,38 +167,43 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
     
     // TODO set reliability
     // TODO handle conflicts
-    private void getFlatProperties(Element info) {
+    private void getFlatProperties(Element info, com.petpet.collpro.datamodel.Element e) {
         
         if (info != null) {
             Iterator<Element> iter = (Iterator<Element>) info.elementIterator();
             while (iter.hasNext()) {
-                Element e = iter.next();
+                Element elmnt = iter.next();
                 
-                Property p = Constants.KNOWN_PROPERTIES.get(e.getName());
+                Property p = Constants.KNOWN_PROPERTIES.get(elmnt.getName());
                 
                 if (p == null) {
                     p = new Property();
-                    p.setName(e.getName());
+                    p.setName(elmnt.getName());
                     p.setType(Helper.getType(p.getName()));
                     Constants.KNOWN_PROPERTIES.put(p.getName(), p);
                     DBManager.getInstance().persist(p);
                 }
                 
                 ValueSource vs = new ValueSource();
-                vs.setName(e.attributeValue("toolname"));
-                vs.setVersion(e.attributeValue("toolversion"));
+                vs.setName(elmnt.attributeValue("toolname"));
+                vs.setVersion(elmnt.attributeValue("toolversion"));
                 
                 System.out.println("Value of property: " + p.getName() + " " + p.getType());
-                Value v = Helper.getTypedValue(p.getType(), e.getText());
+                Value v = Helper.getTypedValue(p.getType(), elmnt.getText());
                 v.setMeasuredAt(this.measuredAt.getTime());
                 v.setSource(vs);
                 v.setProperty(p);
+                v.setElement(e);
                 
                 DBManager.getInstance().persist(vs);
                 DBManager.getInstance().persist(v);
                 
+                e.getValues().add(v);
+                
                 System.out.println(p.getName() + ":" + v.getValue() + " - " + vs.getName() + ":" + vs.getVersion());
             }
+            
+            DBManager.getInstance().getEntityManager().merge(e);
         }
         
     }
