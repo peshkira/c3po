@@ -1,9 +1,11 @@
 package com.petpet.collpro.datamodel;
 
 import javax.persistence.Entity;
+import javax.persistence.NamedQuery;
 import javax.validation.constraints.NotNull;
 
 @Entity
+@NamedQuery(name="getMD5ChecksumValue", query="SELECT v FROM StringValue v WHERE v.property.name LIKE 'md5checksum' AND v.sValue LIKE :hash")
 public class StringValue extends Value<String> {
 
     @NotNull

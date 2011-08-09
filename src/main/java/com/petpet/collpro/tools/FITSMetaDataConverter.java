@@ -2,6 +2,10 @@ package com.petpet.collpro.tools;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -13,12 +17,12 @@ import org.slf4j.LoggerFactory;
 import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.common.FITSConstants;
 import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.datamodel.PropertyType;
 import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.datamodel.ValueSource;
 import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
-import com.petpet.collpro.utils.Configurator;
 import com.petpet.collpro.utils.Helper;
 
 public class FITSMetaDataConverter implements IMetaDataConverter {
@@ -47,9 +51,15 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         this.measuredAt = new Date();
         
         Element root = xml.getRootElement();
-        Element identification = root.element(FITSConstants.IDENTIFICATION);
-        
         Element fileinfo = root.element(FITSConstants.FILEINFO);
+        boolean processed = this.isAlreadyProcessed(fileinfo.element(FITSConstants.MD5CHECKSUM));
+        if (processed) {
+            LOG.info("Element {} is already processed", ""); // TODO set element
+                                                             // name
+            return;
+        }
+        
+        Element identification = root.element(FITSConstants.IDENTIFICATION);
         Element filestatus = root.element(FITSConstants.FILESTATUS);
         // TODO check null values
         Element metadata = (Element) root.element(FITSConstants.METADATA).elements().get(0);
@@ -59,6 +69,32 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         this.getFlatProperties(filestatus);
         this.getFlatProperties(metadata);
         
+    }
+    
+    private boolean isAlreadyProcessed(Element md5checksum) {
+        if (md5checksum == null) {
+            LOG.warn("No checksum provided, assuming element is not processed.");
+            return false;
+        }
+        
+        boolean isDone = false;
+        String md5 = md5checksum.getText();
+        LOG.debug("MD5: {}", md5);
+        
+        try {
+            DBManager.getInstance().getEntityManager().createNamedQuery("getMD5ChecksumValue", StringValue.class)
+                .setParameter("hash", md5).getSingleResult();
+            isDone = true;
+        } catch (NoResultException nre) {
+            LOG.debug("No element with this checksum ingested, continue processing.");
+            isDone = false;
+            
+        } catch (NonUniqueResultException nue) {
+            LOG.warn("More than one elements with this checksum are already processed. Please inspect");
+            isDone = true;
+        }
+        
+        return isDone;
     }
     
     private void getIdentification(Element identification) {
@@ -83,15 +119,17 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             if (p1 == null) {
                 p1 = new Property();
                 p1.setName(FITSConstants.FORMAT_ATTR);
+                p1.setType(PropertyType.STRING);
                 Constants.KNOWN_PROPERTIES.put(p1.getName(), p1);
                 DBManager.getInstance().persist(p1);
             }
             
-            Property p2 = Constants.KNOWN_PROPERTIES.get(FITSConstants.MIMETYPE_ATTR); 
+            Property p2 = Constants.KNOWN_PROPERTIES.get(FITSConstants.MIMETYPE_ATTR);
             
             if (p2 == null) {
                 p2 = new Property();
                 p2.setName(FITSConstants.MIMETYPE_ATTR);
+                p1.setType(PropertyType.STRING);
                 Constants.KNOWN_PROPERTIES.put(p2.getName(), p2);
                 DBManager.getInstance().persist(p2);
             }
@@ -114,7 +152,6 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         }
     }
     
-    // TODO datatypes ...
     // TODO set reliability
     // TODO handle conflicts
     private void getFlatProperties(Element info) {

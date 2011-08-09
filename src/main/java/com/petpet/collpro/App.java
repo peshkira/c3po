@@ -7,7 +7,9 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 
-import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.datamodel.Value;
+import com.petpet.collpro.datamodel.StringValue;
+import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
 import com.petpet.collpro.utils.Configurator;
 import com.petpet.collpro.utils.XMLUtils;

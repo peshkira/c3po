@@ -7,12 +7,14 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Entity
 @Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@NamedQuery(name="getValueByName", query="SELECT v FROM Value v WHERE v.property.name LIKE :name")
 public abstract class Value<T> {
     
     @Id @GeneratedValue(strategy = GenerationType.TABLE)

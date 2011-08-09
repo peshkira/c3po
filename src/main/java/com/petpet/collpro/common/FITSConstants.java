@@ -17,6 +17,8 @@ public final class FITSConstants {
     public static final String FORMAT_ATTR = "format";
     
     public static final String MIMETYPE_ATTR = "mimetype";
+
+    public static final String MD5CHECKSUM = "md5checksum";
     
     private FITSConstants() {}
 }
