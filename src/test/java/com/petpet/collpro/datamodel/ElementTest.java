@@ -1,26 +1,11 @@
 package com.petpet.collpro.datamodel;
-import javax.persistence.EntityManager;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.petpet.collpro.db.DBManager;
 
 import junit.framework.Assert;
 
-import static org.junit.Assert.*;
-
 public class ElementTest {
-    
-    @Before
-    public void setup() {
-        
-    }
-    
-    @After
-    public void tearDown() {
-    }
     
     @Test
     public void shouldStoreElement() {
@@ -32,6 +17,7 @@ public class ElementTest {
         
         DBManager db = DBManager.getInstance();
         db.persist(e);
+        db.getEntityManager().clear();
      
         Element element = db.getEntityManager().find(Element.class, 1L);
         Assert.assertNotNull(element);
@@ -48,6 +34,7 @@ public class ElementTest {
         String name = "New";
         element.setName(name);
         db.persist(element);
+        db.getEntityManager().clear();
         
         element = db.getEntityManager().find(Element.class, 1L);
         Assert.assertNotNull(element);
@@ -59,6 +46,8 @@ public class ElementTest {
         DBManager db = DBManager.getInstance();
         Element element = db.getEntityManager().find(Element.class, 1L);
         db.remove(element);
+        db.getEntityManager().clear();
+        
         element = db.getEntityManager().find(Element.class, 1L);
         Assert.assertNull(element);
     }
