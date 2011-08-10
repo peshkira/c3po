@@ -1,5 +1,6 @@
 package com.petpet.collpro.datamodel;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
 
@@ -9,14 +10,15 @@ public class NumericValue extends Value<Long> {
     private static final long serialVersionUID = 1216578571209620108L;
 
     @NotNull
-    private Long lValue;
+    @Column(name="lValue")
+    private Long value;
     
     public NumericValue() {
         
     }
     
     public NumericValue(Long v) {
-        this.lValue = v;
+        this.value = v;
     }
    
     public NumericValue(String v) {
@@ -25,19 +27,19 @@ public class NumericValue extends Value<Long> {
     
     @Override
     public Long getValue() {
-        return this.lValue;
+        return this.value;
     }
     
     @Override
     public void setValue(Long value) {
-        this.lValue = value;
+        this.value = value;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((lValue == null) ? 0 : lValue.hashCode());
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
         return result;
     }
 
@@ -53,11 +55,11 @@ public class NumericValue extends Value<Long> {
             return false;
         }
         NumericValue other = (NumericValue) obj;
-        if (lValue == null) {
-            if (other.lValue != null) {
+        if (value == null) {
+            if (other.value != null) {
                 return false;
             }
-        } else if (!lValue.equals(other.lValue)) {
+        } else if (!value.equals(other.value)) {
             return false;
         }
         return true;

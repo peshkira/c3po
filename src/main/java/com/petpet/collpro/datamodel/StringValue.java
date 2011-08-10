@@ -1,41 +1,43 @@
 package com.petpet.collpro.datamodel;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.NamedQuery;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@NamedQuery(name="getMD5ChecksumValue", query="SELECT v FROM StringValue v WHERE v.property.name LIKE 'md5checksum' AND v.sValue LIKE :hash")
+@NamedQuery(name="getMD5ChecksumValue", query="SELECT v FROM StringValue v WHERE v.property.name = 'md5checksum' AND v.value = :hash")
 public class StringValue extends Value<String> {
 
     private static final long serialVersionUID = 3382886583103355484L;
 
     @NotNull
-    private String sValue;
+    @Column(name = "sValue")
+    private String value;
     
     public StringValue() {
         
     }
     
     public StringValue(String v) {
-        this.sValue = v;
+        this.value = v;
     }
     
     @Override
     public String getValue() {
-        return this.sValue;
+        return this.value;
     }
 
     @Override
     public void setValue(String value) {
-        this.sValue = value;
+        this.value = value;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((sValue == null) ? 0 : sValue.hashCode());
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
         return result;
     }
 
@@ -51,11 +53,11 @@ public class StringValue extends Value<String> {
             return false;
         }
         StringValue other = (StringValue) obj;
-        if (sValue == null) {
-            if (other.sValue != null) {
+        if (value == null) {
+            if (other.value != null) {
                 return false;
             }
-        } else if (!sValue.equals(other.sValue)) {
+        } else if (!value.equals(other.value)) {
             return false;
         }
         return true;

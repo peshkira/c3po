@@ -9,28 +9,36 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
-@NamedQuery(name="getValueByName", query="SELECT v FROM Value v WHERE v.property.name LIKE :name")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@NamedQueries( {
+    @NamedQuery(name = "getValueByName", query = "SELECT v FROM Value v WHERE v.property.name = :name"),
+    @NamedQuery(name = "getElementsWithPropertyCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname"),
+    @NamedQuery(name = "getElementsWithPropertyAndValueCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
+    @NamedQuery(name = "getElementsWithDistinctPropertyValueCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname"),
+    @NamedQuery(name = "getDistinctPropertyValuesSet", query = "SELECT DISTINCT v.value FROM Value v WHERE v.property.name = :pname")
+    })
 public abstract class Value<T> implements Serializable {
     
     private static final long serialVersionUID = -896459317140318025L;
-
-    @Id @GeneratedValue(strategy = GenerationType.TABLE)
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
-
+    
     @NotNull
     private long measuredAt;
     
     @Min(0)
     @Max(100)
     private int reliability;
-
+    
     @ManyToOne
     private Property property;
     
@@ -43,55 +51,55 @@ public abstract class Value<T> implements Serializable {
     public void setId(long id) {
         this.id = id;
     }
-
+    
     public long getId() {
         return id;
     }
-
+    
     public void setMeasuredAt(long measuredAt) {
         this.measuredAt = measuredAt;
     }
-
+    
     public long getMeasuredAt() {
         return measuredAt;
     }
-
+    
     public void setReliability(int reliability) {
         this.reliability = reliability;
     }
-
+    
     public int getReliability() {
         return reliability;
     }
-
+    
     public void setProperty(Property property) {
         this.property = property;
     }
-
+    
     public Property getProperty() {
         return property;
     }
-
+    
     public void setSource(ValueSource source) {
         this.source = source;
     }
-
+    
     public ValueSource getSource() {
         return source;
     }
-
+    
     public abstract void setValue(T value);
-
+    
     public abstract T getValue();
-
+    
     public void setElement(Element element) {
         this.element = element;
     }
-
+    
     public Element getElement() {
         return element;
     }
-
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -103,7 +111,7 @@ public abstract class Value<T> implements Serializable {
         result = prime * result + ((source == null) ? 0 : source.hashCode());
         return result;
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -145,6 +153,5 @@ public abstract class Value<T> implements Serializable {
         }
         return true;
     }
-    
     
 }

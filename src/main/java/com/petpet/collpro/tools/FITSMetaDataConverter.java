@@ -136,7 +136,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             if (p2 == null) {
                 p2 = new Property();
                 p2.setName(FITSConstants.MIMETYPE_ATTR);
-                p1.setType(PropertyType.STRING);
+                p2.setType(PropertyType.STRING);
                 Constants.KNOWN_PROPERTIES.put(p2.getName(), p2);
                 DBManager.getInstance().persist(p2);
             }
@@ -150,7 +150,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             Value v2 = new StringValue();
             v2.setValue(mime);
             v2.setMeasuredAt(this.measuredAt.getTime());
-            v2.setProperty(p1);
+            v2.setProperty(p2);
             v2.setElement(e);
             
             DBManager.getInstance().persist(v1);

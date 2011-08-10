@@ -14,7 +14,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 
 @Entity
-@NamedQuery(name="ALL_PROPERTIES", query="SELECT p FROM Property p")
+@NamedQuery(name="getAllProperties", query="SELECT p FROM Property p")
 public class Property implements Serializable {
     
     private static final long serialVersionUID = -2404477153744982138L;
