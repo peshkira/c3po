@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.5.0" timestamp="3/10/11 12:11 PM">
+  <identification>
+    <identity format="Portable Document Format" mimetype="application/pdf">
+      <tool toolname="Jhove" toolversion="1.5" />
+      <tool toolname="file utility" toolversion="5.03" />
+      <tool toolname="Exiftool" toolversion="7.74" />
+      <tool toolname="Droid" toolversion="3.0" />
+      <tool toolname="NLNZ Metadata Extractor" toolversion="3.4GA" />
+      <tool toolname="ffident" toolversion="0.2" />
+      <version toolname="Jhove" toolversion="1.5" status="CONFLICT">1.4</version>
+      <version toolname="file utility" toolversion="5.03" status="CONFLICT">1.3</version>
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">fmt/17</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.5">466028</size>
+    <creatingApplicationName toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">Mac OS X 10.6 Quartz PDFContext/Preview</creatingApplicationName>
+    <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2011:03:08 12:50:49+01:00</lastmodified>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">About Stacks.pdf</filename>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/peter/About Stacks.pdf</filepath>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">6e7c8416a293ba2d83bc8dd20c6ccf51</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1299585049000</fslastmodified>
+  </fileinfo>
+ <filestatus>
+    <well-formed toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</well-formed>
+    <valid toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</valid>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">File header gives version as 1.4, but catalog dictionary gives version as 1.3</message>
+  </filestatus>
+  <metadata>
+    <document>
+      <title toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">About Stacks</title>
+      <pageCount toolname="Jhove" toolversion="1.5">1</pageCount>
+      <isTagged toolname="Jhove" toolversion="1.5">no</isTagged>
+      <hasOutline toolname="Jhove" toolversion="1.5">no</hasOutline>
+      <hasAnnotations toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">no</hasAnnotations>
+      <isRightsManaged toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">no</isRightsManaged>
+      <isProtected toolname="Exiftool" toolversion="7.74">no</isProtected>
+      <hasForms toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">no</hasForms>
+    </document>
+  </metadata>
+</fits>
+

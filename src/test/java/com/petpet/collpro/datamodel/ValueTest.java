@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.persistence.RollbackException;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import com.petpet.collpro.db.DBManager;
@@ -11,6 +12,14 @@ import com.petpet.collpro.db.DBManager;
 import junit.framework.Assert;
 
 public class ValueTest {
+    
+    @AfterClass
+    public static void before() {
+        // clean persistence context
+        // because of the rollback in the test
+        // shouldNotStoreNullValues
+        DBManager.getInstance().getEntityManager().clear();
+    }
     
     @Test
     public void shouldStoreStringValue() throws Exception {
@@ -25,7 +34,7 @@ public class ValueTest {
         DBManager db = DBManager.getInstance();
         db.persist(v);
         db.getEntityManager().clear();
-     
+        
         Value value = db.getEntityManager().find(Value.class, 1L);
         Assert.assertNotNull(value);
         Assert.assertEquals(date.getTime(), value.getMeasuredAt());
@@ -58,9 +67,9 @@ public class ValueTest {
         
     }
     
-    @Test(expected=RollbackException.class)
+    @Test(expected = RollbackException.class)
     public void shouldNotStoreNullValue() throws Exception {
-       Value v = new StringValue();       
-       DBManager.getInstance().persist(v);
+        Value v = new StringValue();
+        DBManager.getInstance().persist(v);
     }
 }

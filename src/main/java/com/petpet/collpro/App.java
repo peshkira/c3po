@@ -11,7 +11,6 @@ import org.dom4j.io.SAXReader;
 
 import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.datamodel.Element;
-import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
