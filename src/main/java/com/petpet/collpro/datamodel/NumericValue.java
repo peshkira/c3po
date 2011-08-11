@@ -4,13 +4,18 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Entity
 public class NumericValue extends Value<Long> {
     
     private static final long serialVersionUID = 1216578571209620108L;
-
+    
+    private static final Logger LOG = LoggerFactory.getLogger(NumericValue.class);
+    
     @NotNull
-    @Column(name="lValue")
+    @Column(name = "lValue")
     private Long value;
     
     public NumericValue() {
@@ -20,9 +25,14 @@ public class NumericValue extends Value<Long> {
     public NumericValue(Long v) {
         this.value = v;
     }
-   
+    
     public NumericValue(String v) {
-        this(Long.valueOf(v));
+        try {
+            this.value = Long.valueOf(v);
+        } catch (NumberFormatException nfe) {
+            this.value = null;
+            LOG.warn("The passed string '{}' is not a number. Setting value to null.", v);
+        }
     }
     
     @Override
@@ -34,7 +44,7 @@ public class NumericValue extends Value<Long> {
     public void setValue(Long value) {
         this.value = value;
     }
-
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -42,7 +52,7 @@ public class NumericValue extends Value<Long> {
         result = prime * result + ((value == null) ? 0 : value.hashCode());
         return result;
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
