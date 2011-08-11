@@ -42,7 +42,7 @@ public class App {
         System.out.println("PDFs: " + count);
         
         query = DBManager.getInstance().getEntityManager().createNamedQuery(
-            Constants.ELEMENTS_WITH_DISTINCT_PROPERTY_AND_VALUE_COUNT_QUERY).setParameter("pname", "mimetype");
+            Constants.DISTINCT_PROPERTY_VALUE_COUNT_QUERY).setParameter("pname", "mimetype");
         count = (Long) query.getSingleResult();
         System.out.println("Distinct mimetypes: " + count);
         

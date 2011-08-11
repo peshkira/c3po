@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
     @NamedQuery(name = "getValueByName", query = "SELECT v FROM Value v WHERE v.property.name = :name"),
     @NamedQuery(name = "getElementsWithPropertyCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname"),
     @NamedQuery(name = "getElementsWithPropertyAndValueCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
-    @NamedQuery(name = "getElementsWithDistinctPropertyValueCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname"),
+    @NamedQuery(name = "getDistinctPropertyValueCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname"),
     @NamedQuery(name = "getDistinctPropertyValuesSet", query = "SELECT DISTINCT v.value FROM Value v WHERE v.property.name = :pname")
     })
 public abstract class Value<T> implements Serializable {
