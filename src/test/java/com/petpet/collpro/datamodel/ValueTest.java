@@ -15,8 +15,6 @@ import com.petpet.collpro.db.DBManager;
 
 import junit.framework.Assert;
 
-import static org.junit.Assert.*;
-
 public class ValueTest {
     
     private static Element edummy;

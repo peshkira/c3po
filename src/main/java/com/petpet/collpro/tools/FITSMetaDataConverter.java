@@ -20,7 +20,6 @@ import com.petpet.collpro.datamodel.ValueSource;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
 import com.petpet.collpro.utils.Helper;
 
-//TODO Consider caching the data and storing it to the db afterwards...
 public class FITSMetaDataConverter implements IMetaDataConverter {
     
     private static final Logger LOG = LoggerFactory.getLogger(FITSMetaDataConverter.class);
