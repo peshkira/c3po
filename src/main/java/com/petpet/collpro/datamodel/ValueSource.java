@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class ValueSource {
@@ -11,12 +12,22 @@ public class ValueSource {
     @Id @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
     
+    @NotNull
     private String name;
     
     private String version;
     
     private int reliability;
 
+    public ValueSource() {
+        super();
+    }
+    
+    public ValueSource(String name) {
+        this();
+        this.name = name;
+    }
+    
     public void setId(long id) {
         this.id = id;
     }

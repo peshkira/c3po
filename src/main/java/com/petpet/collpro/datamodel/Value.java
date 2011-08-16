@@ -18,11 +18,13 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @NamedQueries( {
-    @NamedQuery(name = "getValueByName", query = "SELECT v FROM Value v WHERE v.property.name = :name"),
+    @NamedQuery(name = "getValueByPropertyName", query = "SELECT v FROM Value v WHERE v.property.name = :name"),
     @NamedQuery(name = "getElementsWithPropertyCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname"),
     @NamedQuery(name = "getElementsWithPropertyAndValueCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
     @NamedQuery(name = "getDistinctPropertyValueCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname"),
-    @NamedQuery(name = "getDistinctPropertyValuesSet", query = "SELECT DISTINCT v.value FROM Value v WHERE v.property.name = :pname")
+    @NamedQuery(name = "getDistinctPropertyValuesSet", query = "SELECT DISTINCT v.value FROM Value v WHERE v.property.name = :pname"),
+    @NamedQuery(name = "getAllValuesForElementCount", query = "SELECT COUNT(v.value) FROM Value v WHERE v.element = :element"),
+    @NamedQuery(name = "getAllValuesForElement", query = "SELECT v FROM Value v WHERE v.element = :element")
     })
 public abstract class Value<T> implements Serializable {
     
@@ -39,12 +41,15 @@ public abstract class Value<T> implements Serializable {
     @Max(100)
     private int reliability;
     
+    @NotNull
     @ManyToOne
     private Property property;
     
+    @NotNull
     @ManyToOne
     private ValueSource source;
     
+    @NotNull
     @ManyToOne
     private Element element;
     

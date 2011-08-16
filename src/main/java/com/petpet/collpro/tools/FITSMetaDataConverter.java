@@ -142,17 +142,25 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 DBManager.getInstance().persist(p2);
             }
             
+            ValueSource vs = new ValueSource();
+            vs.setName(identity.element("tool").attributeValue("toolname"));
+            vs.setVersion(identity.element("tool").attributeValue("toolversion"));
+            
+            DBManager.getInstance().persist(vs);
+            
             StringValue v1 = new StringValue();
             v1.setValue(format);
             v1.setMeasuredAt(this.measuredAt.getTime());
             v1.setProperty(p1);
             v1.setElement(e);
+            v1.setSource(vs);
             
             Value v2 = new StringValue();
             v2.setValue(mime);
             v2.setMeasuredAt(this.measuredAt.getTime());
             v2.setProperty(p2);
             v2.setElement(e);
+            v2.setSource(vs);
             
             DBManager.getInstance().persist(v1);
             DBManager.getInstance().persist(v2);

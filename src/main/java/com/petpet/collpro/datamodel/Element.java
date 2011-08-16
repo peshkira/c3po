@@ -38,6 +38,12 @@ public class Element implements Serializable {
         this.elements = new HashSet<Element>();
         this.values = new HashSet<Value<?>>();
     }
+    
+    public Element(String name, String path) {
+        this();
+        this.name = name;
+        this.path = path;
+    }
 
     public void setId(long id) {
         this.id = id;

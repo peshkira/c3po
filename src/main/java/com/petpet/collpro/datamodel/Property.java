@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @NamedQuery(name="getAllProperties", query="SELECT p FROM Property p")
@@ -22,6 +23,7 @@ public class Property implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.TABLE)
     private long id;
     
+    @NotNull
     private String name;
     
     @Enumerated(EnumType.STRING)
@@ -34,6 +36,11 @@ public class Property implements Serializable {
         super();
         this.properties = new HashSet<Property>();
         this.type = PropertyType.DEFAULT;
+    }
+    
+    public Property(String name) {
+        this();
+        this.name = name;
     }
 
     public void setId(long id) {
