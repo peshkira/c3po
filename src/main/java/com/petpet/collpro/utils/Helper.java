@@ -5,13 +5,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.petpet.collpro.datamodel.BooleanValue;
 import com.petpet.collpro.datamodel.NumericValue;
 import com.petpet.collpro.datamodel.PropertyType;
 import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
+import com.petpet.collpro.db.DBManager;
 
 public final class Helper {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(Helper.class);
     
     private static Properties TYPES;
     
@@ -50,5 +59,30 @@ public final class Helper {
     public static PropertyType getType(String name) {
         String t = (String) TYPES.get(name);
         return PropertyType.getTypeFromString(t);
+    }
+    
+    public static boolean isElementAlreadyProcessed(String md5) {
+        if (md5 == null || md5.equals("")) {
+            LOG.warn("No checksum provided, assuming element is not processed.");
+            return false;
+        }
+        
+        boolean isDone = false;
+        LOG.debug("MD5: {}", md5);
+        
+        try {
+            DBManager.getInstance().getEntityManager().createNamedQuery("getMD5ChecksumValue", StringValue.class)
+                .setParameter("hash", md5).getSingleResult();
+            isDone = true;
+        } catch (NoResultException nre) {
+            LOG.debug("No element with this checksum ingested, continue processing.");
+            isDone = false;
+            
+        } catch (NonUniqueResultException nue) {
+            LOG.warn("More than one elements with this checksum are already processed. Please inspect");
+            isDone = true;
+        }
+        
+        return isDone;
     }
 }

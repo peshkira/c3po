@@ -9,6 +9,8 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.collpro.datamodel.Element;
+import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
 
 public class SimpleGatherer {
@@ -37,7 +39,8 @@ public class SimpleGatherer {
             try {
                 SAXReader reader = new SAXReader();
                 Document document = reader.read(f);
-                this.converter.extractValues(document);
+                Element element = this.converter.extractValues(document);
+                DBManager.getInstance().persist(element);
                 
             } catch (DocumentException e) {
                 System.err.println(e.getMessage());
