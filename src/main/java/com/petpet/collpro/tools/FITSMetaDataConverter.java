@@ -24,6 +24,7 @@ import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
 import com.petpet.collpro.utils.Helper;
 
+//TODO Consider caching the data and storing it to the db afterwards...
 public class FITSMetaDataConverter implements IMetaDataConverter {
     
     private static final Logger LOG = LoggerFactory.getLogger(FITSMetaDataConverter.class);
@@ -65,7 +66,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             LOG.info("Element '{}' is already processed", filename);
             return;
         }
-
+        
         com.petpet.collpro.datamodel.Element e = new com.petpet.collpro.datamodel.Element();
         e.setName(filename);
         e.setPath(filepath);

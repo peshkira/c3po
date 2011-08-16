@@ -1,20 +1,23 @@
 package com.petpet.collpro.datamodel;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.Query;
 import javax.persistence.RollbackException;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Test;
 
+import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.db.DBManager;
 
 import junit.framework.Assert;
 
 public class ValueTest {
     
-    @AfterClass
-    public static void before() {
+    @After
+    public void after() {
         // clean persistence context
         // because of the rollback in the test
         // shouldNotStoreNullValues
@@ -71,5 +74,29 @@ public class ValueTest {
     public void shouldNotStoreNullValue() throws Exception {
         Value v = new StringValue();
         DBManager.getInstance().persist(v);
+    }
+    
+    @Test
+    public void shouldTestNamedQueries() throws Exception {
+
+        Element e = new Element();
+        
+        Query query = DBManager.getInstance().getEntityManager().createNamedQuery(
+            Constants.ELEMENTS_WITH_PROPERTY_AND_VALUE_COUNT_QUERY).setParameter("pname", "mimetype").setParameter(
+            "value", "application/pdf");
+        Long count = (Long) query.getSingleResult();
+        System.out.println("PDFs: " + count);
+        
+        query = DBManager.getInstance().getEntityManager().createNamedQuery(
+            Constants.DISTINCT_PROPERTY_VALUE_COUNT_QUERY).setParameter("pname", "mimetype");
+        count = (Long) query.getSingleResult();
+        System.out.println("Distinct mimetypes: " + count);
+        
+        query = DBManager.getInstance().getEntityManager().createNamedQuery(
+            Constants.DISTINCT_PROPERTY_VALUES_SET_QUERY).setParameter("pname", "mimetype");
+        List<String> list = (List<String>) query.getResultList();
+        for (String v : list) {
+            System.out.println("mimetype: " + v);
+        }
     }
 }

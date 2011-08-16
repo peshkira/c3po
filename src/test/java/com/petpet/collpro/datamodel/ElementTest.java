@@ -2,6 +2,7 @@ package com.petpet.collpro.datamodel;
 
 import javax.persistence.Query;
 
+import org.junit.After;
 import org.junit.Test;
 
 import com.petpet.collpro.common.Constants;
@@ -10,6 +11,12 @@ import com.petpet.collpro.db.DBManager;
 import junit.framework.Assert;
 
 public class ElementTest {
+    
+    @After
+    public void after() {
+        // clean persistence context
+        DBManager.getInstance().getEntityManager().clear();
+    }
     
     @Test
     public void shouldStoreElement() throws Exception {
@@ -40,7 +47,6 @@ public class ElementTest {
         db.getEntityManager().clear();
         
         element = db.getEntityManager().find(Element.class, 1L);
-        System.out.println(element.getName());
         Assert.assertNotNull(element);
         Assert.assertEquals(name, element.getName());
     }
