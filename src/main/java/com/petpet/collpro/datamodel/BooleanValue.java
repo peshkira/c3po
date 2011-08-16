@@ -27,10 +27,27 @@ public class BooleanValue extends Value<Boolean> {
     }
     
     public BooleanValue(String v) {
-        this(Boolean.valueOf(v));
-        
-        if (!v.equals("true") && !v.equals("false")) {
+        if (v.equalsIgnoreCase("true")) {
+            this.value = true;
+            
+        } else if (v.equalsIgnoreCase("false")) {
+            this.value = false;
+            
+        } else if (v.equalsIgnoreCase("yes")) {
+            this.value = true;
+            
+        } else if (v.equalsIgnoreCase("no; ")) {
+            this.value = false;
+            
+        } else if (v.equals("1")) {
+            this.value = true;
+            
+        } else if (v.equals("0")) {
+            this.value = false;
+            
+        } else {
             LOG.warn("The passed string '{}' is not of boolean type, assuming false value", v);
+            this.value = false;
         }
     }
     

@@ -15,6 +15,8 @@ import com.petpet.collpro.db.DBManager;
 
 import junit.framework.Assert;
 
+import static org.junit.Assert.*;
+
 public class ValueTest {
     
     private static Element edummy;
@@ -96,21 +98,38 @@ public class ValueTest {
     }
     
     @Test
-    public void shouldTestNamedQueries() throws Exception {
+    public void shouldTestBooleanValue() throws Exception {
+        BooleanValue v = new BooleanValue("true");
+        Assert.assertTrue(v.getValue());
         
+        v = new BooleanValue("1");
+        Assert.assertTrue(v.getValue());
+        
+        v = new BooleanValue("yes");
+        Assert.assertTrue(v.getValue());
+        
+        v = new BooleanValue("false");
+        Assert.assertFalse(v.getValue());
+        
+        v = new BooleanValue("0");
+        Assert.assertFalse(v.getValue());
+        
+        v = new BooleanValue("no");
+        Assert.assertFalse(v.getValue());
+        
+        v = new BooleanValue("some random string");
+        Assert.assertFalse(v.getValue());
+    }
+    
+    @Test
+    public void shouldTestNamedQueries() throws Exception {
+        Property p1 = new Property("mimetype");
+        
+        ValueSource vs = new ValueSource("source");
+
         Element e1 = new Element("e1", "path/to/file/e1");
         Element e2 = new Element("e2", "path/to/file/e2");
         Element e3 = new Element("e3", "path/to/file/e3");
-        
-        DBManager.getInstance().persist(e1);
-        DBManager.getInstance().persist(e2);
-        DBManager.getInstance().persist(e3);
-        
-        Property p1 = new Property("mimetype");
-        DBManager.getInstance().persist(p1);
-        
-        ValueSource vs = new ValueSource("source");
-        DBManager.getInstance().persist(vs);
         
         StringValue v1 = new StringValue("application/pdf");
         v1.setElement(e1);
@@ -129,10 +148,14 @@ public class ValueTest {
         v3.setProperty(p1);
         v3.setSource(vs);
         v3.setMeasuredAt(new Date().getTime());
+
+        e1.getValues().add(v1);
+        e2.getValues().add(v2);
+        e3.getValues().add(v3);
         
-        DBManager.getInstance().persist(v1);
-        DBManager.getInstance().persist(v2);
-        DBManager.getInstance().persist(v3);
+        DBManager.getInstance().persist(e1);
+        DBManager.getInstance().persist(e2);
+        DBManager.getInstance().persist(e3);
         
         Query query = DBManager.getInstance().getEntityManager().createNamedQuery(Constants.VALUES_BY_PROPERTY_NAME_QUERY)
             .setParameter("name", "mimetype");
