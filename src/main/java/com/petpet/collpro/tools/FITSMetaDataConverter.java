@@ -3,6 +3,7 @@ package com.petpet.collpro.tools;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -17,6 +18,7 @@ import com.petpet.collpro.datamodel.PropertyType;
 import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.datamodel.ValueSource;
+import com.petpet.collpro.datamodel.ValueStatus;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
 import com.petpet.collpro.utils.Helper;
 
@@ -51,8 +53,11 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         org.dom4j.Element fileinfo = root.element(FITSConstants.FILEINFO);
         org.dom4j.Element identification = root.element(FITSConstants.IDENTIFICATION);
         org.dom4j.Element filestatus = root.element(FITSConstants.FILESTATUS);
-        org.dom4j.Element metadata = (org.dom4j.Element) root.element(FITSConstants.METADATA).elements().get(0);
-        // TODO check null values in metadata
+        org.dom4j.Element metadata = (org.dom4j.Element) root.element(FITSConstants.METADATA);
+        if (metadata != null) {
+            // fetch first tag (one of document, audio, video, image, etc...)
+            metadata = (org.dom4j.Element) metadata.elements().get(0);
+        }
         
         String md5 = fileinfo.element(FITSConstants.MD5CHECKSUM).getText();
         String filename = fileinfo.element(FITSConstants.FILENAME).getText();
@@ -71,14 +76,13 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         this.getFlatProperties(filestatus, e);
         this.getFlatProperties(metadata, e);
         
-//        DBManager.getInstance().persist(e);
         return e;
     }
     
     private void getIdentification(org.dom4j.Element identification, Element e) {
         // TODO handle conflict
         if (identification.elements().size() > 1) {
-            LOG.warn("There must be a conflict");
+            LOG.warn("There are more than one identity tags. There must be a conflict");
         }
         
         // TODO check for version conflict in identity tag
@@ -113,6 +117,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             vs.setName(identity.element("tool").attributeValue("toolname"));
             vs.setVersion(identity.element("tool").attributeValue("toolversion"));
             
+            // TODO handle conflicts
             StringValue v1 = new StringValue();
             v1.setValue(format);
             v1.setMeasuredAt(this.measuredAt.getTime());
@@ -120,7 +125,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             v1.setElement(e);
             v1.setSource(vs);
             
-            Value v2 = new StringValue();
+            StringValue v2 = new StringValue();
             v2.setValue(mime);
             v2.setMeasuredAt(this.measuredAt.getTime());
             v2.setProperty(p2);
@@ -129,14 +134,45 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             
             e.getValues().add(v1);
             e.getValues().add(v2);
-            
+
             System.out.println(p1.getName() + ":" + v1.getValue());
             System.out.println(p2.getName() + ":" + v2.getValue());
+            
+            Property p3 = Constants.KNOWN_PROPERTIES.get(FITSConstants.FORMAT_VERSION_ATTR);
+            
+            if (p3 == null) {
+                p3 = new Property();
+                p3.setName(FITSConstants.FORMAT_VERSION_ATTR);
+                p3.setType(PropertyType.STRING);
+                Constants.KNOWN_PROPERTIES.put(p3.getName(), p3);
+            }
+            
+            Iterator verIter = identity.elementIterator("version");
+            while (verIter.hasNext()) {
+                org.dom4j.Element version = (org.dom4j.Element) verIter.next();
+                
+                vs = new ValueSource();
+                vs.setName(version.attributeValue("toolname"));
+                vs.setVersion(version.attributeValue("toolversion"));
+                
+                StringValue v = new StringValue(version.getText());
+                v.setMeasuredAt(this.measuredAt.getTime());
+                v.setProperty(p3);
+                v.setElement(e);
+                v.setSource(vs);
+                v.setStatus(this.getStatusOfElement(version));
+                
+                e.getValues().add(v);
+                
+                System.out.println(p3.getName() + ":" + v.getValue());
+            }
+            
+            // TODO handle external identifiers.
+            
         }
     }
     
     // TODO set reliability
-    // TODO handle conflicts
     private void getFlatProperties(org.dom4j.Element info, Element e) {
         
         if (info != null) {
@@ -163,12 +199,22 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 v.setSource(vs);
                 v.setProperty(p);
                 v.setElement(e);
+                v.setStatus(this.getStatusOfElement(elmnt));
                 
                 e.getValues().add(v);
                 
                 System.out.println(p.getName() + ":" + v.getValue() + " - " + vs.getName() + ":" + vs.getVersion());
             }
         }
+    }
+    
+    private ValueStatus getStatusOfElement(org.dom4j.Element elmnt) {
+        ValueStatus status = ValueStatus.OK;
+        String statAttr = elmnt.attributeValue("status");
+        if (statAttr != null && !statAttr.equals("")) {
+            status = ValueStatus.valueOf(statAttr);
+        }
         
+        return status;
     }
 }

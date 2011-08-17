@@ -16,10 +16,11 @@ public class StringValue extends Value<String> {
     private String value;
     
     public StringValue() {
-        
+        this.setStatus(ValueStatus.OK);
     }
     
     public StringValue(String v) {
+        this();
         this.value = v;
     }
     

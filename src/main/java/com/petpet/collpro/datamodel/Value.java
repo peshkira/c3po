@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -43,6 +45,10 @@ public abstract class Value<T> implements Serializable {
     private int reliability;
     
     @NotNull
+    @Enumerated(EnumType.STRING)
+    private ValueStatus status;
+    
+    @NotNull
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Property property;
     
@@ -78,6 +84,14 @@ public abstract class Value<T> implements Serializable {
         return reliability;
     }
     
+    public void setStatus(ValueStatus status) {
+        this.status = status;
+    }
+
+    public ValueStatus getStatus() {
+        return status;
+    }
+
     public void setProperty(Property property) {
         this.property = property;
     }

@@ -19,14 +19,17 @@ public class NumericValue extends Value<Long> {
     private Long value;
     
     public NumericValue() {
-        
+        this.setStatus(ValueStatus.OK);
     }
     
     public NumericValue(Long v) {
+        this();
         this.value = v;
     }
     
     public NumericValue(String v) {
+        this();
+        
         try {
             this.value = Long.valueOf(v);
         } catch (NumberFormatException nfe) {

@@ -23,6 +23,8 @@ public final class FITSConstants {
     public static final String FILENAME = "filename";
     
     public static final String FILEPATH = "filepath";
+
+    public static final String FORMAT_VERSION_ATTR = "format_version";
     
     private FITSConstants() {}
 }
