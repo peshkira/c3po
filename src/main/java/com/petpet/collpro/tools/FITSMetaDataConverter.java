@@ -3,24 +3,21 @@ package com.petpet.collpro.tools;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.common.FITSConstants;
 import com.petpet.collpro.datamodel.Element;
 import com.petpet.collpro.datamodel.Property;
-import com.petpet.collpro.datamodel.PropertyType;
 import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.datamodel.ValueSource;
-import com.petpet.collpro.datamodel.ValueStatus;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
 import com.petpet.collpro.utils.Helper;
+import com.petpet.collpro.utils.XMLUtils;
 
 public class FITSMetaDataConverter implements IMetaDataConverter {
     
@@ -95,23 +92,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             String mime = identity.attributeValue(FITSConstants.MIMETYPE_ATTR);
             
             // TODO manage value source conflict/single_result
-            Property p1 = Constants.KNOWN_PROPERTIES.get(FITSConstants.FORMAT_ATTR);
-            
-            if (p1 == null) {
-                p1 = new Property();
-                p1.setName(FITSConstants.FORMAT_ATTR);
-                p1.setType(PropertyType.STRING);
-                Constants.KNOWN_PROPERTIES.put(p1.getName(), p1);
-            }
-            
-            Property p2 = Constants.KNOWN_PROPERTIES.get(FITSConstants.MIMETYPE_ATTR);
-            
-            if (p2 == null) {
-                p2 = new Property();
-                p2.setName(FITSConstants.MIMETYPE_ATTR);
-                p2.setType(PropertyType.STRING);
-                Constants.KNOWN_PROPERTIES.put(p2.getName(), p2);
-            }
+            Property p1 = Helper.getPropertyByName(FITSConstants.FORMAT_ATTR);
+            Property p2 = Helper.getPropertyByName(FITSConstants.MIMETYPE_ATTR);
             
             ValueSource vs = new ValueSource();
             vs.setName(identity.element("tool").attributeValue("toolname"));
@@ -138,14 +120,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             System.out.println(p1.getName() + ":" + v1.getValue());
             System.out.println(p2.getName() + ":" + v2.getValue());
             
-            Property p3 = Constants.KNOWN_PROPERTIES.get(FITSConstants.FORMAT_VERSION_ATTR);
-            
-            if (p3 == null) {
-                p3 = new Property();
-                p3.setName(FITSConstants.FORMAT_VERSION_ATTR);
-                p3.setType(PropertyType.STRING);
-                Constants.KNOWN_PROPERTIES.put(p3.getName(), p3);
-            }
+            Property p3 = Helper.getPropertyByName(FITSConstants.FORMAT_VERSION_ATTR);
             
             Iterator verIter = identity.elementIterator("version");
             while (verIter.hasNext()) {
@@ -160,7 +135,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 v.setProperty(p3);
                 v.setElement(e);
                 v.setSource(vs);
-                v.setStatus(this.getStatusOfElement(version));
+                v.setStatus(XMLUtils.getStatusOfFITSElement(version));
                 
                 e.getValues().add(v);
                 
@@ -180,14 +155,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             while (iter.hasNext()) {
                 org.dom4j.Element elmnt = iter.next();
                 
-                Property p = Constants.KNOWN_PROPERTIES.get(elmnt.getName());
-                
-                if (p == null) {
-                    p = new Property();
-                    p.setName(elmnt.getName());
-                    p.setType(Helper.getType(p.getName()));
-                    Constants.KNOWN_PROPERTIES.put(p.getName(), p);
-                }
+                Property p = Helper.getPropertyByName(elmnt.getName());
                 
                 ValueSource vs = new ValueSource();
                 vs.setName(elmnt.attributeValue("toolname"));
@@ -199,7 +167,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 v.setSource(vs);
                 v.setProperty(p);
                 v.setElement(e);
-                v.setStatus(this.getStatusOfElement(elmnt));
+                v.setStatus(XMLUtils.getStatusOfFITSElement(elmnt));
                 
                 e.getValues().add(v);
                 
@@ -208,13 +176,4 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         }
     }
     
-    private ValueStatus getStatusOfElement(org.dom4j.Element elmnt) {
-        ValueStatus status = ValueStatus.OK;
-        String statAttr = elmnt.attributeValue("status");
-        if (statAttr != null && !statAttr.equals("")) {
-            status = ValueStatus.valueOf(statAttr);
-        }
-        
-        return status;
-    }
 }

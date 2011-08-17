@@ -11,8 +11,10 @@ import javax.persistence.NonUniqueResultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.datamodel.BooleanValue;
 import com.petpet.collpro.datamodel.NumericValue;
+import com.petpet.collpro.datamodel.Property;
 import com.petpet.collpro.datamodel.PropertyType;
 import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
@@ -59,6 +61,19 @@ public final class Helper {
     public static PropertyType getType(String name) {
         String t = (String) TYPES.get(name);
         return PropertyType.getTypeFromString(t);
+    }
+    
+    public static Property getPropertyByName(String name) {
+        Property p = Constants.KNOWN_PROPERTIES.get(name);
+        
+        if (p == null) {
+            p = new Property();
+            p.setName(name);
+            p.setType(Helper.getType(p.getName()));
+            Constants.KNOWN_PROPERTIES.put(p.getName(), p);
+        }
+        
+        return p;
     }
     
     public static boolean isElementAlreadyProcessed(String md5) {

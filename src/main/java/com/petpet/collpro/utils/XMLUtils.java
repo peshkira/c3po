@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.petpet.collpro.common.Constants;
+import com.petpet.collpro.datamodel.ValueStatus;
 
 public final class XMLUtils {
     
@@ -50,6 +51,16 @@ public final class XMLUtils {
         }
         
         return false;
+    }
+    
+    public static ValueStatus getStatusOfFITSElement(org.dom4j.Element elmnt) {
+        ValueStatus status = ValueStatus.OK;
+        String statAttr = elmnt.attributeValue("status");
+        if (statAttr != null && !statAttr.equals("")) {
+            status = ValueStatus.valueOf(statAttr);
+        }
+        
+        return status;
     }
     
     private XMLUtils() {}
