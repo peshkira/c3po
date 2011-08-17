@@ -28,6 +28,11 @@ public class ValueSource {
         this.name = name;
     }
     
+    public ValueSource(String name, String version) {
+        this(name);
+        this.version = version;
+    }
+    
     public void setId(long id) {
         this.id = id;
     }

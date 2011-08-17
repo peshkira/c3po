@@ -2,6 +2,8 @@ package com.petpet.collpro.common;
 
 public final class FITSConstants {
 
+    public static final String TOOL = "tool";
+    
     public static final String TOOL_ATTR = "toolname";
     
     public static final String TOOLVERSION_ATTR = "toolversion";
@@ -24,7 +26,13 @@ public final class FITSConstants {
     
     public static final String FILEPATH = "filepath";
 
-    public static final String FORMAT_VERSION_ATTR = "format_version";
+    public static final String FORMAT_VERSION_ATTR = "formatversion";
+    
+    public static final String VERSION = "version";
+    
+    public static final String EXT_ID_TYPE_ATTR = "type";
+
+    public static final String EXT_ID = "externalIdentifier";
     
     private FITSConstants() {}
 }

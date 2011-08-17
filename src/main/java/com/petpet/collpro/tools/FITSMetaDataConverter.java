@@ -25,13 +25,10 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
     
     private Date measuredAt;
     
-    public FITSMetaDataConverter() {
-        
-    }
-    
     @Override
     public Element extractValues(String xml) {
         try {
+            
             Document doc = DocumentHelper.parseText(xml);
             return this.extractValues(doc);
             
@@ -96,8 +93,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             Property p2 = Helper.getPropertyByName(FITSConstants.MIMETYPE_ATTR);
             
             ValueSource vs = new ValueSource();
-            vs.setName(identity.element("tool").attributeValue("toolname"));
-            vs.setVersion(identity.element("tool").attributeValue("toolversion"));
+            vs.setName(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOL_ATTR));
+            vs.setVersion(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOLVERSION_ATTR));
             
             // TODO handle conflicts
             StringValue v1 = new StringValue();
@@ -116,34 +113,50 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             
             e.getValues().add(v1);
             e.getValues().add(v2);
-
+            
             System.out.println(p1.getName() + ":" + v1.getValue());
             System.out.println(p2.getName() + ":" + v2.getValue());
             
             Property p3 = Helper.getPropertyByName(FITSConstants.FORMAT_VERSION_ATTR);
             
-            Iterator verIter = identity.elementIterator("version");
+            Iterator verIter = identity.elementIterator(FITSConstants.VERSION);
             while (verIter.hasNext()) {
-                org.dom4j.Element version = (org.dom4j.Element) verIter.next();
+                org.dom4j.Element ver = (org.dom4j.Element) verIter.next();
                 
-                vs = new ValueSource();
-                vs.setName(version.attributeValue("toolname"));
-                vs.setVersion(version.attributeValue("toolversion"));
+                vs = new ValueSource(ver.attributeValue(FITSConstants.TOOL_ATTR), ver
+                    .attributeValue(FITSConstants.TOOLVERSION_ATTR));
                 
-                StringValue v = new StringValue(version.getText());
+                StringValue v = new StringValue(ver.getText());
                 v.setMeasuredAt(this.measuredAt.getTime());
                 v.setProperty(p3);
                 v.setElement(e);
                 v.setSource(vs);
-                v.setStatus(XMLUtils.getStatusOfFITSElement(version));
+                v.setStatus(XMLUtils.getStatusOfFITSElement(ver));
                 
                 e.getValues().add(v);
                 
                 System.out.println(p3.getName() + ":" + v.getValue());
             }
             
-            // TODO handle external identifiers.
-            
+            Iterator extIterator = identity.elementIterator(FITSConstants.EXT_ID);
+            while (extIterator.hasNext()) {
+                org.dom4j.Element extId = (org.dom4j.Element) extIterator.next();
+                Property p = Helper.getPropertyByName(extId.attributeValue(FITSConstants.EXT_ID_TYPE_ATTR));
+                
+                vs = new ValueSource(extId.attributeValue(FITSConstants.TOOL_ATTR), extId
+                    .attributeValue(FITSConstants.TOOLVERSION_ATTR));
+                
+                StringValue v = new StringValue(extId.getText());
+                v.setMeasuredAt(this.measuredAt.getTime());
+                v.setProperty(p);
+                v.setElement(e);
+                v.setSource(vs);
+                v.setStatus(XMLUtils.getStatusOfFITSElement(extId));
+                
+                e.getValues().add(v);
+                
+                System.out.println(p.getName() + ":" + v.getValue());
+            }
         }
     }
     
@@ -158,8 +171,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 Property p = Helper.getPropertyByName(elmnt.getName());
                 
                 ValueSource vs = new ValueSource();
-                vs.setName(elmnt.attributeValue("toolname"));
-                vs.setVersion(elmnt.attributeValue("toolversion"));
+                vs.setName(elmnt.attributeValue(FITSConstants.TOOL_ATTR));
+                vs.setVersion(elmnt.attributeValue(FITSConstants.TOOLVERSION_ATTR));
                 
                 System.out.println("Value of property: " + p.getName() + " " + p.getType());
                 Value v = Helper.getTypedValue(p.getType(), elmnt.getText());
