@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.petpet.collpro.datamodel.Element;
 import com.petpet.collpro.db.DBManager;
 
 import junit.framework.Assert;
@@ -33,9 +34,8 @@ public class FITSMetaDataConverterTest {
         try {
             SAXReader reader = new SAXReader();
             Document document = reader.read(new File("src/test/resources/fits.xml"));
-            this.converter.extractValues(document);
-            
-            //TODO assertions
+            Element e = this.converter.extractValues(document);
+            Assert.assertEquals(23, e.getValues().size());
             
         } catch (DocumentException e) {
             Assert.fail(e.getMessage());

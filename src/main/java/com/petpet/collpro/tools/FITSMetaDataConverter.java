@@ -79,7 +79,6 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             LOG.warn("There are more than one identity tags. There must be a conflict");
         }
         
-        // TODO check for version conflict in identity tag
         Iterator<org.dom4j.Element> iter = (Iterator<org.dom4j.Element>) identification.elementIterator();
         
         // iterate over identity tags
@@ -96,7 +95,6 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             vs.setName(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOL_ATTR));
             vs.setVersion(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOLVERSION_ATTR));
             
-            // TODO handle conflicts
             StringValue v1 = new StringValue();
             v1.setValue(format);
             v1.setMeasuredAt(this.measuredAt.getTime());
@@ -170,9 +168,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 
                 Property p = Helper.getPropertyByName(elmnt.getName());
                 
-                ValueSource vs = new ValueSource();
-                vs.setName(elmnt.attributeValue(FITSConstants.TOOL_ATTR));
-                vs.setVersion(elmnt.attributeValue(FITSConstants.TOOLVERSION_ATTR));
+                ValueSource vs = new ValueSource(elmnt.attributeValue(FITSConstants.TOOL_ATTR), elmnt
+                    .attributeValue(FITSConstants.TOOLVERSION_ATTR));
                 
                 System.out.println("Value of property: " + p.getName() + " " + p.getType());
                 Value v = Helper.getTypedValue(p.getType(), elmnt.getText());
