@@ -1,9 +1,11 @@
 package com.petpet.collpro;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -11,6 +13,7 @@ import org.dom4j.io.SAXReader;
 
 import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.datamodel.Element;
+import com.petpet.collpro.datamodel.Property;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
@@ -51,6 +54,14 @@ public class App {
         List<String> list = (List<String>) query.getResultList();
         for (String v : list) {
             System.out.println("mimetype: " + v);
+        }
+        
+        query = DBManager.getInstance().getEntityManager().createNamedQuery("getMostOccurringProperties");
+        List res = query.setMaxResults(5).getResultList();
+        System.out.println("GET MOST OCCURRING PROPERTIES");
+        for (Object o : res) {
+            Object[] p = (Object[]) o;
+            System.out.println(Arrays.deepToString(p));
         }
     }
     
