@@ -56,13 +56,21 @@ public class App {
             System.out.println("mimetype: " + v);
         }
         
-        query = DBManager.getInstance().getEntityManager().createNamedQuery("getMostOccurringProperties");
+        query = DBManager.getInstance().getEntityManager().createNamedQuery(Constants.MOST_OCCURRING_PROPERTIES);
         List res = query.setMaxResults(5).getResultList();
         System.out.println("GET MOST OCCURRING PROPERTIES");
         for (Object o : res) {
             Object[] p = (Object[]) o;
             System.out.println(Arrays.deepToString(p));
         }
+        
+        query = DBManager.getInstance().getEntityManager().createNamedQuery(Constants.SUM_VALUES_FOR_PROPERTY).setParameter("pname", "size");
+        Long sum = (Long) query.getSingleResult();
+        System.out.println("All elements size " + sum);
+        
+        query = DBManager.getInstance().getEntityManager().createNamedQuery(Constants.AVG_VALUES_FOR_PROPERTY).setParameter("pname", "size");
+        Double avg = (Double) query.getSingleResult();
+        System.out.println("AVG elements size " + avg);
     }
     
     private static void test() {

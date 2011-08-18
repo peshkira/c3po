@@ -103,8 +103,37 @@ public final class Constants {
     public static final String VALUES_FOR_ELEMENT = "getAllValuesForElement";
     
     /**
+     * The name of the named query that retrieves the property ids and property
+     * names and their occurrences throughout the collection in a descending
+     * order.
+     */
+    /*
+     * Defined in Value.java
+     */
+    public static final String MOST_OCCURRING_PROPERTIES = "getMostOccurringProperties";
+    
+    /**
+     * The name of the named query that sums the values of the numeric
+     * properties with the given name. Requires one parameter <i>:pname</i>.
+     */
+    public static final String SUM_VALUES_FOR_PROPERTY = "getSumOfValuesForProperty";
+    
+    /**
+     * The name of the named query that calculates the average of the values of
+     * the numeric properties with the given name. Requires one parameter
+     * <i>:pname</i>.
+     */
+    /*
+     * Defined in NumericValue.java
+     */
+    public static final String AVG_VALUES_FOR_PROPERTY = "getAvgOfValuesForProperty";
+    
+    /**
      * A map with the known properties. It is populated by the configurator
      * usually at startup.
+     */
+    /*
+     * Defined in NumericValue.java
      */
     public static Map<String, Property> KNOWN_PROPERTIES = new HashMap<String, Property>();
     

@@ -2,12 +2,17 @@ package com.petpet.collpro.datamodel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Entity
+@NamedQueries( {
+    @NamedQuery(name = "getSumOfValuesForProperty", query = "SELECT SUM(n.value) FROM NumericValue n WHERE n.property.name = :pname"),
+    @NamedQuery(name = "getAvgOfValuesForProperty", query = "SELECT AVG(n.value) FROM NumericValue n WHERE n.property.name = :pname")})
 public class NumericValue extends Value<Long> {
     
     private static final long serialVersionUID = 1216578571209620108L;
