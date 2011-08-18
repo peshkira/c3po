@@ -5,21 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 
 import com.petpet.collpro.common.Constants;
-import com.petpet.collpro.datamodel.Element;
-import com.petpet.collpro.datamodel.Property;
-import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
 import com.petpet.collpro.tools.SimpleGatherer;
 import com.petpet.collpro.utils.Configurator;
-import com.petpet.collpro.utils.XMLUtils;
 
 /**
  * Hello world!
@@ -71,30 +62,5 @@ public class App {
         query = DBManager.getInstance().getEntityManager().createNamedQuery(Constants.AVG_VALUES_FOR_PROPERTY).setParameter("pname", "size");
         Double avg = (Double) query.getSingleResult();
         System.out.println("AVG elements size " + avg);
-    }
-    
-    private static void test() {
-        File file = new File("src/main/resources/fits.xml");
-        boolean valid = XMLUtils.validate(file);
-        System.out.println("valid: " + valid);
-        
-        try {
-            SAXReader reader = new SAXReader();
-            Document document = reader.read(file);
-            new FITSMetaDataConverter().extractValues(document);
-            
-        } catch (DocumentException e) {
-            System.err.println(e.getMessage());
-        }
-        
-        List<Element> list = DBManager.getInstance().getEntityManager().createQuery("SELECT e FROM Element e",
-            Element.class).getResultList();
-        
-        for (Element e : list) {
-            System.out.println(e.getName());
-            for (Value v : e.getValues()) {
-                System.out.println(v.getValue());
-            }
-        }
     }
 }

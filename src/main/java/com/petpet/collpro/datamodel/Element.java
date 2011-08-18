@@ -13,8 +13,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.engine.Cascade;
-
 @Entity
 @NamedQuery(name = "getElementsCount", query = "SELECT COUNT(e) FROM Element e")
 public class Element implements Serializable {
