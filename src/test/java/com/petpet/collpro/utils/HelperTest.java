@@ -19,7 +19,7 @@ public class HelperTest {
         
         value = Helper.getTypedValue(PropertyType.BOOL, "this wont be true");
         Assert.assertTrue(value instanceof BooleanValue);
-        Assert.assertFalse(((BooleanValue)value).getValue());
+        Assert.assertFalse(((BooleanValue)value).getTypedValue());
         
         value = Helper.getTypedValue(PropertyType.DEFAULT, "test");
         Assert.assertTrue(value instanceof StringValue);

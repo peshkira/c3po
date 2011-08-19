@@ -1,16 +1,17 @@
 package com.petpet.collpro;
 
+import com.petpet.collpro.common.Constants;
+import com.petpet.collpro.datamodel.Value;
+import com.petpet.collpro.db.DBManager;
+import com.petpet.collpro.tools.FITSMetaDataConverter;
+import com.petpet.collpro.tools.SimpleGatherer;
+import com.petpet.collpro.utils.Configurator;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.Query;
-
-import com.petpet.collpro.common.Constants;
-import com.petpet.collpro.db.DBManager;
-import com.petpet.collpro.tools.FITSMetaDataConverter;
-import com.petpet.collpro.tools.SimpleGatherer;
-import com.petpet.collpro.utils.Configurator;
 
 /**
  * Hello world!
@@ -25,7 +26,8 @@ public class App {
     
     private static void foldertest() {
         SimpleGatherer g = new SimpleGatherer(new FITSMetaDataConverter());
-        g.gather(new File("/home/peter/Desktop/output/"));
+        //g.gather(new File("/home/peter/Desktop/output/"));
+        g.gather(new File("/Users/petar/Desktop/fits/"));
     }
     
     private static void querytest() {
@@ -62,5 +64,15 @@ public class App {
         query = DBManager.getInstance().getEntityManager().createNamedQuery(Constants.AVG_VALUES_FOR_PROPERTY).setParameter("pname", "size");
         Double avg = (Double) query.getSingleResult();
         System.out.println("AVG elements size " + avg);
+        
+        query = DBManager.getInstance().getEntityManager().createNamedQuery(Constants.VALUES_DISTRIBUTION);
+        res = query.getResultList();
+        System.out.println("DISTRIBUTION");
+        for (Object o : res) {
+            Object[] p = (Object[]) o;
+            System.out.println(Arrays.deepToString(p));
+//            System.out.println(o);
+        }
+        
     }
 }

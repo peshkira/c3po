@@ -30,12 +30,14 @@ public final class Constants {
     
     /**
      * The name of the named query that retrieves all values of a property with
-     * a certain name. Requires one parameter :name.
+     * a certain name. Requires one parameter :pname.
      */
     /*
      * Defined in Value.java
      */
     public static final String VALUES_BY_PROPERTY_NAME_QUERY = "getValueByPropertyName";
+    
+    public static final String VALUE_BY_NAME_AND_VALUE = "getValueByPropertyAndValue";
     
     /**
      * The name of the named query that counts all elements.
@@ -127,6 +129,9 @@ public final class Constants {
      * Defined in NumericValue.java
      */
     public static final String AVG_VALUES_FOR_PROPERTY = "getAvgOfValuesForProperty";
+
+    public static final String VALUES_DISTRIBUTION = "getAllValuesDistribution";
+
     
     /**
      * A map with the known properties. It is populated by the configurator

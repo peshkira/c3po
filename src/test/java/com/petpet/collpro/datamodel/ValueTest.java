@@ -1,5 +1,7 @@
 package com.petpet.collpro.datamodel;
 
+import static org.junit.Assert.*;
+
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +50,7 @@ public class ValueTest {
         Value v = new StringValue();
         v.setMeasuredAt(date.getTime());
         v.setReliability(100);
-        v.setValue(name);
+        v.setTypedValue(name);
         v.setElement(edummy);
         v.setProperty(pdummy);
         v.setSource(vdummy);
@@ -69,12 +71,12 @@ public class ValueTest {
         String updated = "updated";
         
         Value value = db.getEntityManager().find(Value.class, 1L);
-        value.setValue(updated);
+        value.setTypedValue(updated);
         db.persist(value);
         db.getEntityManager().clear();
         
         value = db.getEntityManager().find(Value.class, 1L);
-        Assert.assertEquals(updated, value.getValue());
+        Assert.assertEquals(updated, value.getTypedValue());
     }
     
     @Test
@@ -98,25 +100,25 @@ public class ValueTest {
     @Test
     public void shouldTestBooleanValue() throws Exception {
         BooleanValue v = new BooleanValue("true");
-        Assert.assertTrue(v.getValue());
+        Assert.assertTrue(v.getTypedValue());
         
         v = new BooleanValue("1");
-        Assert.assertTrue(v.getValue());
+        Assert.assertTrue(v.getTypedValue());
         
         v = new BooleanValue("yes");
-        Assert.assertTrue(v.getValue());
+        Assert.assertTrue(v.getTypedValue());
         
         v = new BooleanValue("false");
-        Assert.assertFalse(v.getValue());
+        Assert.assertFalse(v.getTypedValue());
         
         v = new BooleanValue("0");
-        Assert.assertFalse(v.getValue());
+        Assert.assertFalse(v.getTypedValue());
         
         v = new BooleanValue("no");
-        Assert.assertFalse(v.getValue());
+        Assert.assertFalse(v.getTypedValue());
         
         v = new BooleanValue("some random string");
-        Assert.assertFalse(v.getValue());
+        Assert.assertFalse(v.getTypedValue());
     }
     
     @Test
@@ -176,8 +178,8 @@ public class ValueTest {
         list = query.getResultList();
         
         Assert.assertEquals(new Long(2), count);
-        Assert.assertEquals("application/pdf", list.get(0));
-        Assert.assertEquals("document/txt", list.get(1));
+        Assert.assertEquals("document/txt", list.get(0));
+        Assert.assertEquals("application/pdf", list.get(1));
         
     }
 }

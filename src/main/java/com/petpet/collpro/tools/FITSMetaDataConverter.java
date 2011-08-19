@@ -98,16 +98,14 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             vs.setName(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOL_ATTR));
             vs.setVersion(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOLVERSION_ATTR));
             
-            StringValue v1 = new StringValue();
-            v1.setValue(format);
+            StringValue v1 = new StringValue(format);
             v1.setMeasuredAt(this.measuredAt.getTime());
             v1.setProperty(p1);
             v1.setElement(e);
             v1.setSource(vs);
             v1.setStatus(stat);
             
-            StringValue v2 = new StringValue();
-            v2.setValue(mime);
+            StringValue v2 = new StringValue(mime);
             v2.setMeasuredAt(this.measuredAt.getTime());
             v2.setProperty(p2);
             v2.setElement(e);
@@ -117,8 +115,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             e.getValues().add(v1);
             e.getValues().add(v2);
             
-            System.out.println(p1.getName() + ":" + v1.getValue());
-            System.out.println(p2.getName() + ":" + v2.getValue());
+            System.out.println(p1.getName() + ":" + v1.getTypedValue());
+            System.out.println(p2.getName() + ":" + v2.getTypedValue());
             
             Property p3 = Helper.getPropertyByName(FITSConstants.FORMAT_VERSION_ATTR);
             
@@ -142,7 +140,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 
                 e.getValues().add(v);
                 
-                System.out.println(p3.getName() + ":" + v.getValue());
+                System.out.println(p3.getName() + ":" + v.getTypedValue());
             }
             
             Iterator extIterator = identity.elementIterator(FITSConstants.EXT_ID);
@@ -166,7 +164,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 
                 e.getValues().add(v);
                 
-                System.out.println(p.getName() + ":" + v.getValue());
+                System.out.println(p.getName() + ":" + v.getTypedValue());
             }
         }
     }
@@ -194,7 +192,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 
                 e.getValues().add(v);
                 
-                System.out.println(p.getName() + ":" + v.getValue() + " - " + vs.getName() + ":" + vs.getVersion());
+                System.out.println(p.getName() + ":" + v.getTypedValue() + " - " + vs.getName() + ":" + vs.getVersion());
             }
         }
     }

@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 @Entity
 @NamedQueries( {
-    @NamedQuery(name = "getSumOfValuesForProperty", query = "SELECT SUM(n.value) FROM NumericValue n WHERE n.property.name = :pname"),
-    @NamedQuery(name = "getAvgOfValuesForProperty", query = "SELECT AVG(n.value) FROM NumericValue n WHERE n.property.name = :pname")})
+    @NamedQuery(name = "getSumOfValuesForProperty", query = "SELECT SUM(n.lValue) FROM NumericValue n WHERE n.property.name = :pname"),
+    @NamedQuery(name = "getAvgOfValuesForProperty", query = "SELECT AVG(n.lValue) FROM NumericValue n WHERE n.property.name = :pname")})
 public class NumericValue extends Value<Long> {
     
     private static final long serialVersionUID = 1216578571209620108L;
@@ -21,7 +21,7 @@ public class NumericValue extends Value<Long> {
     
     @NotNull
     @Column(name = "lValue")
-    private Long value;
+    private Long lValue;
     
     public NumericValue() {
         this.setStatus(ValueStatus.OK);
@@ -29,35 +29,37 @@ public class NumericValue extends Value<Long> {
     
     public NumericValue(Long v) {
         this();
-        this.value = v;
+        this.setTypedValue(v);
     }
     
     public NumericValue(String v) {
         this();
         
         try {
-            this.value = Long.valueOf(v);
+            this.setTypedValue(Long.valueOf(v));
         } catch (NumberFormatException nfe) {
-            this.value = null;
+            this.lValue = null;
+            this.setValue(null);
             LOG.warn("The passed string '{}' is not a number. Setting value to null.", v);
         }
     }
     
     @Override
-    public Long getValue() {
-        return this.value;
+    public Long getTypedValue() {
+        return this.lValue;
     }
     
     @Override
-    public void setValue(Long value) {
-        this.value = value;
+    public void setTypedValue(Long value) {
+        this.lValue = value;
+        this.setValue(value.toString());    
     }
     
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + ((lValue == null) ? 0 : lValue.hashCode());
         return result;
     }
     
@@ -73,11 +75,11 @@ public class NumericValue extends Value<Long> {
             return false;
         }
         NumericValue other = (NumericValue) obj;
-        if (value == null) {
-            if (other.value != null) {
+        if (lValue == null) {
+            if (other.lValue != null) {
                 return false;
             }
-        } else if (!value.equals(other.value)) {
+        } else if (!lValue.equals(other.lValue)) {
             return false;
         }
         return true;

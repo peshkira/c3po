@@ -86,8 +86,8 @@ public final class Helper {
         LOG.debug("MD5: {}", md5);
         
         try {
-            DBManager.getInstance().getEntityManager().createNamedQuery("getMD5ChecksumValue", StringValue.class)
-                .setParameter("hash", md5).getSingleResult();
+            DBManager.getInstance().getEntityManager().createNamedQuery(Constants.VALUE_BY_NAME_AND_VALUE).setParameter("pname", "md5checksum")
+                .setParameter("value", md5).getSingleResult();
             isDone = true;
         } catch (NoResultException nre) {
             LOG.debug("No element with this checksum ingested, continue processing.");
