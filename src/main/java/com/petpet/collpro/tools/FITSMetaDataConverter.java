@@ -15,6 +15,7 @@ import com.petpet.collpro.datamodel.Property;
 import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.datamodel.ValueSource;
+import com.petpet.collpro.datamodel.ValueStatus;
 import com.petpet.collpro.metadata.converter.IMetaDataConverter;
 import com.petpet.collpro.utils.Helper;
 import com.petpet.collpro.utils.XMLUtils;
@@ -48,7 +49,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         org.dom4j.Element identification = root.element(FITSConstants.IDENTIFICATION);
         org.dom4j.Element filestatus = root.element(FITSConstants.FILESTATUS);
         org.dom4j.Element metadata = (org.dom4j.Element) root.element(FITSConstants.METADATA);
-        if (metadata != null) {
+        if (metadata != null && metadata.elements().size() > 0) {
             // fetch first tag (one of document, audio, video, image, etc...)
             metadata = (org.dom4j.Element) metadata.elements().get(0);
         }
@@ -74,9 +75,11 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
     }
     
     private void getIdentification(org.dom4j.Element identification, Element e) {
-        // TODO handle conflict
+        ValueStatus stat = ValueStatus.OK;
+        
         if (identification.elements().size() > 1) {
             LOG.warn("There are more than one identity tags. There must be a conflict");
+            stat = ValueStatus.valueOf(identification.attributeValue("status"));
         }
         
         Iterator<org.dom4j.Element> iter = (Iterator<org.dom4j.Element>) identification.elementIterator();
@@ -101,6 +104,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             v1.setProperty(p1);
             v1.setElement(e);
             v1.setSource(vs);
+            v1.setStatus(stat);
             
             StringValue v2 = new StringValue();
             v2.setValue(mime);
@@ -108,6 +112,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             v2.setProperty(p2);
             v2.setElement(e);
             v2.setSource(vs);
+            v2.setStatus(stat);
             
             e.getValues().add(v1);
             e.getValues().add(v2);
@@ -129,7 +134,11 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 v.setProperty(p3);
                 v.setElement(e);
                 v.setSource(vs);
-                v.setStatus(XMLUtils.getStatusOfFITSElement(ver));
+                
+                if (stat.equals(ValueStatus.OK))
+                    v.setStatus(XMLUtils.getStatusOfFITSElement(ver));
+                else
+                    v.setStatus(stat);
                 
                 e.getValues().add(v);
                 
@@ -149,7 +158,11 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 v.setProperty(p);
                 v.setElement(e);
                 v.setSource(vs);
-                v.setStatus(XMLUtils.getStatusOfFITSElement(extId));
+                
+                if (stat.equals(ValueStatus.OK))
+                    v.setStatus(XMLUtils.getStatusOfFITSElement(extId));
+                else
+                    v.setStatus(stat);
                 
                 e.getValues().add(v);
                 
