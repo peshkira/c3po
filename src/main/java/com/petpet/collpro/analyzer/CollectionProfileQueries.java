@@ -8,7 +8,7 @@ import com.petpet.collpro.datamodel.Property;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.db.DBManager;
 
-public class CollectionProfileAnalyzer {
+public class CollectionProfileQueries {
     
     public List<Property> getAllProperties() {
         return DBManager.getInstance().getEntityManager().createNamedQuery(Constants.ALL_PROPERTIES_QUERY,

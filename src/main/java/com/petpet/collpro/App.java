@@ -1,6 +1,6 @@
 package com.petpet.collpro;
 
-import com.petpet.collpro.analyzer.CollectionProfileAnalyzer;
+import com.petpet.collpro.analyzer.CollectionProfileQueries;
 import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.datamodel.Value;
 import com.petpet.collpro.db.DBManager;
@@ -32,7 +32,7 @@ public class App {
     }
     
     private static void querytest() {
-        CollectionProfileAnalyzer analyzer = new CollectionProfileAnalyzer();
+        CollectionProfileQueries analyzer = new CollectionProfileQueries();
         System.out.println("QUERIES");
         
         Long count = analyzer.getElementsWithPropertyAndValueCount("mimetype", "application/pdf");
