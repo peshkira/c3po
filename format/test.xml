@@ -1,0 +1,44 @@
+<collection-profile date="18.08.2011">
+  <collection name="CollectionName" elements="123" properties="342">
+    <properties>
+      <property name="Format" count="123" type="string" prevailing="Portable Document Format" exploded="true">
+        <value value="Portable Document Format" count="87"/>
+        <value value="Microsoft Word Format" count="16"/>
+        <value value="Text Document" count="12"/>
+      </property>
+      <property name="MimeType" count="123" type="string" prevailing="application/pdf" exploded="true">
+        <value value="application/pdf" count="87"/>
+        <value value="application/doc" count="16"/>
+        <value value="document/txt" count="12"/>
+      </property>
+      <property name="PropertyA" count="100" type="string" prevailing="aaa"/> <!-- not exploded -->
+      <property name="PropertyB" count="12" type="numeric" exploded="true">
+        <largest value="4212" name="largestPropBElement" path="some/path"/>
+        <smallest value="5" name="smallestPropBElement" path="some/path"/>
+        <average value="2312" />
+        <sd value="34" />
+	<total value="1231234" />
+      </property>
+      <property name="PropertyC" count="23" type="boolean" prevailing="true" exploded="true">
+        <value value="true" count="20" />
+        <value value="false" count="3" />
+      </property>
+    </properties>
+    <queries>
+      <query name="QueryA">
+        <condition name="has" property="Format" reliability="68">
+          <val value="Portable Document Format" />
+          <val value="Non Existing Format" />
+        </condition>
+        <condition name="greater" property="size" reliability="68">
+          <val value="123456" />
+        </condition>
+        <result elements="3" exploded="true">
+          <res element="blah1.pdf" path="path/to/file" />
+          <res element="blah2.pdf" path="path/to/file" />
+          <res element="blah3.pdf" path="path/to/file" />
+        </result>
+      </query>
+    </queries>
+  </collection>
+</collection-profile>
