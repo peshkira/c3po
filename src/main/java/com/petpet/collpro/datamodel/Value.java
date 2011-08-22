@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries( {
     @NamedQuery(name = "getValueByPropertyName", query = "SELECT v FROM Value v WHERE v.property.name = :name"),
-    @NamedQuery(name="getValueByPropertyAndValue", query="SELECT v FROM StringValue v WHERE v.property.name = :pname AND v.value = :value"),
+    @NamedQuery(name="getValueByPropertyAndValue", query="SELECT v FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
     @NamedQuery(name = "getElementsWithPropertyCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname"),
     @NamedQuery(name = "getElementsWithPropertyAndValueCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
     @NamedQuery(name = "getDistinctPropertyValueCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname"),
@@ -30,7 +30,8 @@ import javax.validation.constraints.NotNull;
     @NamedQuery(name = "getAllValuesForElementCount", query = "SELECT COUNT(v.value) FROM Value v WHERE v.element = :element"),
     @NamedQuery(name = "getAllValuesForElement", query = "SELECT v FROM Value v WHERE v.element = :element"),
     @NamedQuery(name = "getMostOccurringProperties", query = "SELECT v.property.id, v.property.name, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' GROUP BY v.property.id, v.property.name ORDER BY c DESC, v.property.name"),
-    @NamedQuery(name = "getAllValuesDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' GROUP BY v.value, v.property.name ORDER BY v.property.name, c DESC")
+    @NamedQuery(name = "getAllValuesDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' GROUP BY v.value, v.property.name ORDER BY v.property.name, c DESC"),
+    @NamedQuery(name = "getSpecificValueDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' AND v.property.name=:pname GROUP BY v.value, v.property.name ORDER BY c DESC")
     })
 public abstract class Value<T> implements Serializable {
     

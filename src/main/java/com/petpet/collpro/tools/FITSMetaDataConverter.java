@@ -182,7 +182,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 ValueSource vs = new ValueSource(elmnt.attributeValue(FITSConstants.TOOL_ATTR), elmnt
                     .attributeValue(FITSConstants.TOOLVERSION_ATTR));
                 
-                System.out.println("Value of property: " + p.getName() + " " + p.getType());
+//                System.out.println("Value of property: " + p.getName() + " " + p.getType());
                 Value v = Helper.getTypedValue(p.getType(), elmnt.getText());
                 v.setMeasuredAt(this.measuredAt.getTime());
                 v.setSource(vs);

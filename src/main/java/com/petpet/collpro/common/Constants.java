@@ -37,7 +37,7 @@ public final class Constants {
      */
     public static final String VALUES_BY_PROPERTY_NAME_QUERY = "getValueByPropertyName";
     
-    public static final String VALUE_BY_NAME_AND_VALUE = "getValueByPropertyAndValue";
+    public static final String VALUES_BY_NAME_AND_VALUE = "getValueByPropertyAndValue";
     
     /**
      * The name of the named query that counts all elements.
@@ -131,6 +131,8 @@ public final class Constants {
     public static final String AVG_VALUES_FOR_PROPERTY = "getAvgOfValuesForProperty";
 
     public static final String VALUES_DISTRIBUTION = "getAllValuesDistribution";
+    
+    public static final String SPECIFIC_VALUE_DISTRIBUTION = "getSpecificValueDistribution";
 
     
     /**

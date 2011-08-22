@@ -86,7 +86,7 @@ public final class Helper {
         LOG.debug("MD5: {}", md5);
         
         try {
-            DBManager.getInstance().getEntityManager().createNamedQuery(Constants.VALUE_BY_NAME_AND_VALUE).setParameter("pname", "md5checksum")
+            DBManager.getInstance().getEntityManager().createNamedQuery(Constants.VALUES_BY_NAME_AND_VALUE).setParameter("pname", "md5checksum")
                 .setParameter("value", md5).getSingleResult();
             isDone = true;
         } catch (NoResultException nre) {
