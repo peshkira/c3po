@@ -9,13 +9,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@NamedQuery(name = "getElementsCount", query = "SELECT COUNT(e) FROM Element e")
+@NamedQueries( {
+    @NamedQuery(name = "getElementsCount", query = "SELECT COUNT(e) FROM Element e"),
+    @NamedQuery(name = "getElementsInCollectionCount", query = "SELECT COUNT(e) FROM Element e WHERE e.collection = :coll")})
 public class Element implements Serializable {
     
     private static final long serialVersionUID = -7335423580873489935L;

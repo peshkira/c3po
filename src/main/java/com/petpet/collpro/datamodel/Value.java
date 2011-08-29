@@ -21,18 +21,27 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries( {
+    @NamedQuery(name = "getAllPropertiesInCollection", query = "SELECT DISTINCT(v.property) FROM Value v WHERE v.element.collection = :coll"),
     @NamedQuery(name = "getValueByPropertyName", query = "SELECT v FROM Value v WHERE v.property.name = :name"),
-    @NamedQuery(name="getValueByPropertyAndValue", query="SELECT v FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
+    @NamedQuery(name = "getValueByPropertyNameAndCollection", query = "SELECT v FROM Value v WHERE v.property.name = :pname AND v.element.collection = :coll"),
+    @NamedQuery(name = "getValueByPropertyAndValue", query = "SELECT v FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
+    @NamedQuery(name = "getValueByPropertyAndValueAndCollection", query = "SELECT v FROM Value v WHERE v.property.name = :pname AND v.value = :value AND v.element.collection = :coll"),
     @NamedQuery(name = "getElementsWithPropertyCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname"),
+    @NamedQuery(name = "getElementsWithPropertyInCollectionCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.element.collection = :coll"),
     @NamedQuery(name = "getElementsWithPropertyAndValueCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
+    @NamedQuery(name = "getElementsWithPropertyAndValueInCollectionCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value AND v.element.collection = :coll"),
     @NamedQuery(name = "getDistinctPropertyValueCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname"),
+    @NamedQuery(name = "getDistinctPropertyValueInCollectionCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname AND v.element.collection = :coll"),
     @NamedQuery(name = "getDistinctPropertyValuesSet", query = "SELECT DISTINCT v.value FROM Value v WHERE v.property.name = :pname"),
+    @NamedQuery(name = "getDistinctPropertyValuesInCollectionSet", query = "SELECT DISTINCT v.value FROM Value v WHERE v.property.name = :pname AND v.element.collection = :coll"),
     @NamedQuery(name = "getAllValuesForElementCount", query = "SELECT COUNT(v.value) FROM Value v WHERE v.element = :element"),
     @NamedQuery(name = "getAllValuesForElement", query = "SELECT v FROM Value v WHERE v.element = :element"),
     @NamedQuery(name = "getMostOccurringProperties", query = "SELECT v.property.id, v.property.name, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' GROUP BY v.property.id, v.property.name ORDER BY c DESC, v.property.name"),
+    @NamedQuery(name = "getMostOccurringPropertiesInCollection", query = "SELECT v.property.id, v.property.name, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' AND v.element.collection = :coll GROUP BY v.property.id, v.property.name ORDER BY c DESC, v.property.name"),
     @NamedQuery(name = "getAllValuesDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' GROUP BY v.value, v.property.name ORDER BY v.property.name, c DESC"),
-    @NamedQuery(name = "getSpecificValueDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' AND v.property.name=:pname GROUP BY v.value, v.property.name ORDER BY c DESC")
-    })
+    @NamedQuery(name = "getAllValuesInCollectionDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' AND v.element.collection = :coll GROUP BY v.value, v.property.name ORDER BY v.property.name, c DESC"),
+    @NamedQuery(name = "getSpecificValueDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' AND v.property.name=:pname GROUP BY v.value, v.property.name ORDER BY c DESC"),
+    @NamedQuery(name = "getSpecificValueInCollectionDistribution", query = "SELECT v.property.name, v.value, COUNT(*) AS c FROM Value v WHERE v.status != 'CONFLICT' AND v.property.name=:pname AND v.element.collection = :coll GROUP BY v.value, v.property.name ORDER BY c DESC")})
 public abstract class Value<T> implements Serializable {
     
     private static final long serialVersionUID = -896459317140318025L;
@@ -94,11 +103,11 @@ public abstract class Value<T> implements Serializable {
     public void setStatus(ValueStatus status) {
         this.status = status;
     }
-
+    
     public ValueStatus getStatus() {
         return status;
     }
-
+    
     public void setProperty(Property property) {
         this.property = property;
     }
@@ -118,11 +127,11 @@ public abstract class Value<T> implements Serializable {
     public void setValue(String value) {
         this.value = value;
     }
-
+    
     public String getValue() {
         return value;
     }
-
+    
     public abstract void setTypedValue(T value);
     
     public abstract T getTypedValue();

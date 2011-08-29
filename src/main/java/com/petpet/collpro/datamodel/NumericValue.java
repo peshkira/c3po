@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 @Entity
 @NamedQueries( {
     @NamedQuery(name = "getSumOfValuesForProperty", query = "SELECT SUM(n.lValue) FROM NumericValue n WHERE n.property.name = :pname"),
-    @NamedQuery(name = "getAvgOfValuesForProperty", query = "SELECT AVG(n.lValue) FROM NumericValue n WHERE n.property.name = :pname")})
+    @NamedQuery(name = "getSumOfValuesForPropertyInCollection", query = "SELECT SUM(n.lValue) FROM NumericValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
+    @NamedQuery(name = "getAvgOfValuesForProperty", query = "SELECT AVG(n.lValue) FROM NumericValue n WHERE n.property.name = :pname"),
+    @NamedQuery(name = "getAvgOfValuesForPropertyInCollection", query = "SELECT AVG(n.lValue) FROM NumericValue n WHERE n.property.name = :pname AND n.element.collection = :coll")})
 public class NumericValue extends Value<Long> {
     
     private static final long serialVersionUID = 1216578571209620108L;
@@ -52,7 +54,7 @@ public class NumericValue extends Value<Long> {
     @Override
     public void setTypedValue(Long value) {
         this.lValue = value;
-        this.setValue(value.toString());    
+        this.setValue(value.toString());
     }
     
     @Override
