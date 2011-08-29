@@ -59,8 +59,10 @@ public class SimpleGatherer {
                 SAXReader reader = new SAXReader();
                 Document document = reader.read(f);
                 Element element = this.converter.extractValues(document);
-                element.setCollection(this.collection);
-                DBManager.getInstance().persist(element);
+                if (element != null) {
+                    element.setCollection(this.collection);
+                    DBManager.getInstance().persist(element);
+                }
                 
             } catch (DocumentException e) {
                 System.err.println(e.getMessage());

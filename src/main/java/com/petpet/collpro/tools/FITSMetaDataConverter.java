@@ -115,8 +115,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             e.getValues().add(v1);
             e.getValues().add(v2);
             
-            System.out.println(p1.getName() + ":" + v1.getTypedValue());
-            System.out.println(p2.getName() + ":" + v2.getTypedValue());
+//            System.out.println(p1.getName() + ":" + v1.getTypedValue());
+//            System.out.println(p2.getName() + ":" + v2.getTypedValue());
             
             Property p3 = Helper.getPropertyByName(FITSConstants.FORMAT_VERSION_ATTR);
             
@@ -140,7 +140,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 
                 e.getValues().add(v);
                 
-                System.out.println(p3.getName() + ":" + v.getTypedValue());
+//                System.out.println(p3.getName() + ":" + v.getTypedValue());
             }
             
             Iterator extIterator = identity.elementIterator(FITSConstants.EXT_ID);
@@ -164,7 +164,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 
                 e.getValues().add(v);
                 
-                System.out.println(p.getName() + ":" + v.getTypedValue());
+//                System.out.println(p.getName() + ":" + v.getTypedValue());
             }
         }
     }
@@ -192,7 +192,7 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
                 
                 e.getValues().add(v);
                 
-                System.out.println(p.getName() + ":" + v.getTypedValue() + " - " + vs.getName() + ":" + vs.getVersion());
+//                System.out.println(p.getName() + ":" + v.getTypedValue() + " - " + vs.getName() + ":" + vs.getVersion());
             }
         }
     }

@@ -22,13 +22,13 @@ public class App {
         Configurator.getInstance().configure();
         App app = new App();
         app.foldertest();
-        app.querytest();
+        //app.querytest();
     }
     
     private void foldertest() {
         this.test = new DigitalCollection("Test");
         SimpleGatherer g = new SimpleGatherer(new FITSMetaDataConverter(), test);
-        g.gather(new File("/home/peter/Desktop/output/"));
+        g.gather(new File("/home/peter/Desktop/outputtest/"));
         // g.gather(new File("/Users/petar/Desktop/fits/"));
     }
     
