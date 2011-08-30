@@ -22,7 +22,7 @@ public class App {
         Configurator.getInstance().configure();
         App app = new App();
         app.foldertest();
-        //app.querytest();
+        app.querytest();
     }
     
     private void foldertest() {
@@ -37,7 +37,7 @@ public class App {
         System.out.println("QUERIES");
         
         List<Property> allprops = analyzer.getAllPropertiesInCollection(test);
-        System.out.println("PROPS in COLLECTIOn");
+        System.out.println("PROPS IN COLLECTION");
         for (Property p : allprops) {
             System.out.println(p.getName());
         }
