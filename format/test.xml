@@ -1,12 +1,12 @@
 <collection-profile date="18.08.2011">
   <collection name="CollectionName" elements="123" properties="342">
     <properties> <!-- contains all known properties of the collection (optionally with all their aggregated values) -->
-      <property name="Format" count="123" type="string" prevailing="Portable Document Format" exploded="true">
+      <property name="Format" count="123" type="string" mode="Portable Document Format" exploded="true">
         <value value="Portable Document Format" count="87" />
         <value value="Microsoft Word Format" count="16" />
         <value value="Text Document" count="12" />
       </property>
-      <property name="MimeType" count="123" type="string" prevailing="application/pdf" exploded="true">
+      <property name="MimeType" count="123" type="string" mode="application/pdf" exploded="true">
         <value value="application/pdf" count="87" />
         <value value="application/doc" count="16" />
         <value value="document/txt" count="12" />
@@ -18,12 +18,12 @@
         <sd value="34" />
         <total value="1231234" />
       </property>
-      <property name="PropertyB" count="23" type="boolean" prevailing="true" exploded="true">
+      <property name="PropertyB" count="23" type="boolean" mode="true" exploded="true">
         <value value="true" count="20" />
         <value value="false" count="3" />
       </property>
       <!-- ... -->
-      <property name="PropertyZ" count="100" type="string" prevailing="aaa" /> <!-- not exploded -->
+      <property name="PropertyZ" count="100" type="string" mode="aaa" /> <!-- not exploded -->
     </properties>
     <queries> <!-- contains simple queries and their results that have some higher meaning to the user -->
       <query name="EXAMPLE_SIMPLE_QUERY">
