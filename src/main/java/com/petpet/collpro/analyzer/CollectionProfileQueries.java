@@ -7,6 +7,7 @@ import com.petpet.collpro.datamodel.DigitalCollection;
 import com.petpet.collpro.datamodel.Element;
 import com.petpet.collpro.datamodel.Property;
 import com.petpet.collpro.datamodel.Value;
+import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.db.DBManager;
 
 public class CollectionProfileQueries {
@@ -115,8 +116,9 @@ public class CollectionProfileQueries {
     }
     
     public List<Object[]> getMostOccurringProperties(int limit, DigitalCollection collection) {
-        return DBManager.getInstance().getEntityManager().createNamedQuery(Constants.COLLECTION_MOST_OCCURRING_PROPERTIES)
-            .setParameter("coll", collection).setMaxResults(limit).getResultList();
+        return DBManager.getInstance().getEntityManager().createNamedQuery(
+            Constants.COLLECTION_MOST_OCCURRING_PROPERTIES).setParameter("coll", collection).setMaxResults(limit)
+            .getResultList();
     }
     
     public long getSumOfNumericProperty(String pname) {
@@ -125,8 +127,9 @@ public class CollectionProfileQueries {
     }
     
     public long getSumOfNumericProperty(String pname, DigitalCollection collection) {
-        return (Long) DBManager.getInstance().getEntityManager().createNamedQuery(Constants.COLLECTION_SUM_VALUES_FOR_PROPERTY)
-            .setParameter("pname", pname).setParameter("coll", collection).getSingleResult();
+        return (Long) DBManager.getInstance().getEntityManager().createNamedQuery(
+            Constants.COLLECTION_SUM_VALUES_FOR_PROPERTY).setParameter("pname", pname).setParameter("coll", collection)
+            .getSingleResult();
     }
     
     public double getAverageOfNumericProperty(String pname) {
@@ -135,8 +138,9 @@ public class CollectionProfileQueries {
     }
     
     public double getAverageOfNumericProperty(String pname, DigitalCollection collection) {
-        return (Double) DBManager.getInstance().getEntityManager().createNamedQuery(Constants.COLLECTION_AVG_VALUES_FOR_PROPERTY)
-            .setParameter("pname", pname).setParameter("coll", collection).getSingleResult();
+        return (Double) DBManager.getInstance().getEntityManager().createNamedQuery(
+            Constants.COLLECTION_AVG_VALUES_FOR_PROPERTY).setParameter("pname", pname).setParameter("coll", collection)
+            .getSingleResult();
     }
     
     public List<Object[]> getValuesDistribution() {
@@ -155,7 +159,33 @@ public class CollectionProfileQueries {
     }
     
     public List<Object[]> getSpecificPropertyValuesDistribution(String pname, DigitalCollection collection) {
-        return DBManager.getInstance().getEntityManager().createNamedQuery(Constants.COLLECTION_SPECIFIC_VALUE_DISTRIBUTION)
-            .setParameter("pname", pname).setParameter("coll", collection).getResultList();
+        return DBManager.getInstance().getEntityManager().createNamedQuery(
+            Constants.COLLECTION_SPECIFIC_VALUE_DISTRIBUTION).setParameter("pname", pname).setParameter("coll",
+            collection).getResultList();
+    }
+    
+    public void getDoubleFilteredSortedCollection(String pname1, String pname2) {
+        
+        List<String> filter1 = this.getDistinctPropertyValueSet(pname1);
+        
+        for (String f1 : filter1) {
+            System.out.println(pname1 + ": " + f1);
+            List<Element> elements = DBManager.getInstance().getEntityManager().createNamedQuery("getElementsWithPropertyAndValueSet",
+                Element.class).setParameter("pname", pname1).setParameter("value", f1).getResultList();
+            for (Element e : elements) {
+                System.out.println("\t" + e.getName());
+            }
+        }
+        
+//        List<Element> list = DBManager
+//            .getInstance()
+//            .getEntityManager()
+//            .createQuery(
+//                "SELECT s.element FROM Value s WHERE s.property.name = :pname2 AND s.element IN (SELECT v.element FROM Value v WHERE v.property.name = :pname1)")
+//            .setParameter("pname2", pname2).setParameter("pname1", pname1).getResultList();
+//        
+//        for (Element o : list) {
+//            System.out.println(o.getName());
+//        }
     }
 }

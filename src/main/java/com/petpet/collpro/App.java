@@ -22,7 +22,8 @@ public class App {
         Configurator.getInstance().configure();
         App app = new App();
         app.foldertest();
-        app.querytest();
+//        app.querytest();
+        app.nestedQuery();
     }
     
     private void foldertest() {
@@ -30,6 +31,11 @@ public class App {
         SimpleGatherer g = new SimpleGatherer(new FITSMetaDataConverter(), test);
         g.gather(new File("/home/peter/Desktop/outputtest/"));
         // g.gather(new File("/Users/petar/Desktop/fits/"));
+    }
+    
+    private void nestedQuery() {
+        CollectionProfileQueries analyzer = new CollectionProfileQueries();
+        analyzer.getDoubleFilteredSortedCollection("mimetype", "format");
     }
     
     private void querytest() {

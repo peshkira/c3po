@@ -30,6 +30,8 @@ import javax.validation.constraints.NotNull;
     @NamedQuery(name = "getElementsWithPropertyInCollectionCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.element.collection = :coll"),
     @NamedQuery(name = "getElementsWithPropertyAndValueCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
     @NamedQuery(name = "getElementsWithPropertyAndValueInCollectionCount", query = "SELECT COUNT(DISTINCT v.element) FROM Value v WHERE v.property.name = :pname AND v.value = :value AND v.element.collection = :coll"),
+    @NamedQuery(name = "getElementsWithPropertyAndValueSet", query = "SELECT v.element FROM Value v WHERE v.property.name = :pname AND v.value = :value"),
+    @NamedQuery(name = "getElementsWithPropertyAndValueInCollectionSet", query = "SELECT v.element FROM Value v WHERE v.property.name = :pname AND v.value = :value AND v.element.collection = :coll"),
     @NamedQuery(name = "getDistinctPropertyValueCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname"),
     @NamedQuery(name = "getDistinctPropertyValueInCollectionCount", query = "SELECT COUNT(DISTINCT v.value) FROM Value v WHERE v.property.name = :pname AND v.element.collection = :coll"),
     @NamedQuery(name = "getDistinctPropertyValuesSet", query = "SELECT DISTINCT v.value FROM Value v WHERE v.property.name = :pname"),
