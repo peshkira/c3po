@@ -16,98 +16,96 @@ import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@NamedQueries( {
-    @NamedQuery(name = "getElementsCount", query = "SELECT COUNT(e) FROM Element e"),
-    @NamedQuery(name = "getElementsInCollectionCount", query = "SELECT COUNT(e) FROM Element e WHERE e.collection = :coll")})
+@NamedQueries({ @NamedQuery(name = "getElementsInCollectionCount", query = "SELECT COUNT(e) FROM Element e WHERE e.collection = :coll") })
 public class Element implements Serializable {
-    
+
     private static final long serialVersionUID = -7335423580873489935L;
-    
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    
+
     @NotNull
     private String name;
-    
+
     @NotNull
     private String path;
-    
+
     @NotNull
     @OneToOne
     private DigitalCollection collection;
-    
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private Set<Element> elements;
-    
+
     @OneToMany(mappedBy = "element", cascade = CascadeType.ALL)
     private Set<Value<?>> values;
-    
+
     public Element() {
         super();
         this.elements = new HashSet<Element>();
         this.values = new HashSet<Value<?>>();
     }
-    
+
     public Element(String name, String path) {
         this();
         this.name = name;
         this.path = path;
     }
-    
+
     public Element(String name, String path, DigitalCollection collection) {
         this(name, path);
         this.collection = collection;
     }
-    
+
     public void setId(long id) {
         this.id = id;
     }
-    
+
     public long getId() {
         return id;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setPath(String path) {
         this.path = path;
     }
-    
+
     public String getPath() {
         return path;
     }
-    
+
     public void setCollection(DigitalCollection collection) {
         this.collection = collection;
     }
-    
+
     public DigitalCollection getCollection() {
         return collection;
     }
-    
+
     public void setElements(Set<Element> elements) {
         this.elements = elements;
     }
-    
+
     public Set<Element> getElements() {
         return elements;
     }
-    
+
     public void setValues(Set<Value<?>> values) {
         this.values = values;
     }
-    
+
     public Set<Value<?>> getValues() {
         return this.values;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -117,7 +115,7 @@ public class Element implements Serializable {
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -149,5 +147,5 @@ public class Element implements Serializable {
         }
         return true;
     }
-    
+
 }

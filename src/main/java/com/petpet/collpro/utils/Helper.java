@@ -1,5 +1,15 @@
 package com.petpet.collpro.utils;
 
+import com.petpet.collpro.common.Constants;
+import com.petpet.collpro.datamodel.BooleanValue;
+import com.petpet.collpro.datamodel.DigitalCollection;
+import com.petpet.collpro.datamodel.NumericValue;
+import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.datamodel.PropertyType;
+import com.petpet.collpro.datamodel.StringValue;
+import com.petpet.collpro.datamodel.Value;
+import com.petpet.collpro.db.DBManager;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,15 +20,6 @@ import javax.persistence.NonUniqueResultException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.petpet.collpro.common.Constants;
-import com.petpet.collpro.datamodel.BooleanValue;
-import com.petpet.collpro.datamodel.NumericValue;
-import com.petpet.collpro.datamodel.Property;
-import com.petpet.collpro.datamodel.PropertyType;
-import com.petpet.collpro.datamodel.StringValue;
-import com.petpet.collpro.datamodel.Value;
-import com.petpet.collpro.db.DBManager;
 
 public final class Helper {
     
@@ -76,7 +77,7 @@ public final class Helper {
         return p;
     }
     
-    public static boolean isElementAlreadyProcessed(String md5) {
+    public static boolean isElementAlreadyProcessed(DigitalCollection coll, String md5) {
         if (md5 == null || md5.equals("")) {
             LOG.warn("No checksum provided, assuming element is not processed.");
             return false;
@@ -86,8 +87,8 @@ public final class Helper {
         LOG.debug("MD5: {}", md5);
         
         try {
-            DBManager.getInstance().getEntityManager().createNamedQuery(Constants.VALUES_BY_NAME_AND_VALUE).setParameter("pname", "md5checksum")
-                .setParameter("value", md5).getSingleResult();
+            DBManager.getInstance().getEntityManager().createNamedQuery(Constants.COLLECTION_VALUES_BY_NAME_AND_VALUE).setParameter("pname", "md5checksum")
+                .setParameter("value", md5).setParameter("coll", coll).getSingleResult();
             isDone = true;
         } catch (NoResultException nre) {
             LOG.debug("No element with this checksum ingested, continue processing.");

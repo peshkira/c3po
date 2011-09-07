@@ -6,177 +6,186 @@ import java.util.Map;
 import com.petpet.collpro.datamodel.Property;
 
 public final class Constants {
-    
+
     /**
      * The url for the xml schema property used by the sax parser while
      * validating xml files against their schemata.
      */
     public static final String XML_SCHEMA_PROPERTY = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
-    
+
     /**
      * The url for the xml schema language used by the sax parser while
      * validating xml files against their schemata.
      */
     public static final String XML_SCHEMA_LANGUAGE = "http://www.w3.org/2001/XMLSchema";
-    
+
+    /*
+     * Defined in Property.java
+     */
     /**
      * The name of the named query that retrieves all properties known to the
      * system.
      */
-    /*
-     * Defined in Property.java
-     */
     public static final String ALL_PROPERTIES_QUERY = "getAllProperties";
-    
+
+    /*
+     * Defined in Value.java
+     */
     /**
      * The name of the named query that retrieves all properties in a
      * collection.
      */
+    public static final String ALL_COLLECTION_PROPERTIES_QUERY = "getAllPropertiesInCollection";
+
     /*
      * Defined in Value.java
      */
-    public static final String ALL_COLLECTION_PROPERTIES_QUERY = "getAllPropertiesInCollection";
-    
     /**
      * The name of the named query that retrieves all values of a property with
-     * a certain name. Requires one parameter :pname.
+     * a certain name. Requires two parameters :pname and :coll for the property
+     * name and the collection respectively.
      */
-    /*
-     * Defined in Value.java
-     */
-    public static final String VALUES_BY_PROPERTY_NAME_QUERY = "getValueByPropertyName";
-    
     public static final String COLLECTION_VALUES_BY_PROPERTY_NAME_QUERY = "getValueByPropertyNameAndCollection";
-    
+
     public static final String VALUES_BY_NAME_AND_VALUE = "getValueByPropertyAndValue";
-    
+
     public static final String COLLECTION_VALUES_BY_NAME_AND_VALUE = "getValueByPropertyAndValueAndCollection";
-    
-    /**
-     * The name of the named query that counts all elements.
-     */
+
     /*
      * Defined in Element.java
      */
-    public static final String ELEMENTS_COUNT_QUERY = "getElementsCount";
-    
+    /**
+     * The name of the named query that counts all elements in a collection.
+     * Requires one parameter :coll.
+     */
     public static final String COLLECTION_ELEMENTS_COUNT_QUERY = "getElementsInCollectionCount";
-    
-    /**
-     * The name of the named query that counts all elements with a specific
-     * property. Requires one parameter :pname for the property name.
-     */
+
     /*
      * Defined in Value.java
      */
-    public static final String ELEMENTS_WITH_PROPERTY_COUNT_QUERY = "getElementsWithPropertyCount";
-    
+    /**
+     * The name of the named query that counts all elements with a specific
+     * property. Requires two parameters :pname for the property name and :coll
+     * for the collection.
+     */
     public static final String COLLECTION_ELEMENTS_WITH_PROPERTY_COUNT_QUERY = "getElementsWithPropertyInCollectionCount";
-    
-    /**
-     * The name of the named query that counts all elements with a specific
-     * property and value for this property. Requires two parameters :pname and
-     * :value.
-     */
+
     /*
      * Defined in Value.java
      */
-    public static final String ELEMENTS_WITH_PROPERTY_AND_VALUE_COUNT_QUERY = "getElementsWithPropertyAndValueCount";
-    
+    /**
+     * The name of the named query that counts all elements with a specific
+     * property and value for this property. Requires three parameters :pname,
+     * :value and :coll for the property name, value and the collection
+     * respectively.
+     */
     public static final String COLLECTION_ELEMENTS_WITH_PROPERTY_AND_VALUE_COUNT_QUERY = "getElementsWithPropertyAndValueInCollectionCount";
     
-    /**
-     * The name of the named query that counts how many distinct values for a
-     * specific property exist. E.g. how many different mime-types exist.
-     * Requires one parameter :name for the property name.
-     */
+    public static final String COLLECTION_ELEMENTS_WITH_PROPERTY_AND_VALUE_SET_QUERY = "getElementsWithPropertyAndValueInCollectionSet";
+
     /*
      * Defined in Value.java
      */
-    public static final String DISTINCT_PROPERTY_VALUE_COUNT_QUERY = "getDistinctPropertyValueCount";
-    
+    /**
+     * The name of the named query that counts how many distinct values for a
+     * specific property exist within a collection. E.g. how many different
+     * mime-types exist. Requires two parameters :name for the property name and
+     * :coll for the collection.
+     */
     public static final String COLLECTION_DISTINCT_PROPERTY_VALUE_COUNT_QUERY = "getDistinctPropertyValueInCollectionCount";
-    
+
+    /*
+     * Defined in Value.java
+     */
     /**
      * The name of the named query that retrieves a set of the different values
      * for a specific property. E.g. what are the different mime-types. Requires
-     * one parameter :name for the property name.
+     * two parameters :pname for the property name and :coll for the collection.
      */
+    public static final String COLLECTION_DISTINCT_PROPERTY_VALUES_SET_QUERY = "getDistinctPropertyValuesInCollectionSet";
+
     /*
      * Defined in Value.java
      */
-    public static final String DISTINCT_PROPERTY_VALUES_SET_QUERY = "getDistinctPropertyValuesSet";
-    
-    public static final String COLLECTION_DISTINCT_PROPERTY_VALUES_SET_QUERY = "getDistinctPropertyValuesInCollectionSet";
-    
     /**
      * The name of the named query that counts the values for a specific
      * element. Requires one parameter ':element' for the element object.
      */
+    public static final String VALUES_FOR_ELEMENT_COUNT = "getAllValuesForElementCount";
+
     /*
      * Defined in Value.java
      */
-    public static final String VALUES_FOR_ELEMENT_COUNT = "getAllValuesForElementCount";
-    
     /**
      * The name of the named query that retrieves a set of values for a specific
      * element. Requires one parameter ':element' for the element object.
      */
+    public static final String VALUES_FOR_ELEMENT = "getAllValuesForElement";
+
     /*
      * Defined in Value.java
      */
-    public static final String VALUES_FOR_ELEMENT = "getAllValuesForElement";
-    
     /**
      * The name of the named query that retrieves the property ids and property
      * names and their occurrences throughout the collection in a descending
-     * order.
+     * order. Requires one parameter :coll for the collection.
      */
-    /*
-     * Defined in Value.java
-     */
-    public static final String MOST_OCCURRING_PROPERTIES = "getMostOccurringProperties";
-    
     public static final String COLLECTION_MOST_OCCURRING_PROPERTIES = "getMostOccurringPropertiesInCollection";
-    
-    /**
-     * The name of the named query that sums the values of the numeric
-     * properties with the given name. Requires one parameter <i>:pname</i>.
-     */
-    public static final String SUM_VALUES_FOR_PROPERTY = "getSumOfValuesForProperty";
-    
-    public static final String COLLECTION_SUM_VALUES_FOR_PROPERTY = "getSumOfValuesForPropertyInCollection";
-    
-    /**
-     * The name of the named query that calculates the average of the values of
-     * the numeric properties with the given name. Requires one parameter
-     * <i>:pname</i>.
-     */
+
     /*
      * Defined in NumericValue.java
      */
-    public static final String AVG_VALUES_FOR_PROPERTY = "getAvgOfValuesForProperty";
-    
+
+    /**
+     * The name of the named query that sums the values of the numeric
+     * properties with the given name. Requires two parameters <i>:pname</i> and
+     * <i>:coll</i> for the property name and the collection respectively.
+     */
+    public static final String COLLECTION_SUM_VALUES_FOR_PROPERTY = "getSumOfValuesForPropertyInCollection";
+
+    /*
+     * Defined in NumericValue.java
+     */
+    /**
+     * The name of the named query that calculates the average of the values of
+     * the numeric properties with the given name. Requires two parameters
+     * <i>:pname</i> and <i>:coll</i> for the property name and the collection
+     * respectively.
+     */
     public static final String COLLECTION_AVG_VALUES_FOR_PROPERTY = "getAvgOfValuesForPropertyInCollection";
-    
-    public static final String VALUES_DISTRIBUTION = "getAllValuesDistribution";
-    
+
+    /*
+     * Defined in Value.java
+     */
+    /**
+     * The name of the named query that retrieves the distribution of all values
+     * within the collection. The query returns a list of Object[] arrays that
+     * have length of three. The first Object is the property name, the second -
+     * the value and the third the occurrences of this specific value. Requires
+     * one parameter <i>:coll</i> for the collection.
+     */
     public static final String COLLECTION_VALUES_DISTRIBUTION = "getAllValuesInCollectionDistribution";
-    
-    public static final String SPECIFIC_VALUE_DISTRIBUTION = "getSpecificValueDistribution";
-    
+
+    /*
+     * Defined in Value.java
+     */
+    /**
+     * The name of the named query that retrieves the values distribution of a
+     * specific property within the collection. The query returns a list of
+     * Object[] arrays that have length of three. The first Object is the
+     * property name, the second - the value and the third the occurrences of
+     * this specific value. Requires two parameters <i>:pname</i> and
+     * <i>:coll</i> for the property name and the collection.
+     */
     public static final String COLLECTION_SPECIFIC_VALUE_DISTRIBUTION = "getSpecificValueInCollectionDistribution";
-    
+
     /**
      * A map with the known properties. It is populated by the configurator
      * usually at startup.
      */
-    /*
-     * Defined in NumericValue.java
-     */
     public static Map<String, Property> KNOWN_PROPERTIES = new HashMap<String, Property>();
-    
+
     private Constants() {
-        
+
     }
 }

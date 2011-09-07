@@ -29,13 +29,13 @@ public class App {
     private void foldertest() {
         this.test = new DigitalCollection("Test");
         SimpleGatherer g = new SimpleGatherer(new FITSMetaDataConverter(), test);
-        g.gather(new File("/home/peter/Desktop/outputtest/"));
-        // g.gather(new File("/Users/petar/Desktop/fits/"));
+//        g.gather(new File("/home/peter/Desktop/outputtest/"));
+         g.gather(new File("/Users/petar/Desktop/output/"));
     }
     
     private void nestedQuery() {
         CollectionProfileQueries analyzer = new CollectionProfileQueries();
-        analyzer.getDoubleFilteredSortedCollection("mimetype", "format");
+        analyzer.getDoubleFilteredSortedCollection("mimetype", "format", this.test);
     }
     
     private void querytest() {

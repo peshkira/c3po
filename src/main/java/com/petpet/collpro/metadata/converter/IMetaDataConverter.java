@@ -1,29 +1,28 @@
 package com.petpet.collpro.metadata.converter;
 
-import org.dom4j.Document;
+import com.petpet.collpro.utils.ConfigurationException;
+import com.petpet.collpro.utils.Observable;
 
-import com.petpet.collpro.datamodel.Element;
+import java.util.Map;
 
-public interface IMetaDataConverter {
-    
+public interface IMetaDataConverter extends Observable {
+
     /**
-     * Returns an element representing the file from which the fits xml file was
-     * created. It contains all its values, that were extracted by the parser.
+     * Extracts the values from the elements setup by the configuration. All
+     * created elements are passed via the notifyObservers method back to the
+     * observer for further processing.
      * 
-     * @param xml
-     *            the fits xml as a string representation.
-     * @return an element object with all values.
      */
-    Element extractValues(String xml);
-    
+    void convert();
+
     /**
-     * Returns an element representing the file from which the fits xml file was
-     * created. It contains all its values, that were extracted by the parser.
+     * Sets the configuration parameters of the gatherer. For instance the
+     * Collecton to on which the gatherer will work, the file path, eventually
+     * server config, etc.
      * 
-     * @param xml
-     *            the fits xml as a xml {@link Document} object representation.
-     * @return an element object with all values.
+     * @param configuration
+     *            the configuration map.
      */
-    Element extractValues(Document xml);
-    
+    void configure(Map<String, Object> configuration) throws ConfigurationException;
+
 }

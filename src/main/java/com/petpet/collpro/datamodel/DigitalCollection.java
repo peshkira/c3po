@@ -18,7 +18,7 @@ public class DigitalCollection implements Serializable {
     private static final long serialVersionUID = 7193787656462513744L;
     
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     
     @NotNull
