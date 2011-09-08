@@ -20,6 +20,7 @@ public class FilterNode extends NamedNode implements TreeNode {
 	
 	public FilterNode(String name) {
 		this();
+		this.setType("filter");
 		this.setName(name);
 	}
 

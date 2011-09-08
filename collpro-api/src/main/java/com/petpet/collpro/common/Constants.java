@@ -99,6 +99,8 @@ public final class Constants {
      * two parameters :pname for the property name and :coll for the collection.
      */
     public static final String COLLECTION_DISTINCT_PROPERTY_VALUES_SET_QUERY = "getDistinctPropertyValuesInCollectionSet";
+    
+    public static final String COLLECTION_DISTINCT_VALUES_IN_FILTERED = "getDistinctValuesWithinPropertyFilteredCollection";
 
     /*
      * Defined in Value.java
@@ -131,7 +133,6 @@ public final class Constants {
     /*
      * Defined in NumericValue.java
      */
-
     /**
      * The name of the named query that sums the values of the numeric
      * properties with the given name. Requires two parameters <i>:pname</i> and

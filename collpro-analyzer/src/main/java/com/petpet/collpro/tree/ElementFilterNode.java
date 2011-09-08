@@ -22,6 +22,7 @@ public class ElementFilterNode extends NamedNode implements TreeNode {
 	
 	public ElementFilterNode(FilterNode parent, String name) {
 		this();
+		this.setType("elementfilter");
 		this.setName(name);
 		this.setParent(parent);
 	}

@@ -19,6 +19,8 @@ public class ElementNode extends NamedNode implements TreeNode {
 	}
 
 	public ElementNode(ElementFilterNode parent, Element e) {
+		this();
+		this.setType("element");
 		this.setElement(e);
 		this.setName(e.getName());
 		this.setParent(parent);

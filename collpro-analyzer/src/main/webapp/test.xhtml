@@ -1,41 +1,61 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
- xmlns:h="http://java.sun.com/jsf/html"
- xmlns:f="http://java.sun.com/jsf/core"
- xmlns:ui="http://java.sun.com/jsf/facelets"
- xmlns:a4j="http://richfaces.org/a4j"
- xmlns:rich="http://richfaces.org/rich">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+  xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich">
 
- <f:view>
- <h:head></h:head>
- <h:body>
-    <rich:panel header="Richfaces running on JBoss AS 7">
-
-      <ul>
-        <li>RichFaces is a component library for JSF and an advanced framework</li>
-        <li>for easily integrating AJAX capabilities into business applications.</li>
-     </ul>
-    </rich:panel>
-    
-    <h:panelGrid columns="2" columnClasses="top,top" width="60%">
+  <f:view>
+    <h:head></h:head>
+    <h:body>
+      <rich:panel header="Richfaces running on JBoss AS 7">
         <h:form>
-            <rich:tree id="tree" var="node"
-                value="#{treeBean.rootNodes}" toggleType="client"
-                selectionType="ajax"
-                selectionChangeListener="#{treeBean.selectionChanged}">
-                <rich:treeNode>
+          <h:outputText value="first filter: " />
+          <br />
+          <rich:autocomplete value="#{treeBean.firstPFilter}" minChars="1" autocompleteMethod="#{treeBean.autocomplete}" />
+          <br />
+          <br />
+          <h:outputText value="second filter: " />
+          <br />
+          <rich:autocomplete value="#{treeBean.secondPFilter}" minChars="1"
+            autocompleteMethod="#{treeBean.autocomplete}" />
+          <br />
+          <a4j:commandButton value="draw" action="#{treeBean.createTree}" render="tree, error" />
+        </h:form>
+      </rich:panel>
+
+      <h:panelGrid columns="2" columnClasses="top,top" width="60%">
+        <h:form>
+          <rich:tree id="tree" var="node" value="#{treeBean.rootNodes}" toggleType="ajax" selectionType="ajax"
+            selectionChangeListener="#{treeBean.selectionChanged}" toggleListener="#{treeBean.expansionChanged}"
+            render="output">
+            <rich:treeNode>
                 #{node.name}
                 </rich:treeNode>
-                <rich:treeNode>
+            <rich:treeNode>
                 #{node.name}
                 </rich:treeNode>
-                <rich:treeNode>
+            <rich:treeNode>
                  #{node.name}
                 </rich:treeNode>
-            </rich:tree>
+          </rich:tree>
         </h:form>
-    </h:panelGrid>
-    
-  </h:body>
- </f:view>
+
+        <a4j:outputPanel id="output" ajaxRendered="true" layout="block">
+          <h:form>
+            <rich:dataTable value="#{treeBean.currentSelection.children}" var="eNode" id="table"
+              rendered="#{treeBean.currentSelection.type == 'elementfilter'}">
+              <rich:column>
+                <f:facet name="header">Name:</f:facet>
+                <h:outputText value="#{eNode.element.name}" />
+              </rich:column>
+              <rich:column>
+                <f:facet name="header">Path:</f:facet>
+                <h:outputText value="#{eNode.element.path}" />
+              </rich:column>
+            </rich:dataTable>
+          </h:form>
+        </a4j:outputPanel>
+      </h:panelGrid>
+
+    </h:body>
+  </f:view>
 
 </ui:composition>
