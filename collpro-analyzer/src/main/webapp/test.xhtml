@@ -15,6 +15,26 @@
         <li>for easily integrating AJAX capabilities into business applications.</li>
      </ul>
     </rich:panel>
+    
+    <h:panelGrid columns="2" columnClasses="top,top" width="60%">
+        <h:form>
+            <rich:tree id="tree" var="node"
+                value="#{treeBean.rootNodes}" toggleType="client"
+                selectionType="ajax"
+                selectionChangeListener="#{treeBean.selectionChanged}">
+                <rich:treeNode>
+                #{node.name}
+                </rich:treeNode>
+                <rich:treeNode>
+                #{node.name}
+                </rich:treeNode>
+                <rich:treeNode>
+                 #{node.name}
+                </rich:treeNode>
+            </rich:tree>
+        </h:form>
+    </h:panelGrid>
+    
   </h:body>
  </f:view>
 

@@ -8,11 +8,11 @@
     <groupId>com.petpet</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-	<artifactId>collpro-analyzer</artifactId>
-	<packaging>war</packaging>
-	<name>Collection Profiler Analyzer</name>
-  
-   <repositories>
+  <artifactId>collpro-analyzer</artifactId>
+  <packaging>war</packaging>
+  <name>Collection Profiler Analyzer</name>
+
+  <repositories>
     <repository>
       <id>jboss</id>
       <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
@@ -80,5 +80,10 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
-	</dependencies>
+    <dependency>
+      <groupId>com.petpet</groupId>
+      <artifactId>collpro-model</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 </project>
