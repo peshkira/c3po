@@ -124,8 +124,10 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
             try {
                 Document document = reader.read(f);
                 Element element = this.extractValues(document);
-                element.setCollection(this.collection);
-                notifyObservers(element);
+                if (element != null) {
+                	element.setCollection(this.collection);
+                	notifyObservers(element);
+                }
 
             } catch (DocumentException e) {
                 System.err.println(e.getMessage());

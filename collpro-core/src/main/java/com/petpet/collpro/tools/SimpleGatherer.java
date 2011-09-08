@@ -45,7 +45,7 @@ public class SimpleGatherer implements ChangeListener {
         Map<String, Object> config = new HashMap<String, Object>();
         config.put("config.date", new Date());
         config.put("config.collection", this.collection);
-        config.put("cofig.fits_files", dir.listFiles(new XMLFileFilter()));
+        config.put("config.fits_files", dir.listFiles(new XMLFileFilter()));
 
         try {
             this.converter.addObserver(this);
