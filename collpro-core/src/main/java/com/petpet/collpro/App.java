@@ -23,7 +23,7 @@ public class App {
         App app = new App();
         app.foldertest();
 //        app.querytest();
-        app.nestedQuery();
+//        app.nestedQuery();
     }
     
     private void foldertest() {

@@ -36,7 +36,7 @@ public final class DBManager {
     }
     
     public void createEntityManagerFactory() {
-        this.emf = Persistence.createEntityManagerFactory("CollProPersistenceUnit");
+        this.emf = Persistence.createEntityManagerFactory("LocalCollProPersistenceUnit");
     }
     
     public void close() {
