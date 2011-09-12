@@ -25,6 +25,9 @@ public final class Constants {
     public static final String ALL_PROPERTIES_QUERY = "getAllProperties";
     
     public static final String ALL_PROPERTY_NAMES_QUERY = "getAllPropertyNames";
+    
+    public static final String ALL_COLLECTIONS = "getAllCollections";
+    public static final String ALL_COLLECTION_NAMES = "getAllCollectionNames";
 
     /*
      * Defined in Value.java
@@ -179,6 +182,8 @@ public final class Constants {
      * <i>:coll</i> for the property name and the collection.
      */
     public static final String COLLECTION_SPECIFIC_VALUE_DISTRIBUTION = "getSpecificValueInCollectionDistribution";
+
+	public static final String COLLECTION_BY_NAME = "getCollectionByName";
 
     private Constants() {
 

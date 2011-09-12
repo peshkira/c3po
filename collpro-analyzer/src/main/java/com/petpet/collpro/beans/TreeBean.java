@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.swing.tree.TreeNode;
@@ -56,14 +55,12 @@ public class TreeBean implements Serializable {
 	public void init() {
 		this.queries = new PreparedQueries(this.em);
 		this.knownPropertes.addAll(this.queries.getAllPropertyNames());
-
-		this.coll = this.em.find(DigitalCollection.class, 1L); // FIXME
-																// (selection by
-																// user)
+		// FIXME slection by user
+		this.coll = this.em.find(DigitalCollection.class, 1L);
 	}
 
 	public void selectionChanged(TreeSelectionChangeEvent evt) {
-		LOG.debug("tree selectionChanged...");
+//		LOG.debug("tree selectionChanged...");
 		// considering only single selection
 		List<Object> selection = new ArrayList<Object>(evt.getNewSelection());
 		Object currentSelectionKey = selection.get(0);
@@ -71,7 +68,7 @@ public class TreeBean implements Serializable {
 		Object storedKey = tree.getRowKey();
 		tree.setRowKey(currentSelectionKey);
 		NamedNode node = (NamedNode) tree.getRowData();
-		LOG.info("TYPE IS: {}", node.getType());
+//		LOG.info("TYPE IS: {}", node.getType());
 		setCurrentSelection(node);
 		tree.setRowKey(storedKey);
 	}
@@ -106,10 +103,7 @@ public class TreeBean implements Serializable {
 	}
 
 	public void destroyTree() {
-		this.setCurrentSelection(null);
-		this.rootNodes = null;
-		this.setFirstPFilter(null);
-		this.setSecondPFilter(null);
+		//TODO
 	}
 
 	public void createTree() {

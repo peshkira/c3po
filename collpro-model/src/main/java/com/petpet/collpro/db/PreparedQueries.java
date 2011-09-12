@@ -31,7 +31,8 @@ public class PreparedQueries {
 	}
 
 	public List<String> getAllPropertyNames() {
-		return this.getEntityManager()
+		return this
+				.getEntityManager()
 				.createNamedQuery(Constants.ALL_PROPERTY_NAMES_QUERY,
 						String.class).getResultList();
 	}
@@ -216,5 +217,26 @@ public class PreparedQueries {
 
 	public void setEntityManager(EntityManager em) {
 		this.em = em;
+	}
+
+	public List<DigitalCollection> getAllCollections() {
+		return this
+				.getEntityManager()
+				.createNamedQuery(Constants.ALL_COLLECTIONS,
+						DigitalCollection.class).getResultList();
+	}
+
+	public List<String> getAllCollectionNames() {
+		return this.getEntityManager()
+				.createNamedQuery(Constants.ALL_COLLECTION_NAMES, String.class)
+				.getResultList();
+	}
+
+	public DigitalCollection getCollectionByName(String name) {
+		return this
+				.getEntityManager()
+				.createNamedQuery(Constants.COLLECTION_BY_NAME,
+						DigitalCollection.class).setParameter("name", name)
+				.getSingleResult();
 	}
 }
