@@ -1,7 +1,5 @@
 package com.petpet.collpro.beans;
 
-import static com.petpet.collpro.common.Constants.COLLECTION_DISTINCT_VALUES_IN_FILTERED;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +7,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.swing.tree.TreeNode;
@@ -22,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.datamodel.DigitalCollection;
 import com.petpet.collpro.datamodel.Element;
+import com.petpet.collpro.db.PreparedQueries;
 import com.petpet.collpro.tree.ElementFilterNode;
 import com.petpet.collpro.tree.ElementNode;
 import com.petpet.collpro.tree.FilterNode;
@@ -38,6 +38,8 @@ public class TreeBean implements Serializable {
 	@PersistenceContext
 	private EntityManager em;
 
+	private PreparedQueries queries;
+
 	private NamedNode currentSelection = null;
 
 	private DigitalCollection coll;
@@ -52,8 +54,8 @@ public class TreeBean implements Serializable {
 
 	@PostConstruct
 	public void init() {
-		this.knownPropertes.addAll(this.em.createNamedQuery(
-				"getAllPropertyNames", String.class).getResultList());
+		this.queries = new PreparedQueries(this.em);
+		this.knownPropertes.addAll(this.queries.getAllPropertyNames());
 
 		this.coll = this.em.find(DigitalCollection.class, 1L); // FIXME
 																// (selection by
@@ -75,30 +77,25 @@ public class TreeBean implements Serializable {
 	}
 
 	public void expansionChanged(TreeToggleEvent evt) {
-		LOG.debug("tree expansion changed");
+		// LOG.debug("tree expansion changed");
 		if (evt.isExpanded()) {
-			LOG.debug("tree node is expanded");
+			// LOG.debug("tree node is expanded");
 			UITree tree = (UITree) evt.getSource();
 			TreeNode node = (TreeNode) tree.getRowData();
 
 			if (node instanceof FilterNode) {
 				FilterNode fn = (FilterNode) node;
-				LOG.debug("node is FilterNode {}", fn.getName());
-				
+				// LOG.debug("node is FilterNode {}", fn.getName());
+
 				for (ElementFilterNode efn : fn.getChildren()) {
-					
+
 					efn.getChildren().clear();
 
-					List<Element> elements = this.em
-							.createQuery(
-									"SELECT val.element FROM Value val WHERE val.property.name = :pname2 AND val.value = :value2 AND val.element IN (SELECT v.element FROM Value v WHERE v.property.name = :pname1 AND v.value = :value1 AND v.element.collection = :coll) ORDER BY val.element.name",
-									Element.class)
-							.setParameter("pname1", this.firstPFilter)
-							.setParameter("value1", fn.getName())
-							.setParameter("pname2", this.secondPFilter)
-							.setParameter("value2", efn.getName())
-							.setParameter("coll", this.coll).getResultList();
-					
+					List<Element> elements = this.queries
+							.getElementsWithinDoubleFilteredCollection(
+									this.firstPFilter, fn.getName(),
+									this.secondPFilter, efn.getName(),
+									this.coll);
 
 					for (Element e : elements) {
 						new ElementNode(efn, e);
@@ -106,6 +103,13 @@ public class TreeBean implements Serializable {
 				}
 			}
 		}
+	}
+
+	public void destroyTree() {
+		this.setCurrentSelection(null);
+		this.rootNodes = null;
+		this.setFirstPFilter(null);
+		this.setSecondPFilter(null);
 	}
 
 	public void createTree() {
@@ -131,13 +135,8 @@ public class TreeBean implements Serializable {
 			FilterNode fn = new FilterNode(f1);
 			this.rootNodes.add(fn);
 
-			List<String> list = this.em
-					.createNamedQuery(COLLECTION_DISTINCT_VALUES_IN_FILTERED,
-							String.class)
-					.setParameter("pname1", this.firstPFilter)
-					.setParameter("value", f1)
-					.setParameter("pname2", this.secondPFilter)
-					.setParameter("coll", coll).getResultList();
+			List<String> list = this.queries.getDistinctValuesWithinFiltering(
+					this.firstPFilter, this.secondPFilter, f1, coll);
 
 			for (String s : list) {
 				new ElementFilterNode(fn, s);
@@ -214,5 +213,4 @@ public class TreeBean implements Serializable {
 	public void setCurrentSelection(NamedNode currentSelection) {
 		this.currentSelection = currentSelection;
 	}
-
 }

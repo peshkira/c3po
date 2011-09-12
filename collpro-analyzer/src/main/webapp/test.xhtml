@@ -5,7 +5,7 @@
   <f:view>
     <h:head></h:head>
     <h:body>
-      <rich:panel header="Richfaces running on JBoss AS 7">
+      <rich:panel header="Filter Options">
         <h:form>
           <h:outputText value="first filter: " />
           <br />
@@ -17,7 +17,8 @@
           <rich:autocomplete value="#{treeBean.secondPFilter}" minChars="1"
             autocompleteMethod="#{treeBean.autocomplete}" />
           <br />
-          <a4j:commandButton value="draw" action="#{treeBean.createTree}" render="tree, error" />
+          <a4j:commandButton value="draw" action="#{treeBean.createTree}" render="tree" />
+          <a4j:commandButton value="clear" action="#{treeBean.destroyTree}" render="tree" />
         </h:form>
       </rich:panel>
 
@@ -37,8 +38,9 @@
                 </rich:treeNode>
           </rich:tree>
         </h:form>
-
-        <a4j:outputPanel id="output" ajaxRendered="true" layout="block">
+      </h:panelGrid>
+      
+      <a4j:outputPanel id="output" ajaxRendered="true" layout="block">
           <h:form>
             <rich:dataTable value="#{treeBean.currentSelection.children}" var="eNode" id="table"
               rendered="#{treeBean.currentSelection.type == 'elementfilter'}">
@@ -50,11 +52,30 @@
                 <f:facet name="header">Path:</f:facet>
                 <h:outputText value="#{eNode.element.path}" />
               </rich:column>
+               <a4j:repeat value="#{eNode.element.values}" var="val" id="valrepeat1">
+               	<rich:column>
+					<f:facet name="header"><h:outputText value="#{val.property.name}"/></f:facet>
+					<h:outputText value="#{val.value}" />
+               	</rich:column>
+                </a4j:repeat>
             </rich:dataTable>
+            <rich:panel rendered="#{treeBean.currentSelection.type == 'element'}">
+                        <f:facet name="header">
+                            <h:panelGroup>
+                                <h:outputText value="Element: #{treeBean.currentSelection.element.name}" style="font-weight:bold" />
+                            </h:panelGroup>
+                        </f:facet>
+                        <h:panelGrid columns="2">
+                        <ul>
+			        	<a4j:repeat value="#{treeBean.currentSelection.element.values}" var="val" id="valrepeat2">
+                            <li><h:outputText value="#{val.property.name}: " style="font-weight:bold" /> 
+                            <h:outputText value="#{val.value}" /></li>
+        				</a4j:repeat>
+        				</ul>
+                        </h:panelGrid>
+                 </rich:panel>
           </h:form>
         </a4j:outputPanel>
-      </h:panelGrid>
-
     </h:body>
   </f:view>
 

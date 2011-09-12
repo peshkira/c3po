@@ -23,6 +23,8 @@ public final class Constants {
      * system.
      */
     public static final String ALL_PROPERTIES_QUERY = "getAllProperties";
+    
+    public static final String ALL_PROPERTY_NAMES_QUERY = "getAllPropertyNames";
 
     /*
      * Defined in Value.java
@@ -78,6 +80,8 @@ public final class Constants {
     public static final String COLLECTION_ELEMENTS_WITH_PROPERTY_AND_VALUE_COUNT_QUERY = "getElementsWithPropertyAndValueInCollectionCount";
     
     public static final String COLLECTION_ELEMENTS_WITH_PROPERTY_AND_VALUE_SET_QUERY = "getElementsWithPropertyAndValueInCollectionSet";
+    
+    public static final String COLLECTION_ELEMENTS_WITHIN_DOUBLE_FILTER_SET_QUERY = "getElementsWithinDoubleFilteredCollection";
 
     /*
      * Defined in Value.java

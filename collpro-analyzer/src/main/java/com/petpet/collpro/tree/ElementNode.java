@@ -13,7 +13,7 @@ public class ElementNode extends NamedNode implements TreeNode {
 	private ElementFilterNode parent;
 
 	private Element element;
-
+	
 	public ElementNode() {
 
 	}
@@ -82,5 +82,4 @@ public class ElementNode extends NamedNode implements TreeNode {
 	public boolean isLeaf() {
 		return true;
 	}
-
 }

@@ -1,11 +1,14 @@
 package com.petpet.collpro.datamodel;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -38,13 +41,13 @@ public class Element implements Serializable {
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private Set<Element> elements;
 
-    @OneToMany(mappedBy = "element", cascade = CascadeType.ALL)
-    private Set<Value<?>> values;
+    @OneToMany(mappedBy = "element", cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+    private List<Value<?>> values;
 
     public Element() {
         super();
         this.elements = new HashSet<Element>();
-        this.values = new HashSet<Value<?>>();
+        this.values = new ArrayList<Value<?>>();
     }
 
     public Element(String name, String path) {
@@ -98,11 +101,11 @@ public class Element implements Serializable {
         return elements;
     }
 
-    public void setValues(Set<Value<?>> values) {
+    public void setValues(List<Value<?>> values) {
         this.values = values;
     }
 
-    public Set<Value<?>> getValues() {
+    public List<Value<?>> getValues() {
         return this.values;
     }
 

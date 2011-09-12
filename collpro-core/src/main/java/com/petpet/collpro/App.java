@@ -4,9 +4,10 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import com.petpet.collpro.analyzer.CollectionProfileQueries;
 import com.petpet.collpro.datamodel.DigitalCollection;
 import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.db.DBManager;
+import com.petpet.collpro.db.PreparedQueries;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
 import com.petpet.collpro.tools.SimpleGatherer;
 import com.petpet.collpro.utils.Configurator;
@@ -23,23 +24,18 @@ public class App {
         App app = new App();
         app.foldertest();
 //        app.querytest();
-//        app.nestedQuery();
     }
     
     private void foldertest() {
         this.test = new DigitalCollection("Test");
         SimpleGatherer g = new SimpleGatherer(new FITSMetaDataConverter(), test);
-//        g.gather(new File("/home/peter/Desktop/outputtest/"));
-         g.gather(new File("/Users/petar/Desktop/output/"));
+        g.gather(new File("/home/peter/Desktop/outputtest/"));
+//         g.gather(new File("/Users/petar/Desktop/output/"));
     }
     
-    private void nestedQuery() {
-        CollectionProfileQueries analyzer = new CollectionProfileQueries();
-        analyzer.getDoubleFilteredSortedCollection("mimetype", "format", this.test);
-    }
     
     private void querytest() {
-        CollectionProfileQueries analyzer = new CollectionProfileQueries();
+    	PreparedQueries analyzer = new PreparedQueries(DBManager.getInstance().getEntityManager());
         System.out.println("QUERIES");
         
         List<Property> allprops = analyzer.getAllPropertiesInCollection(test);
