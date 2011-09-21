@@ -2,18 +2,20 @@ package com.petpet.collpro.tree;
 
 import java.util.Enumeration;
 
+import javax.faces.context.FacesContext;
 import javax.swing.tree.TreeNode;
 
 import com.petpet.collpro.datamodel.Element;
+import com.petpet.collpro.datamodel.Value;
 
 public class ElementNode extends NamedNode implements TreeNode {
 
 	private static final long serialVersionUID = 8824766565662286821L;
-	
+
 	private ElementFilterNode parent;
 
 	private Element element;
-	
+
 	public ElementNode() {
 
 	}
@@ -72,7 +74,7 @@ public class ElementNode extends NamedNode implements TreeNode {
 	public ElementFilterNode getParent() {
 		return this.parent;
 	}
-	
+
 	public void setParent(ElementFilterNode parent) {
 		this.parent = parent;
 		this.parent.getChildren().add(this);
@@ -81,5 +83,16 @@ public class ElementNode extends NamedNode implements TreeNode {
 	@Override
 	public boolean isLeaf() {
 		return true;
+	}
+
+	public String getValue(String pname) {
+		for (Value val : this.element.getValues()) {
+			if  (val.getProperty().getName().equals(pname)) {
+				System.out.println(val.getValue());
+				return val.getValue();
+			}
+		}
+		System.out.println("OMG!");
+		return "-";
 	}
 }

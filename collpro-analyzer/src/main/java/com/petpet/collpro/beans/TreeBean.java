@@ -17,7 +17,6 @@ import org.richfaces.event.TreeToggleEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.datamodel.DigitalCollection;
 import com.petpet.collpro.datamodel.Element;
 import com.petpet.collpro.db.PreparedQueries;
@@ -47,20 +46,20 @@ public class TreeBean implements Serializable {
 
 	private List<String> knownPropertes = new ArrayList<String>();
 
-	private String firstPFilter;
+	private String filter1;
 
-	private String secondPFilter;
+	private String filter2;
 
 	@PostConstruct
 	public void init() {
 		this.queries = new PreparedQueries(this.em);
 		this.knownPropertes.addAll(this.queries.getAllPropertyNames());
-		// FIXME slection by user
+		// FIXME selection by user
 		this.coll = this.em.find(DigitalCollection.class, 1L);
 	}
 
 	public void selectionChanged(TreeSelectionChangeEvent evt) {
-//		LOG.debug("tree selectionChanged...");
+		// LOG.debug("tree selectionChanged...");
 		// considering only single selection
 		List<Object> selection = new ArrayList<Object>(evt.getNewSelection());
 		Object currentSelectionKey = selection.get(0);
@@ -68,7 +67,11 @@ public class TreeBean implements Serializable {
 		Object storedKey = tree.getRowKey();
 		tree.setRowKey(currentSelectionKey);
 		NamedNode node = (NamedNode) tree.getRowData();
-//		LOG.info("TYPE IS: {}", node.getType());
+		 LOG.info("TYPE IS: {}", node.getType() + " " + node.getName());
+		 
+		 if (node.getType().equals("elementfilter")) {
+			 node.getDistinctProperties();
+		 }
 		setCurrentSelection(node);
 		tree.setRowKey(storedKey);
 	}
@@ -90,26 +93,28 @@ public class TreeBean implements Serializable {
 
 					List<Element> elements = this.queries
 							.getElementsWithinDoubleFilteredCollection(
-									this.firstPFilter, fn.getName(),
-									this.secondPFilter, efn.getName(),
+									this.filter1, fn.getName(),
+									this.filter2, efn.getName(),
 									this.coll);
 
 					for (Element e : elements) {
 						new ElementNode(efn, e);
 					}
+					
 				}
 			}
 		}
 	}
 
 	public void destroyTree() {
-		//TODO
+		// TODO
 	}
 
 	public void createTree() {
 		this.rootNodes = new ArrayList<TreeNode>();
 
 		if (!this.isFilteringValid()) {
+			LOG.info("filtering invalid");
 			return;
 		}
 
@@ -122,15 +127,15 @@ public class TreeBean implements Serializable {
 	}
 
 	private void filterTree() {
-		List<String> filter1 = this.getDistinctPropertyValueSet(
-				this.firstPFilter, coll);
+		List<String> filter1 = this
+				.getPropertyValueSet(this.filter1, coll);
 		for (String f1 : filter1) {
 
 			FilterNode fn = new FilterNode(f1);
 			this.rootNodes.add(fn);
 
 			List<String> list = this.queries.getDistinctValuesWithinFiltering(
-					this.firstPFilter, this.secondPFilter, f1, coll);
+					this.filter1, this.filter2, f1, coll);
 
 			for (String s : list) {
 				new ElementFilterNode(fn, s);
@@ -144,15 +149,15 @@ public class TreeBean implements Serializable {
 	}
 
 	private boolean isFilteringValid() {
-		if (this.firstPFilter == null || this.firstPFilter.equals("")) {
+		if (this.filter1 == null || this.filter1.equals("")) {
 			return false;
 		}
 
-		if (this.secondPFilter == null || this.secondPFilter.equals("")) {
+		if (this.filter2 == null || this.filter2.equals("")) {
 			return false;
 		}
 
-		if (this.firstPFilter.equalsIgnoreCase(this.secondPFilter)) {
+		if (this.filter1.equalsIgnoreCase(this.filter2)) {
 			return false;
 		}
 
@@ -175,29 +180,20 @@ public class TreeBean implements Serializable {
 		return rootNodes;
 	}
 
-	public List<String> getDistinctPropertyValueSet(String pname,
-			DigitalCollection collection) {
-		return this.em
-				.createNamedQuery(
-						Constants.COLLECTION_DISTINCT_PROPERTY_VALUES_SET_QUERY)
-				.setParameter("pname", pname).setParameter("coll", collection)
-				.getResultList();
+	public String getFilter1() {
+		return filter1;
 	}
 
-	public String getFirstPFilter() {
-		return firstPFilter;
+	public void setFilter1(String firstPFilter) {
+		this.filter1 = firstPFilter;
 	}
 
-	public void setFirstPFilter(String firstPFilter) {
-		this.firstPFilter = firstPFilter;
+	public String getFilter2() {
+		return filter2;
 	}
 
-	public String getSecondPFilter() {
-		return secondPFilter;
-	}
-
-	public void setSecondPFilter(String secondPFilter) {
-		this.secondPFilter = secondPFilter;
+	public void setFilter2(String secondPFilter) {
+		this.filter2 = secondPFilter;
 	}
 
 	public NamedNode getCurrentSelection() {
@@ -206,5 +202,10 @@ public class TreeBean implements Serializable {
 
 	public void setCurrentSelection(NamedNode currentSelection) {
 		this.currentSelection = currentSelection;
+	}
+
+	public List<String> getPropertyValueSet(String pname, DigitalCollection coll) {
+		return this.queries.getDistinctPropertyValueSet(pname, coll);
+
 	}
 }

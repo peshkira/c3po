@@ -1,0 +1,96 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+  xmlns:a4j="http://richfaces.org/a4j" xmlns:rich="http://richfaces.org/rich"
+  xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+  <f:view>
+    <h:head></h:head>
+    <h:body>
+      <rich:panel header="Filter Options">
+        <h:form>
+          <h:outputText value="first filter: " />
+          <br />
+          <rich:autocomplete value="#{treeBean.filter1}" minChars="1" autocompleteMethod="#{treeBean.autocomplete}"
+            required="true" />
+          <br />
+          <br />
+          <h:outputText value="second filter: " />
+          <br />
+          <rich:autocomplete value="#{treeBean.filter2}" minChars="1" autocompleteMethod="#{treeBean.autocomplete}"
+            required="true" />
+          <br />
+          <a4j:commandButton value="draw" action="#{treeBean.createTree}" render="tree" />
+          <a4j:commandButton value="clear" action="#{treeBean.destroyTree}" render="tree" />
+        </h:form>
+      </rich:panel>
+
+      <h:panelGrid style="background: #B2B2B2">
+        <h:form>
+          <rich:tree id="tree" var="node" value="#{treeBean.rootNodes}" toggleType="ajax" selectionType="ajax"
+            selectionChangeListener="#{treeBean.selectionChanged}" toggleListener="#{treeBean.expansionChanged}"
+            render="output">
+            <rich:treeNode>
+                #{node.name}
+                </rich:treeNode>
+            <rich:treeNode>
+                #{node.name}
+                </rich:treeNode>
+            <rich:treeNode>
+                 #{node.name}
+                </rich:treeNode>
+          </rich:tree>
+        </h:form>
+      </h:panelGrid>
+
+      <h:form>
+        <a4j:outputPanel id="output" ajaxRendered="true" layout="block">
+
+          <rich:dataTable value="#{treeBean.currentSelection.children}" var="eNode" id="table"
+            rendered="#{treeBean.currentSelection.type == 'elementfilter'}">
+            <rich:column>
+              <f:facet name="header">
+                <h:outputText value="Name" />
+              </f:facet>
+              <h:outputText value="#{eNode.element.name}">
+              </h:outputText>
+            </rich:column>
+            <rich:column>
+              <f:facet name="header">
+                <h:outputText value="Id" />
+              </f:facet>
+              <h:outputText value="#{eNode.element.path}">
+              </h:outputText>
+            </rich:column>
+
+            <c:forEach items="#{treeBean.currentSelection.distinctProperties}" var="dp">
+              <rich:column>
+                <f:facet name="header">
+                  <h:outputText value="#{dp}" />
+                </f:facet>
+                <h:outputText value="#{eNode.getValue(dp)}">
+                </h:outputText>
+              </rich:column>
+            </c:forEach>
+
+          </rich:dataTable>
+          <rich:panel rendered="#{treeBean.currentSelection.type == 'element'}">
+            <f:facet name="header">
+              <h:panelGroup>
+                <h:outputText value="Element: #{treeBean.currentSelection.element.name}" style="font-weight:bold" />
+              </h:panelGroup>
+            </f:facet>
+            <h:panelGrid columns="2">
+              <ul>
+                <a4j:repeat value="#{treeBean.currentSelection.element.values}" var="val" id="valrepeat2">
+                  <li><h:outputText value="#{val.property.name}: " style="font-weight:bold" /> <h:outputText
+                      value="#{val.value}" /></li>
+                </a4j:repeat>
+              </ul>
+            </h:panelGrid>
+          </rich:panel>
+        </a4j:outputPanel>
+      </h:form>
+    </h:body>
+  </f:view>
+
+</ui:composition>

@@ -127,9 +127,9 @@ public class PreparedQueries {
 		return this
 				.getEntityManager()
 				.createNamedQuery(
-						Constants.COLLECTION_DISTINCT_PROPERTY_VALUES_SET_QUERY)
-				.setParameter("pname", pname).setParameter("coll", collection)
-				.getResultList();
+						Constants.COLLECTION_DISTINCT_PROPERTY_VALUES_SET_QUERY,
+						String.class).setParameter("pname", pname)
+				.setParameter("coll", collection).getResultList();
 	}
 
 	public long getValuesForElementCount(Element e) {
