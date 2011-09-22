@@ -5,10 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.petpet.collpro.datamodel.DigitalCollection;
+import com.petpet.collpro.datamodel.Element;
 import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.datamodel.RepresentativeCollection;
 import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.db.PreparedQueries;
+import com.petpet.collpro.tools.CollectionInspector;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
+import com.petpet.collpro.tools.ProfileGenerator;
 import com.petpet.collpro.tools.SimpleGatherer;
 import com.petpet.collpro.utils.Configurator;
 
@@ -23,7 +27,26 @@ public class App {
         Configurator.getInstance().configure();
         App app = new App();
         app.foldertest();
-//        app.querytest();
+        //app.querytest();
+        app.repcolltest();
+        app.genprofile();
+    }
+    
+    private void genprofile() {
+      ProfileGenerator gen = new ProfileGenerator(new PreparedQueries(DBManager.getInstance().getEntityManager()));
+      gen.write(gen.generateProfile(this.test));
+    }
+
+    private void repcolltest() {
+      CollectionInspector insp = new CollectionInspector();
+      insp.setQueries(new PreparedQueries(DBManager.getInstance().getEntityManager()));
+      RepresentativeCollection rcoll = insp.getRepresentativeCollection(this.test, 50, "imageWidth");
+      
+      if (rcoll != null) {
+        for (Element e : rcoll.getElements()) {
+          System.out.println(e.getName());
+        }
+      }
     }
     
     private void foldertest() {

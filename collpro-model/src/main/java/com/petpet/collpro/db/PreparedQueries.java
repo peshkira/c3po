@@ -46,6 +46,7 @@ public class PreparedQueries {
 				.getResultList();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public List<Value> getValuesByPropertyName(String pname,
 			DigitalCollection collection) {
 		return this
@@ -56,14 +57,7 @@ public class PreparedQueries {
 				.setParameter("coll", collection).getResultList();
 	}
 
-	public List<Value> getValueByPropertyNameAndValue(String pname, String value) {
-		return this
-				.getEntityManager()
-				.createNamedQuery(Constants.VALUES_BY_NAME_AND_VALUE,
-						Value.class).setParameter("pname", pname)
-				.setParameter("value", value).getResultList();
-	}
-
+	@SuppressWarnings("rawtypes")
 	public List<Value> getValueByPropertyNameAndValue(String pname,
 			String value, DigitalCollection collection) {
 		return this
@@ -138,12 +132,14 @@ public class PreparedQueries {
 				.setParameter("element", e).getSingleResult();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public List<Value> getValuesForElement(Element e) {
 		return this.getEntityManager()
 				.createNamedQuery(Constants.VALUES_FOR_ELEMENT, Value.class)
 				.setParameter("element", e).getResultList();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Object[]> getMostOccurringProperties(int limit,
 			DigitalCollection collection) {
 		return this
@@ -170,12 +166,14 @@ public class PreparedQueries {
 				.getSingleResult();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Object[]> getValuesDistribution(DigitalCollection collection) {
 		return this.getEntityManager()
 				.createNamedQuery(Constants.COLLECTION_VALUES_DISTRIBUTION)
 				.setParameter("coll", collection).getResultList();
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Object[]> getSpecificPropertyValuesDistribution(String pname,
 			DigitalCollection collection) {
 		return this
@@ -191,7 +189,7 @@ public class PreparedQueries {
 		return this
 				.getEntityManager()
 				.createNamedQuery(
-						"getDistinctValuesWithinPropertyFilteredCollection")
+						"getDistinctValuesWithinPropertyFilteredCollection", String.class)
 				.setParameter("pname1", pname1).setParameter("value", value)
 				.setParameter("pname2", pname2).setParameter("coll", coll)
 				.getResultList();

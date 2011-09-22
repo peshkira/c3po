@@ -32,12 +32,12 @@ public final class Configurator {
     }
 
     private void connectToDatabase() {
+    	LOG.debug("connection to database");
         DBManager.getInstance();
     }
 
     private void loadKnownProperties() {
-//        Constants.KNOWN_PROPERTIES; 
-            
+    	LOG.debug("loading known properties");
             List<Property> props = DBManager.getInstance().getEntityManager()
                 .createNamedQuery(Constants.ALL_PROPERTIES_QUERY, Property.class).getResultList();
             

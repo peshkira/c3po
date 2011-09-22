@@ -110,6 +110,8 @@ public class FITSMetaDataConverter implements IMetaDataConverter {
         }
 
         Element e = new Element(filename, filepath);
+        e.setCollection(this.collection);
+        this.collection.getElements().add(e);
 
         this.getIdentification(identification, e);
         this.getFlatProperties(fileinfo, e);

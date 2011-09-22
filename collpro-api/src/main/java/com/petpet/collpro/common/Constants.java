@@ -48,7 +48,7 @@ public final class Constants {
      */
     public static final String COLLECTION_VALUES_BY_PROPERTY_NAME_QUERY = "getValueByPropertyNameAndCollection";
 
-    public static final String VALUES_BY_NAME_AND_VALUE = "getValueByPropertyAndValue";
+//    public static final String VALUES_BY_NAME_AND_VALUE = "getValueByPropertyAndValue";
 
     public static final String COLLECTION_VALUES_BY_NAME_AND_VALUE = "getValueByPropertyAndValueAndCollection";
 
