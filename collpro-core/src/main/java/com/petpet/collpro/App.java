@@ -29,7 +29,7 @@ public class App {
         app.foldertest();
         //app.querytest();
         app.repcolltest();
-        app.genprofile();
+//        app.genprofile();
     }
     
     private void genprofile() {
@@ -40,11 +40,11 @@ public class App {
     private void repcolltest() {
       CollectionInspector insp = new CollectionInspector();
       insp.setQueries(new PreparedQueries(DBManager.getInstance().getEntityManager()));
-      RepresentativeCollection rcoll = insp.getRepresentativeCollection(this.test, 50, "imageWidth");
+      RepresentativeCollection rcoll = insp.getRepresentativeCollection(this.test, 15, "format", "pageCount");
       
       if (rcoll != null) {
         for (Element e : rcoll.getElements()) {
-          System.out.println(e.getName());
+          System.out.println(e.getId() + " " + e.getName());
         }
       }
     }

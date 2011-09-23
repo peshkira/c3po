@@ -46,9 +46,14 @@ public class CollectionInspector {
     LOG.debug("Size of collection is {}", collSize);
     
     Set<Element> elements = new HashSet<Element>();
-    
     for (String pname : properties) {
-      List<Object[]> distr = this.queries.getSpecificPropertyValuesDistribution(pname, coll);
+      LOG.debug("calculating distributions for property {}", pname);
+      List<Object[]> distr; 
+         if (elements.isEmpty()) {
+           distr = this.queries.getSpecificPropertyValuesDistribution(pname, coll);
+         } else {
+           distr = this.queries.getSpecificPropertyValuesDistributionInSet(pname, new ArrayList<Element>(elements));
+         }
       
       for (Object[] o : distr) {
         String val = (String) o[1];
@@ -75,7 +80,6 @@ public class CollectionInspector {
           }
         }
       } 
-      
     }
 
     return new RepresentativeCollection(coll, elements);

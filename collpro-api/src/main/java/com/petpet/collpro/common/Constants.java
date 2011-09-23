@@ -185,6 +185,8 @@ public final class Constants {
 
 	public static final String COLLECTION_BY_NAME = "getCollectionByName";
 
+  public static final String SPECIFIC_VALUE_DISTRIBUTION_IN_SET = "getSpecificValueInDistributionInSet";
+
     private Constants() {
 
     }
