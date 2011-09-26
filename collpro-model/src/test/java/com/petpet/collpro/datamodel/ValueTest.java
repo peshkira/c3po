@@ -1,12 +1,12 @@
 package com.petpet.collpro.datamodel;
 
-import static org.junit.Assert.*;
-
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Query;
 import javax.persistence.RollbackException;
+
+import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -14,8 +14,6 @@ import org.junit.Test;
 
 import com.petpet.collpro.common.Constants;
 import com.petpet.collpro.db.DBManager;
-
-import junit.framework.Assert;
 
 public class ValueTest {
 
@@ -89,6 +87,8 @@ public class ValueTest {
     public void shouldDeleteValue() throws Exception {
         DBManager db = DBManager.getInstance();
         Value value = db.getEntityManager().find(Value.class, 1L);
+        Assert.assertNotNull(value);
+        value.getElement().getValues().remove(value);
         db.remove(value);
         db.getEntityManager().clear();
 
@@ -195,9 +195,8 @@ public class ValueTest {
                 .setParameter("pname", "mimetype").setParameter("coll", coll);
         list = query.getResultList();
 
-        Assert.assertEquals(new Long(2), count);
-        Assert.assertEquals("document/txt", list.get(0));
-        Assert.assertEquals("application/pdf", list.get(1));
+        Assert.assertEquals("application/pdf", list.get(0));
+        Assert.assertEquals("document/txt", list.get(1));
 
     }
 }

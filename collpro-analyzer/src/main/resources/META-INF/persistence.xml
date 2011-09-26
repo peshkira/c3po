@@ -14,7 +14,8 @@
     <class>com.petpet.collpro.datamodel.Property</class>
     <class>com.petpet.collpro.datamodel.Value</class>
     <class>com.petpet.collpro.datamodel.StringValue</class>
-    <class>com.petpet.collpro.datamodel.NumericValue</class>
+    <class>com.petpet.collpro.datamodel.IntegerValue</class>
+    <class>com.petpet.collpro.datamodel.FloatValue</class>
     <class>com.petpet.collpro.datamodel.BooleanValue</class>
     <class>com.petpet.collpro.datamodel.ValueSource</class>
 

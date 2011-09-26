@@ -1,19 +1,11 @@
 package com.petpet.collpro.utils;
 
-import com.petpet.collpro.common.Constants;
-import com.petpet.collpro.datamodel.BooleanValue;
-import com.petpet.collpro.datamodel.DigitalCollection;
-import com.petpet.collpro.datamodel.NumericValue;
-import com.petpet.collpro.datamodel.Property;
-import com.petpet.collpro.datamodel.PropertyType;
-import com.petpet.collpro.datamodel.StringValue;
-import com.petpet.collpro.datamodel.Value;
-import com.petpet.collpro.db.DBManager;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -22,6 +14,17 @@ import javax.persistence.NonUniqueResultException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.petpet.collpro.common.Constants;
+import com.petpet.collpro.datamodel.BooleanValue;
+import com.petpet.collpro.datamodel.DigitalCollection;
+import com.petpet.collpro.datamodel.FloatValue;
+import com.petpet.collpro.datamodel.IntegerValue;
+import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.datamodel.PropertyType;
+import com.petpet.collpro.datamodel.StringValue;
+import com.petpet.collpro.datamodel.Value;
+import com.petpet.collpro.db.DBManager;
 
 public final class Helper {
     
@@ -59,7 +62,9 @@ public final class Helper {
             case BOOL:
                 return new BooleanValue(value);
             case NUMERIC:
-                return new NumericValue(value);
+                return new IntegerValue(value);
+            case FLOAT:
+              return new FloatValue(value);
             case STRING: // empty on purpose
             case DEFAULT: // empty on purpose
             default:
@@ -83,6 +88,18 @@ public final class Helper {
         }
         
         return p;
+    }
+    
+    public static List<Property> getPropertiesByNames(String... names) {
+      List<Property> result = new ArrayList<Property>();
+      for (String n : names) {
+        Property p = Helper.KNOWN_PROPERTIES.get(n);
+        if (p != null) {
+          result.add(p);
+        }
+      }
+      
+      return result;
     }
     
     public static boolean isElementAlreadyProcessed(DigitalCollection coll, String md5) {

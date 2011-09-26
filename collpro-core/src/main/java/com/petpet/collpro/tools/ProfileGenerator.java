@@ -103,6 +103,7 @@ public class ProfileGenerator implements ITool {
   }
 
   private Document generateProfile(DigitalCollection coll) {
+    LOG.info("generating profile for collection '{}'", coll.getName());
     Document document = DocumentHelper.createDocument();
     Element collpro = document.addElement("collection-profile").addAttribute("date", new Date().toString());
 
@@ -115,29 +116,29 @@ public class ProfileGenerator implements ITool {
     Collections.sort(allProps, new PropertyComparator());
 
     for (Property p : allProps) {
-      System.out.println("adding property " + p.getName());
+      LOG.debug("adding property {} to profile", p.getName());
       List<Object[]> distr = this.queries.getSpecificPropertyValuesDistribution(p.getName(), coll);
 
       if (!distr.isEmpty()) {
         String mode = (String) distr.get(0)[1];
         long count = this.queries.getElementsWithPropertyCount(p.getName(), coll);
-        Element property = properties.addElement("property").addAttribute("name", p.getName()).addAttribute("type", p.getType().name())
-            .addAttribute("count", count + "").addAttribute("mode", mode);
+        Element property = properties.addElement("property").addAttribute("name", p.getName())
+            .addAttribute("type", p.getType().name()).addAttribute("count", count + "").addAttribute("mode", mode);
 
         if (this.expanded.contains(p)) {
           property.addAttribute("expanded", "true");
-          // TODO add all the values of this property.
 
           for (Object[] d : distr) {
-            property.addElement("value").addAttribute("value", (String) d[1]).addAttribute("count", ((Long) d[2]).toString());
+            property.addElement("value").addAttribute("value", (String) d[1])
+                .addAttribute("count", ((Long) d[2]).toString());
           }
 
         } else {
-          properties.addAttribute("expanded", "false");
+          property.addAttribute("expanded", "false");
         }
 
       } else {
-        System.out.println("Values for property " + p.getName() + " have conflicts, excluding property...");
+        LOG.warn("Values for property '{}' have conflicts, excluding property...", p.getName());
       }
     }
 

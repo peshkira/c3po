@@ -3,7 +3,7 @@ package com.petpet.collpro.utils;
 import org.junit.Test;
 
 import com.petpet.collpro.datamodel.BooleanValue;
-import com.petpet.collpro.datamodel.NumericValue;
+import com.petpet.collpro.datamodel.IntegerValue;
 import com.petpet.collpro.datamodel.PropertyType;
 import com.petpet.collpro.datamodel.StringValue;
 import com.petpet.collpro.datamodel.Value;
@@ -28,10 +28,10 @@ public class HelperTest {
         Assert.assertTrue(value instanceof StringValue);
         
         value = Helper.getTypedValue(PropertyType.NUMERIC, "42");
-        Assert.assertTrue(value instanceof NumericValue);
+        Assert.assertTrue(value instanceof IntegerValue);
         
         value = Helper.getTypedValue(PropertyType.NUMERIC, "NAN");
-        Assert.assertTrue(value instanceof NumericValue);
+        Assert.assertTrue(value instanceof IntegerValue);
         
         value = Helper.getTypedValue(PropertyType.ARRAY, "fail");
         Assert.assertNull(value);

@@ -39,17 +39,26 @@ public class App implements ChangeListener {
     App app = new App();
     app.foldertest();
     // app.querytest();
-//    app.repcolltest();
-     app.genprofile();
+    // app.repcolltest();
+    app.genprofile();
   }
 
   private void genprofile() {
     try {
-      Property mimetype = Helper.getPropertyByName("mimetype");
+      List<Property> props = Helper.getPropertiesByNames(new String[] { "apertureValue", "avgBitRate", "avgPacketSize",
+          "bitDepth", "bitRate", "bitsPerSample", "blockAlign", "blockSizeMax", "blockSizeMin", "brightnessValue",
+          "byteOrder", "captureDevice", "channels", "charset", "colorSpace", "compressionScheme",
+          "digitalCameraManufacturer", "digitalCameraModelName", "duration", "exifVersion", "exposureBiasValue",
+          "exposureProgram", "exposureTime", "flash", "fNumber", "focalLength", "iccProfileName", "iccProfileVersion",
+          "imageHeight", "imageWidth", "inhibitorType", "isoSpeedRating", "lightSource", "linebreak", "markupBasis",
+          "maxApertureValue", "maxBitRate", "maxPacketSize", "meteringMode", "numPackets", "numSamples", "offset",
+          "orientation", "sampleRate", "samplesPerPixel", "samplingFrequencyUnit", "scannerManufacturer",
+          "scannerModelName", "scanningSoftwareName", "sensingMethod", "shutterSpeedValue", "wordSize",
+          "xSamplingFrequency", "YCbCrPositioning", "YCbCrSubSampling", "ySamplingFrequency"});
       gen = new ProfileGenerator(new PreparedQueries(DBManager.getInstance().getEntityManager()));
       Map<String, Object> config = new HashMap<String, Object>();
       config.put(Config.COLLECTION_CONF, this.test);
-      config.put(Config.EXPANDED_PROPS_CONF, Arrays.asList(mimetype));
+      config.put(Config.EXPANDED_PROPS_CONF, props);
       gen.addObserver(this);
       gen.configure(config);
       gen.execute();

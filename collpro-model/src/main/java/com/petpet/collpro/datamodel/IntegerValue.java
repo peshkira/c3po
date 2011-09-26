@@ -11,30 +11,28 @@ import org.slf4j.LoggerFactory;
 
 @Entity
 @NamedQueries( {
-    @NamedQuery(name = "getSumOfValuesForProperty", query = "SELECT SUM(n.lValue) FROM NumericValue n WHERE n.property.name = :pname"),
-    @NamedQuery(name = "getSumOfValuesForPropertyInCollection", query = "SELECT SUM(n.lValue) FROM NumericValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
-    @NamedQuery(name = "getAvgOfValuesForProperty", query = "SELECT AVG(n.lValue) FROM NumericValue n WHERE n.property.name = :pname"),
-    @NamedQuery(name = "getAvgOfValuesForPropertyInCollection", query = "SELECT AVG(n.lValue) FROM NumericValue n WHERE n.property.name = :pname AND n.element.collection = :coll")})
-public class NumericValue extends Value<Long> {
+    @NamedQuery(name = "getSumOfValuesForPropertyInCollection", query = "SELECT SUM(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
+    @NamedQuery(name = "getAvgOfValuesForPropertyInCollection", query = "SELECT AVG(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll")})
+public class IntegerValue extends Value<Long> {
     
     private static final long serialVersionUID = 1216578571209620108L;
     
-    private static final Logger LOG = LoggerFactory.getLogger(NumericValue.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IntegerValue.class);
     
     @NotNull
     @Column(name = "lValue")
     private Long lValue;
     
-    public NumericValue() {
+    public IntegerValue() {
         this.setStatus(ValueStatus.OK);
     }
     
-    public NumericValue(Long v) {
+    public IntegerValue(Long v) {
         this();
         this.setTypedValue(v);
     }
     
-    public NumericValue(String v) {
+    public IntegerValue(String v) {
         this();
         
         try {
@@ -76,7 +74,7 @@ public class NumericValue extends Value<Long> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        NumericValue other = (NumericValue) obj;
+        IntegerValue other = (IntegerValue) obj;
         if (lValue == null) {
             if (other.lValue != null) {
                 return false;
