@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<collection-profile date="Mon Sep 26 14:38:20 CEST 2011">
+  <collection name="Test" elements="94" properties="82">
+    <properties expanded="false">
+      <property name="apertureValue" type="DEFAULT" count="3" mode="2.8"/>
+      <property name="author" type="STRING" count="4" mode="RH"/>
+      <property name="avgBitRate" type="DEFAULT" count="4" mode="34000"/>
+      <property name="avgPacketSize" type="DEFAULT" count="4" mode="440"/>
+      <property name="bitDepth" type="DEFAULT" count="5" mode="8"/>
+      <property name="bitRate" type="DEFAULT" count="5" mode="192000"/>
+      <property name="bitsPerSample" type="DEFAULT" count="16" mode="8 8 8"/>
+      <property name="blockAlign" type="DEFAULT" count="4" mode="1"/>
+      <property name="blockSizeMax" type="DEFAULT" count="1" mode="4096"/>
+      <property name="blockSizeMin" type="DEFAULT" count="1" mode="4096"/>
+      <property name="brightnessValue" type="DEFAULT" count="3" mode="3.01"/>
+      <property name="byteOrder" type="DEFAULT" count="13" mode="little endian"/>
+      <property name="captureDevice" type="DEFAULT" count="3" mode="digital still camera"/>
+      <property name="channels" type="DEFAULT" count="10" mode="2"/>
+      <property name="charset" type="DEFAULT" count="3" mode="US-ASCII"/>
+      <property name="colorSpace" type="DEFAULT" count="9" mode="YCbCr"/>
+      <property name="compressionScheme" type="DEFAULT" count="22" mode="JPEG (old-style)"/>
+      <property name="created" type="STRING" count="21" mode="0000:00:00 00:00:00"/>
+      <property name="creatingApplicationName" type="STRING" count="8" mode="FinePix F40fd"/>
+      <property name="creatingos" type="DEFAULT" count="2" mode="Unix"/>
+      <property name="digitalCameraManufacturer" type="DEFAULT" count="3" mode="FUJIFILM"/>
+      <property name="digitalCameraModelName" type="DEFAULT" count="3" mode="FinePix F40fd"/>
+      <property name="duration" type="DEFAULT" count="5" mode="28:39"/>
+      <property name="exifVersion" type="DEFAULT" count="4" mode="0220"/>
+      <property name="exposureBiasValue" type="DEFAULT" count="4" mode="0"/>
+      <property name="exposureProgram" type="DEFAULT" count="3" mode="Normal program"/>
+      <property name="exposureTime" type="DEFAULT" count="4" mode="1/125"/>
+      <property name="filename" type="STRING" count="94" mode="2-SP-Obyava-praktika-gen.doc"/>
+      <property name="filepath" type="STRING" count="94" mode="/Users/petar/Dropbox/TU/DA/Collection/audio/01 (copy).mp3"/>
+      <property name="flash" type="DEFAULT" count="4" mode="Flash did not fire, auto mode"/>
+      <property name="fNumber" type="DEFAULT" count="4" mode="2.8"/>
+      <property name="focalLength" type="DEFAULT" count="3" mode="8.0"/>
+      <property name="format" type="STRING" count="94" mode="Microsoft Word"/>
+      <property name="formatversion" type="STRING" count="55" mode="97-2003"/>
+      <property name="fslastmodified" type="STRING" count="94" mode="1248439676000"/>
+      <property name="hasAnnotations" type="BOOL" count="5" mode="false"/>
+      <property name="hasOutline" type="BOOL" count="5" mode="true"/>
+      <property name="iccProfileName" type="DEFAULT" count="6" mode="sRGB IEC61966-2.1"/>
+      <property name="iccProfileVersion" type="DEFAULT" count="6" mode="2.1.0"/>
+      <property name="imageHeight" type="DEFAULT" count="22" mode="768"/>
+      <property name="imageWidth" type="DEFAULT" count="22" mode="1024"/>
+      <property name="inhibitorType" type="DEFAULT" count="1" mode="Standard v2.3"/>
+      <property name="isoSpeedRating" type="DEFAULT" count="4" mode="400"/>
+      <property name="isProtected" type="BOOL" count="4" mode="false"/>
+      <property name="isRightsManaged" type="BOOL" count="4" mode="false"/>
+      <property name="isTagged" type="BOOL" count="5" mode="false"/>
+      <property name="lastmodified" type="STRING" count="64" mode="2009:07:06 15:32:20+02:00"/>
+      <property name="lightSource" type="DEFAULT" count="4" mode="unknown"/>
+      <property name="linebreak" type="DEFAULT" count="3" mode="CR/LF"/>
+      <property name="markupBasis" type="DEFAULT" count="1" mode="SVG"/>
+      <property name="maxApertureValue" type="DEFAULT" count="3" mode="2.8"/>
+      <property name="maxBitRate" type="DEFAULT" count="4" mode="34000"/>
+      <property name="maxPacketSize" type="DEFAULT" count="4" mode="629"/>
+      <property name="md5checksum" type="STRING" count="94" mode="849895edc7c3120beb0f3bfca2447f26"/>
+      <property name="message" type="STRING" count="3" mode="Improperly formed date offset=200"/>
+      <property name="meteringMode" type="DEFAULT" count="4" mode="Pattern"/>
+      <property name="mimetype" type="STRING" count="94" mode="application/msword" expanded="true">
+        <value value="application/msword" count="13"/>
+        <value value="image/jpeg" count="12"/>
+        <value value="image/png" count="6"/>
+        <value value="audio/mpeg" count="6"/>
+        <value value="application/pdf" count="5"/>
+        <value value="image/gif" count="4"/>
+        <value value="text/html" count="4"/>
+        <value value="audio/x-wave" count="4"/>
+        <value value="text/plain" count="3"/>
+        <value value="application/x-gzip" count="2"/>
+        <value value="application/zip" count="2"/>
+        <value value="application/octet-stream" count="1"/>
+        <value value="application/postscript" count="1"/>
+        <value value="audio/x-flac" count="1"/>
+        <value value="application/x-dosexec" count="1"/>
+        <value value="image/svg+xml" count="1"/>
+      </property>
+      <property name="numPackets" type="DEFAULT" count="4" mode="17531"/>
+      <property name="numSamples" type="DEFAULT" count="5" mode="47315"/>
+      <property name="offset" type="DEFAULT" count="4" mode="44"/>
+      <property name="orientation" type="DEFAULT" count="10" mode="normal*"/>
+      <property name="pageCount" type="NUMERIC" count="5" mode="1"/>
+      <property name="puid" type="STRING" count="78" mode="fmt/40"/>
+      <property name="sampleRate" type="DEFAULT" count="10" mode="44100"/>
+      <property name="samplesPerPixel" type="DEFAULT" count="5" mode="3"/>
+      <property name="samplingFrequencyUnit" type="DEFAULT" count="12" mode="in."/>
+      <property name="scannerManufacturer" type="DEFAULT" count="1" mode="Sony Ericsson"/>
+      <property name="scannerModelName" type="DEFAULT" count="1" mode="K790i"/>
+      <property name="scanningSoftwareName" type="DEFAULT" count="7" mode="Digital Camera FinePix F40fd   Ver1.00"/>
+      <property name="sensingMethod" type="DEFAULT" count="3" mode="One-chip color area sensor"/>
+      <property name="shutterSpeedValue" type="DEFAULT" count="3" mode="1/80"/>
+      <property name="size" type="NUMERIC" count="94" mode="31232"/>
+      <property name="software" type="DEFAULT" count="5" mode="Helix DNA Producer SDK 9.1 for Windows, Build 9.1.0.92"/>
+      <property name="title" type="STRING" count="5" mode="&lt;May be encrypted&gt;"/>
+      <property name="valid" type="BOOL" count="20" mode="true"/>
+      <property name="well-formed" type="BOOL" count="20" mode="true"/>
+      <property name="wordSize" type="DEFAULT" count="4" mode="1"/>
+      <property name="xSamplingFrequency" type="DEFAULT" count="12" mode="72"/>
+      <property name="YCbCrPositioning" type="DEFAULT" count="4" mode="2"/>
+      <property name="YCbCrSubSampling" type="DEFAULT" count="12" mode="2 2"/>
+      <property name="ySamplingFrequency" type="DEFAULT" count="12" mode="72"/>
+    </properties>
+  </collection>
+</collection-profile>

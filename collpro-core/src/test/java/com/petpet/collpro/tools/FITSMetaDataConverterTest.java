@@ -47,7 +47,7 @@ public class FITSMetaDataConverterTest implements ChangeListener {
         
         this.converter.addObserver(this);
         this.converter.configure(config);
-        this.converter.convert();
+        this.converter.execute();
 
     }
 

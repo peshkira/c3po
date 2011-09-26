@@ -1,7 +1,8 @@
 package com.petpet.collpro.tools;
 
-import com.petpet.collpro.api.adapter.IMetaDataConverter;
+import com.petpet.collpro.api.ITool;
 import com.petpet.collpro.api.utils.ConfigurationException;
+import com.petpet.collpro.common.Config;
 import com.petpet.collpro.datamodel.DigitalCollection;
 import com.petpet.collpro.db.DBManager;
 
@@ -21,11 +22,11 @@ public class SimpleGatherer implements ChangeListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleGatherer.class);
 
-    private IMetaDataConverter converter;
+    private ITool converter;
 
     private DigitalCollection collection;
 
-    public SimpleGatherer(IMetaDataConverter converter, DigitalCollection collection) {
+    public SimpleGatherer(ITool converter, DigitalCollection collection) {
         this.converter = converter;
 
         if (collection == null) {
@@ -43,14 +44,14 @@ public class SimpleGatherer implements ChangeListener {
         }
 
         Map<String, Object> config = new HashMap<String, Object>();
-        config.put("config.date", new Date());
-        config.put("config.collection", this.collection);
-        config.put("config.fits_files", dir.listFiles(new XMLFileFilter()));
+        config.put(Config.DATE_CONF, new Date());
+        config.put(Config.COLLECTION_CONF, this.collection);
+        config.put(Config.FITS_FILES_CONF, dir.listFiles(new XMLFileFilter()));
 
         try {
             this.converter.addObserver(this);
             this.converter.configure(config);
-            this.converter.convert();
+            this.converter.execute();
         } catch (ConfigurationException e) {
             e.printStackTrace();
         }
