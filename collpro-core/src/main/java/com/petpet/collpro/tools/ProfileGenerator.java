@@ -122,8 +122,9 @@ public class ProfileGenerator implements ITool {
       if (!distr.isEmpty()) {
         String mode = (String) distr.get(0)[1];
         long count = this.queries.getElementsWithPropertyCount(p.getName(), coll);
-        Element property = properties.addElement("property").addAttribute("name", p.getName())
-            .addAttribute("type", p.getType().name()).addAttribute("count", count + "").addAttribute("mode", mode);
+        Element property = properties.addElement("property").addAttribute("id", p.getName())
+            .addAttribute("name", p.getHumanReadableName()).addAttribute("type", p.getType().name())
+            .addAttribute("count", count + "").addAttribute("mode", mode);
 
         if (this.expanded.contains(p)) {
           property.addAttribute("expanded", "true");

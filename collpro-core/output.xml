@@ -1,293 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<collection-profile date="Mon Sep 26 16:01:44 CEST 2011">
-  <collection name="Test" elements="94" properties="82">
+<collection-profile date="Mon Sep 26 18:09:19 CEST 2011">
+  <collection name="Test" elements="94" properties="81">
     <properties>
-      <property name="apertureValue" type="FLOAT" count="3" mode="2.8" expanded="true">
-        <value value="2.8" count="2"/>
-        <value value="3.9" count="1"/>
-      </property>
-      <property name="author" type="STRING" count="4" mode="RH" expanded="false"/>
-      <property name="avgBitRate" type="NUMERIC" count="4" mode="34000" expanded="true">
-        <value value="34000" count="2"/>
-        <value value="90117" count="1"/>
-        <value value="225000" count="1"/>
-      </property>
-      <property name="avgPacketSize" type="NUMERIC" count="4" mode="440" expanded="true">
-        <value value="440" count="1"/>
-        <value value="412" count="1"/>
-        <value value="370" count="1"/>
-        <value value="416" count="1"/>
-      </property>
-      <property name="bitDepth" type="NUMERIC" count="5" mode="8" expanded="true">
-        <value value="8" count="4"/>
-        <value value="16" count="1"/>
-      </property>
-      <property name="bitRate" type="NUMERIC" count="5" mode="192000" expanded="true">
-        <value value="192000" count="2"/>
-        <value value="128000" count="1"/>
-        <value value="160000" count="1"/>
-        <value value="64000" count="1"/>
-      </property>
-      <property name="bitsPerSample" type="DEFAULT" count="16" mode="8 8 8" expanded="true">
-        <value value="8 8 8" count="12"/>
-        <value value="8" count="10"/>
-      </property>
-      <property name="blockAlign" type="NUMERIC" count="4" mode="1" expanded="true">
-        <value value="1" count="4"/>
-      </property>
-      <property name="blockSizeMax" type="NUMERIC" count="1" mode="4096" expanded="true">
-        <value value="4096" count="1"/>
-      </property>
-      <property name="blockSizeMin" type="NUMERIC" count="1" mode="4096" expanded="true">
-        <value value="4096" count="1"/>
-      </property>
-      <property name="brightnessValue" type="DEFAULT" count="3" mode="3.01" expanded="true">
-        <value value="3.01" count="1"/>
-        <value value="3.3" count="1"/>
-        <value value="3.73" count="1"/>
-      </property>
-      <property name="byteOrder" type="STRING" count="13" mode="little endian" expanded="true">
-        <value value="little endian" count="10"/>
-        <value value="big endian" count="5"/>
-        <value value="LITTLE_ENDIAN" count="4"/>
-      </property>
-      <property name="captureDevice" type="STRING" count="3" mode="digital still camera" expanded="true">
-        <value value="digital still camera" count="3"/>
-      </property>
-      <property name="channels" type="NUMERIC" count="10" mode="2" expanded="true">
-        <value value="2" count="6"/>
-        <value value="1" count="4"/>
-      </property>
-      <property name="charset" type="STRING" count="3" mode="US-ASCII" expanded="true">
-        <value value="US-ASCII" count="2"/>
-        <value value="ISO-8859-1" count="1"/>
-      </property>
-      <property name="colorSpace" type="STRING" count="9" mode="YCbCr" expanded="true">
-        <value value="YCbCr" count="5"/>
-        <value value="RGB Palette" count="4"/>
-      </property>
-      <property name="compressionScheme" type="STRING" count="22" mode="JPEG (old-style)" expanded="true">
-        <value value="JPEG (old-style)" count="12"/>
-        <value value="Deflate/Inflate" count="6"/>
-        <value value="LZW" count="4"/>
-      </property>
-      <property name="created" type="STRING" count="21" mode="0000:00:00 00:00:00" expanded="false"/>
-      <property name="creatingApplicationName" type="STRING" count="8" mode="FinePix F40fd" expanded="false"/>
-      <property name="creatingos" type="STRING" count="2" mode="Unix" expanded="false"/>
-      <property name="digitalCameraManufacturer" type="STRING" count="3" mode="FUJIFILM" expanded="true">
-        <value value="FUJIFILM" count="3"/>
-      </property>
-      <property name="digitalCameraModelName" type="STRING" count="3" mode="FinePix F40fd" expanded="true">
-        <value value="FinePix F40fd" count="3"/>
-      </property>
-      <property name="duration" type="DEFAULT" count="5" mode="28:39" expanded="true">
-        <value value="28:39" count="2"/>
-        <value value="18.19 s" count="1"/>
-        <value value="28:33" count="1"/>
-        <value value="1:15:32" count="1"/>
-      </property>
-      <property name="exifVersion" type="DEFAULT" count="4" mode="0220" expanded="true">
-        <value value="0220" count="4"/>
-      </property>
-      <property name="exposureBiasValue" type="DEFAULT" count="4" mode="0" expanded="true">
-        <value value="0" count="4"/>
-      </property>
-      <property name="exposureProgram" type="STRING" count="3" mode="Normal program" expanded="true">
-        <value value="Normal program" count="3"/>
-      </property>
-      <property name="exposureTime" type="DEFAULT" count="4" mode="1/125" expanded="true">
-        <value value="1/125" count="1"/>
-        <value value="1/15" count="1"/>
-        <value value="1/110" count="1"/>
-        <value value="1/80" count="1"/>
-      </property>
-      <property name="filename" type="STRING" count="94" mode="2-SP-Obyava-praktika-gen.doc" expanded="false"/>
-      <property name="filepath" type="STRING" count="94" mode="/Users/petar/Dropbox/TU/DA/Collection/audio/01 (copy).mp3" expanded="false"/>
-      <property name="flash" type="STRING" count="4" mode="Flash did not fire, auto mode" expanded="true">
-        <value value="Flash did not fire, auto mode" count="4"/>
-      </property>
-      <property name="fNumber" type="FLOAT" count="4" mode="2.8" expanded="true">
-        <value value="2.8" count="3"/>
-        <value value="3.8" count="1"/>
-      </property>
-      <property name="focalLength" type="FLOAT" count="3" mode="8.0" expanded="true">
-        <value value="8.0" count="2"/>
-        <value value="14.4" count="1"/>
-      </property>
-      <property name="format" type="STRING" count="94" mode="Microsoft Word" expanded="false"/>
-      <property name="formatversion" type="STRING" count="55" mode="97-2003" expanded="false"/>
-      <property name="fslastmodified" type="STRING" count="94" mode="1248439676000" expanded="false"/>
-      <property name="hasAnnotations" type="BOOL" count="5" mode="false" expanded="false"/>
-      <property name="hasOutline" type="BOOL" count="5" mode="true" expanded="false"/>
-      <property name="iccProfileName" type="STRING" count="6" mode="sRGB IEC61966-2.1" expanded="true">
-        <value value="sRGB IEC61966-2.1" count="4"/>
-        <value value="Display" count="1"/>
-        <value value="sRGB IEC61966-2-1 black scaled" count="1"/>
-      </property>
-      <property name="iccProfileVersion" type="STRING" count="6" mode="2.1.0" expanded="true">
-        <value value="2.1.0" count="5"/>
-        <value value="2.0.0" count="1"/>
-      </property>
-      <property name="imageHeight" type="NUMERIC" count="22" mode="768" expanded="true">
-        <value value="768" count="4"/>
-        <value value="1236" count="3"/>
-        <value value="600" count="2"/>
-        <value value="422" count="1"/>
-        <value value="487" count="1"/>
-        <value value="2000" count="1"/>
-        <value value="450" count="1"/>
-        <value value="320" count="1"/>
-        <value value="430" count="1"/>
-        <value value="488" count="1"/>
-        <value value="1058" count="1"/>
-        <value value="503" count="1"/>
-        <value value="269" count="1"/>
-        <value value="350" count="1"/>
-        <value value="479" count="1"/>
-        <value value="376" count="1"/>
-      </property>
-      <property name="imageWidth" type="NUMERIC" count="22" mode="1024" expanded="true">
-        <value value="1024" count="4"/>
-        <value value="1648" count="3"/>
-        <value value="650" count="2"/>
-        <value value="600" count="2"/>
-        <value value="400" count="1"/>
-        <value value="214" count="1"/>
-        <value value="800" count="1"/>
-        <value value="350" count="1"/>
-        <value value="500" count="1"/>
-        <value value="1058" count="1"/>
-        <value value="2000" count="1"/>
-        <value value="357" count="1"/>
-        <value value="439" count="1"/>
-        <value value="325" count="1"/>
-        <value value="320" count="1"/>
-      </property>
-      <property name="inhibitorType" type="STRING" count="1" mode="Standard v2.3" expanded="true">
-        <value value="Standard v2.3" count="1"/>
-      </property>
-      <property name="isoSpeedRating" type="STRING" count="4" mode="400" expanded="true">
-        <value value="400" count="2"/>
-        <value value="200" count="2"/>
-      </property>
-      <property name="isProtected" type="BOOL" count="4" mode="false" expanded="false"/>
-      <property name="isRightsManaged" type="BOOL" count="4" mode="false" expanded="false"/>
-      <property name="isTagged" type="BOOL" count="5" mode="false" expanded="false"/>
-      <property name="lastmodified" type="STRING" count="64" mode="2009:07:06 15:32:20+02:00" expanded="false"/>
-      <property name="lightSource" type="DEFAULT" count="4" mode="unknown" expanded="true">
-        <value value="unknown" count="4"/>
-      </property>
-      <property name="linebreak" type="STRING" count="3" mode="CR/LF" expanded="true">
-        <value value="CR/LF" count="2"/>
-        <value value="LF" count="1"/>
-      </property>
-      <property name="markupBasis" type="STRING" count="1" mode="SVG" expanded="true">
-        <value value="SVG" count="1"/>
-      </property>
-      <property name="maxApertureValue" type="FLOAT" count="3" mode="2.8" expanded="true">
-        <value value="2.8" count="3"/>
-      </property>
-      <property name="maxBitRate" type="NUMERIC" count="4" mode="34000" expanded="true">
-        <value value="34000" count="2"/>
-        <value value="112000" count="1"/>
-        <value value="225000" count="1"/>
-      </property>
-      <property name="maxPacketSize" type="NUMERIC" count="4" mode="629" expanded="true">
-        <value value="629" count="1"/>
-        <value value="600" count="1"/>
-        <value value="632" count="1"/>
-        <value value="1041" count="1"/>
-      </property>
-      <property name="md5checksum" type="STRING" count="94" mode="849895edc7c3120beb0f3bfca2447f26" expanded="false"/>
-      <property name="message" type="STRING" count="3" mode="Improperly formed date offset=200" expanded="false"/>
-      <property name="meteringMode" type="STRING" count="4" mode="Pattern" expanded="true">
-        <value value="Pattern" count="3"/>
-        <value value="center weighted average" count="1"/>
-      </property>
-      <property name="mimetype" type="STRING" count="94" mode="application/msword" expanded="false"/>
-      <property name="numPackets" type="NUMERIC" count="4" mode="17531" expanded="true">
-        <value value="17531" count="1"/>
-        <value value="17620" count="1"/>
-        <value value="129077" count="1"/>
-        <value value="116110" count="1"/>
-      </property>
-      <property name="numSamples" type="NUMERIC" count="5" mode="47315" expanded="true">
-        <value value="47315" count="1"/>
-        <value value="116892" count="1"/>
-        <value value="1604652" count="1"/>
-        <value value="91662" count="1"/>
-        <value value="317974" count="1"/>
-      </property>
-      <property name="offset" type="NUMERIC" count="4" mode="44" expanded="true">
-        <value value="44" count="3"/>
-        <value value="56" count="1"/>
-      </property>
-      <property name="orientation" type="STRING" count="10" mode="normal*" expanded="true">
-        <value value="normal*" count="10"/>
-      </property>
-      <property name="pageCount" type="NUMERIC" count="5" mode="1" expanded="false"/>
-      <property name="puid" type="STRING" count="78" mode="fmt/40" expanded="false"/>
-      <property name="sampleRate" type="NUMERIC" count="10" mode="44100" expanded="true">
-        <value value="44100" count="5"/>
-        <value value="22050" count="3"/>
-        <value value="11025" count="2"/>
-      </property>
-      <property name="samplesPerPixel" type="NUMERIC" count="5" mode="3" expanded="true">
-        <value value="3" count="5"/>
-      </property>
-      <property name="samplingFrequencyUnit" type="STRING" count="12" mode="in." expanded="true">
-        <value value="in." count="11"/>
-        <value value="no absolute unit of measurement" count="1"/>
-      </property>
-      <property name="scannerManufacturer" type="STRING" count="1" mode="Sony Ericsson" expanded="true">
-        <value value="Sony Ericsson" count="1"/>
-      </property>
-      <property name="scannerModelName" type="STRING" count="1" mode="K790i" expanded="true">
-        <value value="K790i" count="1"/>
-      </property>
-      <property name="scanningSoftwareName" type="STRING" count="7" mode="Digital Camera FinePix F40fd   Ver1.00" expanded="true">
-        <value value="Digital Camera FinePix F40fd   Ver1.00" count="3"/>
-        <value value="Adobe Photoshop Elements 4.0 Windows" count="1"/>
-        <value value="Adobe Photoshop CS5 Macintosh" count="1"/>
-        <value value="Adobe ImageReady" count="1"/>
-        <value value="Adobe Photoshop CS2 Windows" count="1"/>
-      </property>
-      <property name="sensingMethod" type="STRING" count="3" mode="One-chip color area sensor" expanded="true">
-        <value value="One-chip color area sensor" count="3"/>
-      </property>
-      <property name="shutterSpeedValue" type="DEFAULT" count="3" mode="1/80" expanded="true">
-        <value value="1/80" count="1"/>
-        <value value="1/115" count="1"/>
-        <value value="1/130" count="1"/>
-      </property>
-      <property name="size" type="NUMERIC" count="94" mode="31232" expanded="false"/>
-      <property name="software" type="STRING" count="5" mode="Helix DNA Producer SDK 9.1 for Windows, Build 9.1.0.92" expanded="false"/>
-      <property name="title" type="STRING" count="5" mode="&lt;May be encrypted&gt;" expanded="false"/>
-      <property name="valid" type="BOOL" count="20" mode="true" expanded="false"/>
-      <property name="well-formed" type="BOOL" count="20" mode="true" expanded="false"/>
-      <property name="wordSize" type="NUMERIC" count="4" mode="1" expanded="true">
-        <value value="1" count="4"/>
-      </property>
-      <property name="xSamplingFrequency" type="NUMERIC" count="12" mode="72" expanded="true">
-        <value value="72" count="9"/>
-        <value value="301" count="1"/>
-        <value value="1" count="1"/>
-        <value value="100" count="1"/>
-      </property>
-      <property name="YCbCrPositioning" type="DEFAULT" count="4" mode="2" expanded="true">
-        <value value="2" count="4"/>
-      </property>
-      <property name="YCbCrSubSampling" type="DEFAULT" count="12" mode="2 2" expanded="true">
-        <value value="2 2" count="8"/>
-        <value value="1 1" count="4"/>
-      </property>
-      <property name="ySamplingFrequency" type="NUMERIC" count="12" mode="72" expanded="true">
-        <value value="72" count="9"/>
-        <value value="1" count="1"/>
-        <value value="100" count="1"/>
-        <value value="301" count="1"/>
-      </property>
+      <property id="aperture.value" name="Aperture Value" type="FLOAT" count="3" mode="2.8" expanded="false"/>
+      <property id="aperture.value.max" name="Maximum Aperture Value" type="FLOAT" count="3" mode="2.8" expanded="false"/>
+      <property id="author" name="Author" type="STRING" count="4" mode="RH" expanded="false"/>
+      <property id="bit.depth" name="Bit Depth" type="NUMERIC" count="5" mode="8" expanded="false"/>
+      <property id="bit.rate" name="Bit Rate" type="NUMERIC" count="5" mode="192000" expanded="false"/>
+      <property id="bit.rate.avg" name="Average Bit Rate" type="NUMERIC" count="4" mode="34000" expanded="false"/>
+      <property id="bitspersample" name="Bits Per Sample" type="DEFAULT" count="16" mode="8 8 8" expanded="false"/>
+      <property id="block.align" name="Block Align" type="NUMERIC" count="4" mode="1" expanded="false"/>
+      <property id="block.size.max" name="Maximum Block Size" type="NUMERIC" count="1" mode="4096" expanded="false"/>
+      <property id="block.size.min" name="Minimum Block Size" type="NUMERIC" count="1" mode="4096" expanded="false"/>
+      <property id="brightnessvalue" name="Brightness Value" type="FLOAT" count="3" mode="3.01" expanded="false"/>
+      <property id="byteorder" name="Byte Order" type="STRING" count="13" mode="little endian" expanded="false"/>
+      <property id="capturedevice" name="Capture Device" type="STRING" count="3" mode="digital still camera" expanded="false"/>
+      <property id="channels" name="Channels" type="NUMERIC" count="10" mode="2" expanded="false"/>
+      <property id="charset" name="Character Set" type="STRING" count="3" mode="US-ASCII" expanded="false"/>
+      <property id="checksum.md5" name="MD5 Checksum" type="STRING" count="94" mode="ba659116202f264fbb550fa50d5e02d2" expanded="false"/>
+      <property id="colorspace" name="Color Space" type="STRING" count="9" mode="YCbCr" expanded="false"/>
+      <property id="compressionscheme" name="Compression Scheme" type="STRING" count="22" mode="JPEG (old-style)" expanded="false"/>
+      <property id="created" name="Created At Date" type="STRING" count="21" mode="0000:00:00 00:00:00" expanded="false"/>
+      <property id="creating.application.name" name="Creating Application Name" type="STRING" count="8" mode="FinePix F40fd" expanded="false"/>
+      <property id="creating.os" name="Creating Application Operating System" type="STRING" count="2" mode="Unix" expanded="false"/>
+      <property id="digitalcamera.manufacturer" name="Digital Camera Manufacturer" type="STRING" count="3" mode="FUJIFILM" expanded="false"/>
+      <property id="digitalcamera.modelname" name="Digital Camera Model Name" type="STRING" count="3" mode="FinePix F40fd" expanded="false"/>
+      <property id="duration" name="Duration" type="DEFAULT" count="5" mode="28:39" expanded="false"/>
+      <property id="exifversion" name="EXIF Version" type="DEFAULT" count="4" mode="0220" expanded="false"/>
+      <property id="exposure.biasvalue" name="Exposure Bias Value" type="DEFAULT" count="4" mode="0" expanded="false"/>
+      <property id="exposure.program" name="Exposure Program" type="STRING" count="3" mode="Normal program" expanded="false"/>
+      <property id="exposure.time" name="Exposure Time" type="DEFAULT" count="4" mode="1/110" expanded="false"/>
+      <property id="file.name" name="File Name" type="STRING" count="94" mode="ganesha.xpi" expanded="false"/>
+      <property id="file.path" name="File Path" type="STRING" count="94" mode="/Users/petar/Dropbox/TU/DA/Collection/text/Subject-area-codes.doc" expanded="false"/>
+      <property id="flash" name="Flash" type="STRING" count="4" mode="Flash did not fire, auto mode" expanded="false"/>
+      <property id="fnumber" name="Focal Ratio" type="FLOAT" count="4" mode="2.8" expanded="false"/>
+      <property id="focallength" name="Focal Length" type="FLOAT" count="3" mode="8.0" expanded="false"/>
+      <property id="format" name="Format" type="STRING" count="94" mode="Microsoft Word" expanded="false"/>
+      <property id="format.version" name="Format Version" type="STRING" count="55" mode="97-2003" expanded="false"/>
+      <property id="has.annotations" name="Has Annotations" type="BOOL" count="5" mode="false" expanded="false"/>
+      <property id="has.outline" name="Has Outline" type="BOOL" count="5" mode="true" expanded="false"/>
+      <property id="icc.profile.name" name="ICC Profile Name" type="STRING" count="6" mode="sRGB IEC61966-2.1" expanded="false"/>
+      <property id="icc.profile.version" name="ICC Profile Version" type="STRING" count="6" mode="2.1.0" expanded="false"/>
+      <property id="image.height" name="Image Height" type="NUMERIC" count="22" mode="768" expanded="false"/>
+      <property id="image.width" name="Image Width" type="NUMERIC" count="22" mode="1024" expanded="false"/>
+      <property id="inhibitortype" name="Inhibitor Type" type="STRING" count="1" mode="Standard v2.3" expanded="false"/>
+      <property id="is.protected" name="Is Protected" type="BOOL" count="4" mode="false" expanded="false"/>
+      <property id="is.rightsmanaged" name="Is Rights Managed" type="BOOL" count="4" mode="false" expanded="false"/>
+      <property id="is.tagged" name="Is Tagged" type="BOOL" count="5" mode="false" expanded="false"/>
+      <property id="isospeedrating" name="ISO Speed Rating" type="STRING" count="4" mode="200" expanded="false"/>
+      <property id="lastmodified" name="Last Modified Date" type="STRING" count="94" mode="1248439676000" expanded="false"/>
+      <property id="lightsource" name="Light Source" type="DEFAULT" count="4" mode="unknown" expanded="false"/>
+      <property id="linebreak" name="Line Break" type="STRING" count="3" mode="CR/LF" expanded="false"/>
+      <property id="markupbasis" name="Markup Basis" type="STRING" count="1" mode="SVG" expanded="false"/>
+      <property id="maxBitRate" name="maxBitRate" type="DEFAULT" count="4" mode="34000" expanded="false"/>
+      <property id="maxPacketSize" name="maxPacketSize" type="DEFAULT" count="4" mode="629" expanded="false"/>
+      <property id="message" name="Message" type="STRING" count="3" mode="Improperly formed date offset=200" expanded="false"/>
+      <property id="meteringmode" name="Metering Mode" type="STRING" count="4" mode="Pattern" expanded="false"/>
+      <property id="mimetype" name="MimeType" type="STRING" count="94" mode="application/msword" expanded="false"/>
+      <property id="numpackets" name="Number Packets" type="NUMERIC" count="4" mode="17620" expanded="false"/>
+      <property id="numsamples" name="Number Samples" type="NUMERIC" count="5" mode="116892" expanded="false"/>
+      <property id="offset" name="Offset" type="NUMERIC" count="4" mode="44" expanded="false"/>
+      <property id="orientation" name="Orientation" type="STRING" count="10" mode="normal*" expanded="false"/>
+      <property id="packetsize.avg" name="Average Packet Size" type="NUMERIC" count="4" mode="416" expanded="false"/>
+      <property id="pagecount" name="Page Count" type="NUMERIC" count="5" mode="1" expanded="false"/>
+      <property id="puid" name="Pronom UID" type="STRING" count="78" mode="fmt/40" expanded="false"/>
+      <property id="samplerate" name="Sample Rate" type="NUMERIC" count="10" mode="44100" expanded="false"/>
+      <property id="samplesperpixel" name="Samples Per Pixel" type="NUMERIC" count="5" mode="3" expanded="false"/>
+      <property id="sampling.frequency.unit" name="Sampling Frequency Unit" type="STRING" count="12" mode="in." expanded="false"/>
+      <property id="sampling.frequency.x" name="Sampling Frequency X" type="NUMERIC" count="12" mode="72" expanded="false"/>
+      <property id="sampling.frequency.y" name="Sampling Frequency Y" type="NUMERIC" count="12" mode="72" expanded="false"/>
+      <property id="scanner.manufacturer" name="Scanner Manufacturer" type="STRING" count="1" mode="Sony Ericsson" expanded="false"/>
+      <property id="scanner.modelname" name="Scanner Model Name" type="STRING" count="1" mode="K790i" expanded="false"/>
+      <property id="scanner.softwarename" name="Scanner Software Name" type="STRING" count="7" mode="Digital Camera FinePix F40fd   Ver1.00" expanded="false"/>
+      <property id="sensingmethod" name="Sensing Method" type="STRING" count="3" mode="One-chip color area sensor" expanded="false"/>
+      <property id="shutterspeedvalue" name="Shutter Speed Value" type="DEFAULT" count="3" mode="1/80" expanded="false"/>
+      <property id="size" name="Size" type="NUMERIC" count="94" mode="31232" expanded="false"/>
+      <property id="software" name="Software" type="STRING" count="5" mode="Helix DNA Producer SDK 9.1 for Windows, Build 9.1.0.92" expanded="false"/>
+      <property id="title" name="Title" type="STRING" count="5" mode="&lt;May be encrypted&gt;" expanded="false"/>
+      <property id="valid" name="Valid" type="BOOL" count="20" mode="true" expanded="false"/>
+      <property id="wellformed" name="Well-Formed" type="BOOL" count="20" mode="true" expanded="false"/>
+      <property id="wordsize" name="Word Size" type="NUMERIC" count="4" mode="1" expanded="false"/>
+      <property id="YCbCrPositioning" name="YCbCrPositioning" type="DEFAULT" count="4" mode="2" expanded="false"/>
+      <property id="YCbCrSubSampling" name="YCbCrSubSampling" type="DEFAULT" count="12" mode="2 2" expanded="false"/>
     </properties>
   </collection>
 </collection-profile>

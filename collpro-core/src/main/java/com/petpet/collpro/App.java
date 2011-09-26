@@ -58,7 +58,7 @@ public class App implements ChangeListener {
       gen = new ProfileGenerator(new PreparedQueries(DBManager.getInstance().getEntityManager()));
       Map<String, Object> config = new HashMap<String, Object>();
       config.put(Config.COLLECTION_CONF, this.test);
-      config.put(Config.EXPANDED_PROPS_CONF, props);
+      config.put(Config.EXPANDED_PROPS_CONF, null);
       gen.addObserver(this);
       gen.configure(config);
       gen.execute();

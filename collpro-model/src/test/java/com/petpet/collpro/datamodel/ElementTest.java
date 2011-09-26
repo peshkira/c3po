@@ -33,7 +33,7 @@ public class ElementTest {
         String path = "path/to/file";
         Element e = new Element();
         e.setName(name);
-        e.setPath(path);
+        e.setUid(path);
         e.setCollection(coll);
         coll.getElements().add(e);
         
@@ -43,7 +43,7 @@ public class ElementTest {
         Element element = db.getEntityManager().find(Element.class, 1L);
         Assert.assertNotNull(element);
         Assert.assertEquals(name, element.getName());
-        Assert.assertEquals(path, element.getPath());
+        Assert.assertEquals(path, element.getUid());
     }
     
     @Test
@@ -80,17 +80,17 @@ public class ElementTest {
         
         Element e1 = new Element();
         e1.setName("Element1");
-        e1.setPath("path/to/file");
+        e1.setUid("path/to/file");
         e1.setCollection(coll);
         
         Element e2 = new Element();
         e2.setName("Element2");
-        e2.setPath("path/to/other");
+        e2.setUid("path/to/other");
         e2.setCollection(coll);
         
         Element e3 = new Element();
         e3.setName("Element3");
-        e3.setPath("path/file");
+        e3.setUid("path/file");
         e3.setCollection(coll);
 
         coll.getElements().add(e1);

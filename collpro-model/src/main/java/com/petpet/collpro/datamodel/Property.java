@@ -30,6 +30,11 @@ public class Property implements Serializable {
 
 	@NotNull
 	private String name;
+	
+	@NotNull
+	private String humanReadableName;
+	
+	private String description;
 
 	@Enumerated(EnumType.STRING)
 	private PropertyType type;
@@ -46,6 +51,13 @@ public class Property implements Serializable {
 	public Property(String name) {
 		this();
 		this.name = name;
+		this.setHumanReadableName(name);
+	}
+	
+	public Property(String name, String rName) {
+	  this();
+	  this.name = name;
+	  this.setHumanReadableName(rName);
 	}
 
 	public void setId(long id) {
@@ -64,7 +76,23 @@ public class Property implements Serializable {
 		return name;
 	}
 
-	public void setProperties(Set<Property> properties) {
+	public String getHumanReadableName() {
+    return humanReadableName;
+  }
+
+  public void setHumanReadableName(String humanReadableName) {
+    this.humanReadableName = humanReadableName;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setProperties(Set<Property> properties) {
 		this.properties = properties;
 	}
 

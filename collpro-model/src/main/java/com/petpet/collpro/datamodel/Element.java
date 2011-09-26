@@ -32,7 +32,7 @@ public class Element implements Serializable {
     private String name;
 
     @NotNull
-    private String path;
+    private String uid;
 
     @NotNull
     @OneToOne
@@ -53,7 +53,7 @@ public class Element implements Serializable {
     public Element(String name, String path) {
         this();
         this.name = name;
-        this.path = path;
+        this.uid = path;
     }
 
     public Element(String name, String path, DigitalCollection collection) {
@@ -77,12 +77,12 @@ public class Element implements Serializable {
         return name;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
-    public String getPath() {
-        return path;
+    public String getUid() {
+        return uid;
     }
 
     public void setCollection(DigitalCollection collection) {
@@ -115,7 +115,7 @@ public class Element implements Serializable {
         int result = 1;
         result = prime * result + (int) (id ^ (id >>> 32));
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
+        result = prime * result + ((uid == null) ? 0 : uid.hashCode());
         return result;
     }
 
@@ -141,11 +141,11 @@ public class Element implements Serializable {
         } else if (!name.equals(other.name)) {
             return false;
         }
-        if (path == null) {
-            if (other.path != null) {
+        if (uid == null) {
+            if (other.uid != null) {
                 return false;
             }
-        } else if (!path.equals(other.path)) {
+        } else if (!uid.equals(other.uid)) {
             return false;
         }
         return true;

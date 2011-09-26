@@ -1,19 +1,5 @@
 package com.petpet.collpro.tools;
 
-import com.petpet.collpro.api.ITool;
-import com.petpet.collpro.api.utils.ConfigurationException;
-import com.petpet.collpro.common.Config;
-import com.petpet.collpro.common.FITSConstants;
-import com.petpet.collpro.datamodel.DigitalCollection;
-import com.petpet.collpro.datamodel.Element;
-import com.petpet.collpro.datamodel.Property;
-import com.petpet.collpro.datamodel.StringValue;
-import com.petpet.collpro.datamodel.Value;
-import com.petpet.collpro.datamodel.ValueSource;
-import com.petpet.collpro.datamodel.ValueStatus;
-import com.petpet.collpro.utils.Helper;
-import com.petpet.collpro.utils.XMLUtils;
-
 import java.io.File;
 import java.util.Date;
 import java.util.HashSet;
@@ -29,6 +15,21 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.petpet.collpro.api.ITool;
+import com.petpet.collpro.api.utils.ConfigurationException;
+import com.petpet.collpro.common.Config;
+import com.petpet.collpro.common.FITSConstants;
+import com.petpet.collpro.datamodel.DigitalCollection;
+import com.petpet.collpro.datamodel.Element;
+import com.petpet.collpro.datamodel.Property;
+import com.petpet.collpro.datamodel.StringValue;
+import com.petpet.collpro.datamodel.Value;
+import com.petpet.collpro.datamodel.ValueSource;
+import com.petpet.collpro.datamodel.ValueStatus;
+import com.petpet.collpro.utils.FITSHelper;
+import com.petpet.collpro.utils.Helper;
+import com.petpet.collpro.utils.XMLUtils;
 
 public class FITSMetaDataConverter implements ITool {
 
@@ -159,8 +160,8 @@ public class FITSMetaDataConverter implements ITool {
       String mime = identity.attributeValue(FITSConstants.MIMETYPE_ATTR);
 
       // TODO manage value source conflict/single_result
-      Property p1 = Helper.getPropertyByName(FITSConstants.FORMAT_ATTR);
-      Property p2 = Helper.getPropertyByName(FITSConstants.MIMETYPE_ATTR);
+      Property p1 = FITSHelper.getPropertyByFitsName(FITSConstants.FORMAT_ATTR);
+      Property p2 = FITSHelper.getPropertyByFitsName(FITSConstants.MIMETYPE_ATTR);
 
       ValueSource vs = new ValueSource();
       vs.setName(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOL_ATTR));
@@ -186,7 +187,7 @@ public class FITSMetaDataConverter implements ITool {
       // System.out.println(p1.getName() + ":" + v1.getTypedValue());
       // System.out.println(p2.getName() + ":" + v2.getTypedValue());
 
-      Property p3 = Helper.getPropertyByName(FITSConstants.FORMAT_VERSION_ATTR);
+      Property p3 = FITSHelper.getPropertyByFitsName(FITSConstants.FORMAT_VERSION_ATTR);
 
       Iterator verIter = identity.elementIterator(FITSConstants.VERSION);
       while (verIter.hasNext()) {
@@ -214,7 +215,7 @@ public class FITSMetaDataConverter implements ITool {
       Iterator extIterator = identity.elementIterator(FITSConstants.EXT_ID);
       while (extIterator.hasNext()) {
         org.dom4j.Element extId = (org.dom4j.Element) extIterator.next();
-        Property p = Helper.getPropertyByName(extId.attributeValue(FITSConstants.EXT_ID_TYPE_ATTR));
+        Property p = FITSHelper.getPropertyByFitsName(extId.attributeValue(FITSConstants.EXT_ID_TYPE_ATTR));
 
         vs = new ValueSource(extId.attributeValue(FITSConstants.TOOL_ATTR),
             extId.attributeValue(FITSConstants.TOOLVERSION_ATTR));
@@ -245,7 +246,7 @@ public class FITSMetaDataConverter implements ITool {
       while (iter.hasNext()) {
         org.dom4j.Element elmnt = iter.next();
 
-        Property p = Helper.getPropertyByName(elmnt.getName());
+        Property p = FITSHelper.getPropertyByFitsName(elmnt.getName());
 
         ValueSource vs = new ValueSource(elmnt.attributeValue(FITSConstants.TOOL_ATTR),
             elmnt.attributeValue(FITSConstants.TOOLVERSION_ATTR));
