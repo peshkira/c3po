@@ -47,21 +47,7 @@
 
           <rich:dataTable value="#{treeBean.currentSelection.children}" var="eNode" id="table"
             rendered="#{treeBean.currentSelection.type == 'elementfilter'}">
-            <rich:column>
-              <f:facet name="header">
-                <h:outputText value="Name" />
-              </f:facet>
-              <h:outputText value="#{eNode.element.name}">
-              </h:outputText>
-            </rich:column>
-            <rich:column>
-              <f:facet name="header">
-                <h:outputText value="Id" />
-              </f:facet>
-              <h:outputText value="#{eNode.element.path}">
-              </h:outputText>
-            </rich:column>
-
+            
             <c:forEach items="#{treeBean.currentSelection.distinctProperties}" var="dp">
               <rich:column>
                 <f:facet name="header">
@@ -82,7 +68,7 @@
             <h:panelGrid columns="2">
               <ul>
                 <a4j:repeat value="#{treeBean.currentSelection.element.values}" var="val" id="valrepeat2">
-                  <li><h:outputText value="#{val.property.name}: " style="font-weight:bold" /> <h:outputText
+                  <li><h:outputText value="#{val.property.humanReadableName}: " style="font-weight:bold" /> <h:outputText
                       value="#{val.value}" /></li>
                 </a4j:repeat>
               </ul>

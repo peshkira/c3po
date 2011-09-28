@@ -32,6 +32,13 @@
         <version>2.1.1</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
+          <archive>
+            <manifestEntries>
+              <Built-By>Plato Development Team</Built-By>
+              <Dependencies>javaee.api, javax.faces.api, org.hibernate,
+                org.hibernate.validator, org.dom4j</Dependencies>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<collection-profile date="Mon Sep 26 18:09:19 CEST 2011">
+<collection-profile date="Wed Sep 28 13:45:14 CEST 2011">
   <collection name="Test" elements="94" properties="81">
     <properties>
       <property id="aperture.value" name="Aperture Value" type="FLOAT" count="3" mode="2.8" expanded="false"/>

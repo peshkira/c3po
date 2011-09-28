@@ -87,12 +87,10 @@ public class ElementNode extends NamedNode implements TreeNode {
 
 	public String getValue(String pname) {
 		for (Value val : this.element.getValues()) {
-			if  (val.getProperty().getName().equals(pname)) {
-				System.out.println(val.getValue());
+			if  (val.getProperty().getHumanReadableName().equals(pname)) {
 				return val.getValue();
 			}
 		}
-		System.out.println("OMG!");
 		return "-";
 	}
 }

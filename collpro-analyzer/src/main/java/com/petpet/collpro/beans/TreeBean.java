@@ -29,183 +29,179 @@ import com.petpet.collpro.tree.NamedNode;
 @SessionScoped
 public class TreeBean implements Serializable {
 
-	private static final long serialVersionUID = -6484069020777687927L;
+  private static final long serialVersionUID = -6484069020777687927L;
 
-	private static final Logger LOG = LoggerFactory.getLogger(TreeBean.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TreeBean.class);
 
-	@PersistenceContext
-	private EntityManager em;
+  @PersistenceContext
+  private EntityManager em;
 
-	private PreparedQueries queries;
+  private PreparedQueries queries;
 
-	private NamedNode currentSelection = null;
+  private NamedNode currentSelection = null;
 
-	private DigitalCollection coll;
+  private DigitalCollection coll;
 
-	private List<TreeNode> rootNodes;
+  private List<TreeNode> rootNodes;
 
-	private List<String> knownPropertes = new ArrayList<String>();
+  private List<String> knownPropertes = new ArrayList<String>();
 
-	private String filter1;
+  private String filter1;
 
-	private String filter2;
+  private String filter2;
 
-	@PostConstruct
-	public void init() {
-		this.queries = new PreparedQueries(this.em);
-		this.knownPropertes.addAll(this.queries.getAllPropertyNames());
-		// FIXME selection by user
-		this.coll = this.em.find(DigitalCollection.class, 1L);
-	}
+  @PostConstruct
+  public void init() {
+    this.queries = new PreparedQueries(this.em);
+    this.knownPropertes.addAll(this.queries.getAllPropertyNames());
+    System.out.println(knownPropertes.size());
+    // FIXME selection by user
+    this.coll = this.em.find(DigitalCollection.class, 1L);
+  }
 
-	public void selectionChanged(TreeSelectionChangeEvent evt) {
-		// LOG.debug("tree selectionChanged...");
-		// considering only single selection
-		List<Object> selection = new ArrayList<Object>(evt.getNewSelection());
-		Object currentSelectionKey = selection.get(0);
-		UITree tree = (UITree) evt.getSource();
-		Object storedKey = tree.getRowKey();
-		tree.setRowKey(currentSelectionKey);
-		NamedNode node = (NamedNode) tree.getRowData();
-		 LOG.info("TYPE IS: {}", node.getType() + " " + node.getName());
-		 
-		 if (node.getType().equals("elementfilter")) {
-			 node.getDistinctProperties();
-		 }
-		setCurrentSelection(node);
-		tree.setRowKey(storedKey);
-	}
+  public void selectionChanged(TreeSelectionChangeEvent evt) {
+    // LOG.debug("tree selectionChanged...");
+    // considering only single selection
+    List<Object> selection = new ArrayList<Object>(evt.getNewSelection());
+    Object currentSelectionKey = selection.get(0);
+    UITree tree = (UITree) evt.getSource();
+    Object storedKey = tree.getRowKey();
+    tree.setRowKey(currentSelectionKey);
+    NamedNode node = (NamedNode) tree.getRowData();
+    setCurrentSelection(node);
+    tree.setRowKey(storedKey);
+    LOG.info("current selection is '{}', name is '{}'", node.getType(), node.getName());
+    
+    if (node.getType().equals("elementfilter")) {
+      node.getDistinctProperties();
+    }
+  }
 
-	public void expansionChanged(TreeToggleEvent evt) {
-		// LOG.debug("tree expansion changed");
-		if (evt.isExpanded()) {
-			// LOG.debug("tree node is expanded");
-			UITree tree = (UITree) evt.getSource();
-			TreeNode node = (TreeNode) tree.getRowData();
+  public void expansionChanged(TreeToggleEvent evt) {
+    LOG.debug("tree expansion changed");
+    if (evt.isExpanded()) {
+      LOG.debug("tree node is expanded");
+      UITree tree = (UITree) evt.getSource();
+      TreeNode node = (TreeNode) tree.getRowData();
 
-			if (node instanceof FilterNode) {
-				FilterNode fn = (FilterNode) node;
-				// LOG.debug("node is FilterNode {}", fn.getName());
+      if (node instanceof FilterNode) {
+        FilterNode fn = (FilterNode) node;
+        LOG.debug("node is FilterNode {}", fn.getName());
 
-				for (ElementFilterNode efn : fn.getChildren()) {
+        for (ElementFilterNode efn : fn.getChildren()) {
 
-					efn.getChildren().clear();
+          efn.getChildren().clear();
 
-					List<Element> elements = this.queries
-							.getElementsWithinDoubleFilteredCollection(
-									this.filter1, fn.getName(),
-									this.filter2, efn.getName(),
-									this.coll);
+          List<Element> elements = this.queries.getElementsWithinDoubleFilteredCollection(this.filter1, fn.getName(),
+              this.filter2, efn.getName(), this.coll);
 
-					for (Element e : elements) {
-						new ElementNode(efn, e);
-					}
-					
-				}
-			}
-		}
-	}
+          for (Element e : elements) {
+            new ElementNode(efn, e);
+          }
 
-	public void destroyTree() {
-		// TODO
-	}
+        }
+      }
+    }
+  }
 
-	public void createTree() {
-		this.rootNodes = new ArrayList<TreeNode>();
+  public void destroyTree() {
+    // TODO
+  }
 
-		if (!this.isFilteringValid()) {
-			LOG.info("filtering invalid");
-			return;
-		}
+  public void createTree() {
+    this.rootNodes = new ArrayList<TreeNode>();
 
-		LOG.info("constructing tree...");
-		long start = System.currentTimeMillis();
-		this.filterTree();
+    if (!this.isFilteringValid()) {
+      LOG.info("filtering invalid");
+      return;
+    }
 
-		long end = System.currentTimeMillis();
-		LOG.info("Tree constructed in: " + (end - start) + "ms");
-	}
+    LOG.info("constructing tree...");
+    long start = System.currentTimeMillis();
+    this.filterTree();
 
-	private void filterTree() {
-		List<String> filter1 = this
-				.getPropertyValueSet(this.filter1, coll);
-		for (String f1 : filter1) {
+    long end = System.currentTimeMillis();
+    LOG.info("Tree constructed in: " + (end - start) + "ms");
+  }
 
-			FilterNode fn = new FilterNode(f1);
-			this.rootNodes.add(fn);
+  private void filterTree() {
+    List<String> filter1 = this.getPropertyValueSet(this.filter1, coll);
+    for (String f1 : filter1) {
 
-			List<String> list = this.queries.getDistinctValuesWithinFiltering(
-					this.filter1, this.filter2, f1, coll);
+      FilterNode fn = new FilterNode(f1);
+      this.rootNodes.add(fn);
 
-			for (String s : list) {
-				new ElementFilterNode(fn, s);
-			}
+      List<String> list = this.queries.getDistinctValuesWithinFiltering(this.filter1, this.filter2, f1, coll);
 
-		}
-	}
+      for (String s : list) {
+        new ElementFilterNode(fn, s);
+      }
 
-	public void createSecondLevel() {
+    }
+  }
 
-	}
+  public void createSecondLevel() {
 
-	private boolean isFilteringValid() {
-		if (this.filter1 == null || this.filter1.equals("")) {
-			return false;
-		}
+  }
 
-		if (this.filter2 == null || this.filter2.equals("")) {
-			return false;
-		}
+  private boolean isFilteringValid() {
+    if (this.filter1 == null || this.filter1.equals("")) {
+      return false;
+    }
 
-		if (this.filter1.equalsIgnoreCase(this.filter2)) {
-			return false;
-		}
+    if (this.filter2 == null || this.filter2.equals("")) {
+      return false;
+    }
 
-		return true;
-	}
+    if (this.filter1.equalsIgnoreCase(this.filter2)) {
+      return false;
+    }
 
-	public List<String> autocomplete(String prefix) {
-		List<String> result = new ArrayList<String>();
+    return true;
+  }
 
-		for (String p : knownPropertes) {
-			if (p.startsWith(prefix)) {
-				result.add(p);
-			}
-		}
+  public List<String> autocomplete(String prefix) {
+    List<String> result = new ArrayList<String>();
 
-		return result;
-	}
+    for (String p : knownPropertes) {
+      if (p.startsWith(prefix)) {
+        result.add(p);
+      }
+    }
+    System.out.println("autocomplete");
+    return result;
+  }
 
-	public List<TreeNode> getRootNodes() {
-		return rootNodes;
-	}
+  public List<TreeNode> getRootNodes() {
+    return rootNodes;
+  }
 
-	public String getFilter1() {
-		return filter1;
-	}
+  public String getFilter1() {
+    return filter1;
+  }
 
-	public void setFilter1(String firstPFilter) {
-		this.filter1 = firstPFilter;
-	}
+  public void setFilter1(String firstPFilter) {
+    this.filter1 = firstPFilter;
+  }
 
-	public String getFilter2() {
-		return filter2;
-	}
+  public String getFilter2() {
+    return filter2;
+  }
 
-	public void setFilter2(String secondPFilter) {
-		this.filter2 = secondPFilter;
-	}
+  public void setFilter2(String secondPFilter) {
+    this.filter2 = secondPFilter;
+  }
 
-	public NamedNode getCurrentSelection() {
-		return currentSelection;
-	}
+  public NamedNode getCurrentSelection() {
+    return currentSelection;
+  }
 
-	public void setCurrentSelection(NamedNode currentSelection) {
-		this.currentSelection = currentSelection;
-	}
+  public void setCurrentSelection(NamedNode currentSelection) {
+    this.currentSelection = currentSelection;
+  }
 
-	public List<String> getPropertyValueSet(String pname, DigitalCollection coll) {
-		return this.queries.getDistinctPropertyValueSet(pname, coll);
+  public List<String> getPropertyValueSet(String pname, DigitalCollection coll) {
+    return this.queries.getDistinctPropertyValueSet(pname, coll);
 
-	}
+  }
 }
