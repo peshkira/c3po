@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -17,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.collpro.api.ITool;
+import com.petpet.collpro.api.Notification;
+import com.petpet.collpro.api.NotificationListener;
 import com.petpet.collpro.api.utils.ConfigurationException;
 import com.petpet.collpro.common.Config;
 import com.petpet.collpro.common.FITSConstants;
@@ -41,14 +40,14 @@ public class FITSMetaDataConverter implements ITool {
 
   private DigitalCollection collection;
 
-  private Set<ChangeListener> observers;
+  private Set<NotificationListener> observers;
 
   private File[] files;
 
   private SAXReader reader;
 
   public FITSMetaDataConverter() {
-    this.observers = new HashSet<ChangeListener>();
+    this.observers = new HashSet<NotificationListener>();
     this.reader = new SAXReader();
   }
 
@@ -91,6 +90,27 @@ public class FITSMetaDataConverter implements ITool {
     } else {
       Date date = (Date) d;
       this.measuredAt = date;
+    }
+  }
+
+  @Override
+  public void addObserver(NotificationListener listener) {
+    if (!this.observers.contains(listener)) {
+      this.observers.add(listener);
+    }
+  }
+
+  @Override
+  public void removeObserver(NotificationListener listener) {
+    this.observers.remove(listener);
+
+  }
+
+  @Override
+  public void notifyObservers(Object data) {
+    for (NotificationListener l : this.observers) {
+      final Notification<Element> n = new Notification<Element>((Element) data);
+      l.notify(n);
     }
   }
 
@@ -138,7 +158,7 @@ public class FITSMetaDataConverter implements ITool {
         }
 
       } catch (DocumentException e) {
-        System.err.println(e.getMessage());
+        LOG.error("An error occurred: {}", e.getMessage());
       }
     }
   }
@@ -184,9 +204,6 @@ public class FITSMetaDataConverter implements ITool {
       e.getValues().add(v1);
       e.getValues().add(v2);
 
-      // System.out.println(p1.getName() + ":" + v1.getTypedValue());
-      // System.out.println(p2.getName() + ":" + v2.getTypedValue());
-
       Property p3 = FITSHelper.getPropertyByFitsName(FITSConstants.FORMAT_VERSION_ATTR);
 
       Iterator verIter = identity.elementIterator(FITSConstants.VERSION);
@@ -209,7 +226,6 @@ public class FITSMetaDataConverter implements ITool {
 
         e.getValues().add(v);
 
-        // System.out.println(p3.getName() + ":" + v.getTypedValue());
       }
 
       Iterator extIterator = identity.elementIterator(FITSConstants.EXT_ID);
@@ -233,7 +249,6 @@ public class FITSMetaDataConverter implements ITool {
 
         e.getValues().add(v);
 
-        // System.out.println(p.getName() + ":" + v.getTypedValue());
       }
     }
   }
@@ -251,8 +266,6 @@ public class FITSMetaDataConverter implements ITool {
         ValueSource vs = new ValueSource(elmnt.attributeValue(FITSConstants.TOOL_ATTR),
             elmnt.attributeValue(FITSConstants.TOOLVERSION_ATTR));
 
-        // System.out.println("Value of property: " + p.getName() + " "
-        // + p.getType());
         Value v = Helper.getTypedValue(p.getType(), elmnt.getText());
         v.setMeasuredAt(this.measuredAt.getTime());
         v.setSource(vs);
@@ -262,31 +275,7 @@ public class FITSMetaDataConverter implements ITool {
 
         e.getValues().add(v);
 
-        // System.out.println(p.getName() + ":" + v.getTypedValue() +
-        // " - " + vs.getName() + ":" + vs.getVersion());
       }
     }
   }
-
-  @Override
-  public void addObserver(ChangeListener listener) {
-    if (!this.observers.contains(listener)) {
-      this.observers.add(listener);
-    }
-  }
-
-  @Override
-  public void removeObserver(ChangeListener listener) {
-    this.observers.remove(listener);
-
-  }
-
-  @Override
-  public void notifyObservers(Object source) {
-    for (ChangeListener l : this.observers) {
-      final ChangeEvent evt = new ChangeEvent(source);
-      l.stateChanged(evt);
-    }
-  }
-
 }

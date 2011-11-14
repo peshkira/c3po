@@ -1,79 +1,79 @@
 package com.petpet.collpro.tools;
 
-import com.petpet.collpro.api.ITool;
-import com.petpet.collpro.api.utils.ConfigurationException;
-import com.petpet.collpro.common.Config;
-import com.petpet.collpro.datamodel.DigitalCollection;
-import com.petpet.collpro.db.DBManager;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleGatherer implements ChangeListener {
+import com.petpet.collpro.api.ITool;
+import com.petpet.collpro.api.Notification;
+import com.petpet.collpro.api.NotificationListener;
+import com.petpet.collpro.api.utils.ConfigurationException;
+import com.petpet.collpro.common.Config;
+import com.petpet.collpro.datamodel.DigitalCollection;
+import com.petpet.collpro.datamodel.Element;
+import com.petpet.collpro.db.DBManager;
 
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleGatherer.class);
+public class SimpleGatherer implements NotificationListener {
 
-    private ITool converter;
+  private static final Logger LOG = LoggerFactory.getLogger(SimpleGatherer.class);
 
-    private DigitalCollection collection;
+  private ITool converter;
 
-    public SimpleGatherer(ITool converter, DigitalCollection collection) {
-        this.converter = converter;
+  private DigitalCollection collection;
 
-        if (collection == null) {
-            this.collection = new DigitalCollection("collection-" + new Date().toString());
-        } else {
-            this.collection = collection;
-        }
+  public SimpleGatherer(ITool converter, DigitalCollection collection) {
+    this.converter = converter;
 
-        DBManager.getInstance().persist(this.collection);
+    if (collection == null) {
+      this.collection = new DigitalCollection("collection-" + new Date().toString());
+    } else {
+      this.collection = collection;
     }
 
-    public void gather(File dir) {
-        if (dir == null || !dir.isDirectory()) {
-            LOG.warn("Provided folder is null or not a folder");
-        }
+    DBManager.getInstance().persist(this.collection);
+  }
 
-        Map<String, Object> config = new HashMap<String, Object>();
-        config.put(Config.DATE_CONF, new Date());
-        config.put(Config.COLLECTION_CONF, this.collection);
-        config.put(Config.FITS_FILES_CONF, dir.listFiles(new XMLFileFilter()));
-
-        try {
-            this.converter.addObserver(this);
-            this.converter.configure(config);
-            this.converter.execute();
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-        }
-
+  public void gather(File dir) {
+    if (dir == null || !dir.isDirectory()) {
+      LOG.warn("Provided folder is null or not a folder");
     }
 
-    private class XMLFileFilter implements FileFilter {
+    Map<String, Object> config = new HashMap<String, Object>();
+    config.put(Config.DATE_CONF, new Date());
+    config.put(Config.COLLECTION_CONF, this.collection);
+    config.put(Config.FITS_FILES_CONF, dir.listFiles(new XMLFileFilter()));
 
-        @Override
-        public boolean accept(File pathname) {
-            return pathname.getName().endsWith(".xml");
-        }
-
+    try {
+      this.converter.addObserver(this);
+      this.converter.configure(config);
+      this.converter.execute();
+    } catch (ConfigurationException e) {
+      e.printStackTrace();
     }
+
+  }
+
+  private class XMLFileFilter implements FileFilter {
 
     @Override
-    public void stateChanged(ChangeEvent evt) {
-        Object o = evt.getSource();
-        if (o != null) {
-            DBManager.getInstance().persist(o);
-        }
-
+    public boolean accept(File pathname) {
+      return pathname.getName().endsWith(".xml");
     }
+
+  }
+
+  @Override
+  public void notify(Notification<?> n) {
+    Object o = n.getData();
+    if (o != null && n.getClazz().equals(Element.class)) {
+      DBManager.getInstance().persist(o);
+    }
+
+  }
 
 }

@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.collpro.api.ITool;
+import com.petpet.collpro.api.Notification;
+import com.petpet.collpro.api.NotificationListener;
 import com.petpet.collpro.api.utils.ConfigurationException;
 import com.petpet.collpro.common.Config;
 import com.petpet.collpro.datamodel.DigitalCollection;
@@ -36,13 +38,13 @@ public class ProfileGenerator implements ITool {
 
   private PreparedQueries queries;
 
-  private Set<ChangeListener> observers;
+  private Set<NotificationListener> observers;
 
   private List<Property> expanded;
 
   public ProfileGenerator(PreparedQueries queries) {
     this.queries = queries;
-    this.observers = new HashSet<ChangeListener>();
+    this.observers = new HashSet<NotificationListener>();
   }
 
   public void write(Document doc) {
@@ -58,23 +60,23 @@ public class ProfileGenerator implements ITool {
   }
 
   @Override
-  public void addObserver(ChangeListener listener) {
+  public void addObserver(NotificationListener listener) {
     if (!this.observers.contains(listener)) {
       this.observers.add(listener);
     }
   }
 
   @Override
-  public void removeObserver(ChangeListener listener) {
+  public void removeObserver(NotificationListener listener) {
     this.observers.remove(listener);
 
   }
 
   @Override
-  public void notifyObservers(Object source) {
-    for (ChangeListener l : this.observers) {
-      final ChangeEvent evt = new ChangeEvent(source);
-      l.stateChanged(evt);
+  public void notifyObservers(Object data) {
+    for (NotificationListener l : this.observers) {
+      Notification<Document> n = new Notification<Document>((Document) data);
+      l.notify(n);
     }
   }
 

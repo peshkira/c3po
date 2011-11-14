@@ -11,26 +11,24 @@ import javax.swing.event.ChangeListener;
 
 import org.dom4j.Document;
 
+import com.petpet.collpro.api.Notification;
+import com.petpet.collpro.api.NotificationListener;
 import com.petpet.collpro.api.utils.ConfigurationException;
 import com.petpet.collpro.common.Config;
 import com.petpet.collpro.datamodel.DigitalCollection;
-import com.petpet.collpro.datamodel.Element;
 import com.petpet.collpro.datamodel.Property;
-import com.petpet.collpro.datamodel.RepresentativeCollection;
 import com.petpet.collpro.db.DBManager;
 import com.petpet.collpro.db.PreparedQueries;
-import com.petpet.collpro.tools.CollectionInspector;
 import com.petpet.collpro.tools.FITSMetaDataConverter;
 import com.petpet.collpro.tools.ProfileGenerator;
 import com.petpet.collpro.tools.SimpleGatherer;
 import com.petpet.collpro.utils.Configurator;
-import com.petpet.collpro.utils.Helper;
 
 /**
- * Hello world!
+ * Just for some static experiments
  * 
  */
-public class App implements ChangeListener {
+public class App implements NotificationListener {
   private DigitalCollection test;
   private ProfileGenerator gen;
 
@@ -39,22 +37,31 @@ public class App implements ChangeListener {
     App app = new App();
     app.foldertest();
     // app.querytest();
-    // app.repcolltest();
     app.genprofile();
   }
 
   private void genprofile() {
     try {
-      List<Property> props = Helper.getPropertiesByNames(new String[] { "apertureValue", "avgBitRate", "avgPacketSize",
-          "bitDepth", "bitRate", "bitsPerSample", "blockAlign", "blockSizeMax", "blockSizeMin", "brightnessValue",
-          "byteOrder", "captureDevice", "channels", "charset", "colorSpace", "compressionScheme",
-          "digitalCameraManufacturer", "digitalCameraModelName", "duration", "exifVersion", "exposureBiasValue",
-          "exposureProgram", "exposureTime", "flash", "fNumber", "focalLength", "iccProfileName", "iccProfileVersion",
-          "imageHeight", "imageWidth", "inhibitorType", "isoSpeedRating", "lightSource", "linebreak", "markupBasis",
-          "maxApertureValue", "maxBitRate", "maxPacketSize", "meteringMode", "numPackets", "numSamples", "offset",
-          "orientation", "sampleRate", "samplesPerPixel", "samplingFrequencyUnit", "scannerManufacturer",
-          "scannerModelName", "scanningSoftwareName", "sensingMethod", "shutterSpeedValue", "wordSize",
-          "xSamplingFrequency", "YCbCrPositioning", "YCbCrSubSampling", "ySamplingFrequency"});
+      // List<Property> props = Helper.getPropertiesByNames(new String[] {
+      // "apertureValue", "avgBitRate", "avgPacketSize",
+      // "bitDepth", "bitRate", "bitsPerSample", "blockAlign", "blockSizeMax",
+      // "blockSizeMin", "brightnessValue",
+      // "byteOrder", "captureDevice", "channels", "charset", "colorSpace",
+      // "compressionScheme",
+      // "digitalCameraManufacturer", "digitalCameraModelName", "duration",
+      // "exifVersion", "exposureBiasValue",
+      // "exposureProgram", "exposureTime", "flash", "fNumber", "focalLength",
+      // "iccProfileName", "iccProfileVersion",
+      // "imageHeight", "imageWidth", "inhibitorType", "isoSpeedRating",
+      // "lightSource", "linebreak", "markupBasis",
+      // "maxApertureValue", "maxBitRate", "maxPacketSize", "meteringMode",
+      // "numPackets", "numSamples", "offset",
+      // "orientation", "sampleRate", "samplesPerPixel",
+      // "samplingFrequencyUnit", "scannerManufacturer",
+      // "scannerModelName", "scanningSoftwareName", "sensingMethod",
+      // "shutterSpeedValue", "wordSize",
+      // "xSamplingFrequency", "YCbCrPositioning", "YCbCrSubSampling",
+      // "ySamplingFrequency" });
       gen = new ProfileGenerator(new PreparedQueries(DBManager.getInstance().getEntityManager()));
       Map<String, Object> config = new HashMap<String, Object>();
       config.put(Config.COLLECTION_CONF, this.test);
@@ -64,18 +71,6 @@ public class App implements ChangeListener {
       gen.execute();
     } catch (ConfigurationException e) {
       e.printStackTrace();
-    }
-  }
-
-  private void repcolltest() {
-    CollectionInspector insp = new CollectionInspector();
-    insp.setQueries(new PreparedQueries(DBManager.getInstance().getEntityManager()));
-    RepresentativeCollection rcoll = insp.getRepresentativeCollection(this.test, 15, "format", "pageCount");
-
-    if (rcoll != null) {
-      for (Element e : rcoll.getElements()) {
-        System.out.println(e.getId() + " " + e.getName());
-      }
     }
   }
 
@@ -137,9 +132,11 @@ public class App implements ChangeListener {
   }
 
   @Override
-  public void stateChanged(ChangeEvent evt) {
-    if (evt.getSource() instanceof Document) {
-      gen.write((Document) evt.getSource());
+  public void notify(Notification<?> n) {
+    Object data = n.getData();
+    if (data != null && n.getClazz().equals(Document.class)) {
+      gen.write((Document) data);
     }
+
   }
 }
