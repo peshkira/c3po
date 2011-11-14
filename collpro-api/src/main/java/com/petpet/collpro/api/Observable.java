@@ -2,9 +2,9 @@ package com.petpet.collpro.api;
 
 public interface Observable {
 
-  void addObserver(NotificationListener listener);
+  void addObserver(Call callback);
 
-  void removeObserver(NotificationListener listener);
+  void removeObserver(Call callback);
 
   void notifyObservers(Object o);
 }

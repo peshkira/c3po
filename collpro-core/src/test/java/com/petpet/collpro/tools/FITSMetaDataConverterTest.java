@@ -1,7 +1,7 @@
 package com.petpet.collpro.tools;
 
-import com.petpet.collpro.api.Notification;
-import com.petpet.collpro.api.NotificationListener;
+import com.petpet.collpro.api.Message;
+import com.petpet.collpro.api.Call;
 import com.petpet.collpro.datamodel.DigitalCollection;
 import com.petpet.collpro.datamodel.Element;
 import com.petpet.collpro.db.DBManager;
@@ -20,7 +20,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FITSMetaDataConverterTest implements NotificationListener {
+public class FITSMetaDataConverterTest implements Call {
 
   private FITSMetaDataConverter converter;
   private DigitalCollection collection;
@@ -54,7 +54,7 @@ public class FITSMetaDataConverterTest implements NotificationListener {
   }
 
   @Override
-  public void notify(Notification<?> n) {
+  public void back(Message<?> n) {
     if (n.getData() == null) {
       Assert.fail("No element returned");
     } else {

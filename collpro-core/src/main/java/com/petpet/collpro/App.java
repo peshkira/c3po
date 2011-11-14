@@ -11,8 +11,8 @@ import javax.swing.event.ChangeListener;
 
 import org.dom4j.Document;
 
-import com.petpet.collpro.api.Notification;
-import com.petpet.collpro.api.NotificationListener;
+import com.petpet.collpro.api.Message;
+import com.petpet.collpro.api.Call;
 import com.petpet.collpro.api.utils.ConfigurationException;
 import com.petpet.collpro.common.Config;
 import com.petpet.collpro.datamodel.DigitalCollection;
@@ -28,7 +28,7 @@ import com.petpet.collpro.utils.Configurator;
  * Just for some static experiments
  * 
  */
-public class App implements NotificationListener {
+public class App implements Call {
   private DigitalCollection test;
   private ProfileGenerator gen;
 
@@ -132,7 +132,7 @@ public class App implements NotificationListener {
   }
 
   @Override
-  public void notify(Notification<?> n) {
+  public void back(Message<?> n) {
     Object data = n.getData();
     if (data != null && n.getClazz().equals(Document.class)) {
       gen.write((Document) data);

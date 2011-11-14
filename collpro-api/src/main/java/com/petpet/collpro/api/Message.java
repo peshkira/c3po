@@ -1,10 +1,10 @@
 package com.petpet.collpro.api;
 
-public class Notification<T> {
+public class Message<T> {
 
   private T data;
 
-  public Notification(T data) {
+  public Message(T data) {
     this.data = data;
 
   }
