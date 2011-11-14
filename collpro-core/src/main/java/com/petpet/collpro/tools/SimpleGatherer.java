@@ -3,16 +3,13 @@ package com.petpet.collpro.tools;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.collpro.api.Call;
 import com.petpet.collpro.api.ITool;
 import com.petpet.collpro.api.Message;
-import com.petpet.collpro.api.Call;
-import com.petpet.collpro.api.utils.ConfigurationException;
 import com.petpet.collpro.common.Config;
 import com.petpet.collpro.datamodel.DigitalCollection;
 import com.petpet.collpro.datamodel.Element;
@@ -43,18 +40,11 @@ public class SimpleGatherer implements Call {
 			LOG.warn("Provided folder is null or not a folder");
 		}
 
-		Map<String, Object> config = new HashMap<String, Object>();
-		config.put(Config.DATE_CONF, new Date());
-		config.put(Config.COLLECTION_CONF, this.collection);
-		config.put(Config.FITS_FILES_CONF, dir.listFiles(new XMLFileFilter()));
-
-		try {
-			this.converter.addObserver(this);
-			this.converter.configure(config);
-			this.converter.execute();
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-		}
+		this.converter.addParameter(Config.DATE_CONF, new Date())
+				.addParameter(Config.COLLECTION_CONF, this.collection)
+		        .addParameter(Config.FITS_FILES_CONF, dir.listFiles(new XMLFileFilter()));
+		this.converter.addObserver(this);
+		this.converter.execute();
 
 	}
 

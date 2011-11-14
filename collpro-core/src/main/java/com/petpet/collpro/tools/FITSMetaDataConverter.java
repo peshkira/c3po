@@ -1,9 +1,11 @@
 package com.petpet.collpro.tools;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -85,6 +87,7 @@ public class FITSMetaDataConverter implements ITool {
 			this.files = (File[]) f;
 		}
 
+		// TODO extract this from the timestamp in the fits file.
 		Object d = this.configuration.get(Config.DATE_CONF);
 		if (d == null) {
 			this.measuredAt = new Date();
@@ -93,6 +96,39 @@ public class FITSMetaDataConverter implements ITool {
 			Date date = (Date) d;
 			this.measuredAt = date;
 		}
+	}
+
+	@Override
+	public ITool addParameter(String key, Object value) {
+		try {
+
+			if (key.equals(Config.COLLECTION_CONF)) {
+				this.collection = (DigitalCollection) value;
+
+			} else if (key.equals(Config.FITS_FILES_CONF)) {
+				this.files = (File[]) value;
+
+			} else if (key.equals(Config.DATE_CONF)) {
+				this.measuredAt = (Date) value;
+
+			} else {
+				LOG.warn("Unknown config param '{}', skipping", key);
+			}
+
+		} catch (ClassCastException e) {
+			LOG.warn("Unknown data type for key '{}': {}", key, e.getMessage());
+		}
+		return this;
+	}
+
+	@Override
+	public List<String> getConfigParameters() {
+		return Arrays.asList(Config.COLLECTION_CONF, Config.FITS_FILES_CONF, Config.DATE_CONF);
+	}
+
+	@Override
+	public List<String> getMandatoryParameters() {
+		return Arrays.asList(Config.COLLECTION_CONF, Config.FITS_FILES_CONF);
 	}
 
 	@Override

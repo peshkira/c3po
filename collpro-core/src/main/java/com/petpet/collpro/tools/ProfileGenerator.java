@@ -3,6 +3,7 @@ package com.petpet.collpro.tools;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -81,8 +82,12 @@ public class ProfileGenerator implements ITool {
 
 	@Override
 	public void execute() {
-		Document profile = this.generateProfile(coll);
-		this.notifyObservers(profile);
+		if (this.coll != null) {
+			final Document profile = this.generateProfile(coll);
+			this.notifyObservers(profile);
+		} else {
+			LOG.error("No collection was provided, aborting... Please configure the tool before execution");
+		}
 
 	}
 
@@ -102,6 +107,35 @@ public class ProfileGenerator implements ITool {
 		}
 
 	}
+
+	@Override
+	public ITool addParameter(String key, Object value) {
+		try {
+
+			if (key.equals(Config.COLLECTION_CONF)) {
+				this.coll = (DigitalCollection) value;
+			} else if (key.equals(Config.EXPANDED_PROPS_CONF)) {
+				this.expanded = (List<Property>) value;
+			} else {
+				LOG.warn("Unknown config param '{}', skipping", key);
+			}
+			
+		} catch (ClassCastException e) {
+			LOG.warn("Unknown data type for key '{}': {}", key, e.getMessage());
+		}
+
+		return this;
+	}
+	
+	@Override
+    public List<String> getConfigParameters() {
+	    return Arrays.asList(Config.COLLECTION_CONF, Config.EXPANDED_PROPS_CONF);
+    }
+
+	@Override
+    public List<String> getMandatoryParameters() {
+		return Arrays.asList(Config.COLLECTION_CONF);
+    }
 
 	private Document generateProfile(DigitalCollection coll) {
 		LOG.info("generating profile for collection '{}'", coll.getName());
@@ -146,5 +180,4 @@ public class ProfileGenerator implements ITool {
 
 		return document;
 	}
-
 }
