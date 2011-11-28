@@ -3,16 +3,17 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.petpet</groupId>
-	<artifactId>collpro</artifactId>
+	<artifactId>c3po</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Collection Profiler</name>
+	<name>C3PO</name>
+    <description>Characterization, Content and Collection Profiling of Objects</description>
 
 	<modules>
-		<module>collpro-api</module>
-		<module>collpro-model</module>
-		<module>collpro-core</module>
-		<module>collpro-analyzer</module>
+		<module>c3po-api</module>
+		<module>c3po-model</module>
+		<module>c3po-core</module>
+		<module>c3po-analyzer</module>
 	</modules>
 
 	<developers>

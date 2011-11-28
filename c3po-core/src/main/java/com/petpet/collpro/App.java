@@ -6,13 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.dom4j.Document;
 
-import com.petpet.collpro.api.Message;
 import com.petpet.collpro.api.Call;
+import com.petpet.collpro.api.Message;
 import com.petpet.collpro.api.utils.ConfigurationException;
 import com.petpet.collpro.common.Config;
 import com.petpet.collpro.datamodel.DigitalCollection;

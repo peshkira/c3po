@@ -15,9 +15,9 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.collpro.api.Call;
 import com.petpet.collpro.api.ITool;
 import com.petpet.collpro.api.Message;
-import com.petpet.collpro.api.Call;
 import com.petpet.collpro.api.utils.ConfigurationException;
 import com.petpet.collpro.common.Config;
 import com.petpet.collpro.common.FITSConstants;

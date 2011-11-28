@@ -4,11 +4,11 @@
   xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>collpro</artifactId>
+    <artifactId>c3po</artifactId>
     <groupId>com.petpet</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>collpro-analyzer</artifactId>
+  <artifactId>c3po-analyzer</artifactId>
   <packaging>war</packaging>
   <name>Collection Profiler Analyzer</name>
 
@@ -89,7 +89,7 @@
     </dependency>
     <dependency>
       <groupId>com.petpet</groupId>
-      <artifactId>collpro-model</artifactId>
+      <artifactId>c3po-model</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
