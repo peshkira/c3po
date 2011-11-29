@@ -59,9 +59,9 @@ public class SimpleGatherer implements Call {
     }
 
     @Override
-    public void back(Message<?> n) {
+    public void back(Message<? extends Object> n) {
         Object o = n.getData();
-        if (o != null && n.getClazz().equals(Element.class)) {
+        if (o != null && o.getClass().equals(Element.class)) {
             DBManager.getInstance().persist(o);
         }
 

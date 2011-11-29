@@ -132,7 +132,7 @@ public class App implements Call {
   @Override
   public void back(Message<?> n) {
     Object data = n.getData();
-    if (data != null && n.getClazz().equals(Document.class)) {
+    if (data != null && data.getClass().equals(Document.class)) {
       gen.write((Document) data);
     }
 

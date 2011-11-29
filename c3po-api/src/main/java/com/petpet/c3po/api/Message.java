@@ -13,10 +13,6 @@ public class Message<T> {
     return data;
   }
   
-  public Class<?> getClazz() {
-    return data.getClass();
-  }
-
   public String toString() {
     return "Notification: " + ((data == null) ? "null" : data.toString());
   }

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -44,6 +45,16 @@ public class ProfileGenerator implements ITool {
 	public ProfileGenerator(PreparedQueries queries) {
 		this.queries = queries;
 		this.observers = new HashSet<Call>();
+	}
+	
+	public void write(String xml) {
+	    try {
+            Document doc = DocumentHelper.parseText(xml);
+            this.write(doc);
+            
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
 	}
 
 	public void write(Document doc) {
