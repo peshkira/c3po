@@ -3,24 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-  	<artifactId>c3po</artifactId>
-  	<groupId>com.petpet</groupId>
-   <version>0.0.1-SNAPSHOT</version>
+    <artifactId>c3po</artifactId>
+    <groupId>com.petpet</groupId>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>c3po-core</artifactId>
   <packaging>jar</packaging>
-  <name>Core Module</name>
-
-  <developers>
-    <developer>
-      <id>pp</id>
-      <name>Petar Petrov</name>
-      <email>petrov@ifs.tuwien.ac.at</email>
-      <organization>TU Wien</organization>
-      <url>www.ifs.tuwien.ac.at/~petrov</url>
-    </developer>
-  </developers>
+  <name>C3PO Core Module</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -93,14 +83,14 @@
       <version>1.0.13</version>
     </dependency>
     <dependency>
-    	<groupId>com.petpet</groupId>
-    	<artifactId>c3po-api</artifactId>
-    	<version>0.0.1-SNAPSHOT</version>
+      <groupId>com.petpet</groupId>
+      <artifactId>c3po-api</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-        <groupId>com.petpet</groupId>
-        <artifactId>c3po-model</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+      <groupId>com.petpet</groupId>
+      <artifactId>c3po-model</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
