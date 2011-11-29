@@ -32,7 +32,6 @@ public class App implements Call {
   public static void main(String[] args) {
     Configurator c = new Configurator();
     c.configure();
-    
     App app = new App();
     app.foldertest();
     // app.querytest();
@@ -76,8 +75,8 @@ public class App implements Call {
   private void foldertest() {
     this.test = new DigitalCollection("Test");
     SimpleGatherer g = new SimpleGatherer(new FITSMetaDataConverter(), test);
-    g.gather(new File("/home/peter/Desktop/outputtest/"));
-    // g.gather(new File("/Users/petar/Desktop/output/"));
+//    g.gather(new File("/home/peter/Desktop/outputtest/"));
+     g.gather(new File("/Users/petar/Desktop/output/"));
   }
 
   private void querytest() {

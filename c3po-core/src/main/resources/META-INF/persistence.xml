@@ -4,15 +4,15 @@
   <persistence-unit name="LocalCollProPersistenceUnit" transaction-type="RESOURCE_LOCAL">
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
 
-    <class>com.petpet.collpro.datamodel.DigitalCollection</class>
-    <class>com.petpet.collpro.datamodel.Element</class>
-    <class>com.petpet.collpro.datamodel.Property</class>
-    <class>com.petpet.collpro.datamodel.Value</class>
-    <class>com.petpet.collpro.datamodel.StringValue</class>
-    <class>com.petpet.collpro.datamodel.IntegerValue</class>
-    <class>com.petpet.collpro.datamodel.FloatValue</class>
-    <class>com.petpet.collpro.datamodel.BooleanValue</class>
-    <class>com.petpet.collpro.datamodel.ValueSource</class>
+    <class>com.petpet.c3po.datamodel.DigitalCollection</class>
+    <class>com.petpet.c3po.datamodel.Element</class>
+    <class>com.petpet.c3po.datamodel.Property</class>
+    <class>com.petpet.c3po.datamodel.Value</class>
+    <class>com.petpet.c3po.datamodel.StringValue</class>
+    <class>com.petpet.c3po.datamodel.IntegerValue</class>
+    <class>com.petpet.c3po.datamodel.FloatValue</class>
+    <class>com.petpet.c3po.datamodel.BooleanValue</class>
+    <class>com.petpet.c3po.datamodel.ValueSource</class>
 
     <properties>
       <property name="hibernate.connection.driver_class" value="org.postgresql.Driver" />
