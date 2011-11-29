@@ -15,27 +15,27 @@ public class HelperTest {
     
     @Test
     public void shouldGetCorrectValueType() throws Exception {
-        Value value = Helper.getTypedValue(PropertyType.BOOL, "true");
+        Value value = Helper.getTypedValue(PropertyType.BOOL.getClazz(), "true");
         Assert.assertTrue(value instanceof BooleanValue);
         
-        value = Helper.getTypedValue(PropertyType.BOOL, "this wont be true");
+        value = Helper.getTypedValue(PropertyType.BOOL.getClazz(), "this wont be true");
         Assert.assertTrue(value instanceof BooleanValue);
         Assert.assertFalse(((BooleanValue)value).getTypedValue());
         
-        value = Helper.getTypedValue(PropertyType.DEFAULT, "test");
+        value = Helper.getTypedValue(PropertyType.DEFAULT.getClazz(), "test");
         Assert.assertTrue(value instanceof StringValue);
         
-        value = Helper.getTypedValue(PropertyType.STRING, "woot");
+        value = Helper.getTypedValue(PropertyType.STRING.getClazz(), "woot");
         Assert.assertTrue(value instanceof StringValue);
         
-        value = Helper.getTypedValue(PropertyType.NUMERIC, "42");
+        value = Helper.getTypedValue(PropertyType.NUMERIC.getClazz(), "42");
         Assert.assertTrue(value instanceof IntegerValue);
         
-        value = Helper.getTypedValue(PropertyType.NUMERIC, "NAN");
+        value = Helper.getTypedValue(PropertyType.NUMERIC.getClazz(), "NAN");
         Assert.assertTrue(value instanceof IntegerValue);
         
-        value = Helper.getTypedValue(PropertyType.ARRAY, "fail");
-        Assert.assertNull(value);
+        value = Helper.getTypedValue(PropertyType.ARRAY.getClazz(), "a b c");
+        Assert.assertTrue(value instanceof StringValue); //for now casted to stringvalue
         
     }
 }

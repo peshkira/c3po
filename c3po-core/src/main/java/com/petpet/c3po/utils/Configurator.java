@@ -9,26 +9,23 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.db.DBManager;
 
-public final class Configurator {
+public class Configurator {
 
     private static final Logger LOG = LoggerFactory.getLogger(Configurator.class);
 
-    private static Configurator uniqueInstance;
-
-    public static synchronized Configurator getInstance() {
-        if (Configurator.uniqueInstance == null) {
-            Configurator.uniqueInstance = new Configurator();
-        }
-
-        return Configurator.uniqueInstance;
-    }
-
     public void configure() {
+        this.initializeHelpers();
         this.connectToDatabase();
         this.loadKnownProperties();
         // eventually load mapping of properties, e.g. lastModified maps to
         // lastChanged
         // TODO load properties files and setup preferences
+    }
+    
+    private void initializeHelpers() {
+        XMLUtils.init();
+        Helper.init();
+        FITSHelper.init();
     }
 
     private void connectToDatabase() {
@@ -44,8 +41,5 @@ public final class Configurator {
             for (Property p : props) {
                 Helper.KNOWN_PROPERTIES.put(p.getName(), p);
             }
-    }
-
-    private Configurator() {
     }
 }

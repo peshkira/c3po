@@ -305,7 +305,7 @@ public class FITSMetaDataConverter implements ITool {
 				ValueSource vs = new ValueSource(elmnt.attributeValue(FITSConstants.TOOL_ATTR),
 				        elmnt.attributeValue(FITSConstants.TOOLVERSION_ATTR));
 
-				Value v = Helper.getTypedValue(p.getType(), elmnt.getText());
+				Value v = Helper.getTypedValue(p.getType().getClazz(), elmnt.getText());
 				v.setMeasuredAt(this.measuredAt.getTime());
 				v.setSource(vs);
 				v.setProperty(p);

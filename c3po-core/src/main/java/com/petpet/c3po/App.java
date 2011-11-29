@@ -30,7 +30,9 @@ public class App implements Call {
   private ProfileGenerator gen;
 
   public static void main(String[] args) {
-    Configurator.getInstance().configure();
+    Configurator c = new Configurator();
+    c.configure();
+    
     App app = new App();
     app.foldertest();
     // app.querytest();
