@@ -1,4 +1,4 @@
-package com.petpet.c3po.tools;
+package com.petpet.c3po.tools.fits;
 
 import java.io.File;
 import java.util.Arrays;
@@ -20,7 +20,6 @@ import com.petpet.c3po.api.ITool;
 import com.petpet.c3po.api.Message;
 import com.petpet.c3po.api.utils.ConfigurationException;
 import com.petpet.c3po.common.Config;
-import com.petpet.c3po.common.FITSConstants;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Property;
@@ -28,13 +27,12 @@ import com.petpet.c3po.datamodel.StringValue;
 import com.petpet.c3po.datamodel.Value;
 import com.petpet.c3po.datamodel.ValueSource;
 import com.petpet.c3po.datamodel.ValueStatus;
-import com.petpet.c3po.utils.FITSHelper;
 import com.petpet.c3po.utils.Helper;
 import com.petpet.c3po.utils.XMLUtils;
 
-public class FITSMetaDataConverter implements ITool {
+public class FITSMetaDataAdaptor implements ITool {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FITSMetaDataConverter.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FITSMetaDataAdaptor.class);
 
 	private Map<String, Object> configuration;
 
@@ -48,7 +46,7 @@ public class FITSMetaDataConverter implements ITool {
 
 	private SAXReader reader;
 
-	public FITSMetaDataConverter() {
+	public FITSMetaDataAdaptor() {
 		this.observers = new HashSet<Call>();
 		this.reader = new SAXReader();
 	}

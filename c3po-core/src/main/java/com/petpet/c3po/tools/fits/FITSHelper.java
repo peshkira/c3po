@@ -1,4 +1,4 @@
-package com.petpet.c3po.utils;
+package com.petpet.c3po.tools.fits;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.utils.Helper;
 
 public class FITSHelper {
 

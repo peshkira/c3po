@@ -1,4 +1,4 @@
-package com.petpet.c3po.tools;
+package com.petpet.c3po.tools.fits;
 
 import java.io.File;
 import java.util.Date;
@@ -17,16 +17,16 @@ import com.petpet.c3po.api.Message;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.db.DBManager;
-import com.petpet.c3po.tools.FITSMetaDataConverter;
+import com.petpet.c3po.tools.fits.FITSMetaDataAdaptor;
 
-public class FITSMetaDataConverterTest {
+public class FITSMetaDataAdaptorTest {
 
-	private FITSMetaDataConverter converter;
+	private FITSMetaDataAdaptor converter;
 	private DigitalCollection collection;
 
 	@Before
 	public void before() {
-		this.converter = new FITSMetaDataConverter();
+		this.converter = new FITSMetaDataAdaptor();
 		this.collection = new DigitalCollection("Test");
 		DBManager.getInstance().persist(this.collection);
 

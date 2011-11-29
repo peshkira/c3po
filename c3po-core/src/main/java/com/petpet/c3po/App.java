@@ -16,9 +16,9 @@ import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.db.DBManager;
 import com.petpet.c3po.db.PreparedQueries;
-import com.petpet.c3po.tools.FITSMetaDataConverter;
 import com.petpet.c3po.tools.ProfileGenerator;
 import com.petpet.c3po.tools.SimpleGatherer;
+import com.petpet.c3po.tools.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.utils.Configurator;
 
 /**
@@ -74,7 +74,7 @@ public class App implements Call {
 
   private void foldertest() {
     this.test = new DigitalCollection("Test");
-    SimpleGatherer g = new SimpleGatherer(new FITSMetaDataConverter(), test);
+    SimpleGatherer g = new SimpleGatherer(new FITSMetaDataAdaptor(), test);
 //    g.gather(new File("/home/peter/Desktop/outputtest/"));
      g.gather(new File("/Users/petar/Desktop/output/"));
   }
