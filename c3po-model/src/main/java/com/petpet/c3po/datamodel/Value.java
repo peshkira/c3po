@@ -3,6 +3,7 @@ package com.petpet.c3po.datamodel;
 import java.io.Serializable;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -17,6 +18,7 @@ import javax.persistence.NamedQuery;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -49,6 +51,7 @@ public abstract class Value<T> implements Serializable {
   private long measuredAt;
 
   @NotNull
+  @Column(length=1000)
   private String value;
 
   @Min(0)

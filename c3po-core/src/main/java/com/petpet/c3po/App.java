@@ -20,6 +20,7 @@ import com.petpet.c3po.tools.ProfileGenerator;
 import com.petpet.c3po.tools.SimpleGatherer;
 import com.petpet.c3po.tools.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.Helper;
 
 /**
  * Just for some static experiments
@@ -33,7 +34,7 @@ public class App implements Call {
     Configurator c = new Configurator();
     c.configure();
     App app = new App();
-    app.foldertest();
+//    app.foldertest();
     // app.querytest();
     app.genprofile();
   }
@@ -60,10 +61,12 @@ public class App implements Call {
       // "shutterSpeedValue", "wordSize",
       // "xSamplingFrequency", "YCbCrPositioning", "YCbCrSubSampling",
       // "ySamplingFrequency" });
-      gen = new ProfileGenerator(new PreparedQueries(DBManager.getInstance().getEntityManager()));
+        
+        PreparedQueries pq = new PreparedQueries(DBManager.getInstance().getEntityManager());
+      gen = new ProfileGenerator(pq);
       Map<String, Object> config = new HashMap<String, Object>();
-      config.put(Config.COLLECTION_CONF, this.test);
-      config.put(Config.EXPANDED_PROPS_CONF, null);
+      config.put(Config.COLLECTION_CONF, pq.getCollectionByName("Test"));
+      config.put(Config.EXPANDED_PROPS_CONF, Helper.getPropertiesByNames("format", "puid"));
       gen.addObserver(this);
       gen.configure(config);
       gen.execute();
@@ -76,7 +79,7 @@ public class App implements Call {
     this.test = new DigitalCollection("Test");
     SimpleGatherer g = new SimpleGatherer(new FITSMetaDataAdaptor(), test);
 //    g.gather(new File("/home/peter/Desktop/outputtest/"));
-     g.gather(new File("/Users/petar/Desktop/output/"));
+     g.gather(new File("/Users/petar/Desktop/fits/235/"));
   }
 
   private void querytest() {
@@ -132,7 +135,7 @@ public class App implements Call {
   @Override
   public void back(Message<?> n) {
     Object data = n.getData();
-    if (data != null && data.getClass().equals(Document.class)) {
+    if (data != null && data instanceof Document) {
       gen.write((Document) data);
     }
 

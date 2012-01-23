@@ -63,7 +63,6 @@ public class ProfileGenerator implements ITool {
 			XMLWriter writer = new XMLWriter(new FileWriter("output.xml"), format);
 			writer.write(doc);
 			writer.close();
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -176,7 +175,7 @@ public class ProfileGenerator implements ITool {
 					property.addAttribute("expanded", "true");
 
 					for (Object[] d : distr) {
-						property.addElement("value").addAttribute("value", (String) d[1])
+						property.addElement("item").addAttribute("value", (String) d[1])
 						        .addAttribute("count", ((Long) d[2]).toString());
 					}
 
