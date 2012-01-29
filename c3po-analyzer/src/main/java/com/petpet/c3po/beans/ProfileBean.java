@@ -21,7 +21,7 @@ public class ProfileBean {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(ProfileBean.class);
 	
-	@PersistenceContext
+	@PersistenceContext(unitName = "C3POPersistenceUnit")
 	private EntityManager em;
 	
 	private PreparedQueries queries;

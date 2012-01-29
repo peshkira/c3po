@@ -31,11 +31,13 @@
         <version>2.1.1</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
+          <warName>c3po</warName>
           <archive>
             <manifestEntries>
-              <Built-By>Plato Development Team</Built-By>
+              <Built-By>Petar Petrov</Built-By>
               <Dependencies>javaee.api, javax.faces.api, org.hibernate,
-                org.hibernate.validator, org.dom4j</Dependencies>
+                org.hibernate.validator, org.dom4j,
+                org.jboss.resteasy.resteasy-jaxrs</Dependencies>
             </manifestEntries>
           </archive>
         </configuration>

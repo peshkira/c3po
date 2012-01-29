@@ -67,8 +67,8 @@ public class App implements Call {
       PreparedQueries pq = new PreparedQueries(DBManager.getInstance().getEntityManager());
       gen = new ProfileGenerator(pq);
       Map<String, Object> config = new HashMap<String, Object>();
-      config.put(Config.COLLECTION_CONF, pq.getCollectionByName("Test"));
-      config.put(Config.EXPANDED_PROPS_CONF, Helper.getPropertiesByNames("format", "puid"));
+      config.put(Config.COLLECTION_CONF, "Test");
+      config.put(Config.EXPANDED_PROPS_CONF, Arrays.asList("format", "puid").toArray());
       gen.addObserver(this);
       gen.configure(config);
       gen.execute();

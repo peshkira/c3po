@@ -33,7 +33,7 @@ public class TreeBean implements Serializable {
 
   private static final Logger LOG = LoggerFactory.getLogger(TreeBean.class);
 
-  @PersistenceContext
+  @PersistenceContext(unitName = "C3POPersistenceUnit")
   private EntityManager em;
 
   private PreparedQueries queries;

@@ -5,9 +5,9 @@
         http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
   version="2.0">
 
-  <persistence-unit name="CollProPersistenceUnit" transaction-type="JTA">
+  <persistence-unit name="C3POPersistenceUnit" transaction-type="JTA">
     <provider>org.hibernate.ejb.HibernatePersistence</provider> 
-    <jta-data-source>java:jboss/datasources/collproDS</jta-data-source>
+    <jta-data-source>java:jboss/datasources/c3poDS</jta-data-source>
 
     <class>com.petpet.c3po.datamodel.DigitalCollection</class>
     <class>com.petpet.c3po.datamodel.Element</class>
