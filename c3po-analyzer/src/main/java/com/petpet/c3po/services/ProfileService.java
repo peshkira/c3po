@@ -1,11 +1,14 @@
 package com.petpet.c3po.services;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.dom4j.Document;
@@ -29,9 +32,15 @@ public class ProfileService {
     }
 
     @GET
-    @Path("/hello")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String hello() {
+    @Path("/")
+    @Produces(MediaType.APPLICATION_XML)
+    public String hello(@QueryParam("collection") String coll, @QueryParam("expanded") List<String> expanded) {
+        
+        LOG.info("Collection: {}", coll);
+        for (String s: expanded) {
+            LOG.info("Prop: {}", s);
+        }
+        
         Document profile = pgService.getProfile("Test", new String[0]);
         if (profile != null) {
             return profile.asXML();
