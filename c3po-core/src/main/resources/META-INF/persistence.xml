@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
 
-  <persistence-unit name="LocalCollProPersistenceUnit" transaction-type="RESOURCE_LOCAL">
+  <persistence-unit name="LocalC3POPersistenceUnit" >
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
 
     <class>com.petpet.c3po.datamodel.DigitalCollection</class>
