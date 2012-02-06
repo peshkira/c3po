@@ -1,4 +1,4 @@
-package com.petpet.c3po.tools.fits;
+package com.petpet.c3po.adaptor.fits;
 
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -8,17 +8,17 @@ import java.util.Map;
 
 import org.dom4j.Document;
 
+import com.petpet.c3po.adaptor.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.api.Call;
 import com.petpet.c3po.api.Message;
 import com.petpet.c3po.api.utils.ConfigurationException;
 import com.petpet.c3po.common.Config;
+import com.petpet.c3po.controller.ProfileGenerator;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.db.DBManager;
 import com.petpet.c3po.db.PreparedQueries;
-import com.petpet.c3po.tools.ProfileGenerator;
-import com.petpet.c3po.tools.SimpleGatherer;
-import com.petpet.c3po.tools.fits.FITSMetaDataAdaptor;
+import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.Helper;
 
@@ -77,7 +77,7 @@ public class App implements Call {
 
   private void foldertest() {
     this.test = new DigitalCollection("Test");
-    SimpleGatherer g = new SimpleGatherer(new FITSMetaDataAdaptor(), test);
+    FileSystemGatherer g = new FileSystemGatherer(new FITSMetaDataAdaptor(), test);
 //    g.gather(new File("/home/peter/Desktop/outputtest/"));
      g.gather(new File("/Users/petar/Desktop/fits/235/"));
   }

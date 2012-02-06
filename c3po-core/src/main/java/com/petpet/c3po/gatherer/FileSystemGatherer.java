@@ -1,4 +1,5 @@
-package com.petpet.c3po.tools;
+package com.petpet.c3po.gatherer;
+
 
 import java.io.File;
 import java.io.FileFilter;
@@ -10,20 +11,21 @@ import org.slf4j.LoggerFactory;
 import com.petpet.c3po.api.Call;
 import com.petpet.c3po.api.ITool;
 import com.petpet.c3po.api.Message;
+import com.petpet.c3po.api.MetaDataGatherer;
 import com.petpet.c3po.common.Config;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.db.DBManager;
 
-public class SimpleGatherer implements Call {
+public class FileSystemGatherer implements MetaDataGatherer, Call {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SimpleGatherer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileSystemGatherer.class);
 
     private ITool converter;
 
     private DigitalCollection collection;
 
-    public SimpleGatherer(ITool converter, DigitalCollection collection) {
+    public FileSystemGatherer(ITool converter, DigitalCollection collection) {
         this.converter = converter;
 
         if (collection == null) {

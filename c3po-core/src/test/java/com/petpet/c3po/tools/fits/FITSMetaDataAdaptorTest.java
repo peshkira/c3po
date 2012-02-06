@@ -12,12 +12,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.petpet.c3po.adaptor.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.api.Call;
 import com.petpet.c3po.api.Message;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.db.DBManager;
-import com.petpet.c3po.tools.fits.FITSMetaDataAdaptor;
 
 public class FITSMetaDataAdaptorTest {
 

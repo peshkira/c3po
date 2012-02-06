@@ -1,4 +1,4 @@
-package com.petpet.c3po.tools;
+package com.petpet.c3po.controller;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.petpet.c3po.tools.fits;
+package com.petpet.c3po.adaptor.fits;
 
 public final class FITSConstants {
 
