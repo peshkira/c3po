@@ -50,8 +50,9 @@ public final class DBManager {
     }
   }
 
-  public void persist(Object o) {
+  public synchronized void persist(Object o) {
     if (o != null) {
+      LOGGER.info("Persisting... {}", o);
       EntityManager em = this.getEntityManager();
       em.getTransaction().begin();
       em.persist(o);
@@ -61,7 +62,7 @@ public final class DBManager {
     }
   }
 
-  public void remove(Object o) {
+  public synchronized void remove(Object o) {
     if (o != null) {
       EntityManager em = this.getEntityManager();
       em.getTransaction().begin();

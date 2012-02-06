@@ -46,30 +46,33 @@ public class FITSMetaDataAdaptorTest {
 		config.put("config.collection", this.collection);
 		config.put("config.fits_files", files);
 
-		this.converter.addObserver(new Call() {
-
-			@Override
-			public void back(Message<?> n) {
-				if (n.getData() == null) {
-					Assert.fail("No element returned");
-				} else {
-					Assert.assertEquals(((Element) n.getData()).getName(), "About Stacks.pdf");
-				}
-
-			}
-		});
-
-		this.converter.configure(config);
-		this.converter.execute();
+//		this.converter.addObserver(new Call() {
+//
+//			@Override
+//			public void back(Message<?> n) {
+//				if (n.getData() == null) {
+//					Assert.fail("No element returned");
+//				} else {
+//					Assert.assertEquals(((Element) n.getData()).getName(), "About Stacks.pdf");
+//				}
+//
+//			}
+//		});
+//
+//		this.converter.configure(config);
+//		this.converter.execute();
+		
+		Assert.fail("To be implemented");
 	}
 
 	@Test
 	public void shouldTestParamters() throws Exception {
-		List<String> cParams = this.converter.getConfigParameters();
-		List<String> mParams = this.converter.getMandatoryParameters();
+//		List<String> cParams = this.converter.getConfigParameters();
+//		List<String> mParams = this.converter.getMandatoryParameters();
 
-		Assert.assertEquals(3, cParams.size());
-		Assert.assertEquals(2, mParams.size());
+//		Assert.assertEquals(3, cParams.size());
+//		Assert.assertEquals(2, mParams.size());
+	  Assert.fail("to be implemented");
 	}
 
 	@Test

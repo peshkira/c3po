@@ -35,7 +35,7 @@ public class DigitalCollection implements Serializable {
 	@OneToMany(mappedBy = "collection", cascade = CascadeType.REMOVE)
 	private Set<Element> elements;
 	
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL)
 	private Set<C3POConfig> configurations;
 
 	public DigitalCollection() {

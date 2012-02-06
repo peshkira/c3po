@@ -1,24 +1,26 @@
 package com.petpet.c3po;
 
-import java.io.File;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Document;
 
-import com.petpet.c3po.adaptor.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.api.Call;
 import com.petpet.c3po.api.Message;
 import com.petpet.c3po.api.utils.ConfigurationException;
 import com.petpet.c3po.common.Config;
+import com.petpet.c3po.controller.GathererController;
 import com.petpet.c3po.controller.ProfileGenerator;
+import com.petpet.c3po.datamodel.C3POConfig;
+import com.petpet.c3po.datamodel.C3POConfig.GathererType;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.db.DBManager;
 import com.petpet.c3po.db.PreparedQueries;
-import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.Helper;
 
@@ -35,8 +37,8 @@ public class App implements Call {
     c.configure();
     App app = new App();
 //    app.foldertest();
-    // app.querytest();
-    app.genprofile();
+     app.querytest();
+    // app.genprofile();
   }
 
   private void genprofile() {
@@ -61,8 +63,8 @@ public class App implements Call {
       // "shutterSpeedValue", "wordSize",
       // "xSamplingFrequency", "YCbCrPositioning", "YCbCrSubSampling",
       // "ySamplingFrequency" });
-        
-        PreparedQueries pq = new PreparedQueries(DBManager.getInstance().getEntityManager());
+
+      PreparedQueries pq = new PreparedQueries(DBManager.getInstance().getEntityManager());
       gen = new ProfileGenerator(pq);
       Map<String, Object> config = new HashMap<String, Object>();
       config.put(Config.COLLECTION_CONF, pq.getCollectionByName("Test"));
@@ -76,16 +78,29 @@ public class App implements Call {
   }
 
   private void foldertest() {
+    Map<String, String> c = new HashMap<String, String>();
+    c.put(C3POConfig.LOCATION, "/Users/petar/Desktop/fits/");
+    c.put(C3POConfig.NAME, "LocalFileSystem config");
+
+    C3POConfig conf = new C3POConfig();
+    conf.setType(GathererType.FS);
+    conf.setConfigs(c);
+
     this.test = new DigitalCollection("Test");
-    FileSystemGatherer g = new FileSystemGatherer(new FITSMetaDataAdaptor(), test);
-//    g.gather(new File("/home/peter/Desktop/outputtest/"));
-     g.gather(new File("/Users/petar/Desktop/fits/235/"));
+    this.test.setConfigurations(new HashSet<C3POConfig>(Arrays.asList(conf)));
+    DBManager.getInstance().persist(this.test);
+
+    GathererController controller = new GathererController(test, new Date());
+    controller.collectMetaData();
+
   }
 
   private void querytest() {
     PreparedQueries analyzer = new PreparedQueries(DBManager.getInstance().getEntityManager());
     System.out.println("QUERIES");
 
+    this.test = analyzer.getCollectionByName("Test");
+    
     List<Property> allprops = analyzer.getAllPropertiesInCollection(test);
     System.out.println("PROPS IN COLLECTION");
     for (Property p : allprops) {

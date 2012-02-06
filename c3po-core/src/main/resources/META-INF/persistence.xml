@@ -5,6 +5,7 @@
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
 
     <class>com.petpet.c3po.datamodel.DigitalCollection</class>
+    <class>com.petpet.c3po.datamodel.C3POConfig</class>
     <class>com.petpet.c3po.datamodel.Element</class>
     <class>com.petpet.c3po.datamodel.Property</class>
     <class>com.petpet.c3po.datamodel.Value</class>

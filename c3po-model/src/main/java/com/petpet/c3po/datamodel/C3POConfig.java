@@ -1,6 +1,8 @@
 package com.petpet.c3po.datamodel;
 
-import javax.persistence.Basic;
+import java.util.Map;
+
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -12,31 +14,27 @@ import com.sun.istack.NotNull;
 @Entity
 public class C3POConfig {
 
-  private enum GathererType {
+  public enum GathererType {
     DEFAULT, FS, SSH, RODA, ESD, ROSETTA
   }
+  
+  public static final String NAME = "config.name";
+  
+  public static final String DESCRIPTION = "config.description";
+  
+  public static final String LOCATION = "config.location";
+  
+  public static final String USER_NAME = "config.username";
+  
+  public static final String PASSWORD = "config.password";
 
   @Id
   @GeneratedValue
   @NotNull
   private long id;
 
-  @Basic
-  @NotNull
-  private String name;
-
-  @Basic
-  private String description;
-
-  @Basic
-  @NotNull
-  private String location;
-
-  @Basic
-  private String username;
-
-  @Basic
-  private String password;
+  @ElementCollection
+  private Map<String, String> configs;
 
   @Enumerated(EnumType.ORDINAL)
   private GathererType type;
@@ -49,22 +47,6 @@ public class C3POConfig {
     this.id = id;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
   public GathererType getType() {
     return type;
   }
@@ -73,28 +55,12 @@ public class C3POConfig {
     this.type = type;
   }
 
-  public String getLocation() {
-    return location;
+  public Map<String, String> getConfigs() {
+    return configs;
   }
 
-  public void setLocation(String location) {
-    this.location = location;
+  public void setConfigs(Map<String, String> configs) {
+    this.configs = configs;
   }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
+  
 }
