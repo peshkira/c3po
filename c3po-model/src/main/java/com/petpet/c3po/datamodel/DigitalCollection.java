@@ -34,6 +34,9 @@ public class DigitalCollection implements Serializable {
 
 	@OneToMany(mappedBy = "collection", cascade = CascadeType.REMOVE)
 	private Set<Element> elements;
+	
+	@OneToMany
+	private Set<C3POConfig> configurations;
 
 	public DigitalCollection() {
 		super();
@@ -102,5 +105,13 @@ public class DigitalCollection implements Serializable {
 		}
 		return true;
 	}
+
+  public Set<C3POConfig> getConfigurations() {
+    return configurations;
+  }
+
+  public void setConfigurations(Set<C3POConfig> configurations) {
+    this.configurations = configurations;
+  }
 
 }
