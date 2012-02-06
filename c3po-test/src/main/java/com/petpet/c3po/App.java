@@ -22,7 +22,6 @@ import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.db.DBManager;
 import com.petpet.c3po.db.PreparedQueries;
 import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.Helper;
 
 /**
  * Just for some static experiments

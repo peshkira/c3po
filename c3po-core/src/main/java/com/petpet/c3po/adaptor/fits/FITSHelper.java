@@ -1,6 +1,5 @@
 package com.petpet.c3po.adaptor.fits;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -14,7 +13,7 @@ public class FITSHelper {
 
     public static void init() {
         try {
-            InputStream in = new FileInputStream("src/main/resources/fits_property_mapping.properties");
+            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("fits_property_mapping.properties");
             FITS_PROPS = new Properties();
             FITS_PROPS.load(in);
             in.close();

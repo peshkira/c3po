@@ -1,6 +1,5 @@
 package com.petpet.c3po.utils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -18,13 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.BooleanValue;
 import com.petpet.c3po.datamodel.DigitalCollection;
-import com.petpet.c3po.datamodel.FloatValue;
-import com.petpet.c3po.datamodel.IntegerValue;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.PropertyType;
-import com.petpet.c3po.datamodel.StringValue;
 import com.petpet.c3po.datamodel.Value;
 import com.petpet.c3po.db.DBManager;
 
@@ -46,7 +41,7 @@ public final class Helper {
 
     public static void init() {
         try {
-            InputStream in = new FileInputStream("src/main/resources/known.properties");
+            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("known.properties");
             TYPES = new Properties();
             TYPES.load(in);
             in.close();

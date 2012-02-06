@@ -57,11 +57,16 @@ public class ProfileGenerator implements ITool {
             e.printStackTrace();
         }
     }
+    
 
     public void write(Document doc) {
+        this.write(doc, "profiles/output.xml");
+    }
+    
+    public void write(Document doc, String path) {
         try {
             OutputFormat format = OutputFormat.createPrettyPrint();
-            XMLWriter writer = new XMLWriter(new FileWriter("output.xml"), format);
+            XMLWriter writer = new XMLWriter(new FileWriter("path"), format);
             writer.write(doc);
             writer.close();
         } catch (IOException e) {

@@ -1,10 +1,22 @@
 package com.petpet.c3po.job;
 
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.petpet.c3po.adaptor.fits.FITSMetaDataAdaptor;
+import com.petpet.c3po.api.utils.ConfigurationException;
+import com.petpet.c3po.common.Config;
+import com.petpet.c3po.controller.ProfileGenerator;
+import com.petpet.c3po.datamodel.DigitalCollection;
+import com.petpet.c3po.db.PreparedQueries;
+import com.petpet.c3po.tools.SimpleGatherer;
 
 public class ProfileJob implements Runnable {
 
@@ -16,10 +28,13 @@ public class ProfileJob implements Runnable {
 
     private List<String> params;
 
-    public ProfileJob(String coll, List<String> params) {
+    private PreparedQueries pq;
+
+    public ProfileJob(PreparedQueries pq, String coll, List<String> params) {
         this.setId(UUID.randomUUID().toString());
         this.collection = coll;
         this.params = params;
+        this.pq = pq;
     }
 
     @Override
@@ -27,16 +42,21 @@ public class ProfileJob implements Runnable {
         // TODO run gatherer in local folder
         // TODO run aggregator
         // TODO store output in a file named with the uuid
-        int i = 10;
-        while (i > 0) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                // e.printStackTrace();
-            }
-            i--;
+        LOG.info("Generating profile...");
+        DigitalCollection coll = pq.getCollectionByName(collection);
+//        SimpleGatherer g = new SimpleGatherer(new FITSMetaDataAdaptor(), coll);
+//        g.gather(new File("/Users/petar/Desktop/fits/235/"));
 
-            LOG.info("Generating profile...");
+        try {
+            Map<String, Object> config = new HashMap<String, Object>();
+            config.put(Config.COLLECTION_CONF, coll);
+            config.put(Config.EXPANDED_PROPS_CONF, params);
+            ProfileGenerator gen = new ProfileGenerator(pq);
+            gen.configure(config);
+            Document profile = gen.generateProfile();
+            gen.write(profile, String.format("profiles/%s.xml", id));
+        } catch (ConfigurationException e) {
+            LOG.error("An error occurred while generating the profile: {}", e.getMessage());
         }
 
         LOG.info("Job {} finished", this.id);
