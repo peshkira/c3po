@@ -7,7 +7,7 @@
     <groupId>com.petpet</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>c3po-analyzer</artifactId>
+  <artifactId>c3po-web</artifactId>
   <packaging>war</packaging>
   <name>C3PO Analyzer</name>
 

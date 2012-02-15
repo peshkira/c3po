@@ -13,7 +13,7 @@
     <module>c3po-api</module>
     <module>c3po-model</module>
     <module>c3po-core</module>
-    <module>c3po-analyzer</module>
+    <module>c3po-web</module>
     <module>c3po-test</module>
   </modules>
 
