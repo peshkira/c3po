@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.GET;
@@ -21,7 +20,6 @@ import com.petpet.c3po.db.PreparedQueries;
 import com.petpet.c3po.job.ProfileJob;
 
 @Path("/profile")
-@Stateless
 public class ProfileService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProfileService.class);
@@ -55,7 +53,6 @@ public class ProfileService {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.APPLICATION_XML)
     public String get(@QueryParam("job") String job) {
         //TODO retrieve the profile job and remove from map...

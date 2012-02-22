@@ -36,8 +36,7 @@
             <manifestEntries>
               <Built-By>Petar Petrov</Built-By>
               <Dependencies>javaee.api, javax.faces.api, org.hibernate,
-                org.hibernate.validator, org.dom4j,
-                org.jboss.resteasy.resteasy-jaxrs</Dependencies>
+                org.hibernate.validator, org.dom4j</Dependencies>
             </manifestEntries>
           </archive>
         </configuration>
@@ -58,28 +57,45 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-      <version>2.2.1.GA</version>
-      <scope>provided</scope>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-server</artifactId>
+      <version>1.11</version>
     </dependency>
     <dependency>
-      <groupId>org.richfaces</groupId>
-      <artifactId>richfaces-bom</artifactId>
-      <version>4.0.0.Final</version>
-      <scope>import</scope>
-      <type>pom</type>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-servlet</artifactId>
+      <version>1.11</version>
     </dependency>
     <dependency>
-      <groupId>org.richfaces.ui</groupId>
-      <artifactId>richfaces-components-ui</artifactId>
-      <version>4.0.0.Final</version>
+      <groupId>com.wordnik</groupId>
+      <artifactId>swagger-core</artifactId>
+      <version>1.0</version>
     </dependency>
     <dependency>
-      <groupId>org.richfaces.core</groupId>
-      <artifactId>richfaces-core-impl</artifactId>
-      <version>4.0.0.Final</version>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-mapper-asl</artifactId>
+      <version>1.9.3</version>
     </dependency>
+    <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-xc</artifactId>
+        <version>1.9.3</version>
+    </dependency>
+    <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-jaxrs</artifactId>
+        <version>1.9.3</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.4</version>
+    </dependency>
+    <!-- <dependency> <groupId>org.jboss.resteasy</groupId> <artifactId>resteasy-jaxrs</artifactId> <version>2.2.1.GA</version> 
+      <scope>provided</scope> </dependency> <dependency> <groupId>org.richfaces</groupId> <artifactId>richfaces-bom</artifactId> 
+      <version>4.0.0.Final</version> <scope>import</scope> <type>pom</type> </dependency> <dependency> <groupId>org.richfaces.ui</groupId> 
+      <artifactId>richfaces-components-ui</artifactId> <version>4.0.0.Final</version> </dependency> <dependency> <groupId>org.richfaces.core</groupId> 
+      <artifactId>richfaces-core-impl</artifactId> <version>4.0.0.Final</version> </dependency> -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
