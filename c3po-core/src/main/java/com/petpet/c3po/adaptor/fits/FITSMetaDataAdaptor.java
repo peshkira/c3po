@@ -65,6 +65,9 @@ public class FITSMetaDataAdaptor implements Runnable {
     return element;
   }
 
+  //FIXME check for already processed should be done
+  // somewhere else as it is not in the responsibility of
+  // the parser...
   private Element extractValues(Document xml) {
     org.dom4j.Element root = xml.getRootElement();
     org.dom4j.Element fileinfo = root.element(FITSConstants.FILEINFO);
@@ -76,15 +79,15 @@ public class FITSMetaDataAdaptor implements Runnable {
       metadata = (org.dom4j.Element) metadata.elements().get(0);
     }
 
-    String md5 = fileinfo.element(FITSConstants.MD5CHECKSUM).getText();
+//    String md5 = fileinfo.element(FITSConstants.MD5CHECKSUM).getText();
     String filename = fileinfo.element(FITSConstants.FILENAME).getText();
     String filepath = fileinfo.element(FITSConstants.FILEPATH).getText();
 
-    boolean processed = Helper.isElementAlreadyProcessed(this.collection, md5);
-    if (processed) {
-      LOG.info("Element '{}' is already processed", filename);
-      return null;
-    }
+//    boolean processed = Helper.isElementAlreadyProcessed(this.collection, md5);
+//    if (processed) {
+//      LOG.info("Element '{}' is already processed", filename);
+//      return null;
+//    }
 
     Element e = new Element(filename, filepath);
     e.setCollection(this.collection);
