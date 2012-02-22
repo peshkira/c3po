@@ -20,7 +20,6 @@ import com.petpet.c3po.controller.ProfileGenerator;
 import com.petpet.c3po.datamodel.C3POConfig;
 import com.petpet.c3po.datamodel.C3POConfig.GathererType;
 import com.petpet.c3po.datamodel.DigitalCollection;
-import com.petpet.c3po.db.DBManager;
 import com.petpet.c3po.db.PreparedQueries;
 import com.petpet.c3po.utils.Configurator;
 

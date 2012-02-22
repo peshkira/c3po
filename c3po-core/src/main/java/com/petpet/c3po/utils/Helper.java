@@ -10,18 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.PropertyType;
 import com.petpet.c3po.datamodel.Value;
-import com.petpet.c3po.db.DBManager;
 
 public final class Helper {
 
