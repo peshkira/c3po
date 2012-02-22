@@ -24,7 +24,7 @@ public class FITSHelper {
 
     public static Property getPropertyByFitsName(String name) {
         String prop = (String) FITS_PROPS.get(name);
-
+        
         Property p;
         if (prop != null) {
             p = Helper.getPropertyByName(prop);

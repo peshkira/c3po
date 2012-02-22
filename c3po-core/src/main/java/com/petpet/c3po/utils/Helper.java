@@ -121,29 +121,30 @@ public final class Helper {
         return result;
     }
 
-    public static boolean isElementAlreadyProcessed(DigitalCollection coll, String md5) {
-        if (md5 == null || md5.equals("")) {
-            LOG.warn("No checksum provided, assuming element is not processed.");
-            return false;
-        }
-
-        boolean isDone = false;
-        LOG.debug("MD5: {}", md5);
-
-        try {
-            DBManager.getInstance().getEntityManager().createNamedQuery(Constants.COLLECTION_VALUES_BY_NAME_AND_VALUE)
-                    .setParameter("pname", "checksum.md5").setParameter("value", md5).setParameter("coll", coll)
-                    .getSingleResult();
-            isDone = true;
-        } catch (NoResultException nre) {
-            LOG.debug("No element with this checksum ingested, continue processing.");
-            isDone = false;
-
-        } catch (NonUniqueResultException nue) {
-            LOG.warn("More than one elements with this checksum are already processed. Please inspect");
-            isDone = true;
-        }
-
-        return isDone;
-    }
+    //FIXME DAO
+//    public static boolean isElementAlreadyProcessed(DigitalCollection coll, String md5) {
+//        if (md5 == null || md5.equals("")) {
+//            LOG.warn("No checksum provided, assuming element is not processed.");
+//            return false;
+//        }
+//
+//        boolean isDone = false;
+//        LOG.debug("MD5: {}", md5);
+//
+//        try {
+//            DBManager.getInstance().getEntityManager().createNamedQuery(Constants.COLLECTION_VALUES_BY_NAME_AND_VALUE)
+//                    .setParameter("pname", "checksum.md5").setParameter("value", md5).setParameter("coll", coll)
+//                    .getSingleResult();
+//            isDone = true;
+//        } catch (NoResultException nre) {
+//            LOG.debug("No element with this checksum ingested, continue processing.");
+//            isDone = false;
+//
+//        } catch (NonUniqueResultException nue) {
+//            LOG.warn("More than one elements with this checksum are already processed. Please inspect");
+//            isDone = true;
+//        }
+//
+//        return isDone;
+//    }
 }

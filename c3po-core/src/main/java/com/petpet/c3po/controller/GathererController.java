@@ -2,23 +2,20 @@ package com.petpet.c3po.controller;
 
 import java.io.InputStream;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.api.MetaDataGatherer;
+import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.C3POConfig;
 import com.petpet.c3po.datamodel.C3POConfig.GathererType;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.db.DBManager;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 
 public class GathererController {
@@ -27,14 +24,10 @@ public class GathererController {
 
   private Date date;
   private DigitalCollection collection;
-  private Queue<Element> queue;
-  private QueueProcessor processor;
-  private ExecutorService pool;
+  private PersistenceLayer persitence;
 
-  public GathererController(DigitalCollection dc, Date d) {
-    this.queue = new LinkedList<Element>();
-//    this.pool = Executors.newFixedThreadPool(5);
-
+  public GathererController(PersistenceLayer pLayer, DigitalCollection dc, Date d) {
+    this.setPersitence(pLayer);
     this.setCollection(dc);
     this.setDate(d);
   }
@@ -63,8 +56,6 @@ public class GathererController {
     for (C3POConfig conf : configs) {
       LOGGER.info("Found matching gatherer, starting...");
       MetaDataGatherer gatherer = this.getGatherer(conf.getType(), conf.getConfigs());
-//      processor = new QueueProcessor();
-//      pool.execute(processor);
 
       if (gatherer.getCount() > 100) {
         List<InputStream> next = gatherer.getNext(100);
@@ -97,7 +88,7 @@ public class GathererController {
       case RODA:
       case ROSETTA:
       case ESD:
-        break;
+        throw new RuntimeException("Gatherer not supported yet");
     }
     return gatherer;
   }
@@ -107,42 +98,20 @@ public class GathererController {
       FITSMetaDataAdaptor fits = new FITSMetaDataAdaptor(this, is);
       Element e = fits.extractMetaData();
       this.processElement(e);
-//      this.pool.execute(fits);
     }
 
   }
-
+  
   public synchronized void processElement(Element e) {
-//    LOGGER.info("adding element {} to queue", e.getName());
-//    this.queue.add(e);
-    DBManager.getInstance().persist(e);
+    this.getPersitence().handleCreate(Element.class, e);
   }
 
-  private class QueueProcessor extends Thread {
+  public PersistenceLayer getPersitence() {
+    return persitence;
+  }
 
-    private boolean running;
-
-    public void run() {
-      setRunning(true);
-
-      while (isRunning()) {
-        while (!queue.isEmpty()) {
-
-          Element poll = queue.poll();
-          DBManager.getInstance().persist(poll); // null check in persist
-        }
-      }
-
-      LOGGER.info("Stopping Queue processing");
-    }
-
-    public boolean isRunning() {
-      return running;
-    }
-
-    public void setRunning(boolean running) {
-      this.running = running;
-    }
+  public void setPersitence(PersistenceLayer persitence) {
+    this.persitence = persitence;
   }
 
 }

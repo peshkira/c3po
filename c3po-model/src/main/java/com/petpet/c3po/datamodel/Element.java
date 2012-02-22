@@ -16,6 +16,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -150,5 +151,5 @@ public class Element implements Serializable {
         }
         return true;
     }
-
+    
 }

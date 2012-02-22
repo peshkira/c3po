@@ -1,6 +1,5 @@
 package com.petpet.c3po.job;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,13 +9,11 @@ import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.adaptor.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.api.utils.ConfigurationException;
 import com.petpet.c3po.common.Config;
 import com.petpet.c3po.controller.ProfileGenerator;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.db.PreparedQueries;
-import com.petpet.c3po.tools.SimpleGatherer;
 
 public class ProfileJob implements Runnable {
 

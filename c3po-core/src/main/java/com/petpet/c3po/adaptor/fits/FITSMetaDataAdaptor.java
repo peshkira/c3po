@@ -82,7 +82,8 @@ public class FITSMetaDataAdaptor implements Runnable {
 //    String md5 = fileinfo.element(FITSConstants.MD5CHECKSUM).getText();
     String filename = fileinfo.element(FITSConstants.FILENAME).getText();
     String filepath = fileinfo.element(FITSConstants.FILEPATH).getText();
-
+    LOG.debug("Processing element {}", filename);
+    
 //    boolean processed = Helper.isElementAlreadyProcessed(this.collection, md5);
 //    if (processed) {
 //      LOG.info("Element '{}' is already processed", filename);
@@ -120,7 +121,7 @@ public class FITSMetaDataAdaptor implements Runnable {
       // TODO manage value source conflict/single_result
       Property p1 = FITSHelper.getPropertyByFitsName(FITSConstants.FORMAT_ATTR);
       Property p2 = FITSHelper.getPropertyByFitsName(FITSConstants.MIMETYPE_ATTR);
-
+      
       ValueSource vs = new ValueSource();
       vs.setName(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOL_ATTR));
       vs.setVersion(identity.element(FITSConstants.TOOL).attributeValue(FITSConstants.TOOLVERSION_ATTR));
@@ -143,7 +144,7 @@ public class FITSMetaDataAdaptor implements Runnable {
       e.getValues().add(v2);
 
       Property p3 = FITSHelper.getPropertyByFitsName(FITSConstants.FORMAT_VERSION_ATTR);
-
+      
       Iterator verIter = identity.elementIterator(FITSConstants.VERSION);
       while (verIter.hasNext()) {
         org.dom4j.Element ver = (org.dom4j.Element) verIter.next();

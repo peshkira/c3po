@@ -15,9 +15,11 @@ import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+
 
 
 @Entity
@@ -63,7 +65,7 @@ public abstract class Value<T> implements Serializable {
   private ValueStatus status;
 
   @NotNull
-  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
   private Property property;
 
   @NotNull

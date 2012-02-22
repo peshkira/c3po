@@ -1,5 +1,6 @@
 package com.petpet.c3po.datamodel;
 
+
 public enum PropertyType {
     DEFAULT, BOOL, NUMERIC, STRING, ARRAY, FLOAT;
 

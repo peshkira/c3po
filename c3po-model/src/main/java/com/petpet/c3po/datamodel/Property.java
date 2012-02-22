@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -39,12 +40,12 @@ public class Property implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private PropertyType type;
 
-	@OneToMany
-	private Set<Property> properties;
+//	@OneToMany
+//	private Set<Property> properties;
 
 	public Property() {
 		super();
-		this.properties = new HashSet<Property>();
+//		this.properties = new HashSet<Property>();
 		this.type = PropertyType.DEFAULT;
 	}
 
@@ -92,13 +93,13 @@ public class Property implements Serializable {
     this.description = description;
   }
 
-  public void setProperties(Set<Property> properties) {
-		this.properties = properties;
-	}
-
-	public Set<Property> getProperties() {
-		return properties;
-	}
+//  public void setProperties(Set<Property> properties) {
+//		this.properties = properties;
+//	}
+//
+//	public Set<Property> getProperties() {
+//		return properties;
+//	}
 
 	public void setType(PropertyType type) {
 		this.type = type;

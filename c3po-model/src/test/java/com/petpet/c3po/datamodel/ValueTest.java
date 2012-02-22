@@ -16,7 +16,6 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.BooleanValue;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.StringValue;
 import com.petpet.c3po.datamodel.Value;
 import com.petpet.c3po.datamodel.ValueSource;

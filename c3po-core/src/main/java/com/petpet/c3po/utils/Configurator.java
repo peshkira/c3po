@@ -6,41 +6,49 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSHelper;
-import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.db.DBManager;
+import com.petpet.c3po.db.PreparedQueries;
 
 public class Configurator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Configurator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Configurator.class);
 
-    public void configure() {
-        this.initializeHelpers();
-        this.connectToDatabase();
-        this.loadKnownProperties();
-        // eventually load mapping of properties, e.g. lastModified maps to
-        // lastChanged
-        // TODO load properties files and setup preferences
-    }
-    
-    private void initializeHelpers() {
-        XMLUtils.init();
-        Helper.init();
-        FITSHelper.init();
-    }
+  private PersistenceLayer persistence;
 
-    private void connectToDatabase() {
-    	LOG.debug("connection to database");
-        DBManager.getInstance();
-    }
+  public Configurator(PersistenceLayer p) {
+    this.persistence = p;
+  }
 
-    private void loadKnownProperties() {
-    	LOG.debug("loading known properties");
-            List<Property> props = DBManager.getInstance().getEntityManager()
-                .createNamedQuery(Constants.ALL_PROPERTIES_QUERY, Property.class).getResultList();
-            
-            for (Property p : props) {
-                Helper.KNOWN_PROPERTIES.put(p.getName(), p);
-            }
+  public void configure() {
+    this.initializeHelpers();
+    this.connectToDatabase();
+    this.loadKnownProperties();
+    // eventually load mapping of properties, e.g. lastModified maps to
+    // lastChanged
+    // TODO load properties files and setup preferences
+  }
+
+  private void initializeHelpers() {
+    XMLUtils.init();
+    Helper.init();
+    FITSHelper.init();
+  }
+
+  private void connectToDatabase() {
+    LOG.debug("connection to database");
+    // DBManager.getInstance();
+  }
+
+  // FIXME DAO
+  private void loadKnownProperties() {
+    LOG.debug("loading known properties");
+    PreparedQueries pq = new PreparedQueries(this.persistence.getEntityManager());
+    List<Property> props = pq.getAllProperties();
+    System.out.println("known props: " + props.size());
+
+    for (Property p : props) {
+      Helper.KNOWN_PROPERTIES.put(p.getName(), p);
     }
+  }
 }

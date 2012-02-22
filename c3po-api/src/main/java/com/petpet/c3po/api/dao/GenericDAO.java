@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface GenericDAO<TYPE> {
 
-  TYPE persist(TYPE type);
+  TYPE persist(TYPE item);
   
   TYPE update(TYPE item);
 
