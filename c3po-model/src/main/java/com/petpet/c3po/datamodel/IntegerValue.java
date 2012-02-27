@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 @Entity
 @NamedQueries( {
     @NamedQuery(name = "getSumOfValuesForPropertyInCollection", query = "SELECT SUM(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
-    @NamedQuery(name = "getAvgOfValuesForPropertyInCollection", query = "SELECT AVG(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll")})
+    @NamedQuery(name = "getAvgOfValuesForPropertyInCollection", query = "SELECT AVG(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
+    @NamedQuery(name = "getMinOfValuesForPropertyInCollection", query = "SELECT MIN(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
+    @NamedQuery(name = "getMaxOfValuesForPropertyInCollection", query = "SELECT MAX(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll")})
 public class IntegerValue extends Value<Long> {
     
     private static final long serialVersionUID = 1216578571209620108L;

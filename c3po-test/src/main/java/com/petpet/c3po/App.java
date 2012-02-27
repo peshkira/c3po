@@ -45,7 +45,6 @@ public class App implements Call {
   }
 
   private void genprofile() {
-    try {
       // List<Property> props = Helper.getPropertiesByNames(new String[] {
       // "apertureValue", "avgBitRate", "avgPacketSize",
       // "bitDepth", "bitRate", "bitsPerSample", "blockAlign", "blockSizeMax",
@@ -68,21 +67,14 @@ public class App implements Call {
       // "ySamplingFrequency" });
 
       PreparedQueries pq = new PreparedQueries(pl.getEntityManager());
-      gen = new ProfileGenerator(pq);
-      Map<String, Object> config = new HashMap<String, Object>();
-      config.put(Config.COLLECTION_CONF, "Test");
-      config.put(Config.EXPANDED_PROPS_CONF, Arrays.asList("format", "puid").toArray());
-      gen.addObserver(this);
-      gen.configure(config);
-      gen.execute();
-    } catch (ConfigurationException e) {
-      e.printStackTrace();
-    }
+      ProfileGenerator gen = new ProfileGenerator("Test", Arrays.asList("format", "puid"), pq);
+      Document profile = gen.generateProfile();
+      gen.write(profile);
   }
 
   private void foldertest() {
     Map<String, String> c = new HashMap<String, String>();
-    c.put(C3POConfig.LOCATION, "/Users/petar/Desktop/misc/fits/");
+    c.put(C3POConfig.LOCATION, "/Users/petar/Documents/tu/seic/DA/fits");
     c.put(C3POConfig.NAME, "LocalFileSystem config");
 
     C3POConfig conf = new C3POConfig();

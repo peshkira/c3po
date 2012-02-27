@@ -175,6 +175,10 @@ public final class Constants {
   public static final String COLLECTION_BY_NAME = "getCollectionByName";
   public static final String SPECIFIC_VALUE_DISTRIBUTION_IN_SET = "getSpecificValueInDistributionInSet";
 
+  public static final String COLLECTION_MIN_VALUE_FOR_PROPERTY = "getMinOfValuesForPropertyInCollection";
+  
+  public static final String COLLECTION_MAX_VALUE_FOR_PROPERTY = "getMaxOfValuesForPropertyInCollection";
+
   private Constants() {
 
   }
