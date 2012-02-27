@@ -8,6 +8,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.dao.C3POPersistenceLayer;
 import com.sun.jersey.spi.resource.Singleton;
 import com.wordnik.swagger.core.Api;
 import com.wordnik.swagger.core.ApiError;
@@ -21,7 +23,9 @@ import com.wordnik.swagger.core.JavaHelp;
 @Api(value = "", description = "Operations about profile job submission")
 @Singleton
 public class ProfileResource extends JavaHelp {
-
+  
+  PersistenceLayer pl = new C3POPersistenceLayer();
+  
   @POST
   @Path("/create")
   @ApiOperation(value = "Submit Profile Job", notes = "")
@@ -31,6 +35,13 @@ public class ProfileResource extends JavaHelp {
       @ApiParam(value = "Collection name", required = true) @QueryParam("collection") String collection,
       @ApiParam(value = "Property names that should be expanded", required = false) @QueryParam("expanded") List<String> expanded) {
 
+    System.out.println("received job submission for collection: " + collection);
+    if (pl.getEntityManager() != null) {
+      System.out.println("Yuhuuu");
+    } else {
+      System.out.println("Failure");
+    }
+    
     return Response.ok().entity(UUID.randomUUID().toString()).build();
   }
 

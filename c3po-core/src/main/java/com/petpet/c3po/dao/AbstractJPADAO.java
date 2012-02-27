@@ -8,8 +8,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import javax.persistence.criteria.CriteriaQuery;
 
-import com.petpet.c3po.api.dao.GenericDAO;
-
 public class AbstractJPADAO<TYPE> implements GenericJPADAO<TYPE> {
 
   @PersistenceContext
