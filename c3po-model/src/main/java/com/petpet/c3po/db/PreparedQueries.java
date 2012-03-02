@@ -126,6 +126,10 @@ public class PreparedQueries {
     return (Long) this.getEntityManager().createNamedQuery(Constants.COLLECTION_MAX_VALUE_FOR_PROPERTY)
         .setParameter("pname", pname).setParameter("coll", collection).getSingleResult();
   }
+  
+  public void getSDOfNumericProperty(String pname, DigitalCollection collection) {
+    
+  }
 
   @SuppressWarnings("unchecked")
   public List<Object[]> getValuesDistribution(DigitalCollection collection) {

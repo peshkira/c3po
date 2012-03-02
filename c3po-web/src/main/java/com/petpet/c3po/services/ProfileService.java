@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.petpet.c3po.db.PreparedQueries;
 import com.petpet.c3po.job.ProfileJob;
 
-@Path("/profile")
+//@Path("/test/profile")
 public class ProfileService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProfileService.class);
@@ -28,7 +28,7 @@ public class ProfileService {
     
     private PreparedQueries pq;
     
-    @PersistenceContext(unitName = "C3POPersistenceUnit")
+//    @PersistenceContext(unitName = "C3POPersistenceUnit")
     private EntityManager em;
     
     public void init() {

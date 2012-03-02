@@ -16,7 +16,7 @@ public class C3POPersistenceLayer implements PersistenceLayer {
   
   private Map<Class, GenericDAO> daoMap = new HashMap<Class, GenericDAO>();
   
-  @PersistenceContext
+  @PersistenceContext(unitName = "C3POPersistenceUnit")
   private EntityManager em;
 
   private GenericDAO getDAO(Class clazz) {
