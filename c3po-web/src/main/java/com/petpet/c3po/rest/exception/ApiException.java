@@ -8,7 +8,7 @@ public class ApiException extends WebApplicationException {
 	private int code;
 
 	public ApiException(int code, String message) {
-		super(Response.status(code).entity(message).type(MediaType.TEXT_PLAIN)
+		super(Response.status(code).entity(message).type(MediaType.APPLICATION_JSON)
 				.build());
 		this.code = code;
 	}
@@ -16,7 +16,7 @@ public class ApiException extends WebApplicationException {
 	public ApiException(int code, Throwable e) {
 		super(Response.status(code)
 				.entity(e.getClass().getSimpleName() + ": " + e.getMessage())
-				.type(MediaType.TEXT_PLAIN).build());
+				.type(MediaType.APPLICATION_JSON).build());
 
 		this.code = code;
 	}

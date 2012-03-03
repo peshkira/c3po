@@ -1,4 +1,4 @@
-package com.petpet.c3po.rest.resource;
+package com.petpet.c3po.rest.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
