@@ -1,10 +1,13 @@
 package com.petpet.c3po.controller;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import javax.persistence.NoResultException;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -38,8 +41,12 @@ public class ProfileGenerator {
   }
 
   private void init(String coll, List<String> expanded) {
-    this.coll = this.queries.getCollectionByName(coll);
-    this.expanded = Helper.getPropertiesByNames(expanded.toArray(new String[expanded.size()]));
+    try {
+      this.coll = this.queries.getCollectionByName(coll);
+      this.expanded = Helper.getPropertiesByNames(expanded.toArray(new String[expanded.size()]));
+    } catch (NoResultException e) {
+      LOG.warn("No collection found for name: {}", coll);
+    }
   }
 
   public void write(String xml) {
@@ -59,6 +66,15 @@ public class ProfileGenerator {
   public void write(Document doc, String path) {
     try {
       OutputFormat format = OutputFormat.createPrettyPrint();
+      File file = new File(path);
+      LOG.info("Will create profile in {}", file.getAbsolutePath());
+      if (!file.getParentFile().exists()) {
+        file.getParentFile().mkdirs();
+
+      }
+
+      file.createNewFile();
+
       XMLWriter writer = new XMLWriter(new FileWriter(path), format);
       writer.write(doc);
       writer.close();
