@@ -2,6 +2,8 @@ package com.petpet.c3po.rest.resource;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
@@ -19,6 +21,9 @@ import javax.ws.rs.core.Response.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.datamodel.dto.C3POProfile;
+import com.petpet.c3po.datamodel.dto.CollectionDTO;
+import com.petpet.c3po.datamodel.dto.PropertyDTO;
 import com.petpet.c3po.job.ProfileJob;
 import com.petpet.c3po.job.ProfileJobController;
 import com.petpet.c3po.job.ProfileJobController.JobStatus;
@@ -98,6 +103,38 @@ public class ProfileResource extends JavaHelp {
     return r;
 
   }
+  
+  @GET
+  @Path("test")
+  public Response test() {
+    C3POProfile profile = new C3POProfile();
+    profile.setCreatedAt(new Date());
+    
+    CollectionDTO coll = new CollectionDTO();
+    coll.setName("Test");
+    coll.setElement_count(34);
+    coll.setProperty_count(1);
+    
+    PropertyDTO p1 = new PropertyDTO();
+    p1.setCount("23");
+    p1.setAvg("100");
+    p1.setExpanded("false");
+    p1.setMax("123");
+    p1.setMin("1");
+    p1.setMode("64");
+    p1.setName("Some Name");
+    p1.setId("some.id");
+    
+    PropertyDTO p2 = new PropertyDTO();
+    p2.setName("other.prop");
+    p2.setExpanded("false");
+    
+    coll.setProperties(Arrays.asList(p1, p2));
+    profile.setCollection(coll);
+    
+    return Response.ok().entity(profile).build();
+        
+  }
 
   @PostConstruct
   public void postconstruct() {
@@ -110,5 +147,7 @@ public class ProfileResource extends JavaHelp {
       LOG.error("failed to inject persistence layer: {}", e.getMessage());
     }
   }
+  
+  
 
 }

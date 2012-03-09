@@ -67,21 +67,21 @@ public class App implements Call {
       // "ySamplingFrequency" });
 
       PreparedQueries pq = new PreparedQueries(pl.getEntityManager());
-      ProfileGenerator gen = new ProfileGenerator("Test", Arrays.asList("format", "puid"), pq);
+      ProfileGenerator gen = new ProfileGenerator("Coll1", Arrays.asList("format", "puid", "mimetype"), pq);
       Document profile = gen.generateProfile();
       gen.write(profile);
   }
 
   private void foldertest() {
     Map<String, String> c = new HashMap<String, String>();
-    c.put(C3POConfig.LOCATION, "/Users/petar/Documents/tu/seic/DA/fits");
+    c.put(C3POConfig.LOCATION, "/Users/petar/Downloads/1");
     c.put(C3POConfig.NAME, "LocalFileSystem config");
 
     C3POConfig conf = new C3POConfig();
     conf.setType(GathererType.FS);
     conf.setConfigs(c);
 
-    this.test = new DigitalCollection("Test");
+    this.test = new DigitalCollection("Coll1");
     this.test.setConfigurations(new HashSet<C3POConfig>(Arrays.asList(conf)));
 
     pl.handleCreate(DigitalCollection.class, this.test);

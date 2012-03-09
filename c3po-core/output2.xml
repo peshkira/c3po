@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<collection-profile date="Sun Jan 29 17:22:19 CET 2012">
+  <collection name="Test" elements="502" properties="49">
+    <properties>
+      <property id="author" name="Author" type="STRING" count="140" mode="U.S. Government Printing Office" expanded="false"/>
+      <property id="bitspersample" name="Bits Per Sample" type="DEFAULT" count="67" mode="8 8 8" expanded="false"/>
+      <property id="byteorder" name="Byte Order" type="STRING" count="67" mode="big endian" expanded="false"/>
+      <property id="characterCount" name="characterCount" type="DEFAULT" count="32" mode="42580" expanded="false"/>
+      <property id="charset" name="Character Set" type="STRING" count="125" mode="iso-8859-1" expanded="false"/>
+      <property id="checksum.md5" name="MD5 Checksum" type="STRING" count="502" mode="cf23b63dc3a8658f75903aa7bca18ef2" expanded="false"/>
+      <property id="colorspace" name="Color Space" type="STRING" count="67" mode="YCbCr" expanded="false"/>
+      <property id="compressionscheme" name="Compression Scheme" type="STRING" count="67" mode="JPEG (old-style)" expanded="false"/>
+      <property id="created" name="Created At Date" type="STRING" count="221" mode="2004:07:14 01:52:40" expanded="false"/>
+      <property id="creating.application.name" name="Creating Application Name" type="STRING" count="185" mode="Microsoft Office Word" expanded="false"/>
+      <property id="creating.os" name="Creating Application Operating System" type="STRING" count="2" mode="Unix" expanded="false"/>
+      <property id="file.name" name="File Name" type="STRING" count="502" mode="fitstemp/235/235422.pdf" expanded="false"/>
+      <property id="file.path" name="File Path" type="STRING" count="502" mode="/home/petrov/fitstemp/235/235009.doc" expanded="false"/>
+      <property id="format" name="Format" type="STRING" count="502" mode="Portable Document Format" expanded="true">
+        <item value="Portable Document Format" count="147"/>
+        <item value="Hypertext Markup Language" count="107"/>
+        <item value="JPEG File Interchange Format" count="53"/>
+        <item value="Plain text" count="40"/>
+        <item value="Microsoft Word" count="31"/>
+        <item value="Graphics Interchange Format" count="14"/>
+        <item value="XLS" count="9"/>
+        <item value="Postscript" count="7"/>
+        <item value="Extensible Markup Language" count="3"/>
+        <item value="PDF/A" count="2"/>
+        <item value="GZIP Format" count="2"/>
+      </property>
+      <property id="format.version" name="Format Version" type="STRING" count="379" mode="1.4" expanded="false"/>
+      <property id="has.annotations" name="Has Annotations" type="BOOL" count="148" mode="false" expanded="false"/>
+      <property id="has.forms" name="Has Forms" type="BOOL" count="146" mode="false" expanded="false"/>
+      <property id="has.outline" name="Has Outline" type="BOOL" count="148" mode="false" expanded="false"/>
+      <property id="icc.profile.name" name="ICC Profile Name" type="STRING" count="1" mode="sRGB IEC61966-2.1" expanded="false"/>
+      <property id="icc.profile.version" name="ICC Profile Version" type="STRING" count="1" mode="2.1.0" expanded="false"/>
+      <property id="image.height" name="Image Height" type="NUMERIC" count="67" mode="486" expanded="false"/>
+      <property id="image.width" name="Image Width" type="NUMERIC" count="67" mode="450" expanded="false"/>
+      <property id="inhibitortype" name="Inhibitor Type" type="STRING" count="11" mode="Standard v1.2" expanded="false"/>
+      <property id="is.protected" name="Is Protected" type="BOOL" count="179" mode="false" expanded="false"/>
+      <property id="is.rightsmanaged" name="Is Rights Managed" type="BOOL" count="179" mode="false" expanded="false"/>
+      <property id="is.tagged" name="Is Tagged" type="BOOL" count="148" mode="false" expanded="false"/>
+      <property id="language" name="language" type="DEFAULT" count="48" mode="U.S. English" expanded="false"/>
+      <property id="lastmodified" name="Last Modified Date" type="STRING" count="502" mode="1323862666000" expanded="false"/>
+      <property id="lightsource" name="Light Source" type="DEFAULT" count="53" mode="unknown" expanded="false"/>
+      <property id="linebreak" name="Line Break" type="STRING" count="39" mode="CR/LF" expanded="false"/>
+      <property id="markupbasis" name="Markup Basis" type="STRING" count="154" mode="HTML" expanded="false"/>
+      <property id="markupBasisVersion" name="markupBasisVersion" type="DEFAULT" count="107" mode="4.01" expanded="false"/>
+      <property id="markupLanguage" name="markupLanguage" type="DEFAULT" count="1" mode="http://thomas.loc.gov/dtd/bill.dtd" expanded="false"/>
+      <property id="message" name="Message" type="STRING" count="159" mode="Unrecognized or missing DOCTYPE declaration; validation continuing as HTML 3.2" expanded="false"/>
+      <property id="mimetype" name="MimeType" type="STRING" count="502" mode="application/pdf" expanded="false"/>
+      <property id="orientation" name="Orientation" type="STRING" count="14" mode="normal*" expanded="false"/>
+      <property id="pagecount" name="Page Count" type="NUMERIC" count="180" mode="1" expanded="false"/>
+      <property id="puid" name="Pronom UID" type="STRING" count="462" mode="fmt/18" expanded="true">
+        <item value="fmt/18" count="60"/>
+        <item value="fmt/96" count="55"/>
+        <item value="fmt/44" count="47"/>
+        <item value="x-fmt/111" count="35"/>
+        <item value="fmt/17" count="32"/>
+        <item value="fmt/100" count="27"/>
+        <item value="fmt/16" count="25"/>
+        <item value="fmt/40" count="20"/>
+        <item value="fmt/19" count="16"/>
+        <item value="fmt/4" count="13"/>
+        <item value="fmt/20" count="13"/>
+        <item value="fmt/99" count="11"/>
+        <item value="x-fmt/406" count="6"/>
+        <item value="fmt/43" count="6"/>
+        <item value="fmt/98" count="5"/>
+        <item value="fmt/101" count="3"/>
+        <item value="x-fmt/266" count="2"/>
+        <item value="fmt/95" count="1"/>
+        <item value="x-fmt/408" count="1"/>
+        <item value="fmt/15" count="1"/>
+        <item value="fmt/3" count="1"/>
+      </property>
+      <property id="samplesperpixel" name="Samples Per Pixel" type="NUMERIC" count="53" mode="3" expanded="false"/>
+      <property id="sampling.frequency.unit" name="Sampling Frequency Unit" type="STRING" count="53" mode="no absolute unit of measurement" expanded="false"/>
+      <property id="sampling.frequency.x" name="Sampling Frequency X" type="NUMERIC" count="53" mode="100" expanded="false"/>
+      <property id="sampling.frequency.y" name="Sampling Frequency Y" type="NUMERIC" count="53" mode="100" expanded="false"/>
+      <property id="size" name="Size" type="NUMERIC" count="502" mode="11563" expanded="false"/>
+      <property id="title" name="Title" type="STRING" count="152" mode="Document" expanded="false"/>
+      <property id="valid" name="Valid" type="BOOL" count="410" mode="true" expanded="false"/>
+      <property id="wellformed" name="Well-Formed" type="BOOL" count="410" mode="true" expanded="false"/>
+      <property id="wordCount" name="wordCount" type="DEFAULT" count="32" mode="334" expanded="false"/>
+      <property id="YCbCrSubSampling" name="YCbCrSubSampling" type="DEFAULT" count="52" mode="2 2" expanded="false"/>
+    </properties>
+  </collection>
+</collection-profile>
