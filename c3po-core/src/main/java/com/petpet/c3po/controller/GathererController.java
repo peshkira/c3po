@@ -9,6 +9,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.adaptor.fits.FITSDigesterAdaptor;
 import com.petpet.c3po.adaptor.fits.FITSMetaDataAdaptor;
 import com.petpet.c3po.api.MetaDataGatherer;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -58,11 +59,11 @@ public class GathererController {
       MetaDataGatherer gatherer = this.getGatherer(conf.getType(), conf.getConfigs());
 
       if (gatherer.getCount() > 100) {
-        List<InputStream> next = gatherer.getNext(100);
+        List<InputStream> next = gatherer.getNext(10);
         while (!next.isEmpty()) {
           LOGGER.info("got next " + next.size());
           this.dispatch(next);
-          next = gatherer.getNext(100);
+          next = gatherer.getNext(10);
 
         }
 
@@ -94,16 +95,22 @@ public class GathererController {
   }
 
   private void dispatch(List<InputStream> list) {
+    FITSDigesterAdaptor fits = new FITSDigesterAdaptor(this);
     for (InputStream is : list) {
-      FITSMetaDataAdaptor fits = new FITSMetaDataAdaptor(this, is);
-      Element e = fits.extractMetaData();
+      fits.setStream(is);
+      Element e = fits.getElement();
+      
       this.processElement(e);
     }
 
   }
   
   public synchronized void processElement(Element e) {
-    this.getPersitence().handleCreate(Element.class, e);
+    if (e != null) {
+      e.setCollection(this.collection);
+      this.collection.getElements().add(e);
+      this.getPersitence().handleCreate(Element.class, e);
+    }
   }
 
   public PersistenceLayer getPersitence() {

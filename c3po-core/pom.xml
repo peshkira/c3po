@@ -40,7 +40,7 @@
         <version>2.5.1</version>
       </plugin>
     </plugins>
-    
+
     <resources>
       <resource>
         <directory>src/main/resources/</directory>
@@ -90,6 +90,12 @@
       <groupId>jfree</groupId>
       <artifactId>jfreechart</artifactId>
       <version>1.0.13</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-digester3</artifactId>
+      <version>3.2</version>
+      <classifier>with-deps</classifier>
     </dependency>
     <dependency>
       <groupId>com.petpet</groupId>

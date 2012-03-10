@@ -131,14 +131,14 @@ public class FITSMetaDataAdaptor implements Runnable {
       v1.setProperty(p1);
       v1.setElement(e);
       v1.setSource(vs);
-      v1.setStatus(stat);
+      v1.setStatus(stat.name());
 
       StringValue v2 = new StringValue(mime);
       v2.setMeasuredAt(this.measuredAt.getTime());
       v2.setProperty(p2);
       v2.setElement(e);
       v2.setSource(vs);
-      v2.setStatus(stat);
+      v2.setStatus(stat.name());
 
       e.getValues().add(v1);
       e.getValues().add(v2);
@@ -159,9 +159,9 @@ public class FITSMetaDataAdaptor implements Runnable {
         v.setSource(vs);
 
         if (stat.equals(ValueStatus.OK))
-          v.setStatus(XMLUtils.getStatusOfFITSElement(ver));
+          v.setStatus(XMLUtils.getStatusOfFITSElement(ver).name());
         else
-          v.setStatus(stat);
+          v.setStatus(stat.name());
 
         e.getValues().add(v);
 
@@ -182,9 +182,9 @@ public class FITSMetaDataAdaptor implements Runnable {
         v.setSource(vs);
 
         if (stat.equals(ValueStatus.OK))
-          v.setStatus(XMLUtils.getStatusOfFITSElement(extId));
+          v.setStatus(XMLUtils.getStatusOfFITSElement(extId).name());
         else
-          v.setStatus(stat);
+          v.setStatus(stat.name());
 
         e.getValues().add(v);
 
@@ -210,7 +210,7 @@ public class FITSMetaDataAdaptor implements Runnable {
         v.setSource(vs);
         v.setProperty(p);
         v.setElement(e);
-        v.setStatus(XMLUtils.getStatusOfFITSElement(elmnt));
+        v.setStatus(XMLUtils.getStatusOfFITSElement(elmnt).name());
 
         e.getValues().add(v);
 
