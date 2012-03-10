@@ -8,7 +8,7 @@ public class StringValue extends Value<String> {
     private static final long serialVersionUID = 3382886583103355484L;
 
     public StringValue() {
-        this.setStatus(ValueStatus.OK);
+        this.setStatus(ValueStatus.OK.name());
     }
     
     public StringValue(String v) {

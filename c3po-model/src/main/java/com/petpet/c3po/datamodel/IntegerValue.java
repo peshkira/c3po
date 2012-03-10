@@ -26,7 +26,7 @@ public class IntegerValue extends Value<Long> {
     private Long lValue;
     
     public IntegerValue() {
-        this.setStatus(ValueStatus.OK);
+        this.setStatus(ValueStatus.OK.name());
     }
     
     public IntegerValue(Long v) {

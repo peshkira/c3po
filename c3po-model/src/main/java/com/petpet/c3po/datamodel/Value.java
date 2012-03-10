@@ -16,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.PrePersist;
+import javax.persistence.Transient;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -61,15 +62,15 @@ public abstract class Value<T> implements Serializable {
   private int reliability;
 
   @NotNull
-  @Enumerated(EnumType.STRING)
-  private ValueStatus status;
+  private String status;
 
   @NotNull
   @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
   private Property property;
 
-  @NotNull
-  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+//  @NotNull
+//  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  @Transient
   private ValueSource source;
 
   @NotNull
@@ -100,11 +101,11 @@ public abstract class Value<T> implements Serializable {
     return reliability;
   }
 
-  public void setStatus(ValueStatus status) {
+  public void setStatus(String status) {
     this.status = status;
   }
 
-  public ValueStatus getStatus() {
+  public String getStatus() {
     return status;
   }
 

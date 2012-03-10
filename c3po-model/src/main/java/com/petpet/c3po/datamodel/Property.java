@@ -150,4 +150,9 @@ public class Property implements Serializable {
 		}
 		return true;
 	}
+	
+	@Override
+	public String toString() {
+	  return this.getName();
+	}
 }

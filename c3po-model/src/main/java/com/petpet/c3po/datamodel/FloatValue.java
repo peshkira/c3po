@@ -19,7 +19,7 @@ public class FloatValue extends Value<Double> {
   private Double fValue;
 
   public FloatValue() {
-    this.setStatus(ValueStatus.OK);
+    this.setStatus(ValueStatus.OK.name());
   }
 
   public FloatValue(Double v) {

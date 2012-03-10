@@ -19,7 +19,7 @@ public class BooleanValue extends Value<Boolean> {
     private Boolean bValue;
     
     public BooleanValue() {
-        this.setStatus(ValueStatus.OK);
+        this.setStatus(ValueStatus.OK.name());
     }
     
     public BooleanValue(Boolean v) {

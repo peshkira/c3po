@@ -8,60 +8,66 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 public class ValueSource {
-    
-    @Id @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
-    
-    @NotNull
-    private String name;
-    
-    private String version;
-    
-    private int reliability;
 
-    public ValueSource() {
-        super();
-    }
-    
-    public ValueSource(String name) {
-        this();
-        this.name = name;
-    }
-    
-    public ValueSource(String name, String version) {
-        this(name);
-        this.version = version;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
+  @Id
+  @GeneratedValue(strategy = GenerationType.TABLE)
+  private long id;
 
-    public long getId() {
-        return id;
-    }
+  @NotNull
+  private String name;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  private String version;
 
-    public String getName() {
-        return name;
-    }
+  private int reliability;
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+  public ValueSource() {
+    super();
+  }
 
-    public String getVersion() {
-        return version;
-    }
+  public ValueSource(String name) {
+    this();
+    this.name = name;
+  }
 
-    public void setReliability(int reliability) {
-        this.reliability = reliability;
-    }
+  public ValueSource(String name, String version) {
+    this(name);
+    this.version = version;
+  }
 
-    public int getReliability() {
-        return reliability;
-    }
+  public void setId(long id) {
+    this.id = id;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public void setReliability(int reliability) {
+    this.reliability = reliability;
+  }
+
+  public int getReliability() {
+    return reliability;
+  }
+
+  @Override
+  public String toString() {
+    return this.getName() + " " + this.getVersion();
+  }
 }
