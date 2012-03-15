@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.0" timestamp="12/27/11 12:17 PM">
+  <identification status="CONFLICT">
+    <identity format="Macromedia Flash data, version 5" mimetype="application/x-shockwave-flash" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="file utility" toolversion="5.03" />
+    </identity>
+    <identity format="SWF" mimetype="application/x-shockwave-flash" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Exiftool" toolversion="7.74" />
+    </identity>
+    <identity format="Macromedia Flash" mimetype="application/x-shockwave-flash" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Droid" toolversion="3.0" />
+      <version toolname="Droid" toolversion="3.0">5</version>
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">fmt/108</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2011:12:27 10:46:15+01:00</lastmodified>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/000/000000.swf</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/000/000000.swf</filename>
+    <size toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">80468</size>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">d7ed6f3f1546702e8571d4d0893cf098</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1324979175000</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata />
+</fits>
+

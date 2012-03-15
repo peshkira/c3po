@@ -35,7 +35,7 @@ public class AttachPropertyRule extends Rule {
     Property property = null;
     if (this.prop.equals(GENERIC)) {
       property = this.getProperty(name);
-    } else if (this.prop.equals("format") || this.prop.equals("mimetype") || this.prop.equals("format.version")) {
+    } else if (this.prop.equals("format") || this.prop.equals("mimetype") || this.prop.equals("format.version") || this.prop.equals("puid")) {
       property = this.getProperty(this.prop);
     }
 

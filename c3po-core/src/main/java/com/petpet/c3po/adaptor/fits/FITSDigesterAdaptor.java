@@ -69,7 +69,7 @@ public class FITSDigesterAdaptor implements Runnable {
     this.createBooleanValue = new ObjectCreateRule(BooleanValue.class);
     this.createValueSource = new ObjectCreateRule(ValueSource.class);
     this.genericAttachProperty = new AttachPropertyRule(null);
-    
+
     this.createIntegerValue.setConstructorArgumentTypes(Long.class);
     this.createStringValue.setConstructorArgumentTypes(String.class);
     this.createBooleanValue.setConstructorArgumentTypes(String.class);
@@ -85,6 +85,9 @@ public class FITSDigesterAdaptor implements Runnable {
   private void createIdentityRules() {
     this.createFitsIdentityRule("fits/identification/identity", "format", new ObjectCreateRule(StringValue.class));
     this.createFitsIdentityRule("fits/identification/identity", "mimetype", new ObjectCreateRule(StringValue.class));
+//    this.createFitsPropertyRule("fits/identification/identity/version", this.createStringValue);
+    this.createFitsIdentityDetailRule("fits/identification/identity/version", "format.version", this.createStringValue);
+    this.createFitsIdentityDetailRule("fits/identification/identity/externalIdentifier", "puid", this.createStringValue);
   }
 
   private void createFileInfoRules() {
@@ -120,15 +123,15 @@ public class FITSDigesterAdaptor implements Runnable {
   private void createFitsPropertyRule(String pattern, ObjectCreateRule rule) {
     this.digester.addRule(pattern, rule); // create object when match found
     this.digester.addCallParam(pattern, 0);// pass xml value as arg to constr.
-    this.digester.addSetProperties(pattern, "status", "status"); // set the
+    this.digester.addSetProperties(pattern, "status", "status"); // set the status
     this.digester.addSetNext(pattern, "addValue"); // add the value.
 
     this.digester.addRule(pattern, this.genericAttachProperty);
 
-    this.digester.addRule(pattern, createValueSource);
-    this.digester.addSetProperties(pattern, "toolname", "name");
-    this.digester.addSetProperties(pattern, "toolversion", "version");
-    this.digester.addSetNext(pattern, "setSource");
+//    this.digester.addRule(pattern, createValueSource);
+//    this.digester.addSetProperties(pattern, "toolname", "name");
+//    this.digester.addSetProperties(pattern, "toolversion", "version");
+//    this.digester.addSetNext(pattern, "setSource");
 
   }
 
@@ -136,14 +139,15 @@ public class FITSDigesterAdaptor implements Runnable {
     this.digester.addRule(pattern, rule);
     this.digester.addRule(pattern, new AttachPropertyRule(prop));
     this.digester.addSetProperties(pattern, prop, "value");
-    this.digester.addSetProperties("fits/identification", "status", "status");
+//    this.digester.addSetProperties("fits/identification", "status", "status");
 
-    
-//    this.digester.addRule(pattern, createValueSource);
-//    this.digester.addSetProperties(pattern + "/tool", "toolname", "name");
-//    this.digester.addSetProperties(pattern + "/tool", "toolversion", "version");
-//    this.digester.addSetNext(pattern, "setSource");
-
+  }
+  
+  private void createFitsIdentityDetailRule(String pattern, String prop, ObjectCreateRule rule) {
+    this.digester.addRule(pattern, rule);
+    this.digester.addCallParam(pattern, 0);
+    this.digester.addSetProperties(pattern, "status", "status");
+    this.digester.addRule(pattern, new AttachPropertyRule(prop));
   }
 
   public Element getElement() {
@@ -156,15 +160,19 @@ public class FITSDigesterAdaptor implements Runnable {
 
       Element e = (Element) this.digester.parse(this.stream);
       this.postProcess(e);
-
-      this.stream.close();
-      this.stream = null;
-
       return e;
+      
     } catch (IOException e) {
       e.printStackTrace();
     } catch (SAXException e) {
       e.printStackTrace();
+    } finally {
+      try {
+        this.stream.close();
+        this.stream = null;
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+      }
     }
 
     return null;
@@ -220,7 +228,7 @@ public class FITSDigesterAdaptor implements Runnable {
       FITSHelper.init();
 
       FITSDigesterAdaptor adaptor = new FITSDigesterAdaptor(null);
-      //000000.swf.
+      // 000000.swf.
       adaptor.setStream(new FileInputStream("src/main/resources/fits.xml"));
       Element element = adaptor.getElement();
 

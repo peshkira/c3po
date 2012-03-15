@@ -1,8 +1,6 @@
 package com.petpet.c3po.datamodel;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -12,9 +10,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
+import javax.persistence.PostPersist;
 import javax.validation.constraints.NotNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Entity
 @NamedQueries({
@@ -24,6 +24,8 @@ import javax.validation.constraints.NotNull;
 public class Property implements Serializable {
 
 	private static final long serialVersionUID = -2404477153744982138L;
+	
+	private static final Logger LOG = LoggerFactory.getLogger(Property.class);
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE)
@@ -154,5 +156,10 @@ public class Property implements Serializable {
 	@Override
 	public String toString() {
 	  return this.getName();
+	}
+	
+	@PostPersist
+	public void post() {
+	  LOG.info("Stored new property" + this.getId() + " " + this.getName());
 	}
 }

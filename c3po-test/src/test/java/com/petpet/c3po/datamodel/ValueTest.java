@@ -27,8 +27,8 @@ public class ValueTest {
 
   @BeforeClass
   public static void beforeTests() {
-    EntityManagerFactory emf = Persistence.createEntityManagerFactory("LocalC3POPersistenceUnit");
-    pl = new LocalPersistenceLayer(emf);
+//    EntityManagerFactory emf = Persistence.createEntityManagerFactory("LocalC3POPersistenceUnit");
+    pl = new LocalPersistenceLayer();
 
     DigitalCollection coll = new DigitalCollection("Test");
     edummy = new Element("Dummy", "Dummy");

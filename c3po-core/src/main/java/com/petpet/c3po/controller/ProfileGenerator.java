@@ -145,9 +145,11 @@ public class ProfileGenerator {
         double avg = queries.getAverageOfNumericProperty(p.getName(), this.coll);
         long min = queries.getMinOfNumericProperty(p.getName(), this.coll);
         long max = queries.getMaxOfNumericProperty(p.getName(), this.coll);
+        long sum = queries.getSumOfNumericProperty(p.getName(), this.coll);
         property.addAttribute("avg", "" + avg);
         property.addAttribute("min", "" + min);
         property.addAttribute("max", "" + max);
+        property.addAttribute("sum", "" + sum);
 
         break;
 

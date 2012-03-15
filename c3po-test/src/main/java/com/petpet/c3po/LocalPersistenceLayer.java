@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 import com.petpet.c3po.api.dao.GenericDAO;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -13,28 +14,25 @@ import com.petpet.c3po.dao.AbstractJPADAO;
 import com.petpet.c3po.dao.GenericJPADAO;
 
 public class LocalPersistenceLayer implements PersistenceLayer {
-  
-  private Map<Class, GenericDAO> daoMap = new HashMap<Class, GenericDAO>();
+
+  private Map<Class, LocalTransactionalDAO> daoMap = new HashMap<Class, LocalTransactionalDAO>();
   private EntityManagerFactory emf;
   private EntityManager em;
-  
-  public LocalPersistenceLayer(EntityManagerFactory emf) {
-    this.emf = emf;
+
+  public LocalPersistenceLayer() {
+    this.emf = Persistence.createEntityManagerFactory("LocalC3POPersistenceUnit");
     this.em = emf.createEntityManager();
   }
-  
+
   private GenericDAO getDAO(Class clazz) {
     GenericDAO dao;
 
-    if(!daoMap.containsKey(clazz))
-    {
-        GenericDAO realDao = new AbstractJPADAO(clazz);
-        daoMap.put(clazz, realDao);
+    if (!this.daoMap.containsKey(clazz)) {
+      AbstractJPADAO realDao = new AbstractJPADAO(clazz, this.em);
+      this.daoMap.put(clazz, new LocalTransactionalDAO((GenericJPADAO) realDao));
     }
-    
-    dao = daoMap.get(clazz);
-    
-    return new LocalTransactionalDAO(em, (GenericJPADAO) dao); 
+
+    return dao = this.daoMap.get(clazz);
   }
 
   @Override
@@ -65,6 +63,13 @@ public class LocalPersistenceLayer implements PersistenceLayer {
   @Override
   public EntityManager getEntityManager() {
     return this.em;
+  }
+
+  @Override
+  public synchronized void recover() {
+    this.em.close();
+    this.em = this.emf.createEntityManager();
+    this.daoMap.clear();
   }
 
 }

@@ -21,6 +21,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Index;
+
 
 
 @Entity
@@ -45,7 +47,7 @@ import javax.validation.constraints.NotNull;
 public abstract class Value<T> implements Serializable {
 
   private static final long serialVersionUID = -896459317140318025L;
-
+  
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE)
   private long id;
@@ -150,53 +152,50 @@ public abstract class Value<T> implements Serializable {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((element == null) ? 0 : element.hashCode());
-    result = prime * result + (int) (id ^ (id >>> 32));
     result = prime * result + (int) (measuredAt ^ (measuredAt >>> 32));
     result = prime * result + ((property == null) ? 0 : property.hashCode());
-    result = prime * result + ((source == null) ? 0 : source.hashCode());
+    result = prime * result + reliability;
+    result = prime * result + ((status == null) ? 0 : status.hashCode());
+    result = prime * result + ((value == null) ? 0 : value.hashCode());
     return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
+    if (this == obj)
       return true;
-    }
-    if (obj == null) {
+    if (obj == null)
       return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (getClass() != obj.getClass())
       return false;
-    }
     Value other = (Value) obj;
     if (element == null) {
-      if (other.element != null) {
+      if (other.element != null)
         return false;
-      }
-    } else if (!element.equals(other.element)) {
+    } else if (!element.equals(other.element))
       return false;
-    }
-    if (id != other.id) {
+    if (measuredAt != other.measuredAt)
       return false;
-    }
-    if (measuredAt != other.measuredAt) {
-      return false;
-    }
     if (property == null) {
-      if (other.property != null) {
+      if (other.property != null)
         return false;
-      }
-    } else if (!property.equals(other.property)) {
+    } else if (!property.equals(other.property))
       return false;
-    }
-    if (source == null) {
-      if (other.source != null) {
+    if (reliability != other.reliability)
+      return false;
+    if (status == null) {
+      if (other.status != null)
         return false;
-      }
-    } else if (!source.equals(other.source)) {
+    } else if (!status.equals(other.status))
       return false;
-    }
+    if (value == null) {
+      if (other.value != null)
+        return false;
+    } else if (!value.equals(other.value))
+      return false;
     return true;
   }
+
+
 
 }

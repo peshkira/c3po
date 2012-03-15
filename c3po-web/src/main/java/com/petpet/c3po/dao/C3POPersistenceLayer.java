@@ -59,4 +59,10 @@ public class C3POPersistenceLayer implements PersistenceLayer {
     return this.em;
   }
 
+  @Override
+  public void recover() {
+    // TODO Auto-generated method stub
+    
+  }
+
 }

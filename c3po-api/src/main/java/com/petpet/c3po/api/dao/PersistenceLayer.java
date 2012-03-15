@@ -17,4 +17,6 @@ public interface PersistenceLayer {
   List handleFindAll(Class<?> clazz);
 
   EntityManager getEntityManager();
+  
+  void recover();
 }

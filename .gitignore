@@ -7,3 +7,4 @@ data/
 bin/
 c3po-core/output.xml
 c3po-test/profiles/*
+c3po-test/*.csv

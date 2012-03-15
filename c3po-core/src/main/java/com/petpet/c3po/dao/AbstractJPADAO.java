@@ -31,14 +31,18 @@ public class AbstractJPADAO<TYPE> implements GenericJPADAO<TYPE> {
   public AbstractJPADAO(Class clazz) {
     this.entityClass = clazz;
   }
-
+  
+  public AbstractJPADAO(Class clazz, EntityManager em) {
+    this(clazz);
+    this.em = em;
+  }
+  
   public EntityManager getEntityManager() {
     return em;
   }
 
-  public GenericJPADAO setEntityManager(EntityManager em) {
+  public void setEntityManager(EntityManager em) {
     this.em = em;
-    return this;
   }
 
   @Override

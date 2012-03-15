@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -16,10 +15,15 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PrePersist;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Index;
+
 @Entity
+@Table(name = "element")
+@org.hibernate.annotations.Table(appliesTo = "element", indexes = {@Index(name="element_idx", columnNames = {"name", "uid"})})
 @NamedQueries({ @NamedQuery(name = "getElementsInCollectionCount", query = "SELECT COUNT(e) FROM Element e WHERE e.collection = :coll") })
 public class Element implements Serializable {
 
@@ -39,10 +43,11 @@ public class Element implements Serializable {
   @OneToOne
   private DigitalCollection collection;
 
-  @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+//  @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  @Transient
   private Set<Element> elements;
 
-  @OneToMany(mappedBy = "element", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+  @OneToMany(mappedBy = "element", cascade = CascadeType.ALL)
   private List<Value<?>> values;
 
   public Element() {
@@ -157,6 +162,15 @@ public class Element implements Serializable {
       return false;
     }
     return true;
+  }
+  
+  @Override
+  public String toString() {
+    if (this.getName() != null) {
+      return this.getName();
+    }
+    
+    return super.toString();
   }
 
 }

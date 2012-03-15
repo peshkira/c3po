@@ -22,8 +22,8 @@ public class ElementTest {
 
   @BeforeClass
   public static void beforeTests() {
-    EntityManagerFactory emf = Persistence.createEntityManagerFactory("LocalC3POPersistenceUnit");
-    pl = new LocalPersistenceLayer(emf);
+//    EntityManagerFactory emf = Persistence.createEntityManagerFactory("LocalC3POPersistenceUnit");
+    pl = new LocalPersistenceLayer();
     coll = new DigitalCollection("Test");
   }
 
