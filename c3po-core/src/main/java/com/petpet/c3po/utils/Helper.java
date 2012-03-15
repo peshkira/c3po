@@ -13,9 +13,14 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.datamodel.BooleanValue;
+import com.petpet.c3po.datamodel.FloatValue;
+import com.petpet.c3po.datamodel.IntegerValue;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.PropertyType;
+import com.petpet.c3po.datamodel.StringValue;
 import com.petpet.c3po.datamodel.Value;
+import com.petpet.c3po.datamodel.ValueSource;
 
 public final class Helper {
 
@@ -66,6 +71,28 @@ public final class Helper {
     }
 
     return null;
+  }
+  
+  public static Value<?> getTypedValue(PropertyType type, String value) {
+    Value<?> v = null;
+    switch(type) {
+      case BOOL:
+        v = new BooleanValue(value);
+        break;
+      case FLOAT:
+        v = new FloatValue(value);
+        break;
+      case NUMERIC:
+        v = new IntegerValue(value);
+        break;
+      case ARRAY:
+      case STRING:
+      case DEFAULT:
+        v = new StringValue(value);
+        break;
+    }
+    
+    return v;
   }
 
   public static PropertyType getType(String name) {

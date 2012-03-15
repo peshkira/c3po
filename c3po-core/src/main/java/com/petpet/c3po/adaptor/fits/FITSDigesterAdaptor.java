@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.digester3.RegexRules;
 import org.apache.commons.digester3.SimpleRegexMatcher;
 import org.slf4j.Logger;
@@ -16,13 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.petpet.c3po.controller.GathererController;
-import com.petpet.c3po.datamodel.BooleanValue;
+import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.IntegerValue;
 import com.petpet.c3po.datamodel.PropertyType;
-import com.petpet.c3po.datamodel.StringValue;
 import com.petpet.c3po.datamodel.Value;
-import com.petpet.c3po.datamodel.ValueSource;
 import com.petpet.c3po.utils.Helper;
 import com.petpet.c3po.utils.XMLUtils;
 
@@ -36,16 +32,6 @@ public class FITSDigesterAdaptor implements Runnable {
 
   private Digester digester;
 
-  private ObjectCreateRule createIntegerValue;
-
-  private ObjectCreateRule createStringValue;
-
-  private ObjectCreateRule createValueSource;
-
-  private ObjectCreateRule createBooleanValue;
-
-  private AttachPropertyRule genericAttachProperty;
-
   public FITSDigesterAdaptor(GathererController controller) {
     this.controller = controller;
     this.digester = new Digester(); // not thread safe
@@ -53,9 +39,7 @@ public class FITSDigesterAdaptor implements Runnable {
     this.createRules();
   }
 
-  // TODO create identity rules...
   private void createRules() {
-    this.createCommonRules();
     this.createElementRules();
     this.createIdentityRules();
     this.createFileInfoRules();
@@ -63,91 +47,88 @@ public class FITSDigesterAdaptor implements Runnable {
     this.createMetaDataRules();
   }
 
-  private void createCommonRules() {
-    this.createIntegerValue = new ObjectCreateRule(IntegerValue.class);
-    this.createStringValue = new ObjectCreateRule(StringValue.class);
-    this.createBooleanValue = new ObjectCreateRule(BooleanValue.class);
-    this.createValueSource = new ObjectCreateRule(ValueSource.class);
-    this.genericAttachProperty = new AttachPropertyRule(null);
-
-    this.createIntegerValue.setConstructorArgumentTypes(Long.class);
-    this.createStringValue.setConstructorArgumentTypes(String.class);
-    this.createBooleanValue.setConstructorArgumentTypes(String.class);
-    this.createValueSource.setConstructorArgumentTypes(String.class, String.class);
-  }
-
   private void createElementRules() {
-    this.digester.addObjectCreate("fits", Element.class);
-    this.digester.addBeanPropertySetter("fits/fileinfo/filename", "name");
-    this.digester.addBeanPropertySetter("fits/fileinfo/filepath", "uid");
+    this.digester.addCallMethod("fits", "createElement", 2);
+    this.digester.addCallParam("fits/fileinfo/filename", 0);
+    this.digester.addCallParam("fits/fileinfo/filepath", 1);
   }
 
   private void createIdentityRules() {
-    this.createFitsIdentityRule("fits/identification/identity", "format", new ObjectCreateRule(StringValue.class));
-    this.createFitsIdentityRule("fits/identification/identity", "mimetype", new ObjectCreateRule(StringValue.class));
-//    this.createFitsPropertyRule("fits/identification/identity/version", this.createStringValue);
-    this.createFitsIdentityDetailRule("fits/identification/identity/version", "format.version", this.createStringValue);
-    this.createFitsIdentityDetailRule("fits/identification/identity/externalIdentifier", "puid", this.createStringValue);
+    this.createIdentityStatusRules();
+
+    this.createFormatRule("fits/identification/identity");
+    this.createFormatVersionRule("fits/identification/identity/version");
+    this.createPuidRule("fits/identification/identity/externalIdentifier");
+
   }
 
   private void createFileInfoRules() {
-    this.createFitsPropertyRule("fits/fileinfo/size", createIntegerValue);
-    this.createFitsPropertyRule("fits/fileinfo/md5checksum", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/lastmodified", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/fslastmodified", createIntegerValue);
-    this.createFitsPropertyRule("fits/fileinfo/created", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/creatingApplicationName", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/creatingApplicationVersion", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/inhibitorType", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/inhibitorTarget", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/rightsBasis", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/copyrightBasis", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/copyrightNote", createStringValue);
-    this.createFitsPropertyRule("fits/fileinfo/creatingos", createStringValue);
+    this.createValueRule("fits/fileinfo/size");
+    this.createValueRule("fits/fileinfo/md5checksum");
+    this.createValueRule("fits/fileinfo/lastmodified");
+    this.createValueRule("fits/fileinfo/fslastmodified");
+    this.createValueRule("fits/fileinfo/created");
+    this.createValueRule("fits/fileinfo/creatingApplicationName");
+    this.createValueRule("fits/fileinfo/creatingApplicationVersion");
+    this.createValueRule("fits/fileinfo/inhibitorType");
+    this.createValueRule("fits/fileinfo/inhibitorTarget");
+    this.createValueRule("fits/fileinfo/rightsBasis");
+    this.createValueRule("fits/fileinfo/copyrightBasis");
+    this.createValueRule("fits/fileinfo/copyrightNote");
+    this.createValueRule("fits/fileinfo/creatingos");
   }
 
   private void createFileStatusRules() {
-    this.createFitsPropertyRule("fits/filestatus/well-formed", createBooleanValue);
-    this.createFitsPropertyRule("fits/filestatus/valid", createBooleanValue);
+    this.createValueRule("fits/filestatus/well-formed");
+    this.createValueRule("fits/filestatus/valid");
+    this.createValueRule("fits/filestatus/message");
   }
 
   private void createMetaDataRules() {
-    this.createFitsPropertyRule("fits/metadata/image/*", createStringValue);
-    this.createFitsPropertyRule("fits/metadata/text/*", createStringValue);
-    this.createFitsPropertyRule("fits/metadata/document/*", createStringValue);
-    this.createFitsPropertyRule("fits/metadata/audio/*", createStringValue);
-    this.createFitsPropertyRule("fits/metadata/video/*", createStringValue);
+    this.createValueRule("fits/metadata/image/*");
+    this.createValueRule("fits/metadata/text/*");
+    this.createValueRule("fits/metadata/document/*");
+    this.createValueRule("fits/metadata/audio/*");
+    this.createValueRule("fits/metadata/video/*");
+  }
+
+  private void createIdentityStatusRules() {
+    this.digester.addCallMethod("fits/identification", "setIdentityStatus", 1);
+    this.digester.addCallParam("fits/identification", 0, "status");
+  }
+
+  private void createFormatRule(String pattern) {
+    this.digester.addCallMethod(pattern, "createIdentity", 4);
+    this.digester.addCallParam(pattern, 0, "format");
+    this.digester.addCallParam(pattern, 1, "mimetype");
+    this.digester.addCallParam(pattern + "/tool", 2, "toolname");
+    this.digester.addCallParam(pattern + "/tool", 3, "toolversion");
 
   }
 
-  private void createFitsPropertyRule(String pattern, ObjectCreateRule rule) {
-    this.digester.addRule(pattern, rule); // create object when match found
-    this.digester.addCallParam(pattern, 0);// pass xml value as arg to constr.
-    this.digester.addSetProperties(pattern, "status", "status"); // set the status
-    this.digester.addSetNext(pattern, "addValue"); // add the value.
-
-    this.digester.addRule(pattern, this.genericAttachProperty);
-
-//    this.digester.addRule(pattern, createValueSource);
-//    this.digester.addSetProperties(pattern, "toolname", "name");
-//    this.digester.addSetProperties(pattern, "toolversion", "version");
-//    this.digester.addSetNext(pattern, "setSource");
-
-  }
-
-  private void createFitsIdentityRule(String pattern, String prop, ObjectCreateRule rule) {
-    this.digester.addRule(pattern, rule);
-    this.digester.addRule(pattern, new AttachPropertyRule(prop));
-    this.digester.addSetProperties(pattern, prop, "value");
-//    this.digester.addSetProperties("fits/identification", "status", "status");
-
-  }
-  
-  private void createFitsIdentityDetailRule(String pattern, String prop, ObjectCreateRule rule) {
-    this.digester.addRule(pattern, rule);
+  private void createFormatVersionRule(String pattern) {
+    this.digester.addCallMethod(pattern, "createFormatVersion", 4);
     this.digester.addCallParam(pattern, 0);
-    this.digester.addSetProperties(pattern, "status", "status");
-    this.digester.addRule(pattern, new AttachPropertyRule(prop));
+    this.digester.addCallParam(pattern, 1, "status");
+    this.digester.addCallParam(pattern, 2, "toolname");
+    this.digester.addCallParam(pattern, 3, "toolversion");
+  }
+
+  private void createPuidRule(String pattern) {
+    this.digester.addCallMethod(pattern, "createPuid", 3);
+    this.digester.addCallParam(pattern, 0);
+    this.digester.addCallParam(pattern, 1, "toolname");
+    this.digester.addCallParam(pattern, 2, "toolversion");
+
+  }
+
+  private void createValueRule(String pattern) {
+    this.digester.addCallMethod(pattern, "createValue", 5);
+    this.digester.addCallParam(pattern, 0);
+    this.digester.addCallParam(pattern, 1, "status");
+    this.digester.addCallParam(pattern, 2, "toolname");
+    this.digester.addCallParam(pattern, 3, "toolversion");
+    this.digester.addCallParamPath(pattern, 4);
   }
 
   public Element getElement() {
@@ -157,11 +138,11 @@ public class FITSDigesterAdaptor implements Runnable {
     }
 
     try {
+      this.digester.push(new DigesterContext());
+      DigesterContext context = (DigesterContext) this.digester.parse(this.stream);
+      Element element = this.postProcess(context);
+      return element;
 
-      Element e = (Element) this.digester.parse(this.stream);
-      this.postProcess(e);
-      return e;
-      
     } catch (IOException e) {
       e.printStackTrace();
     } catch (SAXException e) {
@@ -178,27 +159,14 @@ public class FITSDigesterAdaptor implements Runnable {
     return null;
   }
 
-  // TODO inspect why the generated objects
-  // by the digester are proxies and how can this behaviour can be circumvented.
-  // This should optimize the process a bit more.
-
-  private void postProcess(Element e) {
-    LOG.debug("Postprocessing element {}", e.getName());
-    List<Value<?>> values = new ArrayList<Value<?>>();
-    for (Value<?> v : e.getValues()) {
-      PropertyType type = v.getProperty().getType();
-      LOG.debug("Fixing value of property {}", v.getProperty().getName());
-
-      Value<?> value = Helper.getTypedValue(type.getClazz(), v.getValue());
-      LOG.debug("Created new generic value of type {} with value {}", type.name(), value.getValue());
-      value.setStatus(v.getStatus());
-      value.setSource(v.getSource());
-      value.setProperty(v.getProperty());
-      value.setElement(v.getElement());
-      values.add(value);
+  private Element postProcess(DigesterContext context) {
+    Element element = context.getElement();
+    List<Value<?>> values = context.getValues();
+    for (Value<?> v : values) {
+      element.addValue(v);
     }
-
-    e.setValues(values);
+    
+    return element;
   }
 
   @Override
@@ -229,6 +197,7 @@ public class FITSDigesterAdaptor implements Runnable {
 
       FITSDigesterAdaptor adaptor = new FITSDigesterAdaptor(null);
       // 000000.swf.
+      // a0833f04h.pdf.
       adaptor.setStream(new FileInputStream("src/main/resources/fits.xml"));
       Element element = adaptor.getElement();
 

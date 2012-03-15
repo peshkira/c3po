@@ -27,11 +27,6 @@ public class StringValue extends Value<String> {
     return this.getValue();
   }
 
-  @Override
-  public void setTypedValue(String value) {
-    this.setValue(value);
-  }
-
   @PrePersist
   public void prepersist() {
     if (this.getValue().length() > 1000) {

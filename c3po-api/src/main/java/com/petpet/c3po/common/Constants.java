@@ -179,6 +179,8 @@ public final class Constants {
   
   public static final String COLLECTION_MAX_VALUE_FOR_PROPERTY = "getMaxOfValuesForPropertyInCollection";
 
+  public static final String VALUE_SOURCE_BY_NAME_AND_VERSION = "getValueSourceByNameAndVersion";
+
   private Constants() {
 
   }

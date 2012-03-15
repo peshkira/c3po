@@ -28,7 +28,7 @@ public class Property implements Serializable {
 	private static final Logger LOG = LoggerFactory.getLogger(Property.class);
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.TABLE)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
 	@NotNull

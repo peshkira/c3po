@@ -24,26 +24,23 @@ public class FloatValue extends Value<Double> {
 
   public FloatValue(Double v) {
     this();
-    this.setTypedValue(v);
+    this.setValue(v.toString());
   }
 
   public FloatValue(String v) {
     this();
-
-    try {
-      this.setTypedValue(Double.valueOf(v));
-    } catch (NumberFormatException nfe) {
-      this.fValue = null;
-      this.setValue(null);
-      LOG.warn("The passed string '{}' is not a number. Setting value to null.", v);
-    }
+    this.setValue(v);
   }
 
-  @Override
-  public void setTypedValue(Double value) {
-    this.fValue = value;
-    this.setValue(value.toString());
-
+  public void setValue(String value) {
+    try {
+      this.fValue = Double.valueOf(value);
+      super.setValue(value);
+    } catch (NumberFormatException nfe) {
+      this.fValue = null;
+      super.setValue(null);
+      LOG.warn("The passed string '{}' is not a number. Setting value to null.", value);
+    }
   }
 
   @Override

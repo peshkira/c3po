@@ -58,7 +58,7 @@ public class ValueTest {
     Value v = new StringValue();
     v.setMeasuredAt(date.getTime());
     v.setReliability(100);
-    v.setTypedValue(name);
+    v.setValue(name);
     v.setElement(edummy);
     v.setProperty(pdummy);
     v.setSource(vdummy);
@@ -77,7 +77,7 @@ public class ValueTest {
     String updated = "updated";
 
     Value value = pl.getEntityManager().find(Value.class, 1L);
-    value.setTypedValue(updated);
+    value.setValue(updated);
     pl.handleCreate(Value.class, value);
     pl.getEntityManager().clear();
 

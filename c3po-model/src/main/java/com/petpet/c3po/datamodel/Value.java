@@ -23,8 +23,6 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Index;
 
-
-
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
@@ -47,7 +45,7 @@ import org.hibernate.annotations.Index;
 public abstract class Value<T> implements Serializable {
 
   private static final long serialVersionUID = -896459317140318025L;
-  
+
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE)
   private long id;
@@ -56,7 +54,7 @@ public abstract class Value<T> implements Serializable {
   private long measuredAt;
 
   @NotNull
-  @Column(length=1000)
+  @Column(length = 1000)
   private String value;
 
   @Min(0)
@@ -70,9 +68,9 @@ public abstract class Value<T> implements Serializable {
   @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
   private Property property;
 
-//  @NotNull
-//  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-  @Transient
+  // TODO this should be like a property...
+  @NotNull
+  @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
   private ValueSource source;
 
   @NotNull
@@ -135,7 +133,7 @@ public abstract class Value<T> implements Serializable {
     return value;
   }
 
-  public abstract void setTypedValue(T value);
+  // public abstract void setTypedValue(T value);
 
   public abstract T getTypedValue();
 
@@ -195,7 +193,5 @@ public abstract class Value<T> implements Serializable {
       return false;
     return true;
   }
-
-
 
 }

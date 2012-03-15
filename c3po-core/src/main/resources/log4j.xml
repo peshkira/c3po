@@ -19,7 +19,7 @@
     <level value="DEBUG" />
   </logger>
   <root>
-    <priority value="INFO" />
+    <priority value="DEBUG" />
     <appender-ref ref="CONSOLE" />
     <!-- <appender-ref ref="FILEAPPENDER" /> -->
   </root>

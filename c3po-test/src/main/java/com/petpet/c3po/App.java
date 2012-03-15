@@ -47,10 +47,10 @@ public class App implements Call {
     c.configure();
 
     long start = System.currentTimeMillis();
-//    app.foldertest();
+    app.foldertest();
 //     app.genprofile();
 //     app.filter();
-    app.matrix();
+//    app.matrix();
     long end = System.currentTimeMillis();
 
     System.out.println("Time: " + (end - start));
@@ -131,14 +131,14 @@ public class App implements Call {
 
   private void foldertest() {
     Map<String, String> c = new HashMap<String, String>();
-    c.put(C3POConfig.LOCATION, "/Users/petar/Downloads/target/43000");//done
+    c.put(C3POConfig.LOCATION, "/Users/petar/Downloads/fao");//done
     c.put(C3POConfig.NAME, "LocalFileSystem config");
 
     C3POConfig conf = new C3POConfig();
     conf.setType(GathererType.FS);
     conf.setConfigs(c);
 
-    this.test = this.getCollection("FAO");
+    this.test = this.getCollection("FAO2");
     this.test.setConfigurations(new HashSet<C3POConfig>(Arrays.asList(conf)));
     pl.handleUpdate(DigitalCollection.class, this.test);
 

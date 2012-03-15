@@ -117,8 +117,8 @@ public class Element implements Serializable {
 
   public void addValue(Value<?> v) {
     if (!this.values.contains(v)) {
-      this.values.add(v);
       v.setElement(this);
+      this.values.add(v);
     }
   }
 

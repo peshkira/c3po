@@ -2,6 +2,7 @@ package com.petpet.c3po.controller;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,7 @@ import com.petpet.c3po.datamodel.C3POConfig.GathererType;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
+import com.petpet.c3po.utils.Helper;
 
 public class GathererController {
 
@@ -68,16 +70,30 @@ public class GathererController {
 
           if (counter % 500 == 0) {
             LOGGER.info("Done {} files", counter);
+            cleanUp();
           }
         }
 
       } else {
         List<InputStream> all = gatherer.getAll();
         this.dispatch(all);
+        cleanUp();
       }
 
     }
 
+  }
+  
+  private void cleanUp() {
+    DigitalCollection tmp = (DigitalCollection) this.getPersitence().handleFindById(DigitalCollection.class, this.collection.getId());
+    tmp.getElements().addAll(this.collection.getElements());
+    this.collection = tmp;
+    this.collection = (DigitalCollection) this.getPersitence().handleUpdate(DigitalCollection.class, this.collection);
+    this.getPersitence().getEntityManager().detach(this.collection);
+    this.collection.setElements(new HashSet<Element>());
+    
+//    this.collection = (DigitalCollection) this.getPersitence().handleUpdate(DigitalCollection.class, this.collection);
+    
   }
 
   private MetaDataGatherer getGatherer(GathererType type, Map<String, String> config) {
@@ -106,8 +122,6 @@ public class GathererController {
 
       this.processElement(e);
     }
-
-    this.collection = (DigitalCollection) this.getPersitence().handleUpdate(DigitalCollection.class, this.collection);
 
   }
 

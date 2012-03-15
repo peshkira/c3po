@@ -32,7 +32,7 @@ public class DigitalCollection implements Serializable {
 	@NotNull
 	private String name;
 
-	@OneToMany(mappedBy = "collection", cascade = CascadeType.REMOVE)
+	@OneToMany(mappedBy = "collection", cascade = {CascadeType.REMOVE, CascadeType.DETACH})
 	private Set<Element> elements;
 	
 	@OneToMany(cascade = CascadeType.ALL)

@@ -10,81 +10,79 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Entity
-@NamedQueries( {
+@NamedQueries({
     @NamedQuery(name = "getSumOfValuesForPropertyInCollection", query = "SELECT SUM(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
     @NamedQuery(name = "getAvgOfValuesForPropertyInCollection", query = "SELECT AVG(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
     @NamedQuery(name = "getMinOfValuesForPropertyInCollection", query = "SELECT MIN(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll"),
-    @NamedQuery(name = "getMaxOfValuesForPropertyInCollection", query = "SELECT MAX(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll")})
+    @NamedQuery(name = "getMaxOfValuesForPropertyInCollection", query = "SELECT MAX(n.lValue) FROM IntegerValue n WHERE n.property.name = :pname AND n.element.collection = :coll") })
 public class IntegerValue extends Value<Long> {
-    
-    private static final long serialVersionUID = 1216578571209620108L;
-    
-    private static final Logger LOG = LoggerFactory.getLogger(IntegerValue.class);
-    
-    @NotNull
-    @Column(name = "lValue")
-    private Long lValue;
-    
-    public IntegerValue() {
-        this.setStatus(ValueStatus.OK.name());
+
+  private static final long serialVersionUID = 1216578571209620108L;
+
+  private static final Logger LOG = LoggerFactory.getLogger(IntegerValue.class);
+
+  @NotNull
+  @Column(name = "lValue")
+  private Long lValue;
+
+  public IntegerValue() {
+    this.setStatus(ValueStatus.OK.name());
+  }
+
+  public IntegerValue(Long v) {
+    this();
+    this.setValue(v.toString());
+  }
+
+  public IntegerValue(String v) {
+    this();
+    this.setValue(v);
+  }
+
+  @Override
+  public Long getTypedValue() {
+    return this.lValue;
+  }
+
+  public void setValue(String value) {
+    try {
+      this.lValue = Long.valueOf(value);
+      super.setValue(value);
+    } catch (NumberFormatException nfe) {
+      this.lValue = null;
+      super.setValue(null);
+      LOG.warn("The passed string '{}' is not a number. Setting value to null.", value);
     }
-    
-    public IntegerValue(Long v) {
-        this();
-        this.setTypedValue(v);
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((lValue == null) ? 0 : lValue.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
-    
-    public IntegerValue(String v) {
-        this();
-        
-        try {
-            this.setTypedValue(Long.valueOf(v));
-        } catch (NumberFormatException nfe) {
-            this.lValue = null;
-            this.setValue(null);
-            LOG.warn("The passed string '{}' is not a number. Setting value to null.", v);
-        }
+    if (!super.equals(obj)) {
+      return false;
     }
-    
-    @Override
-    public Long getTypedValue() {
-        return this.lValue;
+    if (getClass() != obj.getClass()) {
+      return false;
     }
-    
-    @Override
-    public void setTypedValue(Long value) {
-        this.lValue = value;
-        this.setValue(value.toString());
+    IntegerValue other = (IntegerValue) obj;
+    if (lValue == null) {
+      if (other.lValue != null) {
+        return false;
+      }
+    } else if (!lValue.equals(other.lValue)) {
+      return false;
     }
-    
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((lValue == null) ? 0 : lValue.hashCode());
-        return result;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        IntegerValue other = (IntegerValue) obj;
-        if (lValue == null) {
-            if (other.lValue != null) {
-                return false;
-            }
-        } else if (!lValue.equals(other.lValue)) {
-            return false;
-        }
-        return true;
-    }
-    
+    return true;
+  }
+
 }
