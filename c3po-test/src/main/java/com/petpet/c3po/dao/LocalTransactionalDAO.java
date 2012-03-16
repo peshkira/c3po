@@ -1,4 +1,4 @@
-package com.petpet.c3po;
+package com.petpet.c3po.dao;
 
 import java.util.List;
 
@@ -11,6 +11,7 @@ import com.petpet.c3po.api.dao.GenericDAO;
 import com.petpet.c3po.dao.GenericJPADAO;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Value;
+import com.petpet.c3po.utils.DBHelper;
 
 public class LocalTransactionalDAO implements GenericDAO<Object> {
 
@@ -30,7 +31,7 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       this.jpaDao.getEntityManager().getTransaction().commit();
       return result;
     } catch (Exception e) {
-      this.handleError(e.getMessage(), this.jpaDao.getEntityManager().getTransaction(), item);
+      this.handleError(e.getMessage(), "persisted", item);
       return null;
     }
   }
@@ -43,8 +44,7 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       this.jpaDao.getEntityManager().getTransaction().commit();
       return result;
     } catch (Exception e) {
-      LOG.error("An error occurred: {}, object {} could not be updated", e.getMessage(), item);
-      this.handleError(e.getMessage(), this.jpaDao.getEntityManager().getTransaction(), item);
+      this.handleError(e.getMessage(), "updated", item);
       return null;
     }
   }
@@ -56,8 +56,7 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       this.jpaDao.delete(item);
       this.jpaDao.getEntityManager().getTransaction().commit();
     } catch (Exception e) {
-      LOG.error("An error occurred: {}, object could not be deleted", e.getMessage());
-      this.handleError(e.getMessage(), this.jpaDao.getEntityManager().getTransaction(), item);
+      this.handleError(e.getMessage(), "deleted", item);
     }
   }
 
@@ -71,20 +70,23 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
     return this.jpaDao.findAll();
   }
 
-  private void handleError(String message, EntityTransaction transaction, Object item) {
-    LOG.error("An error occurred: {}, object {} could not be persisted", message, item);
+  private void handleError(String message, String action, Object item) {
+    LOG.error("c3po caught an error: {}, object {} could not be" + item, message, action);
     if (this.jpaDao.getEntityManager().getTransaction() != null
         && this.jpaDao.getEntityManager().getTransaction().isActive()) {
       LOG.warn("Transaction is still active, rolling it back manually");
       this.jpaDao.getEntityManager().getTransaction().rollback();
     }
 
+    LOG.info("Removing conflicting object");
     this.jpaDao.getEntityManager().remove(item);
 
-    LOG.warn("Trying to flush the entity manager");
+    LOG.info("Recovering session");
     this.jpaDao.getEntityManager().getTransaction().begin();
     this.jpaDao.getEntityManager().flush();
     this.jpaDao.getEntityManager().getTransaction().commit();
+
+    DBHelper.refreshProperties();
   }
 
 }

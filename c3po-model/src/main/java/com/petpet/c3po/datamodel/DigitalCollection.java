@@ -41,6 +41,7 @@ public class DigitalCollection implements Serializable {
 	public DigitalCollection() {
 		super();
 		this.setElements(new HashSet<Element>());
+		this.setConfigurations(new HashSet<C3POConfig>());
 	}
 
 	public DigitalCollection(String name) {

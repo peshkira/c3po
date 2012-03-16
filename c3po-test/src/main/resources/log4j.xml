@@ -7,8 +7,11 @@
       <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p [%c{1}] %m%n" />
     </layout>
   </appender>
-  <!-- <appender name="FILEAPPENDER" class=""> <layout class="org.apache.log4j.PatternLayout"> <param name="ConversionPattern" 
-    value="%d{HH:mm:ss,SSS} %-5p [%c{1}] %m%n" /> </layout> </appender> -->
+  <appender name="FILEAPPENDER" class="com.petpet.c3po.utils.C3POFileAppender">
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p [%c{1}] %m%n" />
+    </layout>
+  </appender>
   <logger name="org.hibernate">
     <level value="WARN" />
   </logger>
@@ -21,6 +24,6 @@
   <root>
     <priority value="INFO" />
     <appender-ref ref="CONSOLE" />
-    <!-- <appender-ref ref="FILEAPPENDER" /> -->
+    <appender-ref ref="FILEAPPENDER" />
   </root>
 </log4j:configuration>

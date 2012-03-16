@@ -17,13 +17,15 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Index;
 
 @Entity
-@Table(name = "element")
-@org.hibernate.annotations.Table(appliesTo = "element", indexes = {@Index(name="element_idx", columnNames = {"name", "uid"})})
+@Table(name = "element", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "uid" }) })
+@org.hibernate.annotations.Table(appliesTo = "element", indexes = { @Index(name = "element_idx", columnNames = {
+    "name", "uid" }) })
 @NamedQueries({ @NamedQuery(name = "getElementsInCollectionCount", query = "SELECT COUNT(e) FROM Element e WHERE e.collection = :coll") })
 public class Element implements Serializable {
 
@@ -43,7 +45,7 @@ public class Element implements Serializable {
   @OneToOne
   private DigitalCollection collection;
 
-//  @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+  // @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
   @Transient
   private Set<Element> elements;
 
@@ -163,13 +165,13 @@ public class Element implements Serializable {
     }
     return true;
   }
-  
+
   @Override
   public String toString() {
     if (this.getName() != null) {
       return this.getName();
     }
-    
+
     return super.toString();
   }
 

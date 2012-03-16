@@ -52,56 +52,59 @@ public class GathererController {
 
   // do I need the collection reference here...?
   public void collectMetaData() {
-    LOGGER.info("Looking up configurations for collection {}", this.collection.getName());
+    LOGGER.info("Looking up configurations for collection '{}'", this.collection.getName());
     Set<C3POConfig> configs = this.getCollection().getConfigurations();
 
     for (C3POConfig conf : configs) {
-      LOGGER.info("Found matching gatherer, starting...");
       MetaDataGatherer gatherer = this.getGatherer(conf.getType(), conf.getConfigs());
 
-      if (gatherer.getCount() > 100) {
-        int counter = 10;
-        List<InputStream> next = gatherer.getNext(10);
-        while (!next.isEmpty()) {
-          LOGGER.debug("got next " + next.size());
-          this.dispatch(next);
-          next = gatherer.getNext(10);
-          counter += 10;
+      if (gatherer != null) {
+        LOGGER.info("Found matching gatherer of type '{}', starting...", conf.getType().name());
+        LOGGER.info("{} files to be processed", gatherer.getCount());
 
-          if (counter % 500 == 0) {
-            LOGGER.info("Done {} files", counter);
-            cleanUp();
+        if (gatherer.getCount() > 100) {
+          int counter = 10;
+          List<InputStream> next = gatherer.getNext(10);
+
+          while (!next.isEmpty()) {
+            LOGGER.debug("processing next {} files", next.size());
+
+            this.dispatch(next);
+            next = gatherer.getNext(10);
+            counter += 10;
+
+            if (counter % 500 == 0) {
+              cleanUp();
+              LOGGER.info("Finished processing {} files", counter);
+            }
           }
+
+        } else {
+          List<InputStream> all = gatherer.getAll();
+          this.dispatch(all);
+          cleanUp();
         }
-
-      } else {
-        List<InputStream> all = gatherer.getAll();
-        this.dispatch(all);
-        cleanUp();
       }
-
     }
 
+    LOGGER.info("Gathering process finished");
   }
-  
+
   private void cleanUp() {
-    DigitalCollection tmp = (DigitalCollection) this.getPersitence().handleFindById(DigitalCollection.class, this.collection.getId());
+    LOGGER.trace("Cleaning up the session");
+    DigitalCollection tmp = (DigitalCollection) this.getPersitence().handleFindById(DigitalCollection.class,
+        this.collection.getId());
     tmp.getElements().addAll(this.collection.getElements());
     this.collection = tmp;
     this.collection = (DigitalCollection) this.getPersitence().handleUpdate(DigitalCollection.class, this.collection);
     this.getPersitence().getEntityManager().detach(this.collection);
     this.collection.setElements(new HashSet<Element>());
-    
-//    this.collection = (DigitalCollection) this.getPersitence().handleUpdate(DigitalCollection.class, this.collection);
-    
   }
 
   private MetaDataGatherer getGatherer(GathererType type, Map<String, String> config) {
     MetaDataGatherer gatherer = null;
 
     switch (type) {
-      case DEFAULT:
-        throw new RuntimeException("No Gatherer selected");
       case FS:
         gatherer = new FileSystemGatherer(config);
         break;
@@ -110,7 +113,10 @@ public class GathererController {
       case ROSETTA:
       case ESD:
         throw new RuntimeException("Gatherer not supported yet");
+      default:
+        throw new RuntimeException("No gatherer selected");
     }
+
     return gatherer;
   }
 
@@ -128,7 +134,7 @@ public class GathererController {
   public synchronized void processElement(Element e) {
     if (e != null) {
       e.setCollection(this.collection);
-      Element stored = (Element) this.getPersitence().handleCreate(Element.class, e);
+      final Element stored = (Element) this.getPersitence().handleCreate(Element.class, e);
       if (stored != null) {
         this.collection.getElements().add(e);
       }

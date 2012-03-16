@@ -43,13 +43,13 @@ public class FileSystemGatherer implements MetaDataGatherer {
     return this.count;
   }
 
-  private long count(File dir) {
+  private long count(File dir, FileFilter filter) {
     long sum = 0;
 
     if (dir.isDirectory()) {
-      File[] files = dir.listFiles(new RecursiveXMLFileFilter());
+      File[] files = dir.listFiles(filter);
       for (File f : files) {
-        sum += count(f);
+        sum += count(f, filter);
       }
     } else {
       return ++sum;
@@ -95,42 +95,50 @@ public class FileSystemGatherer implements MetaDataGatherer {
     this.files = new ArrayList<String>();
     this.pointer = 0;
     String path = this.config.get(C3POConfig.LOCATION);
+    boolean recursive = Boolean.valueOf(this.config.get(C3POConfig.RECURSIVE));
 
     if (path == null) {
-      LOG.error("No config provided");
+      LOG.error("No path config provided");
       return;
     }
 
     File dir = new File(path);
 
     if (!dir.exists() || !dir.isDirectory()) {
-      LOG.error("Dir does not exist, or is not a dir");
+      LOG.error("Directory '{}' does not exist, or is not a directory", path);
       return;
     }
 
-    this.traverseFiles(dir);
-    this.count = this.count(dir);
+    final XMLFileFilter filter = new XMLFileFilter(recursive);
+    this.traverseFiles(dir, filter);
+    this.count = this.count(dir, filter);
 
   }
 
-  private void traverseFiles(File file) {
+  private void traverseFiles(File file, FileFilter filter) {
     if (file.isDirectory()) {
-      File[] files = file.listFiles(new RecursiveXMLFileFilter());
+      File[] files = file.listFiles(filter);
       for (File f : files) {
-        traverseFiles(f);
+        traverseFiles(f, filter);
       }
     } else {
       this.files.add(file.getAbsolutePath());
     }
   }
 
-  private class RecursiveXMLFileFilter implements FileFilter {
+  private class XMLFileFilter implements FileFilter {
+
+    private boolean recursive;
+
+    public XMLFileFilter(boolean recursive) {
+      this.recursive = recursive;
+    }
 
     @Override
     public boolean accept(File pathname) {
       boolean accept = false;
 
-      if (pathname.isDirectory() || pathname.getName().endsWith(".xml"))
+      if ((pathname.isDirectory() && this.recursive) || pathname.getName().endsWith(".xml"))
         accept = true;
 
       return accept;

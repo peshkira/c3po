@@ -160,6 +160,6 @@ public class Property implements Serializable {
 	
 	@PostPersist
 	public void post() {
-	  LOG.info("Stored new property" + this.getId() + " " + this.getName());
+	  LOG.trace("Found and stored new property " + this.getId() + " " + this.getName());
 	}
 }

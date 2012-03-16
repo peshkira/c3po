@@ -1,4 +1,4 @@
-package com.petpet.c3po;
+package com.petpet.c3po.dao;
 
 import java.util.HashMap;
 import java.util.List;

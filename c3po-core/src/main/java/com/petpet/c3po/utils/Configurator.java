@@ -21,6 +21,7 @@ public class Configurator {
   }
 
   public void configure() {
+    LOG.debug("Configuring application.");
     this.initializeHelpers();
     this.loadKnownProperties();
     // eventually load mapping of properties, e.g. lastModified maps to
@@ -29,18 +30,18 @@ public class Configurator {
   }
 
   private void initializeHelpers() {
+    LOG.debug("Initializing helpers.");
+    DBHelper.init(this.persistence);
     XMLUtils.init();
     Helper.init();
-    DBHelper.init(this.persistence);
     FITSHelper.init();
   }
 
-  // FIXME DAO
   private void loadKnownProperties() {
-    LOG.debug("loading known properties");
+    LOG.debug("Loading known properties");
     PreparedQueries pq = new PreparedQueries(this.persistence.getEntityManager());
     List<Property> props = pq.getAllProperties();
-    LOG.debug("loaded {} properties ", props.size());
+    LOG.debug("Loaded {} properties ", props.size());
 
     for (Property p : props) {
       Helper.KNOWN_PROPERTIES.put(p.getName(), p);

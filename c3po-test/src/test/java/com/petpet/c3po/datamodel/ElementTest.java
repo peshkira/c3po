@@ -11,9 +11,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.petpet.c3po.LocalPersistenceLayer;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.dao.LocalPersistenceLayer;
 
 public class ElementTest {
 

@@ -68,7 +68,7 @@ public class ProfileGenerator {
       OutputFormat format = OutputFormat.createPrettyPrint();
       File file = new File(path);
       LOG.info("Will create profile in {}", file.getAbsolutePath());
-      if (!file.getParentFile().exists()) {
+      if (file.getParentFile() != null && !file.getParentFile().exists()) {
         file.getParentFile().mkdirs();
 
       }

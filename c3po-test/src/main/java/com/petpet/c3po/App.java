@@ -21,6 +21,7 @@ import com.petpet.c3po.api.Message;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.controller.GathererController;
 import com.petpet.c3po.controller.ProfileGenerator;
+import com.petpet.c3po.dao.LocalPersistenceLayer;
 import com.petpet.c3po.datamodel.C3POConfig;
 import com.petpet.c3po.datamodel.C3POConfig.GathererType;
 import com.petpet.c3po.datamodel.DigitalCollection;
