@@ -3,10 +3,7 @@ package com.petpet.c3po.datamodel;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.persistence.Query;
-import javax.persistence.RollbackException;
 
 import junit.framework.Assert;
 
@@ -33,7 +30,7 @@ public class ValueTest {
     DigitalCollection coll = new DigitalCollection("Test");
     edummy = new Element("Dummy", "Dummy");
     pdummy = new Property("Dummy");
-    vdummy = new ValueSource("Dummy");
+    vdummy = new ValueSource("Dummy", "0.1");
 
     edummy.setCollection(coll);
     edummy.setCollection(coll);
@@ -47,6 +44,9 @@ public class ValueTest {
 
   @After
   public void after() {
+//    pl.handleDelete(Element.class, edummy);
+//    pl.handleDelete(Property.class, pdummy);
+//    pl.handleDelete(ValueSource.class, vdummy);
     pl.getEntityManager().clear();
   }
 
@@ -99,10 +99,11 @@ public class ValueTest {
 
   }
 
-  @Test(expected = RollbackException.class)
+  @Test
   public void shouldNotStoreNullValue() throws Exception {
-    Value v = new StringValue();
-    pl.handleCreate(Value.class, v);
+    Value<?> v = new StringValue();
+    v = (Value<?>) pl.handleCreate(Value.class, v);
+    Assert.assertNull(v);
   }
 
   @Test
@@ -135,7 +136,7 @@ public class ValueTest {
     pl.handleCreate(DigitalCollection.class, coll);
 
     Property p1 = new Property("mimetype");
-    ValueSource vs = new ValueSource("source");
+    ValueSource vs = new ValueSource("source", "0.1");
 
     Element e1 = new Element("e1", "path/to/file/e1");
     Element e2 = new Element("e2", "path/to/file/e2");

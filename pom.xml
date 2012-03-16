@@ -14,7 +14,7 @@
     <module>c3po-model</module>
     <module>c3po-core</module>
     <module>c3po-web</module>
-    <module>c3po-test</module>
+    <module>c3po-cmd</module>
   </modules>
 
   <developers>

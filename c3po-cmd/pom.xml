@@ -7,8 +7,8 @@
     <groupId>com.petpet</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>c3po-test</artifactId>
-  <name>c3po-test</name>
+  <artifactId>c3po-cmd</artifactId>
+  <name>c3po Command Line App</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
