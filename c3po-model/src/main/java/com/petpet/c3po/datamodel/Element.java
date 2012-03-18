@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Index;
 
 @Entity
-@Table(name = "element", uniqueConstraints = { @UniqueConstraint(columnNames = { "name", "uid" }) })
+@Table(name = "element", uniqueConstraints = { @UniqueConstraint(columnNames = { "collection_id", "name", "uid" }) })
 @org.hibernate.annotations.Table(appliesTo = "element", indexes = { @Index(name = "element_idx", columnNames = {
     "name", "uid" }) })
 @NamedQueries({ @NamedQuery(name = "getElementsInCollectionCount", query = "SELECT COUNT(e) FROM Element e WHERE e.collection = :coll") })

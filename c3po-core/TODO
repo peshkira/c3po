@@ -1,4 +1,2 @@
 * add sequence generators for each entity...
 * make named queries with and without conflict matching.
-* add sum to integer properties or at least to size.
-* reconsider fslastmodified and lastmodified and check for other similar stuff.

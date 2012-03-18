@@ -56,11 +56,10 @@ public class DigesterContext {
 
     Value<?> v = Helper.getTypedValue(property.getType(), value);
 
-    v.setSource(source);
-
     if (status != null)
       v.setStatus(status);
 
+    v.setSource(source);
     v.setProperty(property);
 
     this.addValue(v);
@@ -108,7 +107,7 @@ public class DigesterContext {
   }
 
   private Property getProperty(String name) {
-    //TODO move this to DBHelper...
+    // TODO move this to DBHelper...
     return FITSHelper.getPropertyByFitsName(name);
   }
 
@@ -117,7 +116,7 @@ public class DigesterContext {
     if (s == null) {
       s = new ValueSource(toolname, version);
     }
-    
+
     return s;
   }
 

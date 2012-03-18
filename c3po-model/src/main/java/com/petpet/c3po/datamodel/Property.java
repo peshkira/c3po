@@ -17,69 +17,67 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Entity
-@NamedQueries({
-		@NamedQuery(name = "getAllProperties", query = "SELECT p FROM Property p"),
-		@NamedQuery(name = "getAllPropertyNames", query = "SELECT p.name FROM Property p") 
-		})
+@NamedQueries({ @NamedQuery(name = "getAllProperties", query = "SELECT p FROM Property p"),
+    @NamedQuery(name = "getAllPropertyNames", query = "SELECT p.name FROM Property p") })
 public class Property implements Serializable {
 
-	private static final long serialVersionUID = -2404477153744982138L;
-	
-	private static final Logger LOG = LoggerFactory.getLogger(Property.class);
+  private static final long serialVersionUID = -2404477153744982138L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+  private static final Logger LOG = LoggerFactory.getLogger(Property.class);
 
-	@NotNull
-	private String name;
-	
-	@NotNull
-	private String humanReadableName;
-	
-	private String description;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long id;
 
-	@Enumerated(EnumType.STRING)
-	private PropertyType type;
+  @NotNull
+  private String name;
 
-//	@OneToMany
-//	private Set<Property> properties;
+  @NotNull
+  private String humanReadableName;
 
-	public Property() {
-		super();
-//		this.properties = new HashSet<Property>();
-		this.type = PropertyType.DEFAULT;
-	}
+  private String description;
 
-	public Property(String name) {
-		this();
-		this.name = name;
-		this.setHumanReadableName(name);
-	}
-	
-	public Property(String name, String rName) {
-	  this();
-	  this.name = name;
-	  this.setHumanReadableName(rName);
-	}
+  @Enumerated(EnumType.STRING)
+  private PropertyType type;
 
-	public void setId(long id) {
-		this.id = id;
-	}
+  // @OneToMany
+  // private Set<Property> properties;
 
-	public long getId() {
-		return id;
-	}
+  public Property() {
+    super();
+    // this.properties = new HashSet<Property>();
+    this.type = PropertyType.DEFAULT;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public Property(String name) {
+    this();
+    this.name = name;
+    this.setHumanReadableName(name);
+  }
 
-	public String getName() {
-		return name;
-	}
+  public Property(String name, String rName) {
+    this();
+    this.name = name;
+    this.setHumanReadableName(rName);
+  }
 
-	public String getHumanReadableName() {
+  public void setId(long id) {
+    this.id = id;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getHumanReadableName() {
     return humanReadableName;
   }
 
@@ -95,71 +93,57 @@ public class Property implements Serializable {
     this.description = description;
   }
 
-//  public void setProperties(Set<Property> properties) {
-//		this.properties = properties;
-//	}
-//
-//	public Set<Property> getProperties() {
-//		return properties;
-//	}
+  // public void setProperties(Set<Property> properties) {
+  // this.properties = properties;
+  // }
+  //
+  // public Set<Property> getProperties() {
+  // return properties;
+  // }
 
-	public void setType(PropertyType type) {
-		this.type = type;
-	}
+  public void setType(PropertyType type) {
+    this.type = type;
+  }
 
-	public PropertyType getType() {
-		return type;
-	}
+  public PropertyType getType() {
+    return type;
+  }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (int) (id ^ (id >>> 32));
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
-	}
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((type == null) ? 0 : type.hashCode());
+    return result;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		Property other = (Property) obj;
-		if (id != other.id) {
-			return false;
-		}
-		if (name == null) {
-			if (other.name != null) {
-				return false;
-			}
-		} else if (!name.equals(other.name)) {
-			return false;
-		}
-		if (type == null) {
-			if (other.type != null) {
-				return false;
-			}
-		} else if (!type.equals(other.type)) {
-			return false;
-		}
-		return true;
-	}
-	
-	@Override
-	public String toString() {
-	  return this.getName();
-	}
-	
-	@PostPersist
-	public void post() {
-	  LOG.trace("Found and stored new property " + this.getId() + " " + this.getName());
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Property other = (Property) obj;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (type != other.type)
+      return false;
+    return true;
+  }
+
+  @Override
+  public String toString() {
+    return this.getName();
+  }
+
+  @PostPersist
+  public void post() {
+    LOG.trace("Found and stored new property " + this.getId() + " " + this.getName());
+  }
 }

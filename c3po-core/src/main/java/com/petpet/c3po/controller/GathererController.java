@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import com.petpet.c3po.datamodel.C3POConfig;
 import com.petpet.c3po.datamodel.C3POConfig.GathererType;
 import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.db.PreparedQueries;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.Helper;
 
@@ -94,8 +96,17 @@ public class GathererController {
     LOGGER.trace("Cleaning up the session");
     DigitalCollection tmp = (DigitalCollection) this.getPersitence().handleFindById(DigitalCollection.class,
         this.collection.getId());
-    tmp.getElements().addAll(this.collection.getElements());
-    this.collection = tmp;
+
+    if (tmp != null) {
+      try {
+        tmp.getElements().addAll(this.collection.getElements());
+      } catch (final LazyInitializationException e) {
+        LOGGER.warn("c3po caught an error: {}", e.getMessage());
+      }
+      this.collection = tmp;
+    }
+
+    // TODO handle update null
     this.collection = (DigitalCollection) this.getPersitence().handleUpdate(DigitalCollection.class, this.collection);
     this.getPersitence().getEntityManager().detach(this.collection);
     this.collection.setElements(new HashSet<Element>());
@@ -136,7 +147,7 @@ public class GathererController {
       e.setCollection(this.collection);
       final Element stored = (Element) this.getPersitence().handleCreate(Element.class, e);
       if (stored != null) {
-        this.collection.getElements().add(e);
+        this.collection.getElements().add(stored);
       }
     }
   }

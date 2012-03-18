@@ -12,7 +12,7 @@ public class FloatValue extends Value<Double> {
 
   private static final long serialVersionUID = -2966772666922044714L;
 
-  private static final Logger LOG = LoggerFactory.getLogger(IntegerValue.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FloatValue.class);
 
   @NotNull
   @Column(name = "fValue")
@@ -38,8 +38,8 @@ public class FloatValue extends Value<Double> {
       super.setValue(value);
     } catch (NumberFormatException nfe) {
       this.fValue = null;
-      super.setValue(null);
-      LOG.warn("The passed string '{}' is not a number. Setting value to null.", value);
+      super.setValue(value);
+      LOG.warn("The passed string '{}' is not a valid float. Setting value to null.", value);
     }
   }
 

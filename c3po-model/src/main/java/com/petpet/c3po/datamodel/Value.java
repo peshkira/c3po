@@ -5,8 +5,6 @@ import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -16,12 +14,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.PrePersist;
-import javax.persistence.Transient;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.Index;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -45,6 +43,8 @@ import org.hibernate.annotations.Index;
 public abstract class Value<T> implements Serializable {
 
   private static final long serialVersionUID = -896459317140318025L;
+
+  private static final Logger LOG = LoggerFactory.getLogger(Value.class);
 
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE)

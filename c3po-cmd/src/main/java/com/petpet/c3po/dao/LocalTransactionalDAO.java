@@ -1,14 +1,17 @@
 package com.petpet.c3po.dao;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-import javax.persistence.EntityTransaction;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.dao.GenericDAO;
-import com.petpet.c3po.dao.GenericJPADAO;
+import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Value;
 import com.petpet.c3po.utils.DBHelper;
@@ -29,10 +32,15 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       this.jpaDao.getEntityManager().getTransaction().begin();
       Object result = this.jpaDao.persist(item);
       this.jpaDao.getEntityManager().getTransaction().commit();
+
       return result;
+
+    } catch (ConstraintViolationException e) {
+      return this.handleConstraintViolation(item, e.getConstraintViolations(), e.getMessage());
+
     } catch (Exception e) {
-      this.handleError(e.getMessage(), "persisted", item);
-      return null;
+      return this.handleError(e.getMessage(), "persisted", item);
+
     }
   }
 
@@ -43,9 +51,12 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       Object result = this.jpaDao.update(item);
       this.jpaDao.getEntityManager().getTransaction().commit();
       return result;
+
+    } catch (ConstraintViolationException e) {
+      return this.handleConstraintViolation(item, e.getConstraintViolations(), e.getMessage());
+
     } catch (Exception e) {
-      this.handleError(e.getMessage(), "updated", item);
-      return null;
+      return this.handleError(e.getMessage(), "updated", item);
     }
   }
 
@@ -55,6 +66,7 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       this.jpaDao.getEntityManager().getTransaction().begin();
       this.jpaDao.delete(item);
       this.jpaDao.getEntityManager().getTransaction().commit();
+
     } catch (Exception e) {
       this.handleError(e.getMessage(), "deleted", item);
     }
@@ -70,23 +82,78 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
     return this.jpaDao.findAll();
   }
 
-  private void handleError(String message, String action, Object item) {
-    LOG.error("c3po caught an error: {}, object {} could not be" + item, message, action);
+  private Object handleConstraintViolation(Object item, Set<ConstraintViolation<?>> violations, String message) {
+    LOG.error("c3po caught an error: {}", message);
+    this.rollback();
+
+    boolean retry = false;
+
+    if (item instanceof Element) {
+      Element e = (Element) item;
+      int before = e.getValues().size();
+      LOG.trace("Values before handling {}", before);
+      Iterator<Value<?>> iterator = e.getValues().iterator();
+
+      while (iterator.hasNext()) {
+        Value<?> v = iterator.next();
+
+        if (v.getTypedValue() == null) {
+          LOG.trace("Found null value for {}", v.getValue());
+          iterator.remove();
+        }
+      }
+
+      int after = e.getValues().size();
+      LOG.trace("Values after handling {}", after);
+      retry = before > after;
+    }
+
+    if (retry) {
+      LOG.debug("c3po will retry to store the element without the conflicting values...");
+      Element e = (Element) item;
+      e.setId(e.getId() - 1); // need to reset due to rollback
+      item = this.update(e);
+      this.flush();
+
+      return item;
+    }
+
+    // cannot fix, return null
+    return null;
+  }
+
+  private Object handleError(String message, String action, Object item) {
+    LOG.error("c3po caught an error: {}, object {} could not be " + action, message, item);
+    this.rollback();
+    this.handleElement(item);
+    this.flush();
+
+    return null;
+  }
+
+  private void rollback() {
     if (this.jpaDao.getEntityManager().getTransaction() != null
         && this.jpaDao.getEntityManager().getTransaction().isActive()) {
       LOG.warn("Transaction is still active, rolling it back manually");
       this.jpaDao.getEntityManager().getTransaction().rollback();
     }
+  }
 
-    LOG.info("Removing conflicting object");
-    this.jpaDao.getEntityManager().remove(item);
-
-    LOG.info("Recovering session");
+  private void flush() {
+    LOG.info("Flushing session");
     this.jpaDao.getEntityManager().getTransaction().begin();
     this.jpaDao.getEntityManager().flush();
     this.jpaDao.getEntityManager().getTransaction().commit();
 
     DBHelper.refreshProperties();
+  }
+
+  private void handleElement(Object item) {
+    if (item instanceof Element) {
+      Element e = (Element) item;
+      LOG.trace("Removing corrupted element {}", e);
+      this.jpaDao.getEntityManager().remove(e);
+    }
   }
 
 }

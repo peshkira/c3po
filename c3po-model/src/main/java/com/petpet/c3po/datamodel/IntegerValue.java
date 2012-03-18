@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
@@ -50,39 +51,9 @@ public class IntegerValue extends Value<Long> {
       super.setValue(value);
     } catch (NumberFormatException nfe) {
       this.lValue = null;
-      super.setValue(null);
-      LOG.warn("The passed string '{}' is not a number. Setting value to null.", value);
+      super.setValue(value);
+      LOG.warn("The passed string '{}' is not a valid integer. Setting value to null.", value);
     }
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + ((lValue == null) ? 0 : lValue.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!super.equals(obj)) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    IntegerValue other = (IntegerValue) obj;
-    if (lValue == null) {
-      if (other.lValue != null) {
-        return false;
-      }
-    } else if (!lValue.equals(other.lValue)) {
-      return false;
-    }
-    return true;
   }
 
 }
