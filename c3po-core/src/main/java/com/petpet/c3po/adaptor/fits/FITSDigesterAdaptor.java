@@ -160,18 +160,23 @@ public class FITSDigesterAdaptor implements Runnable {
   }
 
   private Element postProcess(DigesterContext context) {
-    Element element = context.getElement();
-    List<Value<?>> values = context.getValues();
-    for (Value<?> v : values) {
-      element.addValue(v);
+    final Element element = context.getElement();
+    final List<Value<?>> values = context.getValues();
+
+    if (element != null) {
+      for (Value<?> v : values) {
+        element.addValue(v);
+      }
+    } else {
+      LOG.warn("No element could be extracted");
     }
-    
+
     return element;
   }
 
   @Override
   public void run() {
-    Element element = this.getElement();
+    final Element element = this.getElement();
     if (element != null) {
       this.controller.processElement(element);
 
@@ -189,6 +194,7 @@ public class FITSDigesterAdaptor implements Runnable {
     this.stream = stream;
   }
 
+  // TODO remove
   public static void main(String[] args) {
     try {
       XMLUtils.init();
