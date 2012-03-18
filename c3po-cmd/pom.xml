@@ -8,11 +8,28 @@
     <version>0.0.1</version>
   </parent>
   <artifactId>c3po-cmd</artifactId>
-  <name>c3po Command Line App</name>
+  <name>C3PO Command Line App</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.petpet.c3po.C3PO</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -22,17 +39,17 @@
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-model</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-core</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

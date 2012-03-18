@@ -1,2 +1,2 @@
-* add sequence generators for each entity...
 * make named queries with and without conflict matching.
+* bundle command line app.

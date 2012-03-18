@@ -10,7 +10,7 @@
 
   <artifactId>c3po-core</artifactId>
   <packaging>jar</packaging>
-  <name>C3PO Core Module</name>
+  <name>C3PO Core</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -100,12 +100,12 @@
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-model</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
   </dependencies>
 </project>

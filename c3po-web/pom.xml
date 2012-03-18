@@ -9,7 +9,7 @@
   </parent>
   <artifactId>c3po-web</artifactId>
   <packaging>war</packaging>
-  <name>C3PO Analyzer</name>
+  <name>C3PO Web</name>
 
   <repositories>
     <repository>
@@ -77,14 +77,14 @@
       <version>1.9.3</version>
     </dependency>
     <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-xc</artifactId>
-        <version>1.9.3</version>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-xc</artifactId>
+      <version>1.9.3</version>
     </dependency>
     <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-jaxrs</artifactId>
-        <version>1.9.3</version>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-jaxrs</artifactId>
+      <version>1.9.3</version>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -107,12 +107,12 @@
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-model</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-core</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
   </dependencies>
 </project>
