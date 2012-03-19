@@ -9,7 +9,7 @@
     </layout>
   </appender>
   <appender name="FILEAPPENDER" class="com.petpet.c3po.utils.C3POFileAppender">
-    <param name="Threshold" value="DEBUG" />
+    <param name="Threshold" value="TRACE" />
     <layout class="org.apache.log4j.PatternLayout">
       <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p [%c{1}] %m%n" />
     </layout>
@@ -27,7 +27,6 @@
     <level value="INFO" />
   </logger>
   <root>
-    <priority value="DEBUG" />
     <appender-ref ref="CONSOLE" />
     <appender-ref ref="FILEAPPENDER" />
   </root>

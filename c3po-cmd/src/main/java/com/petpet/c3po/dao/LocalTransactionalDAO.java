@@ -2,19 +2,18 @@ package com.petpet.c3po.dao;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import javax.validation.ConstraintViolation;
+import javax.persistence.PersistenceException;
 import javax.validation.ConstraintViolationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.dao.GenericDAO;
-import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Value;
 import com.petpet.c3po.utils.DBHelper;
+import com.petpet.c3po.utils.Helper;
 
 public class LocalTransactionalDAO implements GenericDAO<Object> {
 
@@ -28,6 +27,7 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
 
   @Override
   public Object persist(Object item) {
+    LOG.trace("Trying to persist {}", item);
     try {
       this.jpaDao.getEntityManager().getTransaction().begin();
       Object result = this.jpaDao.persist(item);
@@ -36,16 +36,26 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       return result;
 
     } catch (ConstraintViolationException e) {
-      return this.handleConstraintViolation(item, e.getConstraintViolations(), e.getMessage());
+      return this.handleConstraintViolation(item, e.getMessage());
+
+    } catch (PersistenceException e) {
+      LOG.trace("caught persistence exception: {}", e.getCause().getMessage());
+      if (e.getCause() instanceof ConstraintViolationException) {
+        LOG.trace("in second instanceof: {}", e.getCause());
+        return this.handleConstraintViolation(item, e.getCause().getMessage());
+      } else {
+        return this.handleError(e, "persisted", item);
+      }
 
     } catch (Exception e) {
-      return this.handleError(e.getMessage(), "persisted", item);
+      return this.handleError(e, "persisted", item);
 
     }
   }
 
   @Override
   public Object update(Object item) {
+    LOG.trace("Trying to update {}", item);
     try {
       this.jpaDao.getEntityManager().getTransaction().begin();
       Object result = this.jpaDao.update(item);
@@ -53,10 +63,10 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       return result;
 
     } catch (ConstraintViolationException e) {
-      return this.handleConstraintViolation(item, e.getConstraintViolations(), e.getMessage());
+      return this.handleConstraintViolation(item, e.getMessage());
 
     } catch (Exception e) {
-      return this.handleError(e.getMessage(), "updated", item);
+      return this.handleError(e, "updated", item);
     }
   }
 
@@ -68,7 +78,7 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
       this.jpaDao.getEntityManager().getTransaction().commit();
 
     } catch (Exception e) {
-      this.handleError(e.getMessage(), "deleted", item);
+      this.handleError(e, "deleted", item);
     }
   }
 
@@ -82,17 +92,16 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
     return this.jpaDao.findAll();
   }
 
-  private Object handleConstraintViolation(Object item, Set<ConstraintViolation<?>> violations, String message) {
+  private Object handleConstraintViolation(Object item, String message) {
     LOG.error("c3po caught an error: {}", message);
     this.rollback();
-
     boolean retry = false;
 
     if (item instanceof Element) {
-      Element e = (Element) item;
-      int before = e.getValues().size();
+      Element elmnt = (Element) item;
+      int before = elmnt.getValues().size();
       LOG.trace("Values before handling {}", before);
-      Iterator<Value<?>> iterator = e.getValues().iterator();
+      Iterator<Value<?>> iterator = elmnt.getValues().iterator();
 
       while (iterator.hasNext()) {
         Value<?> v = iterator.next();
@@ -103,30 +112,49 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
         }
       }
 
-      int after = e.getValues().size();
+      int after = elmnt.getValues().size();
       LOG.trace("Values after handling {}", after);
       retry = before > after;
     }
 
     if (retry) {
       LOG.debug("c3po will retry to store the element without the conflicting values...");
-      Element e = (Element) item;
-      e.setId(e.getId() - 1); // need to reset due to rollback
-      item = this.update(e);
-      this.flush();
+
+      Element elmnt = (Element) item;
+      Element recreated = this.recreateElement(elmnt);
+      item = this.persist(recreated);
 
       return item;
     }
 
-    // cannot fix, return null
+    LOG.debug("c3po was unable to fix the error, skipping element {}", item);
     return null;
   }
 
-  private Object handleError(String message, String action, Object item) {
-    LOG.error("c3po caught an error: {}, object {} could not be " + action, message, item);
+  private Element recreateElement(Element elmnt) {
+    LOG.trace("recreate element {}", elmnt);
+    Element e = new Element(elmnt.getName(), elmnt.getUid());
+    e.setCollection(elmnt.getCollection());
+
+    for (Value<?> v : elmnt.getValues()) {
+      Value<?> value = Helper.getTypedValue(v.getClass(), v.getValue());
+      if (value != null && value.getValue() != null && value.getTypedValue() != null) {
+        value.setProperty(Helper.getPropertyByName(v.getProperty().getName()));
+        value.setSource(DBHelper.getValueSource(v.getSource().getName(), v.getSource().getVersion()));
+        value.setStatus(v.getStatus());
+        e.addValue(value);
+      } else {
+        LOG.error("Value is null: {}", v.getValue());
+      }
+    }
+
+    return e;
+  }
+
+  private Object handleError(Exception e, String action, Object item) {
+    LOG.error("c3po caught an error: {}, object {} could not be " + action, e.getMessage(), item);
     this.rollback();
     this.handleElement(item);
-    this.flush();
 
     return null;
   }
@@ -136,6 +164,8 @@ public class LocalTransactionalDAO implements GenericDAO<Object> {
         && this.jpaDao.getEntityManager().getTransaction().isActive()) {
       LOG.warn("Transaction is still active, rolling it back manually");
       this.jpaDao.getEntityManager().getTransaction().rollback();
+
+      this.flush();
     }
   }
 

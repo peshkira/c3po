@@ -36,6 +36,7 @@ public final class DBHelper {
   public static void refreshProperties() {
     if (DBHelper.pq != null) {
       List<Property> properties = pq.getAllProperties();
+      Helper.KNOWN_PROPERTIES.clear();
       for (Property p : properties) {
         Helper.KNOWN_PROPERTIES.put(p.getName(), p);
       }

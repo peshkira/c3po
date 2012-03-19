@@ -11,6 +11,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.command.AnonymizeCommand;
 import com.petpet.c3po.command.CommandConstants;
 import com.petpet.c3po.command.GatherCommand;
 import com.petpet.c3po.command.HelpCommand;
@@ -31,6 +32,9 @@ public class C3PO {
         .withDescription(CommandConstants.PROFILE_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.PROFILE_OPTION).create("p");
 
+    final Option anonymize = OptionBuilder.withDescription(CommandConstants.ANONYMIZE_DESCRIPTION).isRequired(true)
+        .withLongOpt(CommandConstants.ANONYMIZE_OPTION).create("a");
+
     final Option collection = OptionBuilder.hasArgs(1).withArgName(CommandConstants.COLLECTION_ID_ARGUMENT)
         .withDescription(CommandConstants.COLLECTION_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.COLLECTION_OPTION).create("c");
@@ -43,6 +47,7 @@ public class C3PO {
     exclusive.setRequired(false);
     exclusive.addOption(gather);
     exclusive.addOption(profile);
+    exclusive.addOption(anonymize);
 
     final OptionGroup exclusive2 = new OptionGroup();
     exclusive2.setRequired(true);
@@ -74,7 +79,12 @@ public class C3PO {
         LOG.info("Execution time: {}ms", cmd.getTime());
       } else if (line.hasOption(CommandConstants.PROFILE_OPTION)) {
 
-        ProfileCommand cmd = new ProfileCommand(line.getOptions());
+        final ProfileCommand cmd = new ProfileCommand(line.getOptions());
+        cmd.execute();
+        LOG.info("Execution time: {}ms", cmd.getTime());
+      } else if (line.hasOption(CommandConstants.ANONYMIZE_OPTION)) {
+
+        final AnonymizeCommand cmd = new AnonymizeCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
       }
