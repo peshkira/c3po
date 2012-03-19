@@ -1,10 +1,7 @@
 package com.petpet.c3po.adaptor.fits;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.digester3.Digester;
@@ -15,12 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.petpet.c3po.controller.GathererController;
-import com.petpet.c3po.datamodel.DigitalCollection;
 import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.PropertyType;
 import com.petpet.c3po.datamodel.Value;
-import com.petpet.c3po.utils.Helper;
-import com.petpet.c3po.utils.XMLUtils;
 
 public class FITSDigesterAdaptor implements Runnable {
 
@@ -192,34 +185,6 @@ public class FITSDigesterAdaptor implements Runnable {
 
   public void setStream(InputStream stream) {
     this.stream = stream;
-  }
-
-  // TODO remove
-  public static void main(String[] args) {
-    try {
-      XMLUtils.init();
-      Helper.init();
-      FITSHelper.init();
-
-      FITSDigesterAdaptor adaptor = new FITSDigesterAdaptor(null);
-      // 000000.swf.
-      // a0833f04h.pdf.
-      adaptor.setStream(new FileInputStream("src/main/resources/fits.xml"));
-      Element element = adaptor.getElement();
-
-      if (element != null) {
-
-        System.out.println("element: " + element.getName() + " " + element.getUid());
-        System.out.println("values: " + element.getValues().size());
-        for (Value v : element.getValues()) {
-          System.out.println("v: " + v.getValue() + " status: " + v.getStatus() + " " + v.getSource() + " "
-              + v.getProperty() + " " + v.getClass().toString());
-        }
-      }
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-
   }
 
 }

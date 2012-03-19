@@ -3,9 +3,6 @@ package com.petpet.c3po.adaptor.fits;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.StringValue;
@@ -16,8 +13,6 @@ import com.petpet.c3po.utils.DBHelper;
 import com.petpet.c3po.utils.Helper;
 
 public class DigesterContext {
-
-  private static final Logger LOG = LoggerFactory.getLogger(DigesterContext.class);
 
   private Element element;
 

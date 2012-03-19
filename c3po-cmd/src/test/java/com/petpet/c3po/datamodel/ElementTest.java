@@ -1,7 +1,5 @@
 package com.petpet.c3po.datamodel;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.persistence.Query;
 
 import junit.framework.Assert;

@@ -20,7 +20,6 @@ import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.PropertyType;
 import com.petpet.c3po.datamodel.StringValue;
 import com.petpet.c3po.datamodel.Value;
-import com.petpet.c3po.datamodel.ValueSource;
 
 public final class Helper {
 
@@ -50,7 +49,7 @@ public final class Helper {
     }
   }
 
-  public static <T extends Value> T getTypedValue(Class<T> type, String value) {
+  public static <T extends Value<?>> T getTypedValue(Class<T> type, String value) {
 
     try {
       Constructor<T> constr = type.getConstructor(String.class);

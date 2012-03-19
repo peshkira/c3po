@@ -1,5 +1,7 @@
 package com.petpet.c3po.utils;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 
 import com.petpet.c3po.datamodel.BooleanValue;
@@ -7,15 +9,12 @@ import com.petpet.c3po.datamodel.IntegerValue;
 import com.petpet.c3po.datamodel.PropertyType;
 import com.petpet.c3po.datamodel.StringValue;
 import com.petpet.c3po.datamodel.Value;
-import com.petpet.c3po.utils.Helper;
-
-import junit.framework.Assert;
 
 public class HelperTest {
     
     @Test
     public void shouldGetCorrectValueType() throws Exception {
-        Value value = Helper.getTypedValue(PropertyType.BOOL.getClazz(), "true");
+        Value<?> value = Helper.getTypedValue(PropertyType.BOOL.getClazz(), "true");
         Assert.assertTrue(value instanceof BooleanValue);
         
         value = Helper.getTypedValue(PropertyType.BOOL.getClazz(), "this wont be true");

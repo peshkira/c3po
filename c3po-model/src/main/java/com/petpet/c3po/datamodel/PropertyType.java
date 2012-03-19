@@ -32,7 +32,7 @@ public enum PropertyType {
         return DEFAULT;
     }
 
-    public Class<? extends Value> getClazz() {
+    public Class<? extends Value<?>> getClazz() {
         if (this == BOOL) {
             return BooleanValue.class;
         } else if (this == NUMERIC) {

@@ -10,8 +10,6 @@ import javax.persistence.Persistence;
 
 import com.petpet.c3po.api.dao.GenericDAO;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.dao.AbstractJPADAO;
-import com.petpet.c3po.dao.GenericJPADAO;
 
 public class LocalPersistenceLayer implements PersistenceLayer {
 

@@ -14,7 +14,7 @@ public interface PersistenceLayer {
   
   Object handleFindById(Class<?> clazz, Object id);
   
-  List handleFindAll(Class<?> clazz);
+  List<?> handleFindAll(Class<?> clazz);
 
   EntityManager getEntityManager();
   
