@@ -37,15 +37,20 @@ public class AnonymizeCommand implements Command {
 
     final String name = this.getCollectionName();
     final DigitalCollection collection = this.getCollection(name);
-    final String a = "anonymized_";
+//    final String a = "anonymized_";
     if (collection != null) {
-      for (Element e : collection.getElements()) {
-        e.setName(a + e.getId());
-        e.setUid(a + e.getId());
-        this.pLayer.handleUpdate(Element.class, e);
-      }
+      this.pLayer.getEntityManager().getTransaction().begin();
+      int res = this.pLayer
+          .getEntityManager()
+          .createNativeQuery(
+              "UPDATE Element SET name = 'anonymized_' || id, uid = 'anonymized_' || id WHERE collection_id = :id")
+          .setParameter("id", collection.getId()).executeUpdate();
+      this.pLayer.getEntityManager().getTransaction().commit();
 
       this.pLayer.handleUpdate(DigitalCollection.class, collection);
+
+      LOG.info("Anonymized {} elements", res);
+
     } else {
       LOG.error("No collection with the specified name {}", name);
     }
