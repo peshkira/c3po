@@ -1,24 +1,21 @@
 package com.petpet.c3po.adaptor.fits;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.StringValue;
-import com.petpet.c3po.datamodel.Value;
-import com.petpet.c3po.datamodel.ValueSource;
-import com.petpet.c3po.datamodel.ValueStatus;
-import com.petpet.c3po.utils.DBHelper;
-import com.petpet.c3po.utils.Helper;
+import com.petpet.c3po.datamodel.MetadataRecord;
 
+//TODO create property and source cache and add the new properties and sources
+//accordingly...
 public class DigesterContext {
 
   private Element element;
 
-  private List<Value<?>> values = new ArrayList<Value<?>>();
+  private List<MetadataRecord> values = new ArrayList<MetadataRecord>();
 
-  public List<Value<?>> getValues() {
+  public List<MetadataRecord> getValues() {
     return values;
   }
 
@@ -26,14 +23,38 @@ public class DigesterContext {
     return element;
   }
 
-  public void addValue(Value<?> value) {
+  public void addValue(MetadataRecord value) {
     this.getValues().add(value);
   }
 
-  public void setIdentityStatus(String status) {
+  public void createElement(String name, String uid) {
+    this.element = new Element(this.substringPath(name), uid);
+  }
 
+  public void createValue(String value, String status, String toolname, String version, String pattern) {
+    final MetadataRecord r = new MetadataRecord();
+    r.setKey(this.substringPath(pattern));
+    r.setValue(value);
+    r.setStatus(status);
+    this.addValue(r);
+  }
+
+  public void createIdentity(String format, String mimetype, String toolname, String version) {
+    MetadataRecord fmt = new MetadataRecord();
+    fmt.setKey("format");
+    fmt.setValue(format);
+
+    MetadataRecord mime = new MetadataRecord();
+    mime.setKey("mimetype");
+    mime.setValue(mimetype);
+
+    this.addValue(fmt);
+    this.addValue(mime);
+  }
+  
+  public void setIdentityStatus(String status) {
     if (status != null) {
-      if (status.equals(ValueStatus.CONFLICT.name())) {
+      if (status.equals(MetadataRecord.Status.CONFLICT.name()) || status.equals(MetadataRecord.Status.PARTIAL.name())) {
         this.updateStatusOf("format");
       } else {
         this.updateStatusOf("puid");
@@ -41,86 +62,32 @@ public class DigesterContext {
     }
   }
 
-  public void createElement(String name, String uid) {
-    this.element = new Element(name, uid);
-  }
-
-  public void createValue(String value, String status, String toolname, String version, String pattern) {
-    final Property property = this.getProperty(pattern.substring(pattern.lastIndexOf('/') + 1));
-    final ValueSource source = this.getValueSource(toolname, version);
-
-    Value<?> v = Helper.getTypedValue(property.getType(), value);
-
-    if (status != null)
-      v.setStatus(status);
-
-    v.setSource(source);
-    v.setProperty(property);
-
-    this.addValue(v);
-  }
-
-  public void createIdentity(String format, String mimetype, String toolname, String version) {
-    final Property pFormat = this.getProperty("format");
-    final Property pMime = this.getProperty("mimetype");
-    final ValueSource source = this.getValueSource(toolname, version);
-
-    final StringValue vFormat = new StringValue(format);
-    final StringValue vMime = new StringValue(mimetype);
-
-    vFormat.setSource(source);
-    vFormat.setProperty(pFormat);
-    vMime.setSource(source);
-    vMime.setProperty(pMime);
-
-    this.addValue(vFormat);
-    this.addValue(vMime);
-  }
-
   public void createFormatVersion(String value, String status, String toolname, String version) {
-    final Property p = this.getProperty("format.version");
-    final StringValue v = new StringValue(value);
-    final ValueSource s = this.getValueSource(toolname, version);
-
-    if (status != null) {
-      v.setStatus(status);
-    }
-
-    v.setSource(s);
-    v.setProperty(p);
-    this.addValue(v);
+    MetadataRecord fmtv = new MetadataRecord();
+    fmtv.setKey("format-version");
+    fmtv.setValue(value);
+    this.addValue(fmtv);
   }
 
   public void createPuid(String value, String toolname, String version) {
-    final Property p = this.getProperty("puid");
-    final ValueSource s = this.getValueSource(toolname, version);
-    final StringValue v = new StringValue(value);
+    MetadataRecord puid = new MetadataRecord();
+    puid.setKey("puid");
+    puid.setValue(value);
 
-    v.setSource(s);
-    v.setProperty(p);
-    this.addValue(v);
+    this.addValue(puid);
   }
-
-  private Property getProperty(String name) {
-    // TODO move this to DBHelper...
-    return FITSHelper.getPropertyByFitsName(name);
+  
+  private String substringPath(String str) {
+    return str.substring(str.lastIndexOf(File.separator) + 1);
   }
-
-  private ValueSource getValueSource(String toolname, String version) {
-    ValueSource s = DBHelper.getValueSource(toolname, version);
-    if (s == null) {
-      s = new ValueSource(toolname, version);
-    }
-
-    return s;
-  }
-
+  
+  //TODO get the correct reference...
   private void updateStatusOf(String pName) {
-    for (Value<?> v : this.values) {
-      if (v.getProperty().getName().equals(pName)) {
-        v.setStatus(ValueStatus.CONFLICT.name());
-      }
-    }
+//    for (MetadataRecord v : this.values) {
+//      if (v.getKey().equals(pName)) {
+//        v.setStatus(ValueStatus.CONFLICT.name());
+//      }
+//    }
   }
 
 }

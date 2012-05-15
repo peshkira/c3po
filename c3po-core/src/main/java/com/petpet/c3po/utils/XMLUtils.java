@@ -15,7 +15,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.ValueStatus;
 
 public final class XMLUtils {
 
@@ -57,15 +56,6 @@ public final class XMLUtils {
         return false;
     }
 
-    public static ValueStatus getStatusOfFITSElement(org.dom4j.Element elmnt) {
-        ValueStatus status = ValueStatus.OK;
-        String statAttr = elmnt.attributeValue("status");
-        if (statAttr != null && !statAttr.equals("")) {
-            status = ValueStatus.valueOf(statAttr);
-        }
-
-        return status;
-    }
 
     private XMLUtils() {
     }

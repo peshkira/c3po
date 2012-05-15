@@ -1,88 +1,68 @@
 package com.petpet.c3po.datamodel;
 
-import java.io.Serializable;
+import java.util.UUID;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.PostPersist;
-import javax.validation.constraints.NotNull;
+import com.mongodb.BasicDBObject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class Property {
+  
+  public enum PropertyType {
+    STRING, BOOL, NUMBER, FLOAT, ARRAY
+  }
+  
+  private String id;
 
-@Entity
-@NamedQueries({ @NamedQuery(name = "getAllProperties", query = "SELECT p FROM Property p"),
-    @NamedQuery(name = "getAllPropertyNames", query = "SELECT p.name FROM Property p") })
-public class Property implements Serializable {
-
-  private static final long serialVersionUID = -2404477153744982138L;
-
-  private static final Logger LOG = LoggerFactory.getLogger(Property.class);
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long id;
-
-  @NotNull
+  private String key;
+  
   private String name;
-
-  @NotNull
-  private String humanReadableName;
-
+  
   private String description;
-
-  @Enumerated(EnumType.STRING)
-  private PropertyType type;
-
-  // @OneToMany
-  // private Set<Property> properties;
-
+  
+  private String type;
+  
   public Property() {
-    super();
-    // this.properties = new HashSet<Property>();
-    this.type = PropertyType.DEFAULT;
+    
   }
-
-  public Property(String name) {
-    this();
-    this.name = name;
-    this.setHumanReadableName(name);
+  
+  public Property(String key, String name) {
+    this.id = UUID.randomUUID().toString();
+    this.setKey(key);
+    this.setName(name);
+    this.setType(PropertyType.STRING.name());
   }
-
-  public Property(String name, String rName) {
-    this();
-    this.name = name;
-    this.setHumanReadableName(rName);
+  
+  public Property(String key, String name, PropertyType type) {
+    this (key, name);
+    this.setType(type.name());
   }
-
-  public void setId(long id) {
+  
+  public Property(String key, String name, PropertyType type, String desc) {
+    this(key, name, type);
+    this.setDescription(desc);
+  }
+  
+  public void setId(String id) {
     this.id = id;
   }
-
-  public long getId() {
-    return id;
+  
+  public String getId() {
+    return this.id;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public String getKey() {
+    return key;
+  }
+
+  public void setKey(String key) {
+    this.key = key;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getHumanReadableName() {
-    return humanReadableName;
-  }
-
-  public void setHumanReadableName(String humanReadableName) {
-    this.humanReadableName = humanReadableName;
+  public void setName(String name) {
+    this.name = name;
   }
 
   public String getDescription() {
@@ -93,57 +73,23 @@ public class Property implements Serializable {
     this.description = description;
   }
 
-  // public void setProperties(Set<Property> properties) {
-  // this.properties = properties;
-  // }
-  //
-  // public Set<Property> getProperties() {
-  // return properties;
-  // }
-
-  public void setType(PropertyType type) {
-    this.type = type;
-  }
-
-  public PropertyType getType() {
+  public String getType() {
     return type;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
-    return result;
+  public void setType(String type) {
+    this.type = type;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    Property other = (Property) obj;
-    if (name == null) {
-      if (other.name != null)
-        return false;
-    } else if (!name.equals(other.name))
-      return false;
-    if (type != other.type)
-      return false;
-    return true;
-  }
-
-  @Override
-  public String toString() {
-    return this.getName();
-  }
-
-  @PostPersist
-  public void post() {
-    LOG.trace("Found and stored new property " + this.getId() + " " + this.getName());
+  public BasicDBObject getDocument() {
+    final BasicDBObject property = new BasicDBObject();
+    property.put("_id", this.id);
+    property.put("key", this.key);
+    property.put("name", this.name);
+    property.put("type", this.type);
+    property.put("description", this.description);
+    
+    return property;
+    
   }
 }

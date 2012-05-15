@@ -1,17 +1,12 @@
 package com.petpet.c3po.command;
 
 import java.io.File;
-import java.util.Arrays;
 
 import org.apache.commons.cli.Option;
-import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.controller.ProfileGenerator;
 import com.petpet.c3po.dao.LocalPersistenceLayer;
-import com.petpet.c3po.db.PreparedQueries;
-import com.petpet.c3po.utils.Configurator;
 
 public class ProfileCommand implements Command {
 
@@ -32,16 +27,16 @@ public class ProfileCommand implements Command {
   public void execute() {
     final long start = System.currentTimeMillis();
 
-    this.pLayer = new LocalPersistenceLayer();
-    final Configurator configurator = new Configurator(this.pLayer);
-    configurator.configure();
-
-    final String name = this.getCollectionName();
-    final PreparedQueries pq = new PreparedQueries(this.pLayer.getEntityManager());
-    final ProfileGenerator gen = new ProfileGenerator(name, Arrays.asList(PROPERTIES), pq);
-    final Document profile = gen.generateProfile();
-
-    gen.write(profile, this.getOutputFile(name));
+//    this.pLayer = new LocalPersistenceLayer();
+//    final Configurator configurator = new Configurator(this.pLayer);
+//    configurator.configure();
+//
+//    final String name = this.getCollectionName();
+//    final PreparedQueries pq = new PreparedQueries(this.pLayer.getEntityManager());
+//    final ProfileGenerator gen = new ProfileGenerator(name, Arrays.asList(PROPERTIES), pq);
+//    final Document profile = gen.generateProfile();
+//
+//    gen.write(profile, this.getOutputFile(name));
 
     final long end = System.currentTimeMillis();
     this.time = end - start;

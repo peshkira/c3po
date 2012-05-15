@@ -11,22 +11,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.petpet.c3po.controller.GathererController;
 import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Value;
+import com.petpet.c3po.datamodel.MetadataRecord;
 
 public class FITSDigesterAdaptor implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(FITSDigesterAdaptor.class);
 
-  private GathererController controller;
-
   private InputStream stream;
 
   private Digester digester;
 
-  public FITSDigesterAdaptor(GathererController controller) {
-    this.controller = controller;
+  public FITSDigesterAdaptor() {
     this.digester = new Digester(); // not thread safe
     this.digester.setRules(new RegexRules(new SimpleRegexMatcher()));
     this.createRules();
@@ -154,14 +150,12 @@ public class FITSDigesterAdaptor implements Runnable {
 
   private Element postProcess(DigesterContext context) {
     final Element element = context.getElement();
-    final List<Value<?>> values = context.getValues();
+    final List<MetadataRecord> values = context.getValues();
 
-    if (element != null) {
-      for (Value<?> v : values) {
-        element.addValue(v);
-      }
-    } else {
+    if (element == null) {
       LOG.warn("No element could be extracted");
+    } else {
+      element.setMetadata(values);
     }
 
     return element;
@@ -171,8 +165,8 @@ public class FITSDigesterAdaptor implements Runnable {
   public void run() {
     final Element element = this.getElement();
     if (element != null) {
-      this.controller.processElement(element);
-
+      // this.controller.processElement(element);
+      // TODO
     } else {
       LOG.warn("No element could be extracted");
     }

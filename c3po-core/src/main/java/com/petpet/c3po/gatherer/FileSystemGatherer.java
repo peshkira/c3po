@@ -12,10 +12,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.api.MetaDataGatherer;
-import com.petpet.c3po.datamodel.C3POConfig;
-
-public class FileSystemGatherer implements MetaDataGatherer {
+public class FileSystemGatherer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemGatherer.class);
 
@@ -32,13 +29,11 @@ public class FileSystemGatherer implements MetaDataGatherer {
     this.init();
   }
 
-  @Override
   public void setConfig(Map<String, String> config) {
     this.config = config;
 
   }
 
-  @Override
   public long getCount() {
     return this.count;
   }
@@ -58,7 +53,6 @@ public class FileSystemGatherer implements MetaDataGatherer {
     return sum;
   }
 
-  @Override
   public List<InputStream> getNext(int count) {
     List<InputStream> next = new ArrayList<InputStream>();
 
@@ -78,7 +72,6 @@ public class FileSystemGatherer implements MetaDataGatherer {
     return next;
   }
 
-  @Override
   public List<InputStream> getAll() {
     List<InputStream> all = new ArrayList<InputStream>();
     for (String path : this.files) {
@@ -91,11 +84,12 @@ public class FileSystemGatherer implements MetaDataGatherer {
     return all;
   }
 
+  //TODO fix constants.
   private void init() {
     this.files = new ArrayList<String>();
     this.pointer = 0;
-    String path = this.config.get(C3POConfig.LOCATION);
-    boolean recursive = Boolean.valueOf(this.config.get(C3POConfig.RECURSIVE));
+    String path = this.config.get("config.location");
+    boolean recursive = Boolean.valueOf(this.config.get("config.recursive"));
 
     if (path == null) {
       LOG.error("No path config provided");

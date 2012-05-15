@@ -1,23 +1,14 @@
 package com.petpet.c3po.command;
 
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-
-import javax.persistence.NoResultException;
 
 import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.controller.GathererController;
+import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.dao.LocalPersistenceLayer;
-import com.petpet.c3po.datamodel.C3POConfig;
-import com.petpet.c3po.datamodel.C3POConfig.GathererType;
-import com.petpet.c3po.datamodel.DigitalCollection;
-import com.petpet.c3po.db.PreparedQueries;
 import com.petpet.c3po.utils.Configurator;
 
 public class GatherCommand implements Command {
@@ -38,27 +29,25 @@ public class GatherCommand implements Command {
   public void execute() {
     LOG.info("Starting meta data gathering command.");
     long start = System.currentTimeMillis();
+    
+    final Map<String, String> dbconf = new HashMap<String, String>();
+    dbconf.put("host", "localhost");
+    dbconf.put("port", "27017");
+    dbconf.put("db.name", "fao");
+   
+    this.pLayer = new LocalPersistenceLayer(dbconf);
 
-    final Map<String, String> c = new HashMap<String, String>();
-    c.put(C3POConfig.LOCATION, this.getMetaDataPath());
-    c.put(C3POConfig.NAME, "LocalFileSystem Config");
-    c.put(C3POConfig.RECURSIVE, this.isRecursive().toString());
-
-    final C3POConfig conf = new C3POConfig();
-    conf.setType(GathererType.FS);
-    conf.setConfigs(c);
-
-    this.pLayer = new LocalPersistenceLayer();
     final Configurator configurator = new Configurator(this.pLayer);
     configurator.configure();
 
-    final String name = this.getCollectionName();
-    final DigitalCollection collection = this.getCollection(name);
-    collection.setConfigurations(new HashSet<C3POConfig>(Arrays.asList(conf)));
-    this.pLayer.handleUpdate(DigitalCollection.class, collection);
-
-    final GathererController controller = new GathererController(this.pLayer, collection, new Date());
-    controller.collectMetaData();
+    final Map<String, String> conf = new HashMap<String, String>();
+    conf.put("config.location", this.getMetaDataPath());
+    conf.put("config.recursive", this.isRecursive().toString());
+    
+    final Controller ctrl = new Controller(this.pLayer.getDB());
+    ctrl.collect(conf);
+    
+    this.pLayer.close();
     long end = System.currentTimeMillis();
     this.time = end - start;
   }
@@ -94,24 +83,24 @@ public class GatherCommand implements Command {
     return "DefaultCollection";
   }
 
-  private DigitalCollection getCollection(final String name) {
-    PreparedQueries pq = new PreparedQueries(this.pLayer.getEntityManager());
-
-    DigitalCollection collection = null;
-    try {
-      collection = pq.getCollectionByName(name);
-    } catch (NoResultException e) {
-      // swallow
-    }
-
-    if (collection == null) {
-      collection = new DigitalCollection(name);
-      this.pLayer.handleCreate(DigitalCollection.class, collection);
-    }
-
-    return collection;
-
-  }
+//  private DigitalCollection getCollection(final String name) {
+//    PreparedQueries pq = new PreparedQueries(this.pLayer.getEntityManager());
+//
+//    DigitalCollection collection = null;
+//    try {
+//      collection = pq.getCollectionByName(name);
+//    } catch (NoResultException e) {
+//      // swallow
+//    }
+//
+//    if (collection == null) {
+//      collection = new DigitalCollection(name);
+//      this.pLayer.handleCreate(DigitalCollection.class, collection);
+//    }
+//
+//    return collection;
+//
+//  }
 
   @Override
   public long getTime() {
