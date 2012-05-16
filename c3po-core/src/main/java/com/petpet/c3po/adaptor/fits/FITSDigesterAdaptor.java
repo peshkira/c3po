@@ -1,5 +1,7 @@
 package com.petpet.c3po.adaptor.fits;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -11,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.petpet.c3po.api.dao.Cache;
+import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
 
@@ -21,12 +23,14 @@ public class FITSDigesterAdaptor implements Runnable {
 
   private InputStream stream;
 
-  private Digester digester;
-  
-  private Cache cache;
+  private String file;
 
-  public FITSDigesterAdaptor(Cache cache) {
-    this.cache = cache;
+  private Digester digester;
+
+  private Controller controller;
+
+  public FITSDigesterAdaptor(Controller ctrl) {
+    this.controller = ctrl;
     this.digester = new Digester(); // not thread safe
     this.digester.setRules(new RegexRules(new SimpleRegexMatcher()));
     this.createRules();
@@ -125,15 +129,22 @@ public class FITSDigesterAdaptor implements Runnable {
   }
 
   public Element getElement() {
+    try {
+      this.stream = new FileInputStream(this.file);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+
     if (this.stream == null) {
       LOG.warn("The input stream is not set, skipping.");
       return null;
     }
 
     try {
-      this.digester.push(new DigesterContext(this.cache));
+      this.digester.push(new DigesterContext(this.controller.getCache()));
       DigesterContext context = (DigesterContext) this.digester.parse(this.stream);
       Element element = this.postProcess(context);
+
       return element;
 
     } catch (IOException e) {
@@ -144,6 +155,7 @@ public class FITSDigesterAdaptor implements Runnable {
       try {
         this.stream.close();
         this.stream = null;
+        // LOG.info("stream of element closed");
       } catch (IOException ioe) {
         ioe.printStackTrace();
       }
@@ -167,22 +179,21 @@ public class FITSDigesterAdaptor implements Runnable {
 
   @Override
   public void run() {
-    final Element element = this.getElement();
-    if (element != null) {
-      // this.controller.processElement(element);
-      // TODO
-    } else {
-      LOG.warn("No element could be extracted");
+    String next = this.controller.getNext();
+
+    while (next != null) {
+      this.file = next;
+
+      final Element element = this.getElement();
+
+      if (element != null) {
+        this.controller.processElement(element);
+      } else {
+        LOG.warn("No element could be extracted");
+      }
+
+      next = this.controller.getNext();
     }
 
   }
-
-  public InputStream getStream() {
-    return stream;
-  }
-
-  public void setStream(InputStream stream) {
-    this.stream = stream;
-  }
-
 }

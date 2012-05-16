@@ -53,33 +53,33 @@ public class FileSystemGatherer {
     return sum;
   }
 
-  public List<InputStream> getNext(int count) {
-    List<InputStream> next = new ArrayList<InputStream>();
+  public List<String> getNext(int count) {
+    List<String> next = new ArrayList<String>();
 
     if (count <= 0) {
       return next;
     }
 
     while (pointer < files.size() && count > 0) {
-      try {
-        next.add(new FileInputStream(this.files.get(pointer++)));
+//      try {
+        next.add(this.files.get(pointer++));
         count--;
-      } catch (FileNotFoundException e) {
-        e.printStackTrace();
-      }
+//      } catch (FileNotFoundException e) {
+//        e.printStackTrace();
+//      }
     }
 
     return next;
   }
 
-  public List<InputStream> getAll() {
-    List<InputStream> all = new ArrayList<InputStream>();
+  public List<String> getAll() {
+    List<String> all = new ArrayList<String>();
     for (String path : this.files) {
-      try {
-        all.add(new FileInputStream(path));
-      } catch (FileNotFoundException e) {
-        e.printStackTrace();
-      }
+//      try {
+        all.add(path);
+//      } catch (FileNotFoundException e) {
+//        e.printStackTrace();
+//      }
     }
     return all;
   }

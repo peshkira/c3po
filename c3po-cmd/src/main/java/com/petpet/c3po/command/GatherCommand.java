@@ -43,6 +43,7 @@ public class GatherCommand implements Command {
     final Map<String, String> conf = new HashMap<String, String>();
     conf.put("config.location", this.getMetaDataPath());
     conf.put("config.recursive", this.isRecursive().toString());
+    conf.put("config.threads", "5");
     
     final Controller ctrl = new Controller(this.pLayer);
     ctrl.collect(conf);
