@@ -96,10 +96,5 @@
       <artifactId>c3po-api</artifactId>
       <version>0.0.1</version>
     </dependency>
-    <dependency>
-      <groupId>com.petpet</groupId>
-      <artifactId>c3po-model</artifactId>
-      <version>0.0.1</version>
-    </dependency>
   </dependencies>
 </project>

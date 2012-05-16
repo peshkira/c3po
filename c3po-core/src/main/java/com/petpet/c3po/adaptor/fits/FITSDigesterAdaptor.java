@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
 
@@ -21,8 +22,11 @@ public class FITSDigesterAdaptor implements Runnable {
   private InputStream stream;
 
   private Digester digester;
+  
+  private Cache cache;
 
-  public FITSDigesterAdaptor() {
+  public FITSDigesterAdaptor(Cache cache) {
+    this.cache = cache;
     this.digester = new Digester(); // not thread safe
     this.digester.setRules(new RegexRules(new SimpleRegexMatcher()));
     this.createRules();
@@ -127,7 +131,7 @@ public class FITSDigesterAdaptor implements Runnable {
     }
 
     try {
-      this.digester.push(new DigesterContext());
+      this.digester.push(new DigesterContext(this.cache));
       DigesterContext context = (DigesterContext) this.digester.parse(this.stream);
       Element element = this.postProcess(context);
       return element;

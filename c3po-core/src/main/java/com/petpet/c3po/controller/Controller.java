@@ -11,6 +11,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.petpet.c3po.adaptor.fits.FITSDigesterAdaptor;
+import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 
@@ -20,9 +21,9 @@ public class Controller {
   private FITSDigesterAdaptor fits;
   private DB db;
   
-  public Controller(DB db) {
-    this.db = db;
-    this.fits = new FITSDigesterAdaptor();
+  public Controller(PersistenceLayer pLayer) {
+    this.db = pLayer.getDB();
+    this.fits = new FITSDigesterAdaptor(pLayer.getCache());
   }
 
   public void collect(Map<String, String> config) {

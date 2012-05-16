@@ -7,6 +7,7 @@ import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.dao.LocalPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
@@ -17,7 +18,7 @@ public class GatherCommand implements Command {
 
   private Option[] options;
 
-  private LocalPersistenceLayer pLayer;
+  private PersistenceLayer pLayer;
 
   private long time = -1L;
 
@@ -33,18 +34,17 @@ public class GatherCommand implements Command {
     final Map<String, String> dbconf = new HashMap<String, String>();
     dbconf.put("host", "localhost");
     dbconf.put("port", "27017");
-    dbconf.put("db.name", "fao");
+    dbconf.put("db.name", "c3po");
    
-    this.pLayer = new LocalPersistenceLayer(dbconf);
-
-    final Configurator configurator = new Configurator(this.pLayer);
-    configurator.configure();
+    final Configurator configurator = Configurator.getDefaultConfigurator();
+    configurator.configure(dbconf);
+    this.pLayer = configurator.getPersistence();
 
     final Map<String, String> conf = new HashMap<String, String>();
     conf.put("config.location", this.getMetaDataPath());
     conf.put("config.recursive", this.isRecursive().toString());
     
-    final Controller ctrl = new Controller(this.pLayer.getDB());
+    final Controller ctrl = new Controller(this.pLayer);
     ctrl.collect(conf);
     
     this.pLayer.close();

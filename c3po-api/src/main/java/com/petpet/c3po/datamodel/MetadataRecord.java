@@ -1,5 +1,6 @@
 package com.petpet.c3po.datamodel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MetadataRecord {
@@ -17,10 +18,12 @@ public class MetadataRecord {
   private List<String> sources;
   
   public MetadataRecord() {
-    
+    this.sources = new ArrayList<String>();
+    this.status = Status.OK.name();
   }
   
   public MetadataRecord(String pRef, String value) {
+    this();
     this.pRef = pRef;
     this.value = value;
     this.status = Status.SINGLE.name();
@@ -31,11 +34,11 @@ public class MetadataRecord {
     this.status = status.name();
   }
 
-  public String getKey() {
+  public String getPRef() {
     return pRef;
   }
 
-  public void setKey(String key) {
+  public void setPRef(String key) {
     this.pRef = key;
   }
 

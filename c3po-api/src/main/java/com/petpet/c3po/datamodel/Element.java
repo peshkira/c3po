@@ -1,8 +1,13 @@
 package com.petpet.c3po.datamodel;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.BSONObject;
+import org.bson.types.BasicBSONList;
+
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 public class Element {
 
@@ -46,11 +51,16 @@ public class Element {
     element.put("name", name);
     element.put("uid", uid);
 
-    final BasicDBObject md = new BasicDBObject();
+    final List<BasicDBObject> meta = new ArrayList<BasicDBObject>();
     for (MetadataRecord r : metadata) {
-      md.put(r.getKey(), r.getValue());
+      final BasicDBObject md = new BasicDBObject();
+      
+      md.put(r.getPRef(), r.getValue());
+      md.put("status", r.getStatus());
+      md.put("sources", r.getSources());
+      meta.add(md);
     }
-    element.put("metadata", md);
+    element.put("metadata", meta);
     
     return element;
   }
