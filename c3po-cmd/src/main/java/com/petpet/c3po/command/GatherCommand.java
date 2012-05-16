@@ -34,7 +34,7 @@ public class GatherCommand implements Command {
     final Map<String, String> dbconf = new HashMap<String, String>();
     dbconf.put("host", "localhost");
     dbconf.put("port", "27017");
-    dbconf.put("db.name", "c3po");
+    dbconf.put("db.name", "c3po2");
    
     final Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure(dbconf);
@@ -43,7 +43,7 @@ public class GatherCommand implements Command {
     final Map<String, String> conf = new HashMap<String, String>();
     conf.put("config.location", this.getMetaDataPath());
     conf.put("config.recursive", this.isRecursive().toString());
-    conf.put("config.threads", "5");
+    conf.put("config.threads", "10");
     
     final Controller ctrl = new Controller(this.pLayer);
     ctrl.collect(conf);

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.command.AnonymizeCommand;
+import com.petpet.c3po.command.CSVExportCommand;
 import com.petpet.c3po.command.CommandConstants;
 import com.petpet.c3po.command.GatherCommand;
 import com.petpet.c3po.command.HelpCommand;
@@ -32,6 +33,9 @@ public class C3PO {
         .withDescription(CommandConstants.PROFILE_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.PROFILE_OPTION).create("p");
 
+    final Option export = OptionBuilder.hasOptionalArgs().withArgName("output file")
+        .withDescription("The file to write to").isRequired(true).withLongOpt("export").create("e");
+
     final Option anonymize = OptionBuilder.withDescription(CommandConstants.ANONYMIZE_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.ANONYMIZE_OPTION).create("a");
 
@@ -48,6 +52,7 @@ public class C3PO {
     exclusive.addOption(gather);
     exclusive.addOption(profile);
     exclusive.addOption(anonymize);
+    exclusive.addOption(export);
 
     final OptionGroup exclusive2 = new OptionGroup();
     exclusive2.setRequired(true);
@@ -87,7 +92,13 @@ public class C3PO {
         final AnonymizeCommand cmd = new AnonymizeCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
+      } else if (line.hasOption("export")) {
+        final CSVExportCommand cmd = new CSVExportCommand(line.getOptions());
+        cmd.execute();
+        LOG.info("Execution time: {}ms", cmd.getTime());
+        
       }
+     
 
     } catch (final ParseException e) {
       new WrongArgumentCommand(e.getMessage(), o).execute();

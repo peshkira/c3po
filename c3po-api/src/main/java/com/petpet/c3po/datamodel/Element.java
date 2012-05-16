@@ -51,16 +51,16 @@ public class Element {
     element.put("name", name);
     element.put("uid", uid);
 
-    final List<BasicDBObject> meta = new ArrayList<BasicDBObject>();
+//    final List<BasicDBObject> meta = new ArrayList<BasicDBObject>();
     for (MetadataRecord r : metadata) {
       final BasicDBObject md = new BasicDBObject();
       
-      md.put(r.getPRef(), r.getValue());
+      md.put("value", r.getValue());
       md.put("status", r.getStatus());
       md.put("sources", r.getSources());
-      meta.add(md);
+      element.put(r.getPRef(), md);
     }
-    element.put("metadata", meta);
+//    element.put("metadata", meta);
     
     return element;
   }
