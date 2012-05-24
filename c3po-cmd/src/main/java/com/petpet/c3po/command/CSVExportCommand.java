@@ -40,7 +40,7 @@ public class CSVExportCommand implements Command {
     final Map<String, String> dbconf = new HashMap<String, String>();
     dbconf.put("host", "localhost");
     dbconf.put("port", "27017");
-    dbconf.put("db.name", "c3po");
+    dbconf.put("db.name", "c3po2");
 
     configurator.configure(dbconf);
 
@@ -115,9 +115,10 @@ public class CSVExportCommand implements Command {
     query.put("_id", null);
     query.put("uid", 1);
 
-    for (Property p : props) {
-      query.put(p.getId(), 1);
-    }
+//    for (Property p : props) {
+      query.put("metadata.key", 1);
+      query.put("metadata.value", 1);
+//    }
 
     return query;
   }
@@ -150,17 +151,19 @@ public class CSVExportCommand implements Command {
         // first the uid
         writer.append(replace((String) next.get("uid")) + ", ");
 
+        final List<BasicDBObject> metadata = (List<BasicDBObject>) next.get("metadata");
         // then the properties
         for (Property p : props) {
-          final DBObject rec = (DBObject) next.get(p.getId());
-
-          if (rec != null) {
-            writer.append(replace((String) rec.get("value")));
+          for (BasicDBObject m : metadata) {
+            String key = (String) m.get("key");
+            if (p.getId().equals(key)) {
+              String val = (String) m.get("value");
+              writer.append(replace(val));
+              break;
+            }
           }
-
           writer.append(", ");
         }
-
         writer.append("\n");
       }
 
