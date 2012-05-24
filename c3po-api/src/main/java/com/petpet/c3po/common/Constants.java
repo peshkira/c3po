@@ -181,6 +181,8 @@ public final class Constants {
 
   public static final String VALUE_SOURCE_BY_NAME_AND_VERSION = "getValueSourceByNameAndVersion";
 
+  public static final String HISTOGRAM_REDUCE = "function(doc, prev) {prev.sum += 1}";
+
   private Constants() {
 
   }

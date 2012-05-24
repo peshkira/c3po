@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.petpet.c3po.adaptor.fits.FITSDigesterAdaptor;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -24,6 +22,7 @@ public class Controller {
   private ExecutorService pool;
   private FileSystemGatherer gatherer;
   private int counter = 0;
+  private String collection;
 
   public Controller(PersistenceLayer pLayer) {
     this.persistence = pLayer;
@@ -31,41 +30,13 @@ public class Controller {
   }
 
   public void collect(Map<String, String> config) {
-
     this.gatherer = new FileSystemGatherer(config);
-    LOGGER.info("{} files to be processed", gatherer.getCount());
+    this.collection = config.get("config.collection");
+
+    LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(), collection);
     
-    // if (gatherer != null) {
-    // LOGGER.info("Found matching gatherer of type, starting...");
-    // 
-    //
     this.startJobs(Integer.parseInt(config.get("config.threads")));
 
-    // if (gatherer.getCount() > 100) {
-    // int counter = 10;
-    // List<String> next = gatherer.getNext(10);
-    //
-    // while (!next.isEmpty()) {
-    // LOGGER.debug("processing next {} files", next.size());
-    //
-    // this.dispatch(next);
-    // next = gatherer.getNext(10);
-    // counter += 10;
-    //
-    // if (counter % 500 == 0) {
-    // // cleanUp();
-    // LOGGER.info("Finished processing {} files", counter);
-    // }
-    // }
-    //
-    // } else {
-    // List<String> all = gatherer.getAll();
-    // this.dispatch(all);
-    // // cleanUp();
-    // }
-    // }
-
-    
   }
 
   private void startJobs(int threads) {
@@ -87,10 +58,8 @@ public class Controller {
   }
 
   public synchronized void processElement(Element e) {
-    DBCollection elements = this.persistence.getDB().getCollection("elements");
-    BasicDBObject document = e.getDocument();
-    elements.insert(document);
-
+    e.setCollection(this.collection);
+    this.persistence.insert("elements", e.getDocument());
   }
 
   public Cache getCache() {

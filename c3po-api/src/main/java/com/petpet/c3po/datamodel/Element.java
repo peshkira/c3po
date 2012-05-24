@@ -10,6 +10,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class Element {
+  
+  private String collection;
 
   private String name;
 
@@ -17,9 +19,22 @@ public class Element {
 
   private List<MetadataRecord> metadata;
   
-  public Element(String name, String uid) {
-    this.name = name;
+  public Element(String uid, String name) {
     this.uid = uid;
+    this.name = name;
+  }
+  
+  public Element(String collection, String uid, String name) {
+    this(uid, name);
+    this.collection = collection;
+  }
+  
+  public String getCollection() {
+    return collection;
+  }
+
+  public void setCollection(String collection) {
+    this.collection = collection;
   }
 
   public String getName() {
@@ -64,4 +79,5 @@ public class Element {
     
     return element;
   }
+
 }

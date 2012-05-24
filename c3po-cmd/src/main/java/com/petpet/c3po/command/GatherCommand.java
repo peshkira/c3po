@@ -34,7 +34,7 @@ public class GatherCommand implements Command {
     final Map<String, String> dbconf = new HashMap<String, String>();
     dbconf.put("host", "localhost");
     dbconf.put("port", "27017");
-    dbconf.put("db.name", "c3po2");
+    dbconf.put("db.name", "c3po");
    
     final Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure(dbconf);

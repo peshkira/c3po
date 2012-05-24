@@ -38,7 +38,7 @@ public class DigesterContext {
   }
 
   public void createElement(String name, String uid) {
-    this.element = new Element(this.substringPath(name), uid);
+    this.element = new Element(uid, this.substringPath(name));
   }
 
   //TODO add source to list.

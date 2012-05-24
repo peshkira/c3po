@@ -4,6 +4,9 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 import com.mongodb.DB;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.GroupCommand;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.petpet.c3po.api.dao.Cache;
@@ -20,7 +23,7 @@ public class LocalPersistenceLayer implements PersistenceLayer {
 
   public LocalPersistenceLayer(Map<String, String> config) {
     this.connect(config);
-    this.dBCache = new DBCache(this);
+    this.dBCache = new DBCache(this); //TODO pass this by reference...
   }
 
   @Override
@@ -57,6 +60,36 @@ public class LocalPersistenceLayer implements PersistenceLayer {
   @Override
   public Cache getCache() {
     return this.dBCache;
+  }
+
+  @Override
+  public DBCursor findAll(String collection) {
+    return this.db.getCollection(collection).find();
+  }
+
+  @Override
+  public DBCursor find(String collection, DBObject ref) {
+    return this.db.getCollection(collection).find(ref);
+  }
+
+  @Override
+  public DBCursor find(String collection, DBObject ref, DBObject keys) {
+    return this.db.getCollection(collection).find(ref, keys);
+  }
+
+  @Override
+  public void insert(String collection, DBObject data) {
+    this.db.getCollection(collection).insert(data);
+  }
+
+  @Override
+  public long count(String collection) {
+    return this.db.getCollection(collection).getCount();
+  }
+  
+  @Override
+  public DBObject group(String collection, GroupCommand cmd) {
+    return this.db.getCollection(collection).group(cmd);
   }
 
 }
