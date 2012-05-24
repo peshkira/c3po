@@ -1,8 +1,6 @@
 package com.petpet.c3po;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -18,13 +16,8 @@ public class App {
    * @param args
    */
   public static void main(String[] args) {
-    final Map<String, String> dbconf = new HashMap<String, String>();
-    dbconf.put("host", "localhost");
-    dbconf.put("port", "27017");
-    dbconf.put("db.name", "c3po");
-   
     final Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure(dbconf);
+    configurator.configure();
     PersistenceLayer pLayer = configurator.getPersistence();
     
     final DBCollection elements = pLayer.getDB().getCollection("elements");

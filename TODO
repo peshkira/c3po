@@ -1,0 +1,11 @@
+* Profile Generator + new format
+    * new format should be able to list all elements in the collection
+    * should be able to summarize homogeneous parts of the collection
+    * list representatives
+* documentation
+* tests!!!
+* segregate collections based on the mimetype... 
+    * think of representatives
+    * distribution vs. levels of representativeness.
+* tgz gatherer + controller enhancement
+* REST Endpoint

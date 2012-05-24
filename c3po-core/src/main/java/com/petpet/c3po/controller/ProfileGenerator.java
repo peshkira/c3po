@@ -3,7 +3,6 @@ package com.petpet.c3po.controller;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -16,15 +15,12 @@ import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
 import com.mongodb.GroupCommand;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Property.PropertyType;
 
 public class ProfileGenerator {
 
