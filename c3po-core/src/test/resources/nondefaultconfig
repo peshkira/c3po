@@ -1,0 +1,7 @@
+#APP Properties
+c3po.thread.count = 42
+
+#DB Default Properties
+db.host=localhost
+db.port=27017
+db.name=test

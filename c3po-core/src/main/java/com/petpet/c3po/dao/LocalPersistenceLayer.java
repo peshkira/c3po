@@ -10,7 +10,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.utils.DBCache;
+import com.petpet.c3po.common.Constants;
 
 public class LocalPersistenceLayer implements PersistenceLayer {
 
@@ -22,10 +22,8 @@ public class LocalPersistenceLayer implements PersistenceLayer {
 
   private boolean connected;
 
-  public LocalPersistenceLayer(Map<String, String> config) {
+  public LocalPersistenceLayer() {
     this.connected = false;
-    this.dBCache = new DBCache(this);
-    this.connect(config);
   }
 
   @Override
@@ -34,12 +32,12 @@ public class LocalPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public DB connect(Map<String, String> config) {
+  public DB connect(Map<Object, Object> config) {
     this.close();
 
     try {
-      this.mongo = new Mongo(config.get("host"), Integer.parseInt(config.get("port")));
-      this.db = this.mongo.getDB(config.get("db.name"));
+      this.mongo = new Mongo((String) config.get(Constants.CNF_DB_HOST), Integer.parseInt((String) config.get(Constants.CBF_DB_PORT)));
+      this.db = this.mongo.getDB((String) config.get(Constants.CNF_DB_NAME));
       this.connected = true;
 
     } catch (NumberFormatException e) {
@@ -71,7 +69,11 @@ public class LocalPersistenceLayer implements PersistenceLayer {
   public Cache getCache() {
     return this.dBCache;
   }
-  
+
+  public void setCache(Cache c) {
+    this.dBCache = c;
+  }
+
   @Override
   public void clearCache() {
     this.dBCache.clear();

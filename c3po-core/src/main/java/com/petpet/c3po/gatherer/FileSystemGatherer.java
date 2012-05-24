@@ -12,6 +12,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.common.Constants;
+
 public class FileSystemGatherer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemGatherer.class);
@@ -88,8 +90,8 @@ public class FileSystemGatherer {
   private void init() {
     this.files = new ArrayList<String>();
     this.pointer = 0;
-    String path = this.config.get("config.location");
-    boolean recursive = Boolean.valueOf(this.config.get("config.recursive"));
+    String path = this.config.get(Constants.CNF_COLLECTION_LOCATION);
+    boolean recursive = Boolean.valueOf(this.config.get(Constants.CNF_RECURSIVE));
 
     if (path == null) {
       LOG.error("No path config provided");

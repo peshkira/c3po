@@ -15,7 +15,7 @@ import com.mongodb.DBObject;
  */
 public interface PersistenceLayer {
 
-  DB connect(Map<String, String> config);
+  DB connect(Map<Object, Object> config);
   
   boolean isConnected();
 

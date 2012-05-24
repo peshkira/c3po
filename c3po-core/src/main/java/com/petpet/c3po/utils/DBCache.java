@@ -22,9 +22,12 @@ public class DBCache implements Cache {
 
   private PersistenceLayer persistence;
 
-  public DBCache(PersistenceLayer persistence) {
+  public DBCache() {
     this.propertyCache = Collections.synchronizedMap(new HashMap<String, Property>());
     this.sourceCache = Collections.synchronizedMap(new HashMap<String, Source>());
+  }
+  
+  public void setPersistence(PersistenceLayer persistence) {
     this.persistence = persistence;
   }
 

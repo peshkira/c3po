@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.petpet.c3po.adaptor.fits.FITSDigesterAdaptor;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 
@@ -31,11 +32,11 @@ public class Controller {
 
   public void collect(Map<String, String> config) {
     this.gatherer = new FileSystemGatherer(config);
-    this.collection = config.get("config.collection");
+    this.collection = config.get(Constants.CNF_COLLECTION_NAME);
 
     LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(), collection);
     
-    this.startJobs(Integer.parseInt(config.get("config.threads")));
+    this.startJobs(Integer.parseInt(config.get(Constants.CNF_THREAD_COUNT)));
 
   }
 

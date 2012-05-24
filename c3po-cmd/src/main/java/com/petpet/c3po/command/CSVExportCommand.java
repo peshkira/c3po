@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
@@ -37,12 +35,7 @@ public class CSVExportCommand implements Command {
     LOG.info("Starting csv export of all data");
 
     final Configurator configurator = Configurator.getDefaultConfigurator();
-    final Map<String, String> dbconf = new HashMap<String, String>();
-    dbconf.put("host", "localhost");
-    dbconf.put("port", "27017");
-    dbconf.put("db.name", "c3po2");
-
-    configurator.configure(dbconf);
+    configurator.configure();
 
     final PersistenceLayer pLayer = configurator.getPersistence();
     final DBCursor allprops = pLayer.findAll("properties");

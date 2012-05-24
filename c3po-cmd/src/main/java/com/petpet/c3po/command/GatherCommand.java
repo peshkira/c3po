@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.utils.Configurator;
 
@@ -29,25 +30,20 @@ public class GatherCommand implements Command {
   public void execute() {
     LOG.info("Starting meta data gathering command.");
     long start = System.currentTimeMillis();
-    
-    final Map<String, String> dbconf = new HashMap<String, String>();
-    dbconf.put("host", "localhost");
-    dbconf.put("port", "27017");
-    dbconf.put("db.name", "c3po2");
-   
+
     final Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure(dbconf);
+    configurator.configure();
     this.pLayer = configurator.getPersistence();
 
     final Map<String, String> conf = new HashMap<String, String>();
-    conf.put("config.collection", getCollectionName());
-    conf.put("config.location", this.getMetaDataPath());
-    conf.put("config.recursive", this.isRecursive().toString());
-    conf.put("config.threads", "10");
-    
+    conf.put(Constants.CNF_COLLECTION_NAME, getCollectionName());
+    conf.put(Constants.CNF_COLLECTION_LOCATION, this.getMetaDataPath());
+    conf.put(Constants.CNF_RECURSIVE, this.isRecursive().toString());
+    conf.put(Constants.CNF_THREAD_COUNT, configurator.getStringProperty(Constants.CNF_THREAD_COUNT));
+
     final Controller ctrl = new Controller(this.pLayer);
     ctrl.collect(conf);
-    
+
     this.pLayer.close();
     long end = System.currentTimeMillis();
     this.time = end - start;
@@ -84,24 +80,24 @@ public class GatherCommand implements Command {
     return "DefaultCollection";
   }
 
-//  private DigitalCollection getCollection(final String name) {
-//    PreparedQueries pq = new PreparedQueries(this.pLayer.getEntityManager());
-//
-//    DigitalCollection collection = null;
-//    try {
-//      collection = pq.getCollectionByName(name);
-//    } catch (NoResultException e) {
-//      // swallow
-//    }
-//
-//    if (collection == null) {
-//      collection = new DigitalCollection(name);
-//      this.pLayer.handleCreate(DigitalCollection.class, collection);
-//    }
-//
-//    return collection;
-//
-//  }
+  // private DigitalCollection getCollection(final String name) {
+  // PreparedQueries pq = new PreparedQueries(this.pLayer.getEntityManager());
+  //
+  // DigitalCollection collection = null;
+  // try {
+  // collection = pq.getCollectionByName(name);
+  // } catch (NoResultException e) {
+  // // swallow
+  // }
+  //
+  // if (collection == null) {
+  // collection = new DigitalCollection(name);
+  // this.pLayer.handleCreate(DigitalCollection.class, collection);
+  // }
+  //
+  // return collection;
+  //
+  // }
 
   @Override
   public long getTime() {
