@@ -47,7 +47,7 @@ public class ProfileCommand implements Command {
     String result = null;
 
     for (Option o : this.options) {
-      if (o.getArgName().equals(CommandConstants.PROFILE_FILENAME_ARGUMENT)) {
+      if (o.getArgName().equals(CommandConstants.PROFILE_FILEPATH_ARGUMENT)) {
         result = o.getValue();
       }
     }

@@ -29,12 +29,12 @@ public class C3PO {
         .withDescription(CommandConstants.GATHER_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.GATHER_OPTION).create("g");
 
-    final Option profile = OptionBuilder.hasOptionalArgs(1).withArgName(CommandConstants.PROFILE_FILENAME_ARGUMENT)
+    final Option profile = OptionBuilder.hasOptionalArgs(1).withArgName(CommandConstants.PROFILE_FILEPATH_ARGUMENT)
         .withDescription(CommandConstants.PROFILE_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.PROFILE_OPTION).create("p");
 
-    final Option export = OptionBuilder.hasOptionalArgs().withArgName("output file")
-        .withDescription("The file to write to").isRequired(true).withLongOpt("export").create("e");
+    final Option export = OptionBuilder.hasOptionalArgs().withArgName(CommandConstants.EXPORT_OUTPUT_FILE)
+        .withDescription(CommandConstants.EXPORT_DESCRIPTION).isRequired(true).withLongOpt(CommandConstants.EXPORT_OPTION).create("e");
 
     final Option anonymize = OptionBuilder.withDescription(CommandConstants.ANONYMIZE_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.ANONYMIZE_OPTION).create("a");
@@ -92,7 +92,7 @@ public class C3PO {
         final AnonymizeCommand cmd = new AnonymizeCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
-      } else if (line.hasOption("export")) {
+      } else if (line.hasOption(CommandConstants.EXPORT_OPTION)) {
         final CSVExportCommand cmd = new CSVExportCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
