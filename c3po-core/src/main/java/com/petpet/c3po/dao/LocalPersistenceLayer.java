@@ -6,7 +6,6 @@ import java.util.Map;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.GroupCommand;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.petpet.c3po.api.dao.Cache;
@@ -18,12 +17,15 @@ public class LocalPersistenceLayer implements PersistenceLayer {
   private Mongo mongo;
 
   private DB db;
-  
+
   private Cache dBCache;
 
+  private boolean connected;
+
   public LocalPersistenceLayer(Map<String, String> config) {
+    this.connected = false;
+    this.dBCache = new DBCache(this);
     this.connect(config);
-    this.dBCache = new DBCache(this); //TODO pass this by reference...
   }
 
   @Override
@@ -38,6 +40,7 @@ public class LocalPersistenceLayer implements PersistenceLayer {
     try {
       this.mongo = new Mongo(config.get("host"), Integer.parseInt(config.get("port")));
       this.db = this.mongo.getDB(config.get("db.name"));
+      this.connected = true;
 
     } catch (NumberFormatException e) {
       e.printStackTrace();
@@ -51,15 +54,28 @@ public class LocalPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
+  public boolean isConnected() {
+    return this.connected;
+  }
+
+  @Override
   public void close() {
-    if (this.mongo != null) {
+    if (this.isConnected() && this.mongo != null) {
       this.mongo.close();
+      this.db = null;
+      this.connected = false;
     }
   }
 
   @Override
   public Cache getCache() {
     return this.dBCache;
+  }
+  
+  @Override
+  public void clearCache() {
+    this.dBCache.clear();
+
   }
 
   @Override
@@ -85,11 +101,6 @@ public class LocalPersistenceLayer implements PersistenceLayer {
   @Override
   public long count(String collection) {
     return this.db.getCollection(collection).getCount();
-  }
-  
-  @Override
-  public DBObject group(String collection, GroupCommand cmd) {
-    return this.db.getCollection(collection).group(cmd);
   }
 
 }

@@ -116,7 +116,7 @@ public class ProfileGenerator {
       LOG.debug("adding property {} to profile", p.getName());
 
       GroupCommand cmd = this.getPropertyDistribution(p.getId());
-      DBObject group = this.persistence.group("elements", cmd);
+//      DBObject group = this.persistence.group("elements", cmd);
 //      
 //      if (!group.keySet().isEmpty()) {
 //        String mode = (String) distr.get(0)[1];

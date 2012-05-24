@@ -81,6 +81,12 @@ public class DBCache implements Cache {
 
     return source;
   }
+  
+  @Override
+  public synchronized void clear() {
+    this.propertyCache.clear();
+    this.sourceCache.clear();
+  }
 
   private DBCursor findSource(String name, String version) {
     DB db = this.persistence.getDB();

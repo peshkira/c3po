@@ -95,11 +95,13 @@ public class FITSDigesterAdaptor implements Runnable {
   }
 
   private void createFormatRule(String pattern) {
-    this.digester.addCallMethod(pattern, "createIdentity", 4);
+    this.digester.addCallMethod(pattern, "createIdentity", 2);
     this.digester.addCallParam(pattern, 0, "format");
     this.digester.addCallParam(pattern, 1, "mimetype");
-    this.digester.addCallParam(pattern + "/tool", 2, "toolname");
-    this.digester.addCallParam(pattern + "/tool", 3, "toolversion");
+
+    this.digester.addCallMethod(pattern + "/tool", "addIdentityTool", 2);
+    this.digester.addCallParam(pattern + "/tool", 0, "toolname");
+    this.digester.addCallParam(pattern + "/tool", 1, "toolversion");
 
   }
 

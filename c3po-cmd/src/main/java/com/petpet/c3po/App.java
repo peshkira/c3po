@@ -40,7 +40,7 @@ public class App {
     
     GroupCommand cmd = new GroupCommand(elements, keys, null, initial, Constants.HISTOGRAM_REDUCE, null);
     
-    DBObject group = pLayer.group("elements", cmd);
+    DBObject group = elements.group(cmd);
     System.out.println(group);
     
     if (!group.keySet().isEmpty()) {

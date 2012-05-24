@@ -8,4 +8,6 @@ public interface Cache {
   Property getProperty(String key);
   
   Source getSource(String name, String version);
+  
+  void clear();
 }

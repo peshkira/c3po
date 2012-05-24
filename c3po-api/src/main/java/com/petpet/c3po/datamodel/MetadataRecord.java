@@ -6,7 +6,7 @@ import java.util.List;
 public class MetadataRecord {
   
   public static enum Status {
-    OK, SINGLE, PARTIAL, CONFLICT
+    OK, SINGLE_RESULT, PARTIAL, CONFLICT
   }
 
   private String pRef;
@@ -26,7 +26,7 @@ public class MetadataRecord {
     this();
     this.pRef = pRef;
     this.value = value;
-    this.status = Status.SINGLE.name();
+    this.status = Status.SINGLE_RESULT.name();
   }
   
   public MetadataRecord(String pRef, String value, Status status) {

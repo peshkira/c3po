@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.controller.Controller;
-import com.petpet.c3po.dao.LocalPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 
 public class GatherCommand implements Command {
@@ -34,13 +33,14 @@ public class GatherCommand implements Command {
     final Map<String, String> dbconf = new HashMap<String, String>();
     dbconf.put("host", "localhost");
     dbconf.put("port", "27017");
-    dbconf.put("db.name", "c3po");
+    dbconf.put("db.name", "c3po2");
    
     final Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure(dbconf);
     this.pLayer = configurator.getPersistence();
 
     final Map<String, String> conf = new HashMap<String, String>();
+    conf.put("config.collection", getCollectionName());
     conf.put("config.location", this.getMetaDataPath());
     conf.put("config.recursive", this.isRecursive().toString());
     conf.put("config.threads", "10");
