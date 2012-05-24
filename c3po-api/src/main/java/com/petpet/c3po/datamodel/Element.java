@@ -3,11 +3,7 @@ package com.petpet.c3po.datamodel;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bson.BSONObject;
-import org.bson.types.BasicBSONList;
-
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 public class Element {
   
@@ -65,6 +61,7 @@ public class Element {
     final BasicDBObject element = new BasicDBObject();
     element.put("name", name);
     element.put("uid", uid);
+    element.put("collection", collection);
 
     final List<BasicDBObject> meta = new ArrayList<BasicDBObject>();
     for (MetadataRecord r : metadata) {

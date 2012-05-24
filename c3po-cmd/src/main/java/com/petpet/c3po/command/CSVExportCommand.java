@@ -48,7 +48,8 @@ public class CSVExportCommand implements Command {
     final DBCursor allprops = pLayer.findAll("properties");
     final List<Property> props = this.getProperties(allprops);
     final BasicDBObject query = this.buildMatrixQuery(props);
-    final DBCursor cursor = pLayer.find("elements", null, query);
+    final BasicDBObject ref = new BasicDBObject("collection", this.getCollectionName());
+    final DBCursor cursor = pLayer.find("elements", ref, query);
 
     this.export(props, cursor);
 
@@ -114,11 +115,8 @@ public class CSVExportCommand implements Command {
 
     query.put("_id", null);
     query.put("uid", 1);
-
-//    for (Property p : props) {
-      query.put("metadata.key", 1);
-      query.put("metadata.value", 1);
-//    }
+    query.put("metadata.key", 1);
+    query.put("metadata.value", 1);
 
     return query;
   }
