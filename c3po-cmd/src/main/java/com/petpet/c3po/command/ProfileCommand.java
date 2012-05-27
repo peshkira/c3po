@@ -3,10 +3,13 @@ package com.petpet.c3po.command;
 import java.io.File;
 
 import org.apache.commons.cli.Option;
+import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.dao.DefaultPersistenceLayer;
+import com.petpet.c3po.analysis.ProfileGenerator;
+import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.utils.Configurator;
 
 public class ProfileCommand implements Command {
 
@@ -16,7 +19,7 @@ public class ProfileCommand implements Command {
       "creating.application.name", "creating.os", "has.forms", "has.annotations", "has.outline", "is.protected", "is.rightsmanaged", "valid", "wellformed" };
 
   private Option[] options;
-  private DefaultPersistenceLayer pLayer;
+  private PersistenceLayer pLayer;
   private long time = -1L;
 
   public ProfileCommand(Option[] options) {
@@ -26,18 +29,19 @@ public class ProfileCommand implements Command {
   @Override
   public void execute() {
     final long start = System.currentTimeMillis();
+    
+    
+    final Configurator configurator = Configurator.getDefaultConfigurator();
+    configurator.configure();
 
-//    this.pLayer = new LocalPersistenceLayer();
-//    final Configurator configurator = new Configurator(this.pLayer);
-//    configurator.configure();
-//
-//    final String name = this.getCollectionName();
-//    final PreparedQueries pq = new PreparedQueries(this.pLayer.getEntityManager());
-//    final ProfileGenerator gen = new ProfileGenerator(name, Arrays.asList(PROPERTIES), pq);
-//    final Document profile = gen.generateProfile();
-//
-//    gen.write(profile, this.getOutputFile(name));
-
+    this.pLayer = configurator.getPersistence();
+    final ProfileGenerator gen = new ProfileGenerator(this.pLayer);
+    
+    final String name = this.getCollectionName();
+    final Document profile = gen.generateProfile(name);
+    
+    gen.write(profile, this.getOutputFile(name));
+    
     final long end = System.currentTimeMillis();
     this.time = end - start;
   }

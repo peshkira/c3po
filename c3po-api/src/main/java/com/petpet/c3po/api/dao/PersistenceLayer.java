@@ -5,6 +5,8 @@ import java.util.Map;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.MapReduceCommand;
+import com.mongodb.MapReduceOutput;
 
 /**
  * The persistence layer interface offers some common methods for interacting
@@ -36,5 +38,7 @@ public interface PersistenceLayer {
   void insert(String collection, DBObject data);
 
   long count(String collection);
+  
+  MapReduceOutput mapreduce(String collection, MapReduceCommand cmd);
 
 }

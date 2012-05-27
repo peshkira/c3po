@@ -6,6 +6,8 @@ import java.util.Map;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.MapReduceCommand;
+import com.mongodb.MapReduceOutput;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.petpet.c3po.api.dao.Cache;
@@ -38,6 +40,9 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
     try {
       this.mongo = new Mongo((String) config.get(Constants.CNF_DB_HOST), Integer.parseInt((String) config.get(Constants.CBF_DB_PORT)));
       this.db = this.mongo.getDB((String) config.get(Constants.CNF_DB_NAME));
+      
+      this.db.getCollection("elements").ensureIndex("uid");
+      
       this.connected = true;
 
     } catch (NumberFormatException e) {
@@ -103,6 +108,10 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   @Override
   public long count(String collection) {
     return this.db.getCollection(collection).getCount();
+  }
+  
+  public MapReduceOutput mapreduce(String collection, MapReduceCommand cmd) {
+    return this.db.getCollection(collection).mapReduce(cmd);
   }
 
 }
