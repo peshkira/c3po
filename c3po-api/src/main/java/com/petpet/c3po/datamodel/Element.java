@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.BasicDBObject;
+import com.petpet.c3po.common.Helper;
 
 public class Element {
   
@@ -66,8 +67,8 @@ public class Element {
     final List<BasicDBObject> meta = new ArrayList<BasicDBObject>();
     for (MetadataRecord r : metadata) {
       final BasicDBObject md = new BasicDBObject();
-      md.put("key", r.getPRef());
-      md.put("value", r.getValue());
+      md.put("key", r.getProperty().getId());
+      md.put("value", Helper.getTypedValue(r.getProperty(), r.getValue()));
       md.put("status", r.getStatus());
       md.put("sources", r.getSources());
       meta.add(md);
@@ -77,5 +78,7 @@ public class Element {
     
     return element;
   }
+  
+ 
 
 }

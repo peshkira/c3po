@@ -48,7 +48,7 @@ public class DigesterContext {
     final Source source = this.cache.getSource(toolname, version);
 
     final MetadataRecord r = new MetadataRecord();
-    r.setPRef(property.getId());
+    r.setProperty(property);
     r.setValue(value);
     r.getSources().add(source.getId());
 
@@ -64,12 +64,12 @@ public class DigesterContext {
     final Property pm = this.cache.getProperty("mimetype");
 
     MetadataRecord fmt = new MetadataRecord();
-    fmt.setPRef(pf.getId());
+    fmt.setProperty(pf);
     fmt.setValue(format);
     fmt.getSources().addAll(this.formatSources);
 
     MetadataRecord mime = new MetadataRecord();
-    mime.setPRef(pm.getId());
+    mime.setProperty(pm);
     mime.setValue(mimetype);
     mime.getSources().addAll(this.formatSources);
 
@@ -101,7 +101,7 @@ public class DigesterContext {
     final Source s = this.cache.getSource(toolname, version);
     final MetadataRecord fmtv = new MetadataRecord();
 
-    fmtv.setPRef(pf.getId());
+    fmtv.setProperty(pf);
     fmtv.setValue(value);
     fmtv.getSources().add(s.getId());
 
@@ -117,7 +117,7 @@ public class DigesterContext {
     final Source s = this.cache.getSource(toolname, version);
     final MetadataRecord puid = new MetadataRecord();
 
-    puid.setPRef(pp.getId());
+    puid.setProperty(pp);
     puid.setValue(value);
     puid.getSources().add(s.getId());
 
@@ -133,7 +133,7 @@ public class DigesterContext {
   private void updateStatusOf(String pName, String status) {
     Property property = this.cache.getProperty(pName);
     for (MetadataRecord v : this.values) {
-      if (v.getPRef().equals(property.getId())) {
+      if (v.getProperty().getId().equals(property.getId())) {
         v.setStatus(status);
       }
     }

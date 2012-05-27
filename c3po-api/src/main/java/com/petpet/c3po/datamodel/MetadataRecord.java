@@ -9,7 +9,7 @@ public class MetadataRecord {
     OK, SINGLE_RESULT, PARTIAL, CONFLICT
   }
 
-  private String pRef;
+  private Property property;
   
   private String value;
   
@@ -22,24 +22,24 @@ public class MetadataRecord {
     this.status = Status.OK.name();
   }
   
-  public MetadataRecord(String pRef, String value) {
+  public MetadataRecord(Property p, String value) {
     this();
-    this.pRef = pRef;
+    this.property = p;
     this.value = value;
     this.status = Status.SINGLE_RESULT.name();
   }
   
-  public MetadataRecord(String pRef, String value, Status status) {
-    this(pRef, value);
+  public MetadataRecord(Property p, String value, Status status) {
+    this(p, value);
     this.status = status.name();
   }
 
-  public String getPRef() {
-    return pRef;
+  public Property getProperty() {
+    return this.property;
   }
 
-  public void setPRef(String key) {
-    this.pRef = key;
+  public void setProperty(Property p) {
+    this.property = p;
   }
 
   public String getValue() {
