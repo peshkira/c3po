@@ -1,6 +1,5 @@
 package com.petpet.c3po.adaptor.fits;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +17,6 @@ public class DigesterContext {
   private Element element;
 
   private List<MetadataRecord> values;
-
-  // private MetadataRecord fmt;
-  //
-  // private MetadataRecord mime;
 
   private List<String> formatSources;
 
@@ -67,7 +62,6 @@ public class DigesterContext {
   public void createIdentity(String format, String mimetype) {
     final Property pf = this.cache.getProperty("format");
     final Property pm = this.cache.getProperty("mimetype");
-    // final Source s = this.cache.getSource(toolname, version);
 
     MetadataRecord fmt = new MetadataRecord();
     fmt.setPRef(pf.getId());
@@ -131,10 +125,11 @@ public class DigesterContext {
   }
 
   private String substringPath(String str) {
-    return str.substring(str.lastIndexOf(File.separator) + 1);
+    str = str.substring(str.lastIndexOf("/") + 1);
+    str = str.substring(str.lastIndexOf("\\") + 1);
+    return str;
   }
 
-  // TODO get the correct reference...
   private void updateStatusOf(String pName, String status) {
     Property property = this.cache.getProperty(pName);
     for (MetadataRecord v : this.values) {
