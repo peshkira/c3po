@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
@@ -25,8 +26,11 @@ public class CSVExportCommand implements Command {
 
   private long time = -1L;
 
+  private CSVGenerator generator;
+
   public CSVExportCommand(Option[] options) {
     this.options = options;
+
   }
 
   @Override
@@ -38,13 +42,13 @@ public class CSVExportCommand implements Command {
     configurator.configure();
 
     final PersistenceLayer pLayer = configurator.getPersistence();
+    this.generator = new CSVGenerator(pLayer);
+    
+    final DBCursor cursor= this.generator.buildMatrix(this.getCollectionName());
     final DBCursor allprops = pLayer.findAll("properties");
     final List<Property> props = this.getProperties(allprops);
-    final BasicDBObject query = this.buildMatrixQuery(props);
-    final BasicDBObject ref = new BasicDBObject("collection", this.getCollectionName());
-    final DBCursor cursor = pLayer.find("elements", ref, query);
 
-    this.export(props, cursor);
+    this.generator.export(props, cursor, this.getOutputFile("matrix"));
 
     long end = System.currentTimeMillis();
     this.time = end - start;
@@ -53,17 +57,6 @@ public class CSVExportCommand implements Command {
   @Override
   public long getTime() {
     return this.time;
-  }
-
-  /**
-   * replaces all comma ocurrences in the values with an empty string.
-   * 
-   * @param str
-   *          the string to check
-   * @return a new altered string or an empty string if the input was null.
-   */
-  private String replace(String str) {
-    return (str == null) ? "" : str.replaceAll(",", "");
   }
 
   /**
@@ -95,77 +88,6 @@ public class CSVExportCommand implements Command {
     return result;
   }
 
-  /**
-   * Builds a query that will select the values for the passed properties and
-   * the uid out of each element.
-   * 
-   * @param props
-   *          the properties to select
-   * @return the query.
-   */
-  private BasicDBObject buildMatrixQuery(final List<Property> props) {
-    final BasicDBObject query = new BasicDBObject();
-
-    query.put("_id", null);
-    query.put("uid", 1);
-    query.put("metadata.key", 1);
-    query.put("metadata.value", 1);
-
-    return query;
-  }
-
-  /**
-   * Exports the data retrieved by the cursor to a sparse matrix view where each
-   * column is a property and each row is an element with the values for the
-   * corresponding property.
-   * 
-   * @param props
-   *          the columns
-   * @param matrix
-   *          the values for each element.
-   */
-  private void export(final List<Property> props, final DBCursor matrix) {
-    try {
-      final FileWriter writer = new FileWriter(this.getOutputFile("output"));
-
-      // build header of csv
-      writer.append("uid, ");
-      for (Property p : props) {
-        writer.append(p.getName() + ", ");
-      }
-      writer.append("\n");
-
-      // for all elements append the values in the correct column
-      while (matrix.hasNext()) {
-        final BasicDBObject next = (BasicDBObject) matrix.next();
-
-        // first the uid
-        writer.append(replace((String) next.get("uid")) + ", ");
-
-        final List<BasicDBObject> metadata = (List<BasicDBObject>) next.get("metadata");
-        // then the properties
-        for (Property p : props) {
-          for (BasicDBObject m : metadata) {
-            String key = (String) m.get("key");
-            if (p.getId().equals(key)) {
-              String val = (String) m.get("value");
-              writer.append(replace(val));
-              break;
-            }
-          }
-          writer.append(", ");
-        }
-        writer.append("\n");
-      }
-
-      writer.flush();
-      writer.close();
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
   private String getCollectionName() {
     for (Option o : this.options) {
       if (o.getArgName().equals(CommandConstants.COLLECTION_ID_ARGUMENT)) {
@@ -182,7 +104,7 @@ public class CSVExportCommand implements Command {
     String result = null;
 
     for (Option o : this.options) {
-      if (o.getArgName().equals(CommandConstants.PROFILE_FILEPATH_ARGUMENT)) {
+      if (o.getArgName().equals(CommandConstants.EXPORT_OUTPUT_PATH)) {
         result = o.getValue();
       }
     }

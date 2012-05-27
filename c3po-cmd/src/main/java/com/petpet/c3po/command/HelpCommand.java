@@ -14,7 +14,7 @@ public class HelpCommand implements Command {
   @Override
   public void execute() {
     HelpFormatter formatter = new HelpFormatter();
-    formatter.printHelp("java c3po.jar\nv" + CommandConstants.C3PO_CMD_VERSION, this.options);
+    formatter.printHelp("java -jar c3po.jar\n", this.options);
   }
 
   @Override

@@ -33,8 +33,10 @@ public class C3PO {
         .withDescription(CommandConstants.PROFILE_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.PROFILE_OPTION).create("p");
 
-    final Option export = OptionBuilder.hasOptionalArgs().withArgName(CommandConstants.EXPORT_OUTPUT_FILE)
-        .withDescription(CommandConstants.EXPORT_DESCRIPTION).isRequired(true).withLongOpt(CommandConstants.EXPORT_OPTION).create("e");
+    final Option export = OptionBuilder.hasOptionalArgs(2).withArgName(CommandConstants.EXPORT_OUTPUT_PATH)
+        .withDescription(CommandConstants.EXPORT_DESCRIPTION).isRequired(true)
+//        .withArgName(CommandConstants.EXPORT_MIME).withDescription(CommandConstants.EXPORT_MIME_DESCRIPTION)
+        .withLongOpt(CommandConstants.EXPORT_OPTION).create("e");
 
     final Option anonymize = OptionBuilder.withDescription(CommandConstants.ANONYMIZE_DESCRIPTION).isRequired(true)
         .withLongOpt(CommandConstants.ANONYMIZE_OPTION).create("a");
@@ -96,9 +98,8 @@ public class C3PO {
         final CSVExportCommand cmd = new CSVExportCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
-        
+
       }
-     
 
     } catch (final ParseException e) {
       new WrongArgumentCommand(e.getMessage(), o).execute();
