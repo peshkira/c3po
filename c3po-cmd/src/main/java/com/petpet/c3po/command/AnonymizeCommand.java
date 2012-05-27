@@ -4,7 +4,7 @@ import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.dao.LocalPersistenceLayer;
+import com.petpet.c3po.dao.DefaultPersistenceLayer;
 
 public class AnonymizeCommand implements Command {
 
@@ -14,7 +14,7 @@ public class AnonymizeCommand implements Command {
 
   private long time = -1;
 
-  private LocalPersistenceLayer pLayer;
+  private DefaultPersistenceLayer pLayer;
 
   public AnonymizeCommand(Option[] o) {
     this.options = o;

@@ -6,7 +6,7 @@ import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.dao.LocalPersistenceLayer;
+import com.petpet.c3po.dao.DefaultPersistenceLayer;
 
 public class ProfileCommand implements Command {
 
@@ -16,7 +16,7 @@ public class ProfileCommand implements Command {
       "creating.application.name", "creating.os", "has.forms", "has.annotations", "has.outline", "is.protected", "is.rightsmanaged", "valid", "wellformed" };
 
   private Option[] options;
-  private LocalPersistenceLayer pLayer;
+  private DefaultPersistenceLayer pLayer;
   private long time = -1L;
 
   public ProfileCommand(Option[] options) {

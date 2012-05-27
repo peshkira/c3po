@@ -12,7 +12,7 @@ import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 
-public class LocalPersistenceLayer implements PersistenceLayer {
+public class DefaultPersistenceLayer implements PersistenceLayer {
 
   private Mongo mongo;
 
@@ -22,7 +22,7 @@ public class LocalPersistenceLayer implements PersistenceLayer {
 
   private boolean connected;
 
-  public LocalPersistenceLayer() {
+  public DefaultPersistenceLayer() {
     this.connected = false;
   }
 
