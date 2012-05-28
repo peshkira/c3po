@@ -44,7 +44,7 @@ public class DigesterContext {
 
   public void createValue(String value, String status, String toolname, String version, String pattern) {
     final String propKey = this.substringPath(pattern);
-    final Property property = this.cache.getProperty(propKey);
+    final Property property = this.getProperty(propKey);
     final Source source = this.cache.getSource(toolname, version);
 
     final MetadataRecord r = new MetadataRecord();
@@ -60,8 +60,8 @@ public class DigesterContext {
   }
 
   public void createIdentity(String format, String mimetype) {
-    final Property pf = this.cache.getProperty("format");
-    final Property pm = this.cache.getProperty("mimetype");
+    final Property pf = this.getProperty("format");
+    final Property pm = this.getProperty("mimetype");
 
     MetadataRecord fmt = new MetadataRecord();
     fmt.setProperty(pf);
@@ -89,7 +89,7 @@ public class DigesterContext {
       if (status.equals(MetadataRecord.Status.SINGLE_RESULT.name())) {
         this.updateStatusOf("puid", Status.CONFLICT.name());
       }
-      
+
       this.updateStatusOf("format", status);
       this.updateStatusOf("mimetype", status);
 
@@ -97,7 +97,7 @@ public class DigesterContext {
   }
 
   public void createFormatVersion(String value, String status, String toolname, String version) {
-    final Property pf = this.cache.getProperty("format-version");
+    final Property pf = this.getProperty("format.version");
     final Source s = this.cache.getSource(toolname, version);
     final MetadataRecord fmtv = new MetadataRecord();
 
@@ -113,7 +113,7 @@ public class DigesterContext {
   }
 
   public void createPuid(String value, String toolname, String version) {
-    final Property pp = this.cache.getProperty("puid");
+    final Property pp = this.getProperty("puid");
     final Source s = this.cache.getSource(toolname, version);
     final MetadataRecord puid = new MetadataRecord();
 
@@ -131,12 +131,17 @@ public class DigesterContext {
   }
 
   private void updateStatusOf(String pName, String status) {
-    Property property = this.cache.getProperty(pName);
+    Property property = this.getProperty(pName);
     for (MetadataRecord v : this.values) {
       if (v.getProperty().getId().equals(property.getId())) {
         v.setStatus(status);
       }
     }
+  }
+
+  private Property getProperty(String name) {
+    final String prop = FITSHelper.getPropertyKeyByFitsName(name);
+    return this.cache.getProperty(prop);
   }
 
 }
