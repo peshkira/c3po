@@ -26,7 +26,7 @@ public class DBCache implements Cache {
     this.propertyCache = Collections.synchronizedMap(new HashMap<String, Property>());
     this.sourceCache = Collections.synchronizedMap(new HashMap<String, Source>());
   }
-  
+
   public void setPersistence(PersistenceLayer persistence) {
     this.persistence = persistence;
   }
@@ -84,7 +84,7 @@ public class DBCache implements Cache {
 
     return source;
   }
-  
+
   @Override
   public synchronized void clear() {
     this.propertyCache.clear();
@@ -126,6 +126,8 @@ public class DBCache implements Cache {
       result.setName(name);
       result.setDescription(desc);
       result.setType(type);
+
+      this.propertyCache.put(key, result);
     }
 
     return result;
@@ -143,6 +145,8 @@ public class DBCache implements Cache {
       result.setId(id);
       result.setName(name);
       result.setVersion(version);
+
+      this.sourceCache.put(name + ":" + version, result);
     }
 
     return result;
@@ -159,7 +163,7 @@ public class DBCache implements Cache {
   private Property createProperty(String key) {
     Property p = new Property(key, key);
     p.setType(DataHelper.getPropertyType(key));
-    
+
     this.persistence.insert("properties", DataHelper.getDocument(p));
     this.propertyCache.put(key, p);
 

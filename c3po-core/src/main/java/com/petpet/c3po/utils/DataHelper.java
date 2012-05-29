@@ -27,7 +27,8 @@ public final class DataHelper {
   private static Properties TYPES;
 
   private static final String[] PATTERNS = { "yyyy:MM:dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "dd MMM yyyy HH:mm",
-      "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm", "HH:mm MM/dd/yyyy" };
+      "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
+      "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss" };
 
   public static void init() {
     try {
@@ -80,6 +81,28 @@ public final class DataHelper {
     return property;
   }
 
+  /*
+   * experimental only for the SB archive
+   */
+  public static synchronized String extractDate(String name) {
+    String[] split = name.split("-");
+    if (split.length >= 2) {
+      String date = split[2];
+
+      try {
+        Long.valueOf(date);
+      } catch (NumberFormatException nfe) {
+        // if the value is not a number then it is something else and not a
+        // year, skip the inference.
+        return null;
+      }
+      // LOG.info("new value added {}", e.getName());
+      return date;
+    }
+
+    return null;
+  }
+
   public static String getPropertyType(String key) {
     return TYPES.getProperty(key, "STRING");
   }
@@ -113,34 +136,38 @@ public final class DataHelper {
 
   }
 
-  public static Date getDateValue(String value) {
+  private static Date getDateValue(String value) {
     LOG.trace("parsing value {} as date", value);
 
+    final SimpleDateFormat fmt = new SimpleDateFormat();
+
+    Date result = null;
+    for (String p : PATTERNS) {
+
+      fmt.applyPattern(p);
+      result = DataHelper.parseDate(fmt, value);
+
+      if (result != null) {
+        break;
+      }
+    }
+
+    if (result == null) {
+      LOG.debug("No pattern matching for value {}, try to parse as long", value);
+    }
+
     try {
-      return new Date(Long.valueOf(value));
+
+      if (value.length() != 14) {
+        LOG.trace("value is not 14 characters long, probably a long representation");
+        result = new Date(Long.valueOf(value));
+      }
 
     } catch (NumberFormatException e) {
       LOG.trace("date is not in long representation, trying pattern matching: {}", e.getMessage());
-
-      final SimpleDateFormat fmt = new SimpleDateFormat();
-
-      Date result = null;
-      for (String p : PATTERNS) {
-
-        fmt.applyPattern(p);
-        result = DataHelper.parseDate(fmt, value);
-
-        if (result != null) {
-          break;
-        }
-      }
-
-      if (result == null) {
-        LOG.debug("No pattern matching for value {}", value);
-      }
-
-      return result;
     }
+
+    return result;
   }
 
   private static Double getDoubleValue(String value) {

@@ -2,9 +2,6 @@ package com.petpet.c3po.gatherer;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +15,7 @@ public class FileSystemGatherer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemGatherer.class);
 
-  private Map<String, String> config;
+  private Map<String, Object> config;
 
   private List<String> files;
 
@@ -26,12 +23,12 @@ public class FileSystemGatherer {
 
   private int pointer;
 
-  public FileSystemGatherer(Map<String, String> config) {
+  public FileSystemGatherer(Map<String, Object> config) {
     this.config = config;
     this.init();
   }
 
-  public void setConfig(Map<String, String> config) {
+  public void setConfig(Map<String, Object> config) {
     this.config = config;
 
   }
@@ -63,12 +60,12 @@ public class FileSystemGatherer {
     }
 
     while (pointer < files.size() && count > 0) {
-//      try {
-        next.add(this.files.get(pointer++));
-        count--;
-//      } catch (FileNotFoundException e) {
-//        e.printStackTrace();
-//      }
+      // try {
+      next.add(this.files.get(pointer++));
+      count--;
+      // } catch (FileNotFoundException e) {
+      // e.printStackTrace();
+      // }
     }
 
     return next;
@@ -77,21 +74,21 @@ public class FileSystemGatherer {
   public List<String> getAll() {
     List<String> all = new ArrayList<String>();
     for (String path : this.files) {
-//      try {
-        all.add(path);
-//      } catch (FileNotFoundException e) {
-//        e.printStackTrace();
-//      }
+      // try {
+      all.add(path);
+      // } catch (FileNotFoundException e) {
+      // e.printStackTrace();
+      // }
     }
     return all;
   }
 
-  //TODO fix constants.
+  // TODO fix constants.
   private void init() {
     this.files = new ArrayList<String>();
     this.pointer = 0;
-    String path = this.config.get(Constants.CNF_COLLECTION_LOCATION);
-    boolean recursive = Boolean.valueOf(this.config.get(Constants.CNF_RECURSIVE));
+    String path = (String) this.config.get(Constants.CNF_COLLECTION_LOCATION);
+    boolean recursive = (Boolean) this.config.get(Constants.CNF_RECURSIVE);
 
     if (path == null) {
       LOG.error("No path config provided");

@@ -16,6 +16,8 @@ import org.xml.sax.SAXException;
 import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
+import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.utils.DataHelper;
 
 public class FITSDigesterAdaptor implements Runnable {
 
@@ -174,6 +176,7 @@ public class FITSDigesterAdaptor implements Runnable {
       LOG.warn("No element could be extracted");
     } else {
       element.setMetadata(values);
+      element.setCollection(this.controller.getCollection());
     }
 
     return element;
@@ -183,19 +186,53 @@ public class FITSDigesterAdaptor implements Runnable {
   public void run() {
     String next = this.controller.getNext();
 
+    Property property = this.controller.getCache().getProperty("created");
+
     while (next != null) {
       this.file = next;
 
       final Element element = this.getElement();
 
       if (element != null) {
-        this.controller.processElement(element);
+        // this.controller.processElement(element);
+
+//        String date = this.extractDate(element.getName());
+//        if (date != null) {
+//          MetadataRecord created = new MetadataRecord(property, "20050808122324");
+//          element.getMetadata().add(created);
+//        }
+
+        // LOG.info("{}", file);
+        this.controller.getPersistence().insert("elements", DataHelper.getDocument(element));
+
       } else {
         LOG.warn("No element could be extracted");
       }
 
       next = this.controller.getNext();
     }
-
   }
+
+  /*
+   * experimental only for the SB archive
+   */
+  public String extractDate(String name) {
+    String[] split = name.split("-");
+    if (split.length >= 2) {
+      String date = split[2];
+
+      try {
+        Long.valueOf(date);
+      } catch (NumberFormatException nfe) {
+        // if the value is not a number then it is something else and not a
+        // year, skip the inference.
+        return null;
+      }
+      // LOG.info("new value added {}", e.getName());
+      return date;
+    }
+
+    return null;
+  }
+
 }

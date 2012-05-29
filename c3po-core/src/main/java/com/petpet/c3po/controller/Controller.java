@@ -14,6 +14,8 @@ import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.datamodel.MetadataRecord;
+import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.DataHelper;
 
@@ -25,25 +27,28 @@ public class Controller {
   private FileSystemGatherer gatherer;
   private int counter = 0;
   private String collection;
+  private boolean infer = false;
+  private Property created;
 
   public Controller(PersistenceLayer pLayer) {
     this.persistence = pLayer;
-    
+    this.created = this.getCache().getProperty("created");
   }
 
-  public void collect(Map<String, String> config) {
+  public void collect(Map<String, Object> config) {
     this.gatherer = new FileSystemGatherer(config);
-    this.collection = config.get(Constants.CNF_COLLECTION_NAME);
+    this.collection = (String) config.get(Constants.CNF_COLLECTION_NAME);
+    this.infer = (Boolean) config.get(Constants.CNF_INFER_DATE);
 
     LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(), collection);
-    
-    this.startJobs(Integer.parseInt(config.get(Constants.CNF_THREAD_COUNT)));
+
+    this.startJobs((Integer) config.get(Constants.CNF_THREAD_COUNT));
 
   }
 
   private void startJobs(int threads) {
     this.pool = Executors.newFixedThreadPool(threads);
-    
+
     for (int i = 0; i < threads; i++) {
       FITSDigesterAdaptor f = new FITSDigesterAdaptor(this);
       this.pool.submit(f);
@@ -52,7 +57,7 @@ public class Controller {
     this.pool.shutdown();
 
     try {
-      //What happens if the time out occurrs first?
+      // What happens if the time out occurrs first?
       this.pool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     } catch (InterruptedException e) {
       e.printStackTrace();
@@ -60,12 +65,24 @@ public class Controller {
   }
 
   public synchronized void processElement(Element e) {
-    e.setCollection(this.collection);
-    this.persistence.insert("elements", DataHelper.getDocument(e));
+//    if (infer) {
+//      String date = DataHelper.extractDate(e);
+//      e.getMetadata().add(new MetadataRecord(created, date));
+//    }
+//
+//    this.persistence.insert("elements", DataHelper.getDocument(e));
   }
 
   public Cache getCache() {
     return this.persistence.getCache();
+  }
+
+  public String getCollection() {
+    return this.collection;
+  }
+  
+  public PersistenceLayer getPersistence() {
+    return this.persistence;
   }
 
   public synchronized String getNext() {
@@ -73,17 +90,17 @@ public class Controller {
     String result = null;
     if (next.isEmpty()) {
       LOGGER.info("Gathering process finished");
-      
+
     } else {
       result = next.get(0);
     }
-    
+
     this.counter++;
-    
+
     if (counter % 500 == 0) {
       LOGGER.info("Finished processing {} files", counter);
     }
-    
+
     return result;
   }
 
