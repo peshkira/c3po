@@ -1,10 +1,6 @@
 package com.petpet.c3po.datamodel;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import com.mongodb.BasicDBObject;
-import com.petpet.c3po.common.Helper;
 
 public class Element {
   
@@ -56,29 +52,6 @@ public class Element {
 
   public void setMetadata(List<MetadataRecord> metadata) {
     this.metadata = metadata;
-  }
-
-  public BasicDBObject getDocument() {
-    final BasicDBObject element = new BasicDBObject();
-    element.put("name", name);
-    element.put("uid", uid);
-    element.put("collection", collection);
-
-    final List<BasicDBObject> meta = new ArrayList<BasicDBObject>();
-    for (MetadataRecord r : metadata) {
-      final BasicDBObject md = new BasicDBObject();
-      md.put("key", r.getProperty().getId());
-      md.put("value", Helper.getTypedValue(r.getProperty(), r.getValue()));
-      md.put("status", r.getStatus());
-      md.put("sources", r.getSources());
-      meta.add(md);
-    }
-    
-    element.put("metadata", meta);
-    
-    return element;
-  }
-  
- 
+  } 
 
 }

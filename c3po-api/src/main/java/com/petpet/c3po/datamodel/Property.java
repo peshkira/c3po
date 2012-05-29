@@ -2,12 +2,10 @@ package com.petpet.c3po.datamodel;
 
 import java.util.UUID;
 
-import com.mongodb.BasicDBObject;
-
 public class Property {
   
   public enum PropertyType {
-    STRING, BOOL, NUMBER, FLOAT, ARRAY
+    STRING, BOOL, INTEGER, FLOAT, DATE, ARRAY
   }
   
   private String id;
@@ -79,17 +77,5 @@ public class Property {
 
   public void setType(String type) {
     this.type = type;
-  }
-
-  public BasicDBObject getDocument() {
-    final BasicDBObject property = new BasicDBObject();
-    property.put("_id", this.id);
-    property.put("key", this.key);
-    property.put("name", this.name);
-    property.put("type", this.type);
-    property.put("description", this.description);
-    
-    return property;
-    
   }
 }

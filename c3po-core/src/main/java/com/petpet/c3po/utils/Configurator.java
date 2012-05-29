@@ -176,6 +176,7 @@ public final class Configurator {
     LOG.debug("Initializing helpers.");
     XMLUtils.init();
     FITSHelper.init();
+    DataHelper.init();
     // initialize any other helpers...
   }
 

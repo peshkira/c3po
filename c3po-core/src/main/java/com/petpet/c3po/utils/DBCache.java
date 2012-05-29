@@ -150,7 +150,7 @@ public class DBCache implements Cache {
 
   private Source createSource(String name, String version) {
     Source s = new Source(name, version);
-    this.persistence.getDB().getCollection("sources").insert(s.getDocument());
+    this.persistence.insert("sources", DataHelper.getDocument(s));
     this.sourceCache.put(name + ":" + version, s);
 
     return s;
@@ -158,7 +158,9 @@ public class DBCache implements Cache {
 
   private Property createProperty(String key) {
     Property p = new Property(key, key);
-    this.persistence.getDB().getCollection("properties").insert(p.getDocument());
+    p.setType(DataHelper.getPropertyType(key));
+    
+    this.persistence.insert("properties", DataHelper.getDocument(p));
     this.propertyCache.put(key, p);
 
     return p;

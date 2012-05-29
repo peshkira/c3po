@@ -2,8 +2,6 @@ package com.petpet.c3po.datamodel;
 
 import java.util.UUID;
 
-import com.mongodb.BasicDBObject;
-
 public class Source {
   
   private String id;
@@ -44,16 +42,6 @@ public class Source {
 
   public void setVersion(String version) {
     this.version = version;
-  }
-  
-  public BasicDBObject getDocument() {
-    final BasicDBObject source = new BasicDBObject();
-    
-    source.put("_id", this.id);
-    source.put("name", this.name);
-    source.put("version", this.version);
-    
-    return source;
   }
 
 }

@@ -15,6 +15,7 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
+import com.petpet.c3po.utils.DataHelper;
 
 public class Controller {
 
@@ -60,7 +61,7 @@ public class Controller {
 
   public synchronized void processElement(Element e) {
     e.setCollection(this.collection);
-    this.persistence.insert("elements", e.getDocument());
+    this.persistence.insert("elements", DataHelper.getDocument(e));
   }
 
   public Cache getCache() {
