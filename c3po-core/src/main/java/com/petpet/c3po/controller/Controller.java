@@ -28,11 +28,9 @@ public class Controller {
   private int counter = 0;
   private String collection;
   private boolean infer = false;
-  private Property created;
 
   public Controller(PersistenceLayer pLayer) {
     this.persistence = pLayer;
-    this.created = this.getCache().getProperty("created");
   }
 
   public void collect(Map<String, Object> config) {
@@ -64,15 +62,6 @@ public class Controller {
     }
   }
 
-  public synchronized void processElement(Element e) {
-//    if (infer) {
-//      String date = DataHelper.extractDate(e);
-//      e.getMetadata().add(new MetadataRecord(created, date));
-//    }
-//
-//    this.persistence.insert("elements", DataHelper.getDocument(e));
-  }
-
   public Cache getCache() {
     return this.persistence.getCache();
   }
@@ -80,7 +69,7 @@ public class Controller {
   public String getCollection() {
     return this.collection;
   }
-  
+
   public PersistenceLayer getPersistence() {
     return this.persistence;
   }

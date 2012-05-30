@@ -16,8 +16,6 @@ import org.xml.sax.SAXException;
 import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.utils.DataHelper;
 
 public class FITSDigesterAdaptor implements Runnable {
 
@@ -173,10 +171,11 @@ public class FITSDigesterAdaptor implements Runnable {
     final List<MetadataRecord> values = context.getValues();
 
     if (element == null) {
-      LOG.warn("No element could be extracted");
+      LOG.warn("No element could be extracted from file {}", this.file);
     } else {
       element.setMetadata(values);
       element.setCollection(this.controller.getCollection());
+      element.extractCreatedMetadataRecord(this.controller.getCache().getProperty("created"));
     }
 
     return element;
@@ -186,29 +185,25 @@ public class FITSDigesterAdaptor implements Runnable {
   public void run() {
     String next = this.controller.getNext();
 
-    Property property = this.controller.getCache().getProperty("created");
-
     while (next != null) {
-      this.file = next;
+      try {
+        this.file = next;
 
-      final Element element = this.getElement();
+        final Element element = this.getElement();
 
-      if (element != null) {
-        // this.controller.processElement(element);
+        if (element != null) {
+          // this.controller.processElement(element);
 
-//        String date = this.extractDate(element.getName());
-//        if (date != null) {
-//          MetadataRecord created = new MetadataRecord(property, "20050808122324");
-//          element.getMetadata().add(created);
-//        }
+          this.controller.getPersistence().insert("elements", element.getDocument());
 
-        // LOG.info("{}", file);
-        this.controller.getPersistence().insert("elements", DataHelper.getDocument(element));
+        } else {
+          LOG.warn("No element could be extracted");
+        }
 
-      } else {
-        LOG.warn("No element could be extracted");
+      } catch (Exception e) {
+        // safe thread from dying due to processing error...
+        LOG.warn("An exception occurred for file '{}': {}", file, e.getMessage());
       }
-
       next = this.controller.getNext();
     }
   }
