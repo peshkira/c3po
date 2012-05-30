@@ -20,7 +20,9 @@ public final class Constants {
 
   public static final String CNF_COLLECTION_LOCATION = "c3po.collection.location";
   
-  public static final String CNF_INFER_DATE = "c3po.inference.date";
+  public static final String CNF_INFER_DATE = "adaptor.inference.date";
+  
+  public static final String CNF_COLLECTION_ID = "adaptor.collection.identifier";
 
   public static final String CNF_RECURSIVE = "c3po.recursive";
 

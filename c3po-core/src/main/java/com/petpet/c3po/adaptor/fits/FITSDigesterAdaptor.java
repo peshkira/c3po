@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.RegexRules;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
@@ -21,19 +23,35 @@ public class FITSDigesterAdaptor implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(FITSDigesterAdaptor.class);
 
-  private InputStream stream;
-
   private String file;
 
   private Digester digester;
 
   private Controller controller;
 
-  public FITSDigesterAdaptor(Controller ctrl) {
+  private boolean inferDate = false;
+  
+  private String collection;
+
+  public FITSDigesterAdaptor(Controller ctrl, Map<String, Object> config) {
     this.controller = ctrl;
     this.digester = new Digester(); // not thread safe
     this.digester.setRules(new RegexRules(new SimpleRegexMatcher()));
     this.createRules();
+    this.readConfig(config);
+  }
+
+  private void readConfig(Map<String, Object> config) {
+    Boolean bool = (Boolean) config.get(Constants.CNF_INFER_DATE);
+    String coll = (String) config.get(Constants.CNF_COLLECTION_ID);
+
+    if (bool != null) {
+      this.inferDate = bool;
+    }
+    
+    if (coll != null) {
+      this.collection = coll;
+    }
   }
 
   private void createRules() {
@@ -131,35 +149,35 @@ public class FITSDigesterAdaptor implements Runnable {
   }
 
   public Element getElement() {
+    InputStream stream = null;
+
     try {
-      this.stream = new FileInputStream(this.file);
+      stream = new FileInputStream(this.file);
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      LOG.error("An exception occurred while looking for {}: {}", this.file, e.getMessage());
     }
 
-    if (this.stream == null) {
+    if (stream == null) {
       LOG.warn("The input stream is not set, skipping.");
       return null;
     }
 
     try {
-      this.digester.push(new DigesterContext(this.controller.getCache()));
-      DigesterContext context = (DigesterContext) this.digester.parse(this.stream);
-      Element element = this.postProcess(context);
+      this.digester.push(new DigesterContext(this.controller.getPersistence().getCache()));
+      final DigesterContext context = (DigesterContext) this.digester.parse(stream);
+      final Element element = this.postProcess(context);
 
       return element;
 
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("An exception occurred while processing {}: {}", this.file, e.getMessage());
     } catch (SAXException e) {
-      e.printStackTrace();
+      LOG.error("An exception occurred while parsing {}: {}", this.file, e.getMessage());
     } finally {
       try {
-        this.stream.close();
-        this.stream = null;
-        // LOG.info("stream of element closed");
+        stream.close();
       } catch (IOException ioe) {
-        ioe.printStackTrace();
+        LOG.error("An exception occurred while closing {}: {}", this.file, ioe.getMessage());
       }
     }
 
@@ -170,12 +188,13 @@ public class FITSDigesterAdaptor implements Runnable {
     final Element element = context.getElement();
     final List<MetadataRecord> values = context.getValues();
 
-    if (element == null) {
-      LOG.warn("No element could be extracted from file {}", this.file);
-    } else {
+    if (element != null) {
       element.setMetadata(values);
-      element.setCollection(this.controller.getCollection());
-      element.extractCreatedMetadataRecord(this.controller.getCache().getProperty("created"));
+      element.setCollection(this.collection);
+
+      if (this.inferDate) {
+        element.extractCreatedMetadataRecord(this.controller.getPersistence().getCache().getProperty("created"));
+      }
     }
 
     return element;
@@ -192,7 +211,6 @@ public class FITSDigesterAdaptor implements Runnable {
         final Element element = this.getElement();
 
         if (element != null) {
-          // this.controller.processElement(element);
 
           this.controller.getPersistence().insert("elements", element.getDocument());
 
@@ -204,30 +222,8 @@ public class FITSDigesterAdaptor implements Runnable {
         // safe thread from dying due to processing error...
         LOG.warn("An exception occurred for file '{}': {}", file, e.getMessage());
       }
+
       next = this.controller.getNext();
     }
   }
-
-  /*
-   * experimental only for the SB archive
-   */
-  public String extractDate(String name) {
-    String[] split = name.split("-");
-    if (split.length >= 2) {
-      String date = split[2];
-
-      try {
-        Long.valueOf(date);
-      } catch (NumberFormatException nfe) {
-        // if the value is not a number then it is something else and not a
-        // year, skip the inference.
-        return null;
-      }
-      // LOG.info("new value added {}", e.getName());
-      return date;
-    }
-
-    return null;
-  }
-
 }

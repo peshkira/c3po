@@ -1,5 +1,6 @@
 package com.petpet.c3po.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -10,14 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSDigesterAdaptor;
-import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
-import com.petpet.c3po.utils.DataHelper;
 
 public class Controller {
 
@@ -27,7 +23,7 @@ public class Controller {
   private FileSystemGatherer gatherer;
   private int counter = 0;
   private String collection;
-  private boolean infer = false;
+  private Map<String, Object> adaptorConfig;
 
   public Controller(PersistenceLayer pLayer) {
     this.persistence = pLayer;
@@ -36,7 +32,7 @@ public class Controller {
   public void collect(Map<String, Object> config) {
     this.gatherer = new FileSystemGatherer(config);
     this.collection = (String) config.get(Constants.CNF_COLLECTION_NAME);
-    this.infer = (Boolean) config.get(Constants.CNF_INFER_DATE);
+    this.adaptorConfig = this.getAdaptorConfig(config);
 
     LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(), collection);
 
@@ -44,11 +40,23 @@ public class Controller {
 
   }
 
+  private Map<String, Object> getAdaptorConfig(Map<String, Object> config) {
+    final Map<String, Object> adaptorcnf = new HashMap<String, Object>();
+    for (String key : config.keySet()) {
+      if (key.startsWith("adaptor.")) {
+        adaptorcnf.put(key, config.get(key));
+      }
+    }
+
+    adaptorcnf.put(Constants.CNF_COLLECTION_ID, this.collection);
+    return adaptorcnf;
+  }
+
   private void startJobs(int threads) {
     this.pool = Executors.newFixedThreadPool(threads);
 
     for (int i = 0; i < threads; i++) {
-      FITSDigesterAdaptor f = new FITSDigesterAdaptor(this);
+      FITSDigesterAdaptor f = new FITSDigesterAdaptor(this, this.adaptorConfig);
       this.pool.submit(f);
     }
 
@@ -60,14 +68,6 @@ public class Controller {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-  }
-
-  public Cache getCache() {
-    return this.persistence.getCache();
-  }
-
-  public String getCollection() {
-    return this.collection;
   }
 
   public PersistenceLayer getPersistence() {
