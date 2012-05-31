@@ -125,8 +125,10 @@ public class DigesterContext {
   }
 
   private String substringPath(String str) {
-    str = str.substring(str.lastIndexOf("/") + 1);
-    str = str.substring(str.lastIndexOf("\\") + 1);
+    if (str != null) {
+      str = str.substring(str.lastIndexOf("/") + 1);
+      str = str.substring(str.lastIndexOf("\\") + 1);
+    }
     return str;
   }
 

@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.adaptor.fits.FITSDigesterAdaptor;
+import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
@@ -56,7 +56,10 @@ public class Controller {
     this.pool = Executors.newFixedThreadPool(threads);
 
     for (int i = 0; i < threads; i++) {
-      FITSDigesterAdaptor f = new FITSDigesterAdaptor(this, this.adaptorConfig);
+      final FITSAdaptor f = new FITSAdaptor();
+      f.setController(this);
+      f.setConfig(this.adaptorConfig);
+
       this.pool.submit(f);
     }
 
