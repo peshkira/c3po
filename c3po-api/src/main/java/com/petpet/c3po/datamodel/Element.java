@@ -11,29 +11,71 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
+import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.MetadataRecord.Status;
 import com.petpet.c3po.datamodel.Property.PropertyType;
+
+/**
+ * A domain object class that encapsulates an element document. It consists of a
+ * couple of attributes that describe a simple object (usually a file) and a
+ * list of specific metadata.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ */
 
 public class Element {
 
+  /**
+   * Default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(Element.class);
 
+  /**
+   * Some date patterns used for date parsing.
+   */
   private static final String[] PATTERNS = { "yyyy:MM:dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "dd MMM yyyy HH:mm",
       "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
       "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss" };
 
+  /**
+   * The collection to which the current element belongs.
+   */
   private String collection;
 
+  /**
+   * Some non-unique name of this element.
+   */
   private String name;
 
+  /**
+   * Some unique identifier of this element that references the original file
+   * back in the source.
+   */
   private String uid;
 
+  /**
+   * A list of {@link MetadataRecord} info.
+   */
   private List<MetadataRecord> metadata;
 
+  /**
+   * Creates an element with the given uid and name.
+   * 
+   * @param uid
+   * @param name
+   */
   public Element(String uid, String name) {
     this.uid = uid;
     this.name = name;
   }
 
+  /**
+   * Creates an element with the given uid, name and collection.
+   * 
+   * @param collection
+   * @param uid
+   * @param name
+   */
   public Element(String collection, String uid, String name) {
     this(uid, name);
     this.collection = collection;
@@ -71,28 +113,57 @@ public class Element {
     this.metadata = metadata;
   }
 
+  /**
+   * Tries to parse a creation date out of the name of the current element. Some
+   * sources include a timestamp in the name. The usage of this method can be
+   * configured through the adaptor config parameter
+   * {@link Constants#CNF_INFER_DATE}
+   * 
+   * If the name is not set or it does not include a timestamp, the method does
+   * nothing.
+   * 
+   * @param created
+   *          the property for the creation date.
+   */
   /*
    * experimental only for the SB archive
    */
   public void extractCreatedMetadataRecord(Property created) {
-    String[] split = name.split("-");
-    if (split.length > 2) {
-      String date = split[2];
-      // System.out.println(name);
-      try {
-        Long.valueOf(date);
+    if (this.name != null) {
 
-        MetadataRecord c = new MetadataRecord(created, date);
-        this.metadata.add(c);
+      String[] split = name.split("-");
 
-      } catch (NumberFormatException nfe) {
-        // if the value is not a number then it is something else and not a
-        // year, skip the inference.
+      if (split.length > 2) {
+        String date = split[2];
 
+        try {
+          Long.valueOf(date);
+
+          MetadataRecord c = new MetadataRecord(created, date);
+          this.metadata.add(c);
+
+        } catch (NumberFormatException nfe) {
+          // if the value is not a number then it is something else and not a
+          // year, skip the inference.
+
+        }
       }
     }
   }
 
+  /**
+   * Tries to infer the type of the value based on the property type and
+   * converts the value. Otherwise it leaves the string representation. This is
+   * valuable as the underlying persistence layer can store the native type
+   * instead of strings which makes some aggregation functions easier.
+   * 
+   * @param t
+   *          the type of the property @see {@link PropertyType}
+   * @param value
+   *          the value to convert
+   * @return an object with the specific type, or the original value. If the
+   *         passed value was null, an empty string is returned.
+   */
   public Object getTypedValue(String t, String value) {
 
     if (value == null) {
@@ -125,6 +196,16 @@ public class Element {
 
   }
 
+  /**
+   * Tries to convert to a date object. First the method tries to match the
+   * value based on some predefined patterns. If no pattern matches the the
+   * method checks if the value is a long. If nothing succeeds then null is
+   * returned.
+   * 
+   * @param value
+   *          the value to convert
+   * @return a date if successful, null otherwise.
+   */
   private Date getDateValue(String value) {
     LOG.trace("parsing value {} as date", value);
 
@@ -159,6 +240,13 @@ public class Element {
     return result;
   }
 
+  /**
+   * Gets a double out of the passed value.
+   * 
+   * @param value
+   *          the value to convert
+   * @return null if not a floating point string.
+   */
   private Double getDoubleValue(String value) {
     try {
       return Double.parseDouble(value);
@@ -168,15 +256,31 @@ public class Element {
     }
   }
 
-  private Integer getIntegerValue(String value) {
+  /**
+   * Converts to integer.
+   * 
+   * @param value
+   *          the value to convert.
+   * @return the integer object or null if not a numeric value.
+   */
+  private Long getIntegerValue(String value) {
     try {
-      return Integer.parseInt(value);
+      return Long.parseLong(value);
     } catch (NumberFormatException e) {
       LOG.warn("Value {} is not an integer", value);
       return null;
     }
   }
 
+  /**
+   * A boolean representation of the passed string. If the string equals one of
+   * 'yes', 'true' or 'no', 'false' then the value is converted to the
+   * corresponding boolean. Otherwise null is returned
+   * 
+   * @param value
+   *          the value to convert
+   * @return the boolean representation of the value, or null if not a boolean.
+   */
   private Boolean getBooleanValue(String value) {
     if (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) {
       return new Boolean(true);
@@ -188,6 +292,15 @@ public class Element {
     }
   }
 
+  /**
+   * Parses a date with the given dateformat.
+   * 
+   * @param fmt
+   *          the dateformat object to parse the date with.
+   * @param d
+   *          the string to parse.
+   * @return the date or null if parsing was not successful.
+   */
   private Date parseDate(DateFormat fmt, String d) {
     try {
       return fmt.parse(d);
@@ -197,25 +310,59 @@ public class Element {
     }
   }
 
+  /**
+   * Gets the BSON Object representation that is stored within the mongo
+   * database.
+   * 
+   * @return the document of this element.
+   */
   public BasicDBObject getDocument() {
     final BasicDBObject element = new BasicDBObject();
     element.put("name", this.getName());
     element.put("uid", this.getUid());
     element.put("collection", this.getCollection());
 
-    final List<BasicDBObject> meta = new ArrayList<BasicDBObject>();
+    final BasicDBObject meta = new BasicDBObject();
     for (MetadataRecord r : this.getMetadata()) {
-      final BasicDBObject md = new BasicDBObject();
-      md.put("key", r.getProperty().getId());
-      md.put("value", this.getTypedValue(r.getProperty().getType(), r.getValue()));
-      md.put("status", r.getStatus());
-      md.put("sources", r.getSources());
-      meta.add(md);
+      final BasicDBObject key = new BasicDBObject();
+
+      key.put("status", r.getStatus());
+
+      if (r.getStatus().equals(Status.CONFLICT.name())) {
+        BasicDBObject conflicting;
+        List<Object> values;
+        List<Object> sources;
+        if (meta.containsField(r.getProperty().getId())) {
+          conflicting = (BasicDBObject) meta.get(r.getProperty().getId());
+          values = (List<Object>) conflicting.get("values");
+          sources = (List<Object>) conflicting.get("sources");
+          values.add(this.getTypedValue(r.getProperty().getType(), r.getValue()));
+          sources.add(r.getSources().get(0));
+
+        } else {
+          conflicting = new BasicDBObject();
+          values = new ArrayList<Object>();
+          sources = new ArrayList<Object>();
+
+          values.add(this.getTypedValue(r.getProperty().getType(), r.getValue()));
+          sources.add(r.getSources().get(0));
+        }
+
+        conflicting.put("values", values);
+        conflicting.put("sources", sources);
+        conflicting.put("status", r.getStatus());
+        meta.put(r.getProperty().getId(), conflicting);
+
+      } else {
+        key.put("value", this.getTypedValue(r.getProperty().getType(), r.getValue()));
+        key.put("sources", r.getSources());
+        meta.put(r.getProperty().getId(), key);
+      }
+
     }
 
     element.put("metadata", meta);
 
     return element;
   }
-
 }
