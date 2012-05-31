@@ -1,21 +1,13 @@
 package com.petpet.c3po.command;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
 
 public class CSVExportCommand implements Command {
@@ -43,12 +35,8 @@ public class CSVExportCommand implements Command {
 
     final PersistenceLayer pLayer = configurator.getPersistence();
     this.generator = new CSVGenerator(pLayer);
-    
-    final DBCursor cursor= this.generator.buildMatrix(this.getCollectionName());
-    final DBCursor allprops = pLayer.findAll("properties");
-    final List<Property> props = this.getProperties(allprops);
 
-    this.generator.export(props, cursor, this.getOutputFile("matrix"));
+    this.generator.exportAll(this.getCollectionName(), this.getOutputFile("matrix"));
 
     long end = System.currentTimeMillis();
     this.time = end - start;
@@ -57,35 +45,6 @@ public class CSVExportCommand implements Command {
   @Override
   public long getTime() {
     return this.time;
-  }
-
-  /**
-   * Extracts {@link Property} objects from the given cursor and only sets the
-   * id and the name field.
-   * 
-   * @param cursor
-   *          the cursor to look for property objects.
-   * @return a list of properties or an empty list.
-   */
-  private List<Property> getProperties(final DBCursor cursor) {
-    final List<Property> result = new ArrayList<Property>();
-
-    while (cursor.hasNext()) {
-      final DBObject next = cursor.next();
-
-      final String id = (String) next.get("_id");
-      final String name = (String) next.get("key");
-
-      if (id != null && name != null) {
-        final Property p = new Property();
-        p.setId(id);
-        p.setKey(name);
-
-        result.add(p);
-      }
-    }
-
-    return result;
   }
 
   private String getCollectionName() {
