@@ -93,22 +93,18 @@ public class DBCache implements Cache {
   }
 
   private DBCursor findSource(String name, String version) {
-    DB db = this.persistence.getDB();
-    DBCollection sources = db.getCollection("sources");
     BasicDBObject query = new BasicDBObject();
     query.put("name", name);
     query.put("version", version);
 
-    return sources.find(query);
+    return this.persistence.find("sources", query);
   }
 
   private DBCursor findProperty(String key) {
-    DB db = this.persistence.getDB();
-    DBCollection properties = db.getCollection("properties");
     BasicDBObject query = new BasicDBObject();
     query.put("key", key);
 
-    return properties.find(query);
+    return this.persistence.find("properties", query);
   }
 
   private Property extractProperty(DBObject obj) {
