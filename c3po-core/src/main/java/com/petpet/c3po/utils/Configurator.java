@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSHelper;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.dao.DefaultPersistenceLayer;
 
 /**

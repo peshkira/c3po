@@ -1,4 +1,4 @@
-package com.petpet.c3po.utils;
+package com.petpet.c3po.dao;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +13,7 @@ import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.utils.DataHelper;
 
 public class DBCache implements Cache {
 
