@@ -23,8 +23,8 @@ public abstract class AbstractAdaptor implements Runnable {
   protected Map<String, Object> getConfig() {
     return this.config;
   }
-
-  public void setConfig(Map<String, Object> config) {
+  
+  protected void setConfig(Map<String, Object> config) {
     this.config = config;
   }
 
@@ -67,6 +67,6 @@ public abstract class AbstractAdaptor implements Runnable {
     return result;
   }
 
-  public abstract void configure();
+  public abstract void configure(Map<String, Object> config);
 
 }

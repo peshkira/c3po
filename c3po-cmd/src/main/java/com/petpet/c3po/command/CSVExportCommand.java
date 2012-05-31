@@ -74,12 +74,12 @@ public class CSVExportCommand implements Command {
       final DBObject next = cursor.next();
 
       final String id = (String) next.get("_id");
-      final String name = (String) next.get("name");
+      final String name = (String) next.get("key");
 
       if (id != null && name != null) {
         final Property p = new Property();
         p.setId(id);
-        p.setName(name);
+        p.setKey(name);
 
         result.add(p);
       }

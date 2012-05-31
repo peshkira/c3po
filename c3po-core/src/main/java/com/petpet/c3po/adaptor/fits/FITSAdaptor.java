@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.RegexRules;
@@ -37,7 +38,9 @@ public class FITSAdaptor extends AbstractAdaptor {
   }
 
   @Override
-  public void configure() {
+  public void configure(Map<String, Object> config) {
+    this.setConfig(config);
+    
     this.inferDate = this.getBooleanConfig(Constants.CNF_INFER_DATE, false);
     this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
   }
@@ -214,6 +217,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       } catch (Exception e) {
         // save thread from dying due to processing error...
         LOG.warn("An exception occurred for file '{}': {}", file, e.getMessage());
+//        e.printStackTrace();
       }
 
       next = this.getController().getNext();

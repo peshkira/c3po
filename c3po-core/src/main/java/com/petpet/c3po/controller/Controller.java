@@ -22,8 +22,6 @@ public class Controller {
   private ExecutorService pool;
   private FileSystemGatherer gatherer;
   private int counter = 0;
-  private String collection;
-  private Map<String, Object> adaptorConfig;
 
   public Controller(PersistenceLayer pLayer) {
     this.persistence = pLayer;
@@ -31,12 +29,14 @@ public class Controller {
 
   public void collect(Map<String, Object> config) {
     this.gatherer = new FileSystemGatherer(config);
-    this.collection = (String) config.get(Constants.CNF_COLLECTION_NAME);
-    this.adaptorConfig = this.getAdaptorConfig(config);
 
-    LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(), collection);
+    int threads = (Integer) config.get(Constants.CNF_THREAD_COUNT);
+    Map<String, Object> adaptorcnf = this.getAdaptorConfig(config);
 
-    this.startJobs((Integer) config.get(Constants.CNF_THREAD_COUNT));
+    LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(),
+        config.get(Constants.CNF_COLLECTION_NAME));
+
+    this.startJobs(threads, adaptorcnf);
 
   }
 
@@ -48,17 +48,17 @@ public class Controller {
       }
     }
 
-    adaptorcnf.put(Constants.CNF_COLLECTION_ID, this.collection);
+    adaptorcnf.put(Constants.CNF_COLLECTION_ID, config.get(Constants.CNF_COLLECTION_NAME));
     return adaptorcnf;
   }
 
-  private void startJobs(int threads) {
+  private void startJobs(int threads, Map<String, Object> adaptorcnf) {
     this.pool = Executors.newFixedThreadPool(threads);
 
     for (int i = 0; i < threads; i++) {
       final FITSAdaptor f = new FITSAdaptor();
       f.setController(this);
-      f.setConfig(this.adaptorConfig);
+      f.configure(adaptorcnf);
 
       this.pool.submit(f);
     }
