@@ -9,6 +9,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Property;
 
 public class CSVGenerator {
@@ -31,7 +32,7 @@ public class CSVGenerator {
    */
   public void exportAll(String collection, String output) {
     final DBCursor matrix = this.buildMatrix(collection);
-    final DBCursor allprops = this.persistence.findAll("properties");
+    final DBCursor allprops = this.persistence.findAll(Constants.TBL_PROEPRTIES);
     final List<Property> props = this.getProperties(allprops);
 
     this.write(matrix, props, output);
@@ -51,7 +52,7 @@ public class CSVGenerator {
    */
   public void exportAll(String collection, String mimetype, String output) {
     final DBCursor matrix = this.buildMatrix(collection, mimetype);
-    final DBCursor allprops = this.persistence.findAll("properties");
+    final DBCursor allprops = this.persistence.findAll(Constants.TBL_PROEPRTIES);
     final List<Property> props = this.getProperties(allprops);
 
     this.write(matrix, props, output);
@@ -176,7 +177,7 @@ public class CSVGenerator {
       query.put("metadata." + p.getId(), 1);
     }
 
-    return this.persistence.find("elements", ref, query);
+    return this.persistence.find(Constants.TBL_ELEMENTS, ref, query);
   }
 
   /**
@@ -205,7 +206,7 @@ public class CSVGenerator {
       query.put("metadata." + p.getId(), 1);
     }
 
-    return this.persistence.find("elements", ref, query);
+    return this.persistence.find(Constants.TBL_ELEMENTS, ref, query);
   }
 
   /**

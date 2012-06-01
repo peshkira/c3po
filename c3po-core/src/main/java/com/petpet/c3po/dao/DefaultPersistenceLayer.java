@@ -3,6 +3,7 @@ package com.petpet.c3po.dao;
 import java.net.UnknownHostException;
 import java.util.Map;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -41,7 +42,9 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
       this.mongo = new Mongo((String) config.get(Constants.CNF_DB_HOST), Integer.parseInt((String) config.get(Constants.CBF_DB_PORT)));
       this.db = this.mongo.getDB((String) config.get(Constants.CNF_DB_NAME));
       
-      this.db.getCollection("elements").ensureIndex("uid");
+      this.db.getCollection(Constants.TBL_ELEMENTS).ensureIndex(new BasicDBObject("uid", 1), new BasicDBObject("unique", true));
+      this.db.getCollection(Constants.TBL_PROEPRTIES).ensureIndex("_id");
+      this.db.getCollection(Constants.TBL_PROEPRTIES).ensureIndex("key");
       
       this.connected = true;
 

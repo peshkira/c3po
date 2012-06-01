@@ -11,6 +11,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Source;
 import com.petpet.c3po.utils.DataHelper;
@@ -97,14 +98,14 @@ public class DBCache implements Cache {
     query.put("name", name);
     query.put("version", version);
 
-    return this.persistence.find("sources", query);
+    return this.persistence.find(Constants.TBL_SOURCES, query);
   }
 
   private DBCursor findProperty(String key) {
     BasicDBObject query = new BasicDBObject();
     query.put("key", key);
 
-    return this.persistence.find("properties", query);
+    return this.persistence.find(Constants.TBL_PROEPRTIES, query);
   }
 
   private Property extractProperty(DBObject obj) {
@@ -151,7 +152,7 @@ public class DBCache implements Cache {
 
   private Source createSource(String name, String version) {
     Source s = new Source(name, version);
-    this.persistence.insert("sources", s.getDocument());
+    this.persistence.insert(Constants.TBL_SOURCES, s.getDocument());
     this.sourceCache.put(name + ":" + version, s);
 
     return s;
@@ -161,7 +162,7 @@ public class DBCache implements Cache {
     Property p = new Property(key, key);
     p.setType(DataHelper.getPropertyType(key));
 
-    this.persistence.insert("properties", p.getDocument());
+    this.persistence.insert(Constants.TBL_PROEPRTIES, p.getDocument());
     this.propertyCache.put(key, p);
 
     return p;

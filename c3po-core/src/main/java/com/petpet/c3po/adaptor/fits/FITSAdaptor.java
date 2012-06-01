@@ -207,7 +207,7 @@ public class FITSAdaptor extends AbstractAdaptor {
         final Element element = this.getElement();
 
         if (element != null) {
-          this.getController().getPersistence().insert("elements", element.getDocument());
+          this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
 
         } else {
           LOG.warn("No element could be extracted for file {}", file);
