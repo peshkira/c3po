@@ -1,0 +1,14 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index()
+
+# Profile page
+GET     /c3po/profile/              controllers.Profiles.index()
+GET     /c3po/profile/:id           controllers.Profiles.show(id: String)
+POST    /c3po/profile/:name         controllers.Profiles.submit(name: String)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
