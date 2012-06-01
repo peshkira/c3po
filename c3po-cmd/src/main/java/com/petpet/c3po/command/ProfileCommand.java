@@ -15,9 +15,6 @@ public class ProfileCommand implements Command {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProfileCommand.class);
 
-  private static final String[] PROPERTIES = { "format", "format.version", "puid", "mimetype", "compressionscheme",
-      "creating.application.name", "creating.os", "has.forms", "has.annotations", "has.outline", "is.protected", "is.rightsmanaged", "valid", "wellformed" };
-
   private Option[] options;
   private PersistenceLayer pLayer;
   private long time = -1L;
@@ -29,19 +26,19 @@ public class ProfileCommand implements Command {
   @Override
   public void execute() {
     final long start = System.currentTimeMillis();
-    
-    
+
     final Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure();
 
     this.pLayer = configurator.getPersistence();
     final ProfileGenerator gen = new ProfileGenerator(this.pLayer);
-    
+
     final String name = this.getCollectionName();
-    final Document profile = gen.generateProfile(name);
-    
+    final Document profile = gen.generateProfile(name, "mimetype");// parametrize
+                                                                   // this.
+
     gen.write(profile, this.getOutputFile(name));
-    
+
     final long end = System.currentTimeMillis();
     this.time = end - start;
   }
