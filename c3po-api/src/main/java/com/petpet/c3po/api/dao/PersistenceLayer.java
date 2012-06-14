@@ -39,6 +39,8 @@ public interface PersistenceLayer {
 
   long count(String collection);
   
+  long count(String collection, DBObject query);
+  
   MapReduceOutput mapreduce(String collection, MapReduceCommand cmd);
 
 }

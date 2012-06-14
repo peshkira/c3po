@@ -113,6 +113,11 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
     return this.db.getCollection(collection).getCount();
   }
   
+  @Override
+  public long count(String collection, DBObject query) {
+    return this.db.getCollection(collection).count(query);
+  }
+  
   public MapReduceOutput mapreduce(String collection, MapReduceCommand cmd) {
     return this.db.getCollection(collection).mapReduce(cmd);
   }

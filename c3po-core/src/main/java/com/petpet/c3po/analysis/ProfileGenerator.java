@@ -84,29 +84,23 @@ public class ProfileGenerator {
 
   public Document generateProfile(final String collection, final String filter) {
     final BasicDBObject ref = new BasicDBObject();
-    final BasicDBObject keys = new BasicDBObject();
-
     ref.put("collection", collection);
-    keys.put("_id", null);
-    keys.put("uid", 1);
 
-    final DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, ref, keys);
+    final long count = this.persistence.count(Constants.TBL_ELEMENTS, ref);
 
     final Document document = DocumentHelper.createDocument();
-
-    final Element root = this.createRootElement(document, collection, cursor);
+    final Element root = this.createRootElement(document, collection, count);
     final Element partitions = this.createPartitionsElement(root, filter);
 
     this.createPartitions(collection, partitions, filter);
-    this.createElements(root, collection, cursor);// TODO make this optional.
 
     return document;
   }
 
-  private Element createRootElement(final Document doc, final String collection, final DBCursor cursor) {
+  private Element createRootElement(final Document doc, final String collection, final long count) {
     final Element profile = doc.addElement("profile").addAttribute("version", Constants.PROFILE_FORMAT_VERSION)
         .addAttribute("collection", collection).addAttribute("date", new Date().getTime() + "")
-        .addAttribute("count", cursor.count() + "");
+        .addAttribute("count", count + "");
 
     return profile;
   }
@@ -125,7 +119,9 @@ public class ProfileGenerator {
           .addAttribute("occurrences", filterValues.get(value) + "");
       final Element properties = this.createPropertiesElement(partition);
 
-      this.createProperties(new PropertyAggregation(collection, f, value), properties);
+      final PropertyAggregation aggr = new PropertyAggregation(collection, f, value);
+      this.createProperties(aggr, properties);
+      this.createElements(aggr, partition);// TODO make this optional.
 
     }
 
@@ -183,9 +179,16 @@ public class ProfileGenerator {
     return partition.addElement("properties");
   }
 
-  private void createElements(final Element root, final String collection, final DBCursor cursor) {
-
-    final Element elements = root.addElement("elements");
+  private void createElements(final PropertyAggregation aggr, final Element partition) {
+    final Element elements = partition.addElement("elements");
+    
+    final BasicDBObject ref = new BasicDBObject("collection", aggr.collection);
+    ref.put("metadata." + aggr.filter.getId() + ".value", aggr.value);
+    
+    final BasicDBObject keys = new BasicDBObject("_id", null);
+    keys.put("uid", 1);
+    
+    final DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, ref, keys);
 
     while (cursor.hasNext()) {
       final DBObject element = cursor.next();
@@ -233,10 +236,7 @@ public class ProfileGenerator {
         query.put("metadata." + pa.filter.getId() + ".value", pa.value);
         query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
         
-        LOG.info(query.toString());
-
         final MapReduceOutput output = this.persistence.mapreduce(Constants.TBL_ELEMENTS, cmd);
-        // System.out.println(output);
         final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 
         Collections.sort(results, new Comparator<BasicDBObject>() {
