@@ -36,8 +36,8 @@ public class ProfileGenerator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProfileGenerator.class);
 
-  private static final String[] PROPERTIES = { "format", "format.version", "puid", "mimetype", "compressionscheme",
-      "creating.os" };
+  private static final String[] PROPERTIES = { "format", "format.version", "puid", "mimetype", "charset", "linebreak", "compressionscheme",
+      "creating.os", "byteorder", "compression.scheme", "colorspace", "icc.profile.name", "icc.profile.version" };
   // "creating.application.name"
 
   private PersistenceLayer persistence;
@@ -160,12 +160,13 @@ public class ProfileGenerator {
 
   private void createProperties(final PropertyAggregation pa, final Element properties) {
     final List<Property> allprops = this.getProperties(this.persistence.findAll(Constants.TBL_PROEPRTIES));
+    final BasicDBObject query = new BasicDBObject("_id", null);
+    
 
     for (Property p : allprops) {
-      if (!p.getKey().equals(pa.filter)) {
-        final BasicDBObject query = new BasicDBObject("_id", null);
+      if (!p.getKey().equals(pa.filter.getKey())) {
         final BasicDBObject ref = new BasicDBObject("collection", pa.collection);
-
+        
         ref.put("metadata." + pa.filter.getId() + ".value", pa.value);
         ref.put("metadata." + p.getId() + ".value", new BasicDBObject("$exists", true));
 
@@ -228,8 +229,11 @@ public class ProfileGenerator {
         final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.HISTOGRAM_REDUCE, null,
             OutputType.INLINE, query);
 
-        query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
         query.put("collection", pa.collection);
+        query.put("metadata." + pa.filter.getId() + ".value", pa.value);
+        query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
+        
+        LOG.info(query.toString());
 
         final MapReduceOutput output = this.persistence.mapreduce(Constants.TBL_ELEMENTS, cmd);
         // System.out.println(output);
