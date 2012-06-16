@@ -1,32 +1,22 @@
-@(collection: String, collections: List[String], selectform: Form[Application.Filter])
+@(coll: String, collections: List[String], selectform: Form[helpers.Filter], stats: helpers.Statistics)
 
-@import helper._
 
-@main("c3po") {
-
-@if(collection.equals("none")) {
-<h2>Please choose a collection</h2>
-} else {
-<h2>@collection</h2>    
-}
-
-<div id="selectcollection">
-@form(action = routes.Application.select, 'id -> "selectform") {
-    <span class="collection">
-        @select(
-            field = selectform("name"),
-            options = options(collections)
-            )
-                
-    </span>
-    <span class="filter">
-    </span>
-    
-    <p class="buttons">
-            <input type="submit">
-        <p>
-    }
-    
+@main("c3po", coll, collections, selectform) {
+<div class="navigation">
+my navigation
 </div>
+<div id="statistics">
+@if(stats == null) {
+
+} else {
+    count = @stats.getCount()<br />
+    size = @stats.getSize() <br />
+    min =  @stats.getMin() <br />
+    max =  @stats.getMax() <br />
+    avg =  @stats.getAvg() <br />
+    sd =  @stats.getSd() <br />
+    var =  @stats.getVar() <br />
     
+}
+</div>    
 }

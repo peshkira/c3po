@@ -1,11 +1,10 @@
 
 
-import com.petpet.c3po.utils.Configurator;
-
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
-import play.api.Play;
+
+import com.petpet.c3po.utils.Configurator;
 
 public class Global extends GlobalSettings {
   
