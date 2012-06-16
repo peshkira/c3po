@@ -1,6 +1,7 @@
 package com.petpet.c3po.dao;
 
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
 import com.mongodb.BasicDBObject;
@@ -101,6 +102,11 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   @Override
   public DBCursor find(String collection, DBObject ref, DBObject keys) {
     return this.db.getCollection(collection).find(ref, keys);
+  }
+  
+  @Override
+  public List distinct(String collection, String key) {
+    return this.db.getCollection(collection).distinct(key);
   }
 
   @Override

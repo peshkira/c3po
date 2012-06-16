@@ -1,7 +1,32 @@
-@(message: String)
+@(collection: String, collections: List[String], selectform: Form[Application.Filter])
 
-@main("Welcome to Play 2.0") {
+@import helper._
+
+@main("c3po") {
+
+@if(collection.equals("none")) {
+<h2>Please choose a collection</h2>
+} else {
+<h2>@collection</h2>    
+}
+
+<div id="selectcollection">
+@form(action = routes.Application.select, 'id -> "selectform") {
+    <span class="collection">
+        @select(
+            field = selectform("name"),
+            options = options(collections)
+            )
+                
+    </span>
+    <span class="filter">
+    </span>
     
-    @play20.welcome(message, style = "Java")
+    <p class="buttons">
+            <input type="submit">
+        <p>
+    }
+    
+</div>
     
 }

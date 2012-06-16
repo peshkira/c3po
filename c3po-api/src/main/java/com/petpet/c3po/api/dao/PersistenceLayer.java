@@ -1,5 +1,6 @@
 package com.petpet.c3po.api.dao;
 
+import java.util.List;
 import java.util.Map;
 
 import com.mongodb.DB;
@@ -34,6 +35,8 @@ public interface PersistenceLayer {
   DBCursor find(String collection, DBObject ref);
 
   DBCursor find(String collection, DBObject ref, DBObject keys);
+  
+  List distinct(String collection, String key);
 
   void insert(String collection, DBObject data);
 

@@ -9,7 +9,7 @@ import views.html.index;
 public class Profiles extends Controller {
   
   public static Result index() {
-    return ok(index.render("Generate A Profile"));
+    return TODO;
   }
   
   public static Result show(String id) {

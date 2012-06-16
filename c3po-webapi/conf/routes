@@ -4,6 +4,8 @@
 
 # Home page
 GET     /                           controllers.Application.index()
+GET     /collection                 controllers.Application.select()
+
 
 # Profile page
 GET     /c3po/profile/              controllers.Profiles.index()
