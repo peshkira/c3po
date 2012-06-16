@@ -27,6 +27,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Property;
@@ -282,25 +283,11 @@ public class ProfileGenerator {
   }
 
   private void processNumericProperty(final PropertyAggregation pa, final Element prop, final Property p) {
-    final String map = Constants.AGGREGATE_MAP.replaceAll("\\{1\\}", pa.filter.getId()).replaceAll("\\{2\\}", pa.value)
-        .replaceAll("\\{3\\}", p.getId());
-    final DBCollection elements = this.persistence.getDB().getCollection(Constants.TBL_ELEMENTS);
-    final BasicDBObject query = new BasicDBObject();
-    final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.AGGREGATE_REDUCE, null,
-        OutputType.INLINE, query);
-
-    cmd.setFinalize(Constants.AGGREGATE_FINALIZE);
-
-    query.put("metadata." + pa.filter.getId() + ".value", pa.value);
-    query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
-    query.put("collection", pa.collection);
-
-    final MapReduceOutput output = this.persistence.mapreduce(Constants.TBL_ELEMENTS, cmd);
-    // System.out.println(output);
+    final NumericAggregationJob job = new NumericAggregationJob(pa.collection, p, this.persistence, pa.filter.getId(), pa.value);
+    final MapReduceOutput output = job.execute();
 
     final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
     final BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
-    // System.out.println(aggregation);
 
     prop.addAttribute("count", removeTrailingZero(aggregation.getString("count")));
     prop.addAttribute("sum", removeTrailingZero(aggregation.getString("sum")));

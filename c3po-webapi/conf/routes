@@ -3,9 +3,9 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index()
-GET     /collection/:name                 controllers.Application.show(name: String, f = "none")
-GET     /collection/:name/filter/:f                controllers.Application.show(name: String, f: String)
+GET     /                                   controllers.Application.index()
+GET     /collection/:name                   controllers.Application.show(name: String, f = "none")
+GET     /collection/:name/filter/:f         controllers.Application.show(name: String, f: String)
     
 
 

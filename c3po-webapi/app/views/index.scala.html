@@ -1,13 +1,13 @@
-@(coll: String, collections: List[String], selectform: Form[helpers.Filter], stats: helpers.Statistics)
+@(coll: String, collections: List[String], stats: helpers.Statistics)
 
 
-@main("c3po", coll, collections, selectform) {
+@main("c3po", coll, collections) {
 <div class="navigation">
 my navigation
 </div>
 <div id="statistics">
 @if(stats == null) {
-
+    There are no objects matching this filter!
 } else {
     count = @stats.getCount()<br />
     size = @stats.getSize() <br />
