@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>c3po-core</artifactId>
+  <version>0.1.1</version>
   <packaging>jar</packaging>
   <name>C3PO Core</name>
 
@@ -101,5 +102,5 @@
       <version>0.1.0</version>
     </dependency>
   </dependencies>
-  <version>0.1.1</version>
+  
 </project>

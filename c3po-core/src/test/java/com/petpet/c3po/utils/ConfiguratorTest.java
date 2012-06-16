@@ -19,7 +19,7 @@ public class ConfiguratorTest {
   private static final int BUFFER_SIZE = 1024;
 
   @Test
-  public void shouldDefaultConfiguration() throws Exception {
+  public void shouldLoadDefaultConfiguration() throws Exception {
     this.backupRealUserConfigFile();
     
     final Configurator configurator = Configurator.getDefaultConfigurator();
