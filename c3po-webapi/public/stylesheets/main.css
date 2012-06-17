@@ -15,7 +15,7 @@
 html {margin:0;padding:0;border:0;}
 body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, dialog, figure, footer, header, hgroup, nav, section {margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline;}
 article, aside, details, figcaption, figure, dialog, footer, header, hgroup, menu, nav, section {display:block;}
-body {line-height:1.5;background:white;}
+body {line-height:1.5;background:white;background: url('../images/background.png')}
 table {border-collapse:separate;border-spacing:0;}
 caption, th, td {text-align:left;font-weight:normal;float:none !important;}
 table, th, td {vertical-align:middle;}
@@ -266,6 +266,23 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 .clearfix, .container {display:block;}
 .clear {clear:both;}
 
+.github {
+	position: absolute;
+	top: 0; 
+	right: 0; 
+	border: 0;
+	z-index:1
+}
+
+.github img {
+	float:right;
+	width:90%;
+}
+
+.header a {
+	color: #FFF;
+}
+
 .header h1{
 	margin-bottom:0px;
 	padding: 15px;
@@ -274,6 +291,7 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 }
 
 .selector{
+	position:relative;
 	width:100%;
 	background:#5E5E5E;
 	color: #3C3C3C;
@@ -294,7 +312,7 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 .selection {
   position:relative;
   float:right;
-  margin-top:10px;
+  margin-top:12px;
   margin-right:10px;
   padding: 2px;
   border: 1px solid #FFF000;
@@ -302,22 +320,22 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
   background: #FFFE6E;
   /* Old browsers */
 
-  background: -moz-linear-gradient(top, #9dd745 0%, #69af04 100%);
+  background: -moz-linear-gradient(top, #FDFF85 0%, #FFF000 100%);
   /* FF3.6+ */
 
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #FFFE6E), color-stop(100%, #FFF000));
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #FDFF85), color-stop(100%, #FFF000));
   /* Chrome,Safari4+ */
 
   background: -webkit-linear-gradient(top, #FDFF85 0%, #FFF000 100%);
   /* Chrome10+,Safari5.1+ */
 
-  background: -o-linear-gradient(top, #9dd745 0%, #69af04 100%);
+  background: -o-linear-gradient(top, #FDFF85 0%, #FFF000 100%);
   /* Opera 11.10+ */
 
-  background: -ms-linear-gradient(top, #9dd745 0%, #69af04 100%);
+  background: -ms-linear-gradient(top, #FDFF85 0%, #FFF000 100%);
   /* IE10+ */
 
-  background: linear-gradient(top, #FFFE6E 0%, #FFF000 100%);
+  background: linear-gradient(top, #FDFF85 0%, #FFF000 100%);
   /* W3C */
 
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FDFF85', endColorstr='#FFF000',GradientType=0 );
@@ -354,16 +372,30 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 
 .navigation{
 	position:relative;
-	margin-top:60px;
 	background: #8CCE00;/*#FFFE6E  */
-	height:40px;
-    
+	height:40px;   
 }
+
+.noselector{
+	margin-top:0px;
+}
+
+.content {
+	margin: 30px;
+	margin-top: 100px;
+	padding: 30px;
+	background-color: #FFF;
+	border-radius: 2px;
+	text-align:justify;
+	box-shadow: 0px 2px 5px #888;
+	
+}
+
 
 #statistics {
 	position:relative;
 	float:right;
 	border: 1px solid #000;
-	
-	
+	margin-right: 10px;
+	margin-top: 20px;
 }

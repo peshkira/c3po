@@ -3,9 +3,33 @@
 # ~~~~
 
 # Home page
-GET     /                                   controllers.Application.index()
-GET     /collection/:name                   controllers.Application.show(name: String, f = "none")
-GET     /collection/:name/filter/:f         controllers.Application.show(name: String, f: String)
+GET     /                                 controllers.Application.index()
+GET     /c3po                             controllers.Application.index()
+
+# Collection Overview
+GET     /overview                         controllers.Overview.index()
+GET     /overview/:name                   controllers.Overview.show(name: String, f = "none")
+#GET     /overview/:name/filter/:f         controllers.Overview.show(name: String, f: String)
+
+# Objects Page
+GET     /objects                                            controllers.Objects.index()
+GET     /objects/offset/:o                                  controllers.Objects.list(o: Integer)
+GET     /objects/collection/:name                           controllers.Objects.listObjectsInCollection(name: String, f = "none")
+#GET     /objects/collection/:name/filter/:f                 controllers.Objects.listObjectsInCollection(name: String, f: String)
+GET     /objects/collection/:name/offset/:o                 controllers.Objects.listObjectsInCollectionWithOffset(name: String, f = "none", o: Integer)
+#GET     /objects/collection/:name/filter/:f/offset/:o       controllers.Objects.listObjectsInCollectionWithOffset(name: String, f: String, o: Integer)
+GET     /objects/:id                                        controllers.Objects.show(id: String)
+
+# Samples Page
+GET     /samples                                controllers.Samples.index()
+GET     /samples/collection/:name               controllers.Samples.show(name: String, f = "none")
+GET     /samples/collection/:name/filter/:f     controllers.Samples.show(name: String, f: String)
+
+# Queries
+
+# Export Page
+GET     /export                                 controllers.Export.index()
+#GET    /export/matrix/collection/:name         controllers.Export.matrix(name: String)
     
 
 

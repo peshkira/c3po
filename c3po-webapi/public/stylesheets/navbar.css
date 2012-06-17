@@ -1,0 +1,30 @@
+/***** BEGIN Dark Menu Styles *****/
+
+.clear:after { content: "."; display: block; height: 0; clear: both; visibility: hidden;}
+html[xmlns] .clear { display: block;}
+* html .clear { height: 1%;}
+
+nav.green {background-color:#8CCE00;border-top: 1px solid #507D00; border-bottom: 1px solid #507D00; border-radius: 2px; display: block!important;}
+nav.green ul {margin: 0px; padding: 0px; border-left: 1px solid #507D00;border-right: 1px solid #507D00; }
+
+/* Top level */
+nav.green li {list-style: none; float: left; border-right: 1px solid #507D00; position: relative;}
+nav.green li.first, nav li.first a {border-top-left-radius: 2px; border-bottom-left-radius: 2px; -webkit-border-top-left-radius: 2px; -moz-border-bottom-left-radius: 2px; border-left: 1px solid #507D00;}
+nav.green li.lastnav, nav li.lastnav a {border-right: 1px solid #507D00; border-top-right-radius: 2px; border-bottom-right-radius: 2px; -webkit-border-top-right-radius: 2px; -moz-border-bottom-right-radius: 2px;}
+nav.green li.drop a {padding-right: 35px;}
+nav.green li a {display: block; padding: 10px 55px 10px; text-decoration: none; background-color:#8CCE00;  background-image: url(../images/menu/navigation-sprite-green.png);  background-repeat: repeat-x; font-size: 14px; color: #2A4600; border-top: 1px solid #80C900; border-left: 1px solid #A3FF00; text-shadow: 0px 1px 2px #9DF600;}
+nav.green li a {background-position: 0px 0px;}
+nav.green li a:hover, nav li.active a {background-position: 0px -36px;}
+nav.green li a:active {background-position: 0px -72px;}
+nav.green .dropdown {display: block; float: right; width: 7px; height: 5px; background: url(../images/menu/drop-down.png) no-repeat; margin: -23px 15px 0px 25px;}
+
+/* Drop down */
+nav.green li ul {opacity: 0; position: absolute; top: 50px; left: -10px; padding: 12px 10px; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; background: #222; display: none; z-index: 100;}
+nav.green li ul li {border-right: 0px; float: none!important; border-bottom: 1px solid #444; width: 125px;}
+nav.green li ul li:last-child { border-bottom: 0px;}
+nav.green li ul li a {background: none!important; border-left: 0px; border-top: 0px; padding: 10px 0px; font-size: 12px}
+nav.green li ul li a:hover {opacity: 0.5;}
+
+nav.green li ul li.arrow {background: url(../images/menu/arrowtop.png) top left no-repeat; border-bottom: 0px; height: 10px; margin-top: -22px; margin-bottom: 10px;}
+
+/***** END Dark Menu Styles *****/
