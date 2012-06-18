@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -13,6 +16,8 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Property;
 
 public class CSVGenerator {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(CSVGenerator.class);
 
   private PersistenceLayer persistence;
 
@@ -118,11 +123,8 @@ public class CSVGenerator {
         // then the properties
         for (Property p : props) {
           final BasicDBObject value = (BasicDBObject) metadata.get(p.getId());
-          if (value != null) {
-            Object v = value.get("value");
-            String val = (v == null) ? "" : replace(v.toString());
-            writer.append(val);
-          }
+          final String val = this.getValueFromMetaDataRecord(value);
+          writer.append(val);
           writer.append(", ");
         }
         writer.append("\n");
@@ -207,6 +209,16 @@ public class CSVGenerator {
     }
 
     return this.persistence.find(Constants.TBL_ELEMENTS, ref, query);
+  }
+  
+  private String getValueFromMetaDataRecord(final BasicDBObject value) {
+    String result = "";
+    if (value != null) {
+      final Object v = value.get("value");
+      result = (v == null) ? "CONFLICT" : replace(v.toString());
+    }
+    
+    return result;
   }
 
   /**
