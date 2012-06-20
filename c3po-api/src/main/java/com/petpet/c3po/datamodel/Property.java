@@ -1,7 +1,5 @@
 package com.petpet.c3po.datamodel;
 
-import java.util.UUID;
-
 import com.mongodb.BasicDBObject;
 
 /**

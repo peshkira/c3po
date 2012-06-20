@@ -38,6 +38,13 @@ public final class DataHelper {
     return TYPES.getProperty(key, "STRING");
   }
   
+  /**
+   * Parses the element from a db object returned by the db.
+   * 
+   * @param obj
+   *          the object to parse.
+   * @return the Element.
+   */
   public static Element parseElement(final DBObject obj, final PersistenceLayer pl) {
     String coll = (String) obj.get("collection");
     String uid = (String) obj.get("uid");

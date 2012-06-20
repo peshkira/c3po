@@ -37,7 +37,7 @@ public class Element {
   private static final String[] PATTERNS = { "yyyy:MM:dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "dd MMM yyyy HH:mm",
       "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
       "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss" };
-  
+
   private String id;
 
   /**
@@ -116,6 +116,14 @@ public class Element {
     this.metadata = metadata;
   }
 
+  public String getId() {
+    return id;
+  }
+  
+  public void setId(String id) {
+    this.id = id;
+  }
+  
   /**
    * Tries to parse a creation date out of the name of the current element. Some
    * sources include a timestamp in the name. The usage of this method can be
@@ -368,31 +376,5 @@ public class Element {
 
     return element;
   }
-  
-  public static Element parseElement(final DBObject obj) {
-    String coll = (String) obj.get("collection");
-    String uid = (String) obj.get("uid");
-    String name = (String) obj.get("name");
-    
-    Element e  = new Element(coll, uid, name);
-    e.setId(obj.get("_id").toString());
-    
-    DBObject meta = (BasicDBObject) obj.get("metadata");
-    for (String key : meta.keySet()) {
-      System.out.println(key);
-      
-      Object object = meta.get(key);
-      System.out.println(object);
-    }
-    
-    return e;
-  }
 
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
 }

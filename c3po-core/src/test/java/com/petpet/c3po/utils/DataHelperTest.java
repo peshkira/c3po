@@ -1,7 +1,5 @@
 package com.petpet.c3po.utils;
 
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 
 import junit.framework.Assert;
