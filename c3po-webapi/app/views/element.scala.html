@@ -1,0 +1,21 @@
+@(element: com.petpet.c3po.datamodel.Element)
+@import helper._
+
+@main("c3po") {
+ @if(element != null) {
+     
+     <div id="objects" class="content">     
+        <h2>@element.getName()</h2>
+        <p>
+            UID: @element.getUid()
+            Collection: @element.getCollection()  
+         </p>
+         <h3> Meta Data </h3>
+         <p>
+            @for(mr <- element.getMetadata()) {
+              @mr
+            }
+         </p>
+     </div>
+}
+}

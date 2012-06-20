@@ -1,4 +1,4 @@
-@(title: String, coll: String, collections: List[String])(content: Html)
+@(title: String)(content: Html)
 @import helper._
 
 <!DOCTYPE html>
@@ -29,13 +29,6 @@
               $('nav ul li ul').parent().append('<span class="dropdown"></span>').addClass('drop');
       
           });
-        </script>
-        <script type="text/javascript">
-           $(function(){     
-        	   $("select").change(function() {
-        		 document.location = $(this).val()
-               })
-           });
         </script>
     </head>
     <body>

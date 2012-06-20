@@ -27,6 +27,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.analysis.mapreduce.FilterValuesJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
@@ -133,18 +134,8 @@ public class ProfileGenerator {
 
   private Map<String, Long> getFilterValues(final String collection, final String filter) {
     final Map<String, Long> res = new HashMap<String, Long>();
-    final Property p = this.persistence.getCache().getProperty(filter);
-    final String map = Constants.HISTOGRAM_MAP.replaceAll("\\{\\}", p.getId());
-    final DBCollection elements = this.persistence.getDB().getCollection(Constants.TBL_ELEMENTS);
-    final BasicDBObject query = new BasicDBObject();
-    final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.HISTOGRAM_REDUCE, null,
-        OutputType.INLINE, query);
-
-    query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
-    query.put("collection", collection);
-
-    final MapReduceOutput output = this.persistence.mapreduce(Constants.TBL_ELEMENTS, cmd);
-
+    final FilterValuesJob job = new FilterValuesJob(collection, filter, this.persistence);
+    final MapReduceOutput output = job.execute();
     final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 
     for (final BasicDBObject dbo : results) {

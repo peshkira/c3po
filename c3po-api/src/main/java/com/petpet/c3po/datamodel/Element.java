@@ -377,6 +377,14 @@ public class Element {
     Element e  = new Element(coll, uid, name);
     e.setId(obj.get("_id").toString());
     
+    DBObject meta = (BasicDBObject) obj.get("metadata");
+    for (String key : meta.keySet()) {
+      System.out.println(key);
+      
+      Object object = meta.get(key);
+      System.out.println(object);
+    }
+    
     return e;
   }
 

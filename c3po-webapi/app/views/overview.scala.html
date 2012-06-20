@@ -1,38 +1,8 @@
 @(coll: String, collections: List[String], stats: helpers.Statistics)
 
 
-@main("c3po", coll, collections) {
-<div class = "selector">
-        <span class="selection">
-            <span>Filters</span>
-                <select>
-                    <option selected disabled>Select Basic Filter</option>
-                    <option value="/overview/@coll/filter/mimetype">mimetype</option>
-                    <option value="/overview/@coll/filter/format">format</option>
-                </select>
-            </span>
-         </span>
-        <span class="selection">
-            @if(coll == null) {
-                <span>Collections</span>
-            } else {
-                <span>@coll</span>
-            }
-            <select>
-                <option selected disabled>Select Collection</option>
-                 @for(name <- collections) {
-                    <option value="/overview/@name">@name</option>
-                 }
-            </select>
-        </span>
-    <div id="title">
-     @if(coll == null) {
-        <h2>Please choose a collection</h2>
-    } else {
-        <h2>@coll</h2>    
-    }
-    </div>
-</div>
+@main("c3po") {
+
 <div id="statistics">
 @if(stats == null) {
     There are no objects matching this filter!

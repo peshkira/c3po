@@ -9,16 +9,12 @@ GET     /c3po                             controllers.Application.index()
 # Collection Overview
 GET     /overview                         controllers.Overview.index()
 GET     /overview/:name                   controllers.Overview.show(name: String, f = "none")
-#GET     /overview/:name/filter/:f         controllers.Overview.show(name: String, f: String)
+#GET    /overview/:name/filter/:f         controllers.Overview.show(name: String, f: String)
 
-# Objects Page
-GET     /objects                                            controllers.Objects.index()
-GET     /objects/offset/:o                                  controllers.Objects.list(o: Integer)
-GET     /objects/collection/:name                           controllers.Objects.listObjectsInCollection(name: String, f = "none")
-#GET     /objects/collection/:name/filter/:f                 controllers.Objects.listObjectsInCollection(name: String, f: String)
-GET     /objects/collection/:name/offset/:o                 controllers.Objects.listObjectsInCollectionWithOffset(name: String, f = "none", o: Integer)
-#GET     /objects/collection/:name/filter/:f/offset/:o       controllers.Objects.listObjectsInCollectionWithOffset(name: String, f: String, o: Integer)
-GET     /objects/:id                                        controllers.Objects.show(id: String)
+# Elements Page
+GET     /objects                                            controllers.Elements.index()
+GET     /objects/list                                       controllers.Elements.list()
+GET     /objects/:id                                        controllers.Elements.show(id: String)
 
 # Samples Page
 GET     /samples                                controllers.Samples.index()
