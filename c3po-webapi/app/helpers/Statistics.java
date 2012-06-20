@@ -2,73 +2,73 @@ package helpers;
 
 public class Statistics {
   
-  private int count;
+  private String count;
   
-  private long size;
+  private String size;
   
-  private double avg;
+  private String avg;
   
-  private long min;
+  private String min;
   
-  private long max;
+  private String max;
   
-  private double sd;
+  private String sd;
   
-  private double var;
+  private String var;
 
   public String getCount() {
-    return count + " objects";
+    return count;
   }
 
-  public void setCount(int count) {
+  public void setCount(String count) {
     this.count = count;
   }
 
   public String getSize() {
-    return (size / 1024 / 1024) + "MB";
+    return size;
   }
 
-  public void setSize(long size) {
+  public void setSize(String size) {
     this.size = size;
   }
 
   public String getAvg() {
-    return (avg / 1024 / 1024) + "MB";
+    return avg;
   }
 
-  public void setAvg(double avg) {
+  public void setAvg(String avg) {
     this.avg = avg;
   }
 
   public String getMin() {
-    return min + "B";
+    return min;
   }
 
-  public void setMin(long min) {
+  public void setMin(String min) {
     this.min = min;
   }
 
   public String getMax() {
-    return (max / 1024 / 1024) + "MB";
+    return max;
   }
 
-  public void setMax(long max) {
+  public void setMax(String max) {
     this.max = max;
   }
 
   public String getSd() {
-    return sd + "B";
+    return sd;
   }
 
-  public void setSd(double sd) {
+  public void setSd(String sd) {
     this.sd = sd;
   }
 
   public String getVar() {
-    return var + "B";
+    return var;
   }
 
-  public void setVar(double var) {
+  public void setVar(String var) {
     this.var = var;
   }
 

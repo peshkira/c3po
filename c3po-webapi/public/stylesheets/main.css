@@ -431,7 +431,6 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 }
 
 .content {
-    position: relative ;
     margin: 75px;
     margin-top: 10px;
     padding: 30px;
@@ -450,11 +449,17 @@ li.selected_filter {
 } 
 
 #statistics {
-	position:relative;
-	float:right;
-	border: 1px solid #000;
+	border: 1px solid #888;
 	margin-right: 10px;
 	margin-top: 20px;
+	background-color: #FFF;
+	padding: 15px;
+	font-size: 14px;
+	border-radius: 5px;
+}
+
+#statistics h4 {
+	margin:0px;
 }
 
 .pagination_button {
@@ -505,5 +510,9 @@ li.selected_filter {
 
 .conflict {
 	color: #AA1B0D;
+}
+
+.dia {
+	height:300px;width:500px;
 }
 

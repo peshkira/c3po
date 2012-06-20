@@ -1,20 +1,148 @@
-@(coll: String, collections: List[String], stats: helpers.Statistics)
-
+@(collections: List[String], filterform: Form[helpers.Filter], filtervalues: List[String], stats: helpers.Statistics)
+@import helper._
 
 @main("c3po") {
+<script type="text/javascript">
+           $(function(){
+               //when some select is chosen, submit the form
+               $("select").click(function() {
+                   $('#filterform').submit();
+               });
 
-<div id="statistics">
-@if(stats == null) {
-    There are no objects matching this filter!
-} else {
-    count = @stats.getCount()<br />
-    size = @stats.getSize() <br />
-    min =  @stats.getMin() <br />
-    max =  @stats.getMax() <br />
-    avg =  @stats.getAvg() <br />
-    sd =  @stats.getSd() <br />
-    var =  @stats.getVar() <br />
+               // when some input radio is chosen 
+               // remove the class selected filter from all
+               // then add it to the chosen one. 
+               $("input").change(function(){
+                 $('input').each(function(){
+                        $(this).parent().removeClass("selected_filter");
+                     });
+                   
+                   $(this).parent().addClass("selected_filter");
+                   $('#filterform').submit();
+                });
+           });
+
+          
+</script>
+<div class="container">
+<div class = "span-24 selector last">
+ @form(action = routes.Overview.show, args = 'id -> "filterform") {
+ <div id="clear">
+            <a href="/objects"></a>
+        </div>
+<div class="selection ">
+      <ul>
+         <li>@select(
+         field = filterform("collection"),
+          options = options(collections),
+          args = '_label -> "Collections"
+         )</li>
+          <li>
+        @select(
+            field = filterform("filter"), 
+            options = options(
+                "none" -> "none",
+                "mimetype" -> "mimetype",
+                "format" -> "format"
+            ),
+            args = '_label -> "Filters",
+            '_id -> "sel_filter"
+        )</li>
+        </ul>
+        
+  </div>
     
-}
-</div>    
+   <div class="title">
+        <h2>Select filter options</h2>
+  </div>
+  
+    @if(filtervalues != null && !filtervalues.isEmpty()) {
+    <div class="filtervalues">
+        <ul>
+        @for(v <- filtervalues) {
+         <li>
+            <input type="radio" name="value" value="@v" id="@v"/>
+            <label for="@v">@v</label>
+         </li>
+        }  
+        </ul> 
+     </div>
+     }         
+     <input id="offset" type="hidden" name="offset" value="0">
+  }
+ 
+    </div>
+    </div>
+
+<div class="container">
+<script type="text/javascript">
+$(document).ready(function(){
+    // For horizontal bar charts, x an y values must will be "flipped"
+    // from their vertical bar counterpart.
+    var ticks = ['PDF', 'JPG', 'DOC', 'DOCX', 'Unknown'];
+    var plot2 = $.jqplot('formathistogramm', [
+        [[1,4], [2,764], [3,325], [4,1234], [5, 453], [6, 14]]], {
+    	series:[{color:'#639B00'}],
+        seriesDefaults: {
+            renderer:$.jqplot.BarRenderer,
+            // Show point labels to the right ('e'ast) of each bar.
+            // edgeTolerance of -15 allows labels flow outside the grid
+            // up to 15 pixels.  If they flow out more than that, they 
+            // will be hidden.
+            pointLabels: { show: true, location: 'n', edgeTolerance: -15 },
+            // Rotate the bar shadow as if bar is lit from top right.
+            shadowAngle: 70,
+            // Here's where we tell the chart it is oriented horizontally.
+            rendererOptions: {
+                barDirection: 'vertical'
+            }
+        },
+        axes: {
+            // Use a category axis on the x axis and use our custom ticks.
+            xaxis: {
+                renderer: $.jqplot.CategoryAxisRenderer,
+                ticks: ticks
+            },
+            // Pad the y axis just a little so bars can get close to, but
+            // not touch, the grid boundaries.  1.2 is the default padding.
+            yaxis: {
+                pad: 1.05,
+                tickOptions: {formatString: '%d'}
+            }
+        }
+    });
+});
+        </script>
+<div class="content span-24">
+    <div class="span-18">
+    <h1>
+        @if(filterform("collection").value() != null) {
+            Collection '@filterform("collection").value()' -
+        }
+     Figures and Diagrams</h1>
+     <div id="formathistogramm" class="dia"></div>
+     
+    </div>
+    
+     @if(stats != null) {
+        <div id="statistics" class="span-4 last">
+            <h4>Size Stats</h4><br/>
+            Count : @stats.getCount()<br />
+            Size : @stats.getSize() <br />
+            Min :  @stats.getMin() <br />
+            Max :  @stats.getMax() <br />
+            Average :  @stats.getAvg() <br />
+            SD :  @stats.getSd() <br />
+            Var :  @stats.getVar() <br />
+            
+         </div>
+          } else {
+          <div class="span-10 last">
+            Please select a collection
+          </div>
+          }
+     
+    </div>
+    
+</div>
 }

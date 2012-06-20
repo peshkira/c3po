@@ -8,8 +8,7 @@ GET     /c3po                             controllers.Application.index()
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()
-GET     /overview/:name                   controllers.Overview.show(name: String, f = "none")
-#GET    /overview/:name/filter/:f         controllers.Overview.show(name: String, f: String)
+GET     /overview/list                    controllers.Overview.show()
 
 # Elements Page
 GET     /objects                                            controllers.Elements.index()
