@@ -2,6 +2,8 @@ package com.petpet.c3po.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -10,12 +12,14 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
+import com.petpet.c3po.datamodel.Property;
 
 public final class DataHelper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DataHelperTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DataHelper.class);
 
   private static Properties TYPES;
 
@@ -41,13 +45,39 @@ public final class DataHelper {
     
     Element e  = new Element(coll, uid, name);
     e.setId(obj.get("_id").toString());
+    e.setMetadata(new ArrayList<MetadataRecord>());
     
     DBObject meta = (BasicDBObject) obj.get("metadata");
     for (String key : meta.keySet()) {
-      System.out.println(key);
       MetadataRecord rec = new MetadataRecord();
       DBObject prop = (DBObject) meta.get(key);
-//      rec.setProperty(pl.getCache().getProperty(key))
+      Property p = pl.getCache().getProperty(key);
+      rec.setProperty(p);
+      rec.setStatus(prop.get("status").toString());
+      
+      Object value = prop.get("value");
+      
+      if (value != null) {
+        rec.setValue(value.toString());
+      }
+      
+      List<String> values = (List<String>) prop.get("values");
+      if (values != null) {
+        rec.setValues(values);
+      }
+      
+      List<String> src = (List<String>) prop.get("sources");
+      if (src != null) {
+        List<String> sources = new ArrayList<String>();
+        for (String s : src) {
+          DBObject next = pl.find(Constants.TBL_SOURCES, new BasicDBObject("_id", s), new BasicDBObject()).next();
+          String source = (String) next.get("name") + " " + next.get("version");
+          sources.add(source);
+        }
+        rec.setSources(sources);
+      }
+      
+      e.getMetadata().add(rec);
     }
     
     return e;

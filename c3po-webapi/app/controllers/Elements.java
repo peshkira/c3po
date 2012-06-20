@@ -23,6 +23,7 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.DataHelper;
 
 public class Elements extends Controller {
 
@@ -96,7 +97,7 @@ public class Elements extends Controller {
       return notFound("One or more objects with this id exist");
     } else {
 
-      Element elmnt = Element.parseElement(cursor.next());
+      Element elmnt = DataHelper.parseElement(cursor.next(), pl);
 
       return ok(
        element.render(elmnt)
@@ -127,7 +128,7 @@ public class Elements extends Controller {
     Logger.info("Cursor has: " + cursor.count() + " objects");
 
     while (cursor.hasNext()) {
-      final Element e = Element.parseElement(cursor.next());
+      final Element e = DataHelper.parseElement(cursor.next(), pl);
 
       if (e.getName() == null) {
         e.setName("missing name");

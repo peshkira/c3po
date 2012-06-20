@@ -16,6 +16,7 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
 import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.datamodel.Source;
 
 public class DataHelperTest {
 
@@ -25,11 +26,15 @@ public class DataHelperTest {
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     
     final Property property = p.getCache().getProperty("mimetype");
+    Source source = p.getCache().getSource("Jhove", "1.5");
+    Source source2 = p.getCache().getSource("ffident", "0.2");
     final Element e = new Element("test_collection", "uid1", "name1");
     e.setId("some id");
     final MetadataRecord mr = new MetadataRecord(property, "application/pdf");
     mr.setStatus(MetadataRecord.Status.OK.name());
+    mr.setSources(Arrays.asList(source.getId(), source2.getId()));
     e.setMetadata(Arrays.asList(mr));
+    
 
     p.insert(Constants.TBL_ELEMENTS, e.getDocument());
     
@@ -44,6 +49,8 @@ public class DataHelperTest {
     
     Assert.assertEquals(e.getCollection(), parsed.getCollection());
     Assert.assertEquals(1, e.getMetadata().size());
+    
     Assert.assertEquals(e.getMetadata().get(0).getProperty().getKey(), parsed.getMetadata().get(0).getProperty().getKey());
+    Assert.assertEquals(source.getName()+" " +source.getVersion(), parsed.getMetadata().get(0).getSources().get(0));
   }
 }

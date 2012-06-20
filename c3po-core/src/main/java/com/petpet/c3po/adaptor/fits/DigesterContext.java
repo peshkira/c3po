@@ -97,7 +97,7 @@ public class DigesterContext {
   }
 
   public void createFormatVersion(String value, String status, String toolname, String version) {
-    final Property pf = this.getProperty("format.version");
+    final Property pf = this.getProperty("format_version");
     final Source s = this.cache.getSource(toolname, version);
     final MetadataRecord fmtv = new MetadataRecord();
 

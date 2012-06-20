@@ -70,7 +70,7 @@ public class Property {
    *          the name of the property.
    */
   public Property(String key, String name) {
-    this.id = UUID.randomUUID().toString();
+    this.id = key;
     this.setKey(key);
     this.setName(name);
     this.setType(PropertyType.STRING.name());

@@ -495,3 +495,15 @@ li.selected_filter {
 	margin-right:80%;
 }
 
+.element_general {
+ font-size:14px;	
+}
+
+.element_data {
+	color: #528300;
+}
+
+.conflict {
+	color: #AA1B0D;
+}
+

@@ -6,16 +6,31 @@
      
      <div id="objects" class="content">     
         <h2>@element.getName()</h2>
+        <div class="element_general">
         <p>
-            UID: @element.getUid()
+            UID: @element.getUid()<br />
             Collection: @element.getCollection()  
          </p>
+         </div>
+         <div class ="element_data">
          <h3> Meta Data </h3>
-         <p>
+         <ul>
             @for(mr <- element.getMetadata()) {
-              @mr
+              @if(mr.getValue() == null) {
+                <li class="conflict">
+                @mr.getProperty().getKey() :
+                
+                @for((value, i) <- mr.getValues().zipWithIndex) {                
+                    @value  [@mr.getSources().get(i)],
+                }
+                </li>
+                
+              } else {
+                <li>@mr.getProperty().getKey() : @mr.getValue() </li>
+              }
             }
-         </p>
+          </ul>
+         </div>
      </div>
 }
 }

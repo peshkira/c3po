@@ -50,6 +50,11 @@ public class MetadataRecord {
    * The actual measured value.
    */
   private String value;
+  
+  /**
+   * A list for the conflicting values;
+   */
+  private List<String> values;
 
   /**
    * The status of the value.
@@ -128,5 +133,13 @@ public class MetadataRecord {
 
   public void setSources(List<String> sources) {
     this.sources = sources;
+  }
+
+  public List<String> getValues() {
+    return values;
+  }
+
+  public void setValues(List<String> values) {
+    this.values = values;
   }
 }
