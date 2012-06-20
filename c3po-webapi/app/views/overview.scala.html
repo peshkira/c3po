@@ -1,4 +1,4 @@
-@(collections: List[String], filterform: Form[helpers.Filter], filtervalues: List[String], stats: helpers.Statistics)
+@(collections: List[String], filterform: Form[helpers.Filter], graphs: helpers.GraphData, stats: helpers.Statistics)
 @import helper._
 
 @main("c3po") {
@@ -28,7 +28,7 @@
 <div class = "span-24 selector last">
  @form(action = routes.Overview.show, args = 'id -> "filterform") {
  <div id="clear">
-            <a href="/objects"></a>
+            <a href="/overview"></a>
         </div>
 <div class="selection ">
       <ul>
@@ -56,10 +56,10 @@
         <h2>Select filter options</h2>
   </div>
   
-    @if(filtervalues != null && !filtervalues.isEmpty()) {
+    @if(filterform.get().getValues() != null) {
     <div class="filtervalues">
         <ul>
-        @for(v <- filtervalues) {
+        @for(v <- filterform.get().getValues()) {
          <li>
             <input type="radio" name="value" value="@v" id="@v"/>
             <label for="@v">@v</label>
@@ -75,44 +75,129 @@
     </div>
 
 <div class="container">
+ @if(filterform.get() != null && !filterform.get().getValues().isEmpty()) {
+<script type = "text/javascript">
+       $(function() {
+           function url_query( query ) {
+                query = query.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+                var expr = "[\\?&]"+query+"=([^&#]*)";
+                var regex = new RegExp( expr );
+                var results = regex.exec( window.location.href );
+                if( results !== null ) {
+                    return results[1];
+                    return decodeURIComponent(results[1].replace(/\+/g, " "));
+                } else {
+                    return 0;
+                }
+            }
+             
+            // Example usage - http://www.kevinleary.net/?load=yes
+         var offset = url_query('offset');
+         $('#offset').val(offset);
+         $('input[id="@filterform.get().getValue()"]').prop('checked', true);
+         $('input[id="@filterform.get().getValue()"]').parent().addClass("selected_filter");
+       });
+</script>
+}
+
+@if(graphs != null) {
 <script type="text/javascript">
 $(document).ready(function(){
     // For horizontal bar charts, x an y values must will be "flipped"
     // from their vertical bar counterpart.
-    var ticks = ['PDF', 'JPG', 'DOC', 'DOCX', 'Unknown'];
-    var plot2 = $.jqplot('formathistogramm', [
-        [[1,4], [2,764], [3,325], [4,1234], [5, 453], [6, 14]]], {
-    	series:[{color:'#639B00'}],
-        seriesDefaults: {
-            renderer:$.jqplot.BarRenderer,
-            // Show point labels to the right ('e'ast) of each bar.
-            // edgeTolerance of -15 allows labels flow outside the grid
-            // up to 15 pixels.  If they flow out more than that, they 
-            // will be hidden.
-            pointLabels: { show: true, location: 'n', edgeTolerance: -15 },
-            // Rotate the bar shadow as if bar is lit from top right.
-            shadowAngle: 70,
-            // Here's where we tell the chart it is oriented horizontally.
-            rendererOptions: {
-                barDirection: 'vertical'
+    
+        @for(g <- graphs.getGraphs()) {
+            @if(g.getProperty().equals("mimetype")) {
+            	var mimes = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                    ['@k', @g.getValues().get(i)],
+                  }
+                ]
+            } 
+
+            @if(g.getProperty().equals("format")) {
+            	var formats = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                    ['@k', @g.getValues().get(i)],
+                  }
+                ]
             }
-        },
-        axes: {
-            // Use a category axis on the x axis and use our custom ticks.
-            xaxis: {
-                renderer: $.jqplot.CategoryAxisRenderer,
-                ticks: ticks
-            },
-            // Pad the y axis just a little so bars can get close to, but
-            // not touch, the grid boundaries.  1.2 is the default padding.
-            yaxis: {
-                pad: 1.05,
-                tickOptions: {formatString: '%d'}
+
+            @if(g.getProperty().equals("format_version")) {
+                var fv = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                    ['@k', @g.getValues().get(i)],
+                  }
+                ]
             }
-        }
-    });
+
+            @if(g.getProperty().equals("valid")) {
+                var valid = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                    ['@k', @g.getValues().get(i)],
+                  }
+                ]
+            }
+
+            @if(g.getProperty().equals("wellformed")) {
+                var wellformed = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                    ['@k', @g.getValues().get(i)],
+                  }
+                ]
+            }
+         }
+    ;
+
+    function getOptions(ttl) {
+    	var options = {
+                title: ttl,
+                seriesDefaults: {
+                    renderer:$.jqplot.BarRenderer,
+                    // Show point labels to the right ('e'ast) of each bar.
+                    // edgeTolerance of -15 allows labels flow outside the grid
+                    // up to 15 pixels.  If they flow out more than that, they 
+                    // will be hidden.
+                    pointLabels: { show: true, location: 'n', edgeTolerance: -15 },
+                    // Rotate the bar shadow as if bar is lit from top right.
+                    shadowAngle: 70,
+                    // Here's where we tell the chart it is oriented horizontally.
+                    rendererOptions: {
+                        barDirection: 'vertical',
+                        barWidth: '25',
+                    },
+                    color: '#639B00'
+                },
+                axesDefaults: {
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
+                    tickOptions: {
+                      angle: -30,
+                      fontSize: '10pt'
+                    }
+                },
+                axes: {
+                    // Use a category axis on the x axis and use our custom ticks.
+                    xaxis: {
+                        renderer: $.jqplot.CategoryAxisRenderer,
+                    },
+                    // Pad the y axis just a little so bars can get close to, but
+                    // not touch, the grid boundaries.  1.2 is the default padding.
+                    yaxis: {
+                        pad: 1.05,
+                        tickOptions: {formatString: '%d'}
+                    }
+                },
+                sortData: true
+            };
+
+        return options;
+    };
+    
+    var plot1 = $.jqplot('mimetypehistogramm', [mimes], getOptions("Mime Types"));
+    var plot2 = $.jqplot('formathistogramm', [formats], getOptions("Formats"));
+    var plot3 = $.jqplot('versionshistogramm', [fv], getOptions("Format Versions"));
+    var plot4 = $.jqplot('validhistogramm', [valid], getOptions("Valid"));
+    var plot5 = $.jqplot('wellformedhistogramm', [wellformed], getOptions("Well Formed"));
 });
-        </script>
+
+
+</script>
+}   
 <div class="content span-24">
     <div class="span-18">
     <h1>
@@ -120,7 +205,11 @@ $(document).ready(function(){
             Collection '@filterform("collection").value()' -
         }
      Figures and Diagrams</h1>
+     <div id="mimetypehistogramm" class="dia"></div>
      <div id="formathistogramm" class="dia"></div>
+     <div id="versionshistogramm" class="dia"></div>
+     <div id="validhistogramm" class="dia"></div>
+     <div id="wellformedhistogramm" class="dia"></div>
      
     </div>
     

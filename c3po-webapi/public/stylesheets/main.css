@@ -513,6 +513,8 @@ li.selected_filter {
 }
 
 .dia {
-	height:300px;width:500px;
+	margin-left: 10px;
+	height:500px;
+	width:600px;
 }
 

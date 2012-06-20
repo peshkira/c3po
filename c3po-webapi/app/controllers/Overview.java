@@ -1,9 +1,13 @@
 package controllers;
 
 import helpers.Filter;
+import helpers.Graph;
+import helpers.GraphData;
 import helpers.Statistics;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import play.Logger;
@@ -14,6 +18,7 @@ import views.html.overview;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.analysis.mapreduce.FilterValuesJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Property;
@@ -23,9 +28,11 @@ public class Overview extends Controller {
 
   public static Result index() {
     final List<String> names = Application.getCollectionNames();
+    final Form<Filter> form = form(Filter.class).bindFromRequest();
+    final Filter data = form.get();
     return ok(
     // overview.render(null, names, null)
-    overview.render(names, form(Filter.class), null, null));
+    overview.render(names, form, null, null));
   }
 
   public static Result show() {
@@ -34,13 +41,44 @@ public class Overview extends Controller {
     Logger.info("Called Show with name " + data.getCollection() + " and filter " + data.getFilter());
     List<String> collections = Application.getCollectionNames();
 
-    Statistics stats = getCollectionStatistics(data.getCollection(), data.getFilter(), "application/pdf"); // TODO
-                                                                                                           // change
-                                                                                                           // this
-                                                                                                           // to
-                                                                                                           // be
-                                                                                                           // dynamic...
-    return ok(overview.render(collections, form, null, stats));
+    final Graph mimes = getGraph(data, "mimetype");
+    final Graph formats = getGraph(data, "format");
+    final Graph fv = getGraph(data, "format_version");
+    final Graph valid = getGraph(data, "valid");
+    final Graph wellformed = getGraph(data, "wellformed");
+    
+    
+    final GraphData graphs = new GraphData(Arrays.asList(mimes, formats, fv, valid, wellformed));
+    
+    if (data.getFilter().equals("mimetype")) {
+      data.setValues(mimes.getKeys());
+    } else if (data.getFilter().equals("format")) {
+      data.setValues(formats.getKeys());
+    }
+    form.fill(data);
+    Statistics stats = getCollectionStatistics(data.getCollection(), data.getFilter(), data.getValue());
+    return ok(overview.render(collections, form, graphs, stats));
+  }
+
+  private static Graph getGraph(Filter data, String property) {
+    final List<String> keys = new ArrayList<String>();
+    final List<String> values = new ArrayList<String>();
+    final Graph result = new Graph(property, keys, values);
+
+    if (data != null && data.getFilter() != null) {
+      final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+      FilterValuesJob job = null;
+      job = new FilterValuesJob(data.getCollection(), property, p);
+
+      final MapReduceOutput output = job.execute();
+      final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
+
+      for (final BasicDBObject dbo : jobresults) {
+        keys.add((dbo.getString("_id")));
+        values.add(dbo.getString("value"));
+      }
+    }
+    return result;
   }
 
   private static Statistics getCollectionStatistics(String name, String filter, String value) {
