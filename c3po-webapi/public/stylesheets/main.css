@@ -106,8 +106,8 @@ form.inline p {margin-bottom:0;}
 html, body {height: 100%;} /* because of footer */
 
 /* grid.css */
-.container {width:100%;margin:0 auto;padding-bottom: 20px;}
-.showgrid {background:url(src/grid.png);}
+.container {width:950px;margin:0 auto;padding-bottom: 20px;}
+.showgrid {background:url(../images/grid.png);}
 .column, .span-1, .span-2, .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-9, .span-10, .span-11, .span-12, .span-13, .span-14, .span-15, .span-16, .span-17, .span-18, .span-19, .span-20, .span-21, .span-22, .span-23, .span-24 {float:left;margin-right:10px;}
 .last {margin-right:0;}
 .span-1 {width:30px;}
@@ -275,8 +275,12 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 }
 
 .github img {
-	float:right;
-	width:90%;
+}
+
+.header {
+	white-space:nowrap;
+	margin-top:0px;
+	width:100%;
 }
 
 .header a {
@@ -289,6 +293,43 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
     background: #8CCE00;
     color: #FFF;
 }
+
+.navbar img{
+	width: 22px;
+	padding-top:0px;
+    margin-left: 15px;
+    margin-right: 15px;
+    /* border: 1px solid #888; */
+    border-radius: 2px;
+}
+
+#collections {
+    background: url('../images/black_linen.png');
+    height:100px;
+    border-bottom: 4px solid black;
+    display:none;
+    color: white;
+    padding:10px;
+}
+
+#collections h2{
+	color: white;
+}
+
+#partitions {
+    background: url('../images/black_linen.png');
+    height:100px;
+    border-bottom: 4px solid black;
+    display:none;
+}
+
+#filter {
+    background: url('../images/black_linen.png');
+    height:100px;
+    border-bottom: 4px solid black;
+    display:none;
+}
+
 
 .selector {
 	width:100%;
@@ -394,11 +435,6 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
     
 }
 
-.navigation{
-	position:relative;
-	background: #8CCE00;/*#FFFE6E  */
-	height:40px;   
-}
 
 .noselector{
 	margin-top:0px;
@@ -431,8 +467,8 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 }
 
 .content {
-    margin: 75px;
-    margin-top: 10px;
+    margin: 50px;
+    margin-top: 100px;
     padding: 30px;
     background-color: #FFF;
     border-radius: 3px;
@@ -483,13 +519,17 @@ li.selected_filter {
     padding:5px 13px;
     text-decoration:none;
     text-shadow:1px 1px 0px #aade7c;
-}.pagination_button:hover {
+}
+
+.pagination_button:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #5cb811), color-stop(1, #77d42a) );
     background:-moz-linear-gradient( center top, #5cb811 5%, #77d42a 100% );
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#5cb811', endColorstr='#77d42a');
     background-color:#5cb811;
     color:#306108;
-}.pagination_button:active {
+}
+
+.pagination_button:active {
     position:relative;
     top:1px;
     color:#306108;

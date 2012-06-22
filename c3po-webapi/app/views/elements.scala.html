@@ -1,7 +1,7 @@
 @(collections: List[String], filterform: Form[helpers.Filter], filtervalues: List[String], elements: List[com.petpet.c3po.datamodel.Element])
 @import helper._
 
-@main("c3po") {
+@main("c3po", collections) {
 <script type="text/javascript">
            $(function(){
                //when some select is chosen, submit the form

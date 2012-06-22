@@ -5,6 +5,7 @@
 # Home page
 GET     /                                 controllers.Application.index()
 GET     /c3po                             controllers.Application.index()
+POST    /collection                       controllers.Application.setCollection(name: String)
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()

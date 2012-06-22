@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String, collections: List[String])(content: Html)
 @import helper._
 
 <!DOCTYPE html>
@@ -9,8 +9,8 @@
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/navbar.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.jqplot.min.css")" />
         <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.jqplot.min.css")" />
         <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/excanvas.js")"></script><![endif]-->
         <script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.barRenderer.min.js")"></script>
@@ -35,26 +35,89 @@
               $('nav ul li:first-child').addClass('first');
               $('nav ul li:last-child').addClass('lastnav');
               $('nav ul li ul').parent().append('<span class="dropdown"></span>').addClass('drop');
+
+              var visible = false;
+              $('#collections_btn').click(function(event) {
+                  visible = $("#collections").is(":visible");
+                  if (visible == true) {
+                     $('#collections').slideUp("fast");
+                  } else {
+                	  $('#collections').slideDown("normal");
+                  }
+
+              });
+
+              $('#partitions_btn').click(function(event) {
+                  visible = $("#partitions").is(":visible");
+                  if (visible == true) {
+                     $('#partitions').slideUp("fast");
+                  } else {
+                      $('#partitions').slideDown("normal");
+                  }
+
+              });
+
+              $('#filter_btn').click(function(event) {
+                  visible = $("#filter").is(":visible");
+                  if (visible == true) {
+                     $('#filter').slideUp("fast");
+                  } else {
+                      $('#filter').slideDown("normal");
+                  }
+
+              });
+
+              $("#collections select").click(function() {
+            	  var collection = $(this).val();
+            	  $.ajax ({
+            		    type:     'POST',
+            		    url:      '/collection?name='+collection,
+            		    timeout:  5000,
+            		    success:  function (oData) {
+            		        // Process ...
+            		        $('#ajax_collection').text(collection);
+            		    }
+            		});
+                  
+              });
       
           });
         </script>
+        <script type="text/javascript">
+          
+         
+        </script>
     </head>
     <body>
-        <div class = "header">
-            <h1><a href="/c3po">C3PO - Clever, Crafty Content Profiling of Objects</a></h1>
-        </div>
-        <div class="navigation navbar">
-          <nav class="green">
-              <ul class="clear">
-                  <li><a href="/overview">Overview</a></li>
-                  <li><a href="/objects">Objects</a></li>
-                  <li><a href="/samples">Representatives</a></li>
-                  <li><a href="/queries">Queries</a></li>
-                  <li><a href="/export">Export</a></li>
-                  <li><a href="#">About</a></li>
-              </ul>
-          </nav>
-        </div>
-        @content
+          <div class = "header">
+              <h1><a href="/c3po">C3PO - Clever, Crafty Content Profiling of Objects</a></h1>
+          </div>
+          <div class="navbar">
+            <nav class="green">
+                <ul class="clear">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="/overview">Overview</a></li>
+                    <li><a href="/objects">Objects</a></li>
+                    <li><a href="/samples">Representatives</a></li>
+                    <li><a href="/export">Export</a></li>
+                    <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" /></li>
+                    <li><img id="partitions_btn" src="@routes.Assets.at("images/filters/graph.png")" /></li>
+                    <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" /></li>
+                </ul>
+            </nav>
+          </div>
+          <div id="collections">
+            <h2>Current collection: <span id="ajax_collection">@session.get("current.collection")</span></h2>
+            <select>
+                @for(c <- collections) {
+                    <option value="@c">@c</option>
+                }
+            </select>
+          </div>
+          <div id="partitions"></div>
+          <div id="filter"></div>
+        <div class="container">
+          @content
+       </div>
     </body>
 </html>
