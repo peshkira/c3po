@@ -2,10 +2,12 @@ package controllers;
 
 import helpers.Filter;
 import helpers.Graph;
+import helpers.GraphData;
 import helpers.Statistics;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import play.mvc.Controller;
@@ -14,11 +16,12 @@ import views.html.overview;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.FilterValuesJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
+import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
@@ -29,10 +32,16 @@ public class Overview extends Controller {
     final List<String> names = Application.getCollectionNames();
     String collection = session().get("current.collection");
     Statistics stats = null;
+    GraphData data = null;
     if (collection != null) {
       stats = getCollectionStatistics(collection);
+      final Graph mimes = getGraph(collection, "mimetype");
+      final Graph formats = getGraph(collection, "format");
+      final Graph valid = getGraph(collection, "valid");
+      final Graph wf = getGraph(collection, "wellformed");
+      data = new GraphData(Arrays.asList(mimes, formats, valid, wf));
     }
-    return ok(overview.render(names, null, stats));
+    return ok(overview.render(names, data, stats));
   }
 
   public static Result show() {
@@ -64,6 +73,34 @@ public class Overview extends Controller {
     return ok();
   }
 
+  private static Graph getGraph(String collection, String property) {
+    final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+    final List<String> keys = new ArrayList<String>();
+    final List<String> values = new ArrayList<String>();
+    final Graph result = new Graph(property, keys, values);
+
+    DBCollection dbc = p.getDB().getCollection("histogram_" + collection + "_" + property);
+
+    if (dbc == null) {
+      final HistogrammJob job = new HistogrammJob(collection, property);
+      final MapReduceOutput output = job.execute();
+      final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
+
+      for (final BasicDBObject dbo : jobresults) {
+        keys.add((dbo.getString("_id")));
+        values.add(dbo.getString("value"));
+      }
+    } else {
+      DBCursor cursor = dbc.find();
+      while (cursor.hasNext()) {
+        BasicDBObject dbo = (BasicDBObject) cursor.next();
+        keys.add(dbo.getString("_id"));
+        values.add(dbo.getString("value"));
+      }
+    }
+    return result;
+  }
+
   private static Graph getGraph(Filter data, String property) {
     final List<String> keys = new ArrayList<String>();
     final List<String> values = new ArrayList<String>();
@@ -71,8 +108,8 @@ public class Overview extends Controller {
 
     if (data != null && data.getFilter() != null) {
       final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-      FilterValuesJob job = null;
-      job = new FilterValuesJob(data.getCollection(), property, p);
+      HistogrammJob job = null;
+      job = new HistogrammJob(data.getCollection(), property);
 
       final MapReduceOutput output = job.execute();
       final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");

@@ -88,13 +88,6 @@ $(document).ready(function(){
                 ]
             }
 
-            @if(g.getProperty().equals("format_version")) {
-                var fv = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', @g.getValues().get(i)],
-                  }
-                ]
-            }
-
             @if(g.getProperty().equals("valid")) {
                 var valid = [  @for((k, i) <- g.getKeys().zipWithIndex){
                     ['@k', @g.getValues().get(i)],
@@ -126,7 +119,7 @@ $(document).ready(function(){
                     // Here's where we tell the chart it is oriented horizontally.
                     rendererOptions: {
                         barDirection: 'vertical',
-                        barWidth: '25',
+                        barWidth: '20',
                     },
                     color: '#639B00'
                 },
@@ -157,9 +150,8 @@ $(document).ready(function(){
     
     var plot1 = $.jqplot('mimetypehistogramm', [mimes], getOptions("Mime Types"));
     var plot2 = $.jqplot('formathistogramm', [formats], getOptions("Formats"));
-    var plot3 = $.jqplot('versionshistogramm', [fv], getOptions("Format Versions"));
-    var plot4 = $.jqplot('validhistogramm', [valid], getOptions("Valid"));
-    var plot5 = $.jqplot('wellformedhistogramm', [wellformed], getOptions("Well Formed"));
+    var plot3 = $.jqplot('validhistogramm', [valid], getOptions("Valid"));
+    var plot4 = $.jqplot('wellformedhistogramm', [wellformed], getOptions("Well Formed"));
 });
 
 
@@ -169,11 +161,13 @@ $(document).ready(function(){
 <div class="content span-24">
     <div class="span-17 ">
         <h1>Collection '@session.get("current.collection")' - Overview</h1>
+        
+        @if(graphs != null) {
         <div id="mimetypehistogramm" class="dia"></div>
         <div id="formathistogramm" class="dia"></div>
-        <div id="versionshistogramm" class="dia"></div>
         <div id="validhistogramm" class="dia"></div>
         <div id="wellformedhistogramm" class="dia"></div>
+        }
    </div>
     @if(stats != null) {
         <div id="statistics" class="span-5 last">

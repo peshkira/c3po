@@ -27,7 +27,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.FilterValuesJob;
+import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
@@ -134,7 +134,7 @@ public class ProfileGenerator {
 
   private Map<String, Long> getFilterValues(final String collection, final String filter) {
     final Map<String, Long> res = new HashMap<String, Long>();
-    final FilterValuesJob job = new FilterValuesJob(collection, filter, this.persistence);
+    final HistogrammJob job = new HistogrammJob(collection, filter);
     final MapReduceOutput output = job.execute();
     final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 

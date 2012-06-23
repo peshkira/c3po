@@ -17,7 +17,7 @@ import views.html.element;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.FilterValuesJob;
+import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
@@ -65,10 +65,10 @@ public class Elements extends Controller {
 
     if (data != null && data.getFilter() != null) {
       final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-      FilterValuesJob job = null;
+      HistogrammJob job = null;
 
       if (!data.getFilter().equals("none")) {
-        job = new FilterValuesJob(data.getCollection(), data.getFilter(), p);
+        job = new HistogrammJob(data.getCollection(), data.getFilter());
 
         final MapReduceOutput output = job.execute();
         final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
