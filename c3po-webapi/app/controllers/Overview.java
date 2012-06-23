@@ -67,6 +67,9 @@ public class Overview extends Controller {
       final int value = Integer.parseInt(form.get("value"));
 
       final Graph graph = getGraph(collection, filter);
+      if (filter.equals("valid") || filter.equals("wellformed")) {
+        graph.convertToPercentage();
+      }
       graph.sort();
 
       final String filtervalue = graph.getKeys().get(value);

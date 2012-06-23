@@ -26,6 +26,7 @@ public class Application extends Controller {
   
   public static Result setCollection(String c) {
     System.out.println("Received collection setup change for " + c);
+    session().clear();
     session().put("current.collection", c);
     return ok("The collection was changed successfully");
   }

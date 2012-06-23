@@ -564,3 +564,16 @@ li.selected_filter {
 	width:450px;
 }
 
+#spinner {
+	background:#333;
+	width:75px;
+	height:75px;
+	opacity:0;
+	border-radius:5px;
+	bottom: 10px;
+    right: 10px;
+    position: fixed;
+    vertical-align: middle;
+    text-align: center;
+}
+

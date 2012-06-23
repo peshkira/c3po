@@ -5,6 +5,7 @@
 <div id="overview">
 <script type="text/javascript">
           $(document).ready(function(){
+              
                var visible = false;
                $('#collections_btn').click(function(event) {
                    visible = $("#collections").is(":visible");
@@ -43,13 +44,17 @@
                          url:      '/collection?name='+collection,
                          timeout:  5000,
                          success:  function (oData) {
-                             // Process ...
+                        	 startSpinner();
                              $('#ajax_collection').text(collection);
-                             window.location.reload(true);
+                             setTimeout(function() {
+                               window.location = '/overview'
+                             }, 500);
                          }
                      });
                });
            });
+          
+          $(window).unload( function () { $('#spinner').css("opacity","1"); } );
 </script>
 <script type = "text/javascript">
        $(function() {
@@ -167,25 +172,37 @@ $(document).ready(function(){
     var plot2 = $.jqplot('formathistogram', [formats], getBarChart("Formats"));
     var plot3 = $.jqplot('validhistogram', [valid], getPieChart("Valid"));
     var plot4 = $.jqplot('wellformedhistogram', [wellformed], getPieChart("Well Formed"));
-
+    
     $('#mimetypehistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
-            window.location = '/overview/filter?filter=mimetype&value='+pointIndex;
+            startSpinner();
+    	    setTimeout(function() {
+    	        window.location = '/overview/filter?filter=mimetype&value='+pointIndex;
+    	    }, 500);
     });
 
     $('#formathistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
-            window.location = '/overview/filter?filter=format&value='+pointIndex;
+            startSpinner();
+    	    setTimeout(function() {
+                window.location = '/overview/filter?filter=format&value='+pointIndex;
+            }, 500);
     });
 
     $('#validhistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
-            window.location = '/overview/filter?filter=valid&value='+pointIndex;
+    	     startSpinner();
+             setTimeout(function() {
+                    window.location = '/overview/filter?filter=valid&value='+pointIndex;
+                }, 500);
     });
 
     $('#wellformedhistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
-            window.location = '/overview/filter?filter=wellformed&value='+pointIndex;
+    	        startSpinner();
+            	setTimeout(function() {
+                    window.location = '/overview/filter?filter=wellformed&value='+pointIndex;
+                }, 500);
     });
     
 });
@@ -195,14 +212,17 @@ $(document).ready(function(){
    
 }
 <div class="content span-24">
-    <div class="span-17 ">
-        <h1>Collection '@session.get("current.collection")' - Overview</h1>
-        
+    <div class="span-16">
+        <div class="span-12">
+            <h1>Collection '@session.get("current.collection")' - Overview</h1>
+        </div>
         @if(graphs != null) {
+        <div class="span-16">
         <div id="mimetypehistogram" class="dia"></div><span id="info"></span>
         <div id="formathistogram" class="dia"></div>
         <div id="validhistogram" class="dia"></div>
         <div id="wellformedhistogram" class="dia"></div>
+        </div>
         }
    </div>
     @if(stats != null) {
