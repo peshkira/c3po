@@ -1,6 +1,5 @@
 package com.petpet.c3po.dao;
 
-import static org.junit.Assert.*;
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -19,7 +18,7 @@ public class MapReduceTest {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     Property size = pl.getCache().getProperty("size");
     
-    NumericAggregationJob job = new NumericAggregationJob("test1", size, pl);
+    NumericAggregationJob job = new NumericAggregationJob("test1", size);
     MapReduceOutput output = job.execute();
     
     System.out.println(output);

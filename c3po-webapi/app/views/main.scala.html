@@ -36,56 +36,8 @@
               $('nav ul li:last-child').addClass('lastnav');
               $('nav ul li ul').parent().append('<span class="dropdown"></span>').addClass('drop');
 
-              var visible = false;
-              $('#collections_btn').click(function(event) {
-                  visible = $("#collections").is(":visible");
-                  if (visible == true) {
-                     $('#collections').slideUp("fast");
-                  } else {
-                	  $('#collections').slideDown("normal");
-                  }
-
-              });
-
-              $('#partitions_btn').click(function(event) {
-                  visible = $("#partitions").is(":visible");
-                  if (visible == true) {
-                     $('#partitions').slideUp("fast");
-                  } else {
-                      $('#partitions').slideDown("normal");
-                  }
-
-              });
-
-              $('#filter_btn').click(function(event) {
-                  visible = $("#filter").is(":visible");
-                  if (visible == true) {
-                     $('#filter').slideUp("fast");
-                  } else {
-                      $('#filter').slideDown("normal");
-                  }
-
-              });
-
-              $("#collections select").click(function() {
-            	  var collection = $(this).val();
-            	  $.ajax ({
-            		    type:     'POST',
-            		    url:      '/collection?name='+collection,
-            		    timeout:  5000,
-            		    success:  function (oData) {
-            		        // Process ...
-            		        $('#ajax_collection').text(collection);
-            		    }
-            		});
-                  
-              });
       
           });
-        </script>
-        <script type="text/javascript">
-          
-         
         </script>
     </head>
     <body>
@@ -108,6 +60,7 @@
           </div>
           <div id="collections">
             <h2>Current collection: <span id="ajax_collection">@session.get("current.collection")</span></h2>
+            Other collections: 
             <select>
                 @for(c <- collections) {
                     <option value="@c">@c</option>

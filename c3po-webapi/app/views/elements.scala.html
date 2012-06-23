@@ -1,108 +1,98 @@
-@(collections: List[String], filterform: Form[helpers.Filter], filtervalues: List[String], elements: List[com.petpet.c3po.datamodel.Element])
+@(collections: List[String], elements: List[com.petpet.c3po.datamodel.Element])
 @import helper._
-
 @main("c3po", collections) {
 <script type="text/javascript">
-           $(function(){
-               //when some select is chosen, submit the form
-               $("select").click(function() {
-            	   $('#filterform').submit();
+          $(document).ready(function(){
+               var visible = false;
+               $('#collections_btn').click(function(event) {
+                   visible = $("#collections").is(":visible");
+                   if (visible == true) {
+                      $('#collections').slideUp("fast");
+                   } else {
+                       $('#collections').slideDown("normal");
+                   }
+
                });
 
-               // when some input radio is chosen 
-               // remove the class selected filter from all
-               // then add it to the chosen one. 
-               $("input").change(function(){
-                 $('input').each(function(){
-                	    $(this).parent().removeClass("selected_filter");
-                     });
-                   
-                   $(this).parent().addClass("selected_filter");
-                   $('#filterform').submit();
-                });
-           });
+               $('#partitions_btn').click(function(event) {
+                   visible = $("#partitions").is(":visible");
+                   if (visible == true) {
+                      $('#partitions').slideUp("fast");
+                   } else {
+                       $('#partitions').slideDown("normal");
+                   }
 
-          
+               });
+
+               $('#filter_btn').click(function(event) {
+                   visible = $("#filter").is(":visible");
+                   if (visible == true) {
+                      $('#filter').slideUp("fast");
+                   } else {
+                       $('#filter').slideDown("normal");
+                   }
+
+               });
+
+               $("#collections select").click(function() {
+                   var collection = $(this).val();
+                   $.ajax ({
+                         type:     'POST',
+                         url:      '/collection?name='+collection,
+                         timeout:  5000,
+                         success:  function (oData) {
+                             // Process ...
+                             $.ajax ({
+                                 type:     'GET',
+                                 url:      '/objects',
+                                 timeout:  5000,
+                                 success:  function (oData) {
+                                     // Process ...
+                                     $('#ajax_collection').text(collection);
+                                     $('#objects').replaceWith($(oData).find('#objects'));
+                                 }
+                             });
+                         }
+                     });
+               });
+           });
 </script>
-<div class="container">
-<div class = "span-24 selector last">
- @form(action = routes.Elements.list, args = 'id -> "filterform") {
- <div id="clear">
-            <a href="/objects"></a>
-        </div>
-<div class="selection ">
-      <ul>
-         <li>@select(
-         field = filterform("collection"),
-          options = options(collections),
-          args = '_label -> "Collections"
-         )</li>
-          <li>
-        @select(
-            field = filterform("filter"), 
-            options = options(
-                "none" -> "none",
-                "mimetype" -> "mimetype",
-                "format" -> "format"
-            ),
-            args = '_label -> "Filters",
-            '_id -> "sel_filter"
-        )</li>
-        </ul>
-        
-  </div>
-    
-   <div class="title">
-        <h2>Select filter options</h2>
-  </div>
-  
-    @if(filtervalues != null && !filtervalues.isEmpty()) {
-    <div class="filtervalues">
-        <ul>
-        @for(v <- filtervalues) {
-         <li>
-            <input type="radio" name="value" value="@v" id="@v"/>
-            <label for="@v">@v</label>
-         </li>
-        }  
-        </ul> 
-     </div>
-     }         
-     <input id="offset" type="hidden" name="offset" value="0">
-  }
- 
-    </div>
-    </div>
+<script type="text/javascript">
+
+       $(function(){
+
+           function url_query( query, dflt ) {
+               query = query.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+               var expr = "[\\?&]"+query+"=([^&#]*)";
+               var regex = new RegExp( expr );
+               var results = regex.exec( window.location.href );
+               if( results !== null ) {
+                   return results[1];
+                   return decodeURIComponent(results[1].replace(/\+/g, " "));
+               } else {
+                   return dflt;
+               }
+           }
+            
+            var c_offset = url_query("offset", 0);
+            var c_batch = url_query("batch", 25);
+           
+            $('#prev').click(function() {
+                var diff = parseInt(c_offset) - c_batch;
+                var offset = (diff > 0) ? diff : 0;
+                window.location.search = 'offset='+offset;
+            });   
+
+            $('#next').click(function(){
+                window.location.search = 'offset='+ (parseInt(c_offset) + parseInt(c_batch));
+              });   
+       });
+</script>  
   
   @if(elements != null) {
-     <script type = "text/javascript">
-       $(function() {
-    	   function url_query( query ) {
-    		    query = query.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-    		    var expr = "[\\?&]"+query+"=([^&#]*)";
-    		    var regex = new RegExp( expr );
-    		    var results = regex.exec( window.location.href );
-    		    if( results !== null ) {
-    		        return results[1];
-    		        return decodeURIComponent(results[1].replace(/\+/g, " "));
-    		    } else {
-    		        return 0;
-    		    }
-    		}
-    		 
-    		// Example usage - http://www.kevinleary.net/?load=yes
-    	 var offset = url_query('offset');
-    	 $('#offset').val(offset);
-         $('input[id="@filterform.get().getValue()"]').prop('checked', true);
-         $('input[id="@filterform.get().getValue()"]').parent().addClass("selected_filter");
-       });
-     </script>
      <div id="objects" class="content">     
      <h2>Objects</h2>
-     Filtered by<br/> 
-     Collection: @filterform.get().getCollection() <br/>
-     Filter: @filterform.get().getFilter() <br/>
-     Value: @filterform.get().getValue() <br /><br/>
+    
      
      
        @if(elements.isEmpty()) {
@@ -115,43 +105,15 @@
        }
        
        <div id="prev">
-        @if((filterform.get().getOffset() - filterform.get().getBatch()) > 0) {
-            <a id="no_prev" class="pagination_button">Prev</a>
-        } else {
             <a id="prev" class="pagination_button">Prev</a>
-        }
         </div>
         <div id="next">
             <a id="next" class="pagination_button">Next</a>
-           
         </div>
-        
-               <script type="text/javascript">
-       $(function(){
-            $('#no_prev').click(function(){
-              $('#offset').val('0');
-            });
-
-            $('#prev').click(function() {
-                var current = $('#offset').val();
-                var diff = parseInt(current) - 25;
-                var offset = (diff > 0) ? diff : 0;
-                $('#offset').val(offset);
-                window.location = window.location + 'value=@filterform.get().getValue()';
-                $('#filterform').submit();
-            });   
-
-            $('#next').click(function(){
-                var offset = $('#offset').val();
-                $('#offset').val(parseInt(offset) + 25);
-                @if(filterform.get().getValue() != null) {
-                    window.location = window.location + 'value=@filterform.get().getValue()';
-                }
-                $('#filterform').submit();
-              });   
-       });
-       </script>          
-          
-       } 
      </div>
+   } else {
+    <div id="objects" class="content">     
+     <h2>Please select a collection</h2>
+     </div>
+   } 
 }

@@ -28,30 +28,28 @@ import com.petpet.c3po.utils.DataHelper;
 public class Elements extends Controller {
 
   public static Result index() {
-    final List<String> names = Application.getCollectionNames();
-    
-    return ok(elements.render(names, form(Filter.class), null, null));
+    return list();
 
   }
 
   public static Result list() {
-    final Form<Filter> form = form(Filter.class).bindFromRequest();
-    final Filter data = form.get();
+    String collection = session().get("current.collection");
 
-    if (form.hasErrors()) {
-      // return some error;
-      return TODO;
+    int batch = getQueryParameter("batch", 25);
+    int offset = getQueryParameter("offset", 0);
 
-    } else {
-      // if everything is selected.
-      Logger.debug("Form was complete: " + data.getCollection() + " " + data.getFilter() + " " + data.getValue() + " "
-          + data.getValues().isEmpty());
-      final List<String> values = getFilterValues(data);
-      data.setValues(values);
-      form.fill(data);
-      return listElements(form);
+    return listElements(collection, batch, offset);
 
+  }
+
+  private static int getQueryParameter(String parameter, int dflt) {
+    String[] strings = request().queryString().get(parameter);
+    if (strings == null || strings.length == 0) {
+      return dflt;
     }
+
+    return Integer.parseInt(strings[0]);
+
   }
 
   /**
@@ -99,31 +97,24 @@ public class Elements extends Controller {
 
       Element elmnt = DataHelper.parseElement(cursor.next(), pl);
 
-      return ok(
-       element.render(elmnt)
-      );
+      return ok(element.render(names, elmnt));
     }
 
   }
 
-  public static Result listElements(Form<Filter> form) {
-    final Filter data = form.get();
-    final List<Element> result = new ArrayList<Element>();
+  public static Result listElements(String collection, int batch, int offset) {
     final List<String> names = Application.getCollectionNames();
-    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    final Property f = pl.getCache().getProperty(data.getFilter());
 
-    Logger.info("List objects in collection: " + data.getCollection() + " with offset: " + data.getOffset());
-
-    final BasicDBObject query = new BasicDBObject();
-    query.put("collection", data.getCollection());
-
-    if (!data.getFilter().equals("none")) {
-      query.put("metadata." + f.getId() + ".value", data.getValue());
+    if (collection == null) {
+      return ok(elements.render(names, null));
     }
 
-    final DBCursor cursor = pl.getDB().getCollection(Constants.TBL_ELEMENTS).find(query).skip(data.getOffset())
-        .limit(data.getBatch());
+    final List<Element> result = new ArrayList<Element>();
+    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
+    final BasicDBObject query = new BasicDBObject();
+    query.put("collection", collection);
+
+    final DBCursor cursor = pl.getDB().getCollection(Constants.TBL_ELEMENTS).find(query).skip(offset).limit(batch);
 
     Logger.info("Cursor has: " + cursor.count() + " objects");
 
@@ -137,8 +128,42 @@ public class Elements extends Controller {
       result.add(e);
     }
 
-    Logger.info("Values are empty: " + data.getValues().isEmpty());
-    return ok(elements.render(names, form, data.getValues(), result));
-
+    return ok(elements.render(names, result));
   }
+
+//  public static Result listElements(Form<Filter> form) {
+//    final Filter data = form.get();
+//    final List<Element> result = new ArrayList<Element>();
+//    final List<String> names = Application.getCollectionNames();
+//    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
+//    final Property f = pl.getCache().getProperty(data.getFilter());
+//
+//    Logger.info("List objects in collection: " + data.getCollection() + " with offset: " + data.getOffset());
+//
+//    final BasicDBObject query = new BasicDBObject();
+//    query.put("collection", data.getCollection());
+//
+//    if (!data.getFilter().equals("none")) {
+//      query.put("metadata." + f.getId() + ".value", data.getValue());
+//    }
+//
+//    final DBCursor cursor = pl.getDB().getCollection(Constants.TBL_ELEMENTS).find(query).skip(data.getOffset())
+//        .limit(data.getBatch());
+//
+//    Logger.info("Cursor has: " + cursor.count() + " objects");
+//
+//    while (cursor.hasNext()) {
+//      final Element e = DataHelper.parseElement(cursor.next(), pl);
+//
+//      if (e.getName() == null) {
+//        e.setName("missing name");
+//      }
+//
+//      result.add(e);
+//    }
+//
+//    Logger.info("Values are empty: " + data.getValues().isEmpty());
+//    return ok(elements.render(names, form, data.getValues(), result));
+//
+//  }
 }

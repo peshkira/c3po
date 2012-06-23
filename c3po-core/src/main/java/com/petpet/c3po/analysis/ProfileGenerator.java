@@ -274,7 +274,7 @@ public class ProfileGenerator {
   }
 
   private void processNumericProperty(final PropertyAggregation pa, final Element prop, final Property p) {
-    final NumericAggregationJob job = new NumericAggregationJob(pa.collection, p, this.persistence, pa.filter.getId(), pa.value);
+    final NumericAggregationJob job = new NumericAggregationJob(pa.collection, p, pa.filter.getId(), pa.value);
     final MapReduceOutput output = job.execute();
 
     final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");

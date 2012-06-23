@@ -1,81 +1,56 @@
-@(collections: List[String], filterform: Form[helpers.Filter], graphs: helpers.GraphData, stats: helpers.Statistics)
+@(collections: List[String], graphs: helpers.GraphData, stats: helpers.Statistics)
 @import helper._
 
 @main("c3po", collections) {
+<div class="container">
 <script type="text/javascript">
-           $(function(){
-               //when some select is chosen, submit the form
-               $("select").click(function() {
-                   $('#filterform').submit();
+          $(document).ready(function(){
+               var visible = false;
+               $('#collections_btn').click(function(event) {
+                   visible = $("#collections").is(":visible");
+                   if (visible == true) {
+                      $('#collections').slideUp("fast");
+                   } else {
+                       $('#collections').slideDown("normal");
+                   }
+
                });
 
-               // when some input radio is chosen 
-               // remove the class selected filter from all
-               // then add it to the chosen one. 
-               $("input").change(function(){
-                 $('input').each(function(){
-                        $(this).parent().removeClass("selected_filter");
+               $('#partitions_btn').click(function(event) {
+                   visible = $("#partitions").is(":visible");
+                   if (visible == true) {
+                      $('#partitions').slideUp("fast");
+                   } else {
+                       $('#partitions').slideDown("normal");
+                   }
+
+               });
+
+               $('#filter_btn').click(function(event) {
+                   visible = $("#filter").is(":visible");
+                   if (visible == true) {
+                      $('#filter').slideUp("fast");
+                   } else {
+                       $('#filter').slideDown("normal");
+                   }
+
+               });
+
+               $("#collections select").click(function() {
+                   var collection = $(this).val();
+                   $.ajax ({
+                         type:     'POST',
+                         url:      '/collection?name='+collection,
+                         timeout:  5000,
+                         success:  function (oData) {
+                             // Process ...
+                             $('#ajax_collection').text(collection);
+                             window.location.reload(true);
+                         }
                      });
-                   
-                   $(this).parent().addClass("selected_filter");
-                   $('#filterform').submit();
-                });
+               });
            });
-
-          
 </script>
-<div class="container">
-<div class = "span-24 selector last">
- @form(action = routes.Overview.show, args = 'id -> "filterform") {
- <div id="clear">
-            <a href="/overview"></a>
-        </div>
-<div class="selection ">
-      <ul>
-         <li>@select(
-         field = filterform("collection"),
-          options = options(collections),
-          args = '_label -> "Collections"
-         )</li>
-          <li>
-        @select(
-            field = filterform("filter"), 
-            options = options(
-                "none" -> "none",
-                "mimetype" -> "mimetype",
-                "format" -> "format"
-            ),
-            args = '_label -> "Filters",
-            '_id -> "sel_filter"
-        )</li>
-        </ul>
-        
-  </div>
-    
-   <div class="title">
-        <h2>Select filter options</h2>
-  </div>
-  
-    @if(filterform.get().getValues() != null) {
-    <div class="filtervalues">
-        <ul>
-        @for(v <- filterform.get().getValues()) {
-         <li>
-            <input type="radio" name="value" value="@v" id="@v"/>
-            <label for="@v">@v</label>
-         </li>
-        }  
-        </ul> 
-     </div>
-     }         
-     <input id="offset" type="hidden" name="offset" value="0">
-  }
- 
-    </div>
-    </div>
-
-<div class="container">
- @if(filterform.get() != null && !filterform.get().getValues().isEmpty()) {
 <script type = "text/javascript">
        $(function() {
            function url_query( query ) {
@@ -90,16 +65,8 @@
                     return 0;
                 }
             }
-             
-            // Example usage - http://www.kevinleary.net/?load=yes
-         var offset = url_query('offset');
-         $('#offset').val(offset);
-         $('input[id="@filterform.get().getValue()"]').prop('checked', true);
-         $('input[id="@filterform.get().getValue()"]').parent().addClass("selected_filter");
        });
 </script>
-}
-
 @if(graphs != null) {
 <script type="text/javascript">
 $(document).ready(function(){
@@ -108,14 +75,14 @@ $(document).ready(function(){
     
         @for(g <- graphs.getGraphs()) {
             @if(g.getProperty().equals("mimetype")) {
-            	var mimes = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                var mimes = [  @for((k, i) <- g.getKeys().zipWithIndex){
                     ['@k', @g.getValues().get(i)],
                   }
                 ]
             } 
 
             @if(g.getProperty().equals("format")) {
-            	var formats = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                var formats = [  @for((k, i) <- g.getKeys().zipWithIndex){
                     ['@k', @g.getValues().get(i)],
                   }
                 ]
@@ -145,7 +112,7 @@ $(document).ready(function(){
     ;
 
     function getOptions(ttl) {
-    	var options = {
+        var options = {
                 title: ttl,
                 seriesDefaults: {
                     renderer:$.jqplot.BarRenderer,
@@ -197,24 +164,19 @@ $(document).ready(function(){
 
 
 </script>
-}   
+   
+}
 <div class="content span-24">
-    <div class="span-18">
-    <h1>
-        @if(filterform("collection").value() != null) {
-            Collection '@filterform("collection").value()' -
-        }
-     Figures and Diagrams</h1>
-     <div id="mimetypehistogramm" class="dia"></div>
-     <div id="formathistogramm" class="dia"></div>
-     <div id="versionshistogramm" class="dia"></div>
-     <div id="validhistogramm" class="dia"></div>
-     <div id="wellformedhistogramm" class="dia"></div>
-     
-    </div>
-    
-     @if(stats != null) {
-        <div id="statistics" class="span-4 last">
+    <div class="span-17 ">
+        <h1>Collection '@session.get("current.collection")' - Overview</h1>
+        <div id="mimetypehistogramm" class="dia"></div>
+        <div id="formathistogramm" class="dia"></div>
+        <div id="versionshistogramm" class="dia"></div>
+        <div id="validhistogramm" class="dia"></div>
+        <div id="wellformedhistogramm" class="dia"></div>
+   </div>
+    @if(stats != null) {
+        <div id="statistics" class="span-5 last">
             <h4>Size Stats</h4><br/>
             Count : @stats.getCount()<br />
             Size : @stats.getSize() <br />
@@ -225,13 +187,9 @@ $(document).ready(function(){
             Var :  @stats.getVar() <br />
             
          </div>
-          } else {
-          <div class="span-10 last">
-            Please select a collection
-          </div>
           }
-     
-    </div>
+</div>
     
 </div>
 }
+

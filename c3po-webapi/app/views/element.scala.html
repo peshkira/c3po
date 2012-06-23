@@ -1,7 +1,7 @@
-@(element: com.petpet.c3po.datamodel.Element)
+@(collections: List[String], element: com.petpet.c3po.datamodel.Element)
 @import helper._
 
-@main("c3po", null) {
+@main("c3po", collections) {
  @if(element != null) {
      
      <div id="objects" class="content">     

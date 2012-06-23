@@ -33,4 +33,9 @@ public class Application extends Controller {
     return collections;
 
   }
+  
+  public static Result clearSession() {
+    session().clear();
+    return index();
+  }
 }

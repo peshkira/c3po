@@ -6,6 +6,7 @@
 GET     /                                 controllers.Application.index()
 GET     /c3po                             controllers.Application.index()
 POST    /collection                       controllers.Application.setCollection(name: String)
+GET     /clear                            controllers.Application.clearSession()
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()
@@ -13,26 +14,26 @@ GET     /overview/list                    controllers.Overview.show()
 
 # Elements Page
 GET     /objects                                            controllers.Elements.index()
-GET     /objects/list                                       controllers.Elements.list()
+#GET     /objects/list                                       controllers.Elements.list()
 GET     /objects/:id                                        controllers.Elements.show(id: String)
 
 # Samples Page
 GET     /samples                                controllers.Samples.index()
-GET     /samples/collection/:name               controllers.Samples.show(name: String, f = "none")
-GET     /samples/collection/:name/filter/:f     controllers.Samples.show(name: String, f: String)
+#GET     /samples/collection/:name               controllers.Samples.show(name: String, f = "none")
+#GET     /samples/collection/:name/filter/:f     controllers.Samples.show(name: String, f: String)
 
 # Queries
 
 # Export Page
-GET     /export                                 controllers.Export.index()
+#GET     /export                                 controllers.Export.index()
 #GET    /export/matrix/collection/:name         controllers.Export.matrix(name: String)
     
 
 
 # Profile page
-GET     /c3po/profile/              controllers.Profiles.index()
-GET     /c3po/profile/:id           controllers.Profiles.show(id: String)
-POST    /c3po/profile/:name         controllers.Profiles.submit(name: String)
+#GET     /c3po/profile/              controllers.Profiles.index()
+#GET     /c3po/profile/:id           controllers.Profiles.show(id: String)
+#POST    /c3po/profile/:name         controllers.Profiles.submit(name: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
