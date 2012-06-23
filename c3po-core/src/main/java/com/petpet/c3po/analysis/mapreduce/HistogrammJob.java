@@ -25,7 +25,7 @@ public class HistogrammJob extends MapReduceJob {
     final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.HISTOGRAM_REDUCE, this.getOutputCollection(),
         this.getType(), query);
 
-    query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
+//    query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
     query.put("collection", this.getC3poCollection());
     
     return this.getPersistence().mapreduce(Constants.TBL_ELEMENTS, cmd);

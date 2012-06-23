@@ -90,7 +90,7 @@ $(document).ready(function(){
 
             @if(g.getProperty().equals("valid")) {
                 var valid = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', @g.getValues().get(i)],
+                    ['@k', (@g.getValues().get(i))],
                   }
                 ]
             }
@@ -104,7 +104,7 @@ $(document).ready(function(){
          }
     ;
 
-    function getOptions(ttl) {
+    function getBarChart(ttl) {
         var options = {
                 title: ttl,
                 seriesDefaults: {
@@ -119,7 +119,7 @@ $(document).ready(function(){
                     // Here's where we tell the chart it is oriented horizontally.
                     rendererOptions: {
                         barDirection: 'vertical',
-                        barWidth: '20',
+                        barWidth: '15',
                     },
                     color: '#639B00'
                 },
@@ -147,11 +147,26 @@ $(document).ready(function(){
 
         return options;
     };
+
+    function getPieChart(ttl) {
+        var options = {
+                title: ttl,
+                seriesDefaults: {
+                    renderer:$.jqplot.PieRenderer,
+                    rendererOptions: {
+                        showDataLabels: true
+                    }
+                },
+                legend: { show: true, location: 'e' }
+            };
+
+        return options;
+    };
     
-    var plot1 = $.jqplot('mimetypehistogramm', [mimes], getOptions("Mime Types"));
-    var plot2 = $.jqplot('formathistogramm', [formats], getOptions("Formats"));
-    var plot3 = $.jqplot('validhistogramm', [valid], getOptions("Valid"));
-    var plot4 = $.jqplot('wellformedhistogramm', [wellformed], getOptions("Well Formed"));
+    var plot1 = $.jqplot('mimetypehistogramm', [mimes], getBarChart("Mime Types"));
+    var plot2 = $.jqplot('formathistogramm', [formats], getBarChart("Formats"));
+    var plot3 = $.jqplot('validhistogramm', [valid], getPieChart("Valid"));
+    var plot4 = $.jqplot('wellformedhistogramm', [wellformed], getPieChart("Well Formed"));
 });
 
 

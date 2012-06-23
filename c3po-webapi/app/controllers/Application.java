@@ -3,16 +3,18 @@ package controllers;
 import java.util.Collections;
 import java.util.List;
 
-import com.avaje.ebean.validation.AssertFalse;
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.utils.Configurator;
-
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.index;
 
+import com.mongodb.DBCollection;
+import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.utils.Configurator;
+
 public class Application extends Controller {
+  
+  public static final String[] PROPS = { "mimetype", "format", "valid", "wellformed" };
 
   public static Result index() {
     return ok(
@@ -34,8 +36,20 @@ public class Application extends Controller {
 
   }
   
-  public static Result clearSession() {
+  public static Result clear() {
     session().clear();
+
+    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
+    final List<String> names = controllers.Application.getCollectionNames();
+    for (String name : names) {
+      DBCollection c = pl.getDB().getCollection("statistics_" + name);
+      c.drop();
+      for (String p : PROPS) {
+        c = pl.getDB().getCollection("histogram_" + name + "_" + p);
+        c.drop();
+      }
+    }
+    
     return index();
   }
 }

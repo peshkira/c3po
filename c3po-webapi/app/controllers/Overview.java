@@ -36,9 +36,15 @@ public class Overview extends Controller {
     if (collection != null) {
       stats = getCollectionStatistics(collection);
       final Graph mimes = getGraph(collection, "mimetype");
+      mimes.sort();
       final Graph formats = getGraph(collection, "format");
+      formats.sort();
       final Graph valid = getGraph(collection, "valid");
+      valid.convertToPercentage();
+      valid.sort();
       final Graph wf = getGraph(collection, "wellformed");
+      wf.convertToPercentage();
+      wf.sort();
       data = new GraphData(Arrays.asList(mimes, formats, valid, wf));
     }
     return ok(overview.render(names, data, stats));

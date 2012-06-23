@@ -6,7 +6,7 @@
 GET     /                                 controllers.Application.index()
 GET     /c3po                             controllers.Application.index()
 POST    /collection                       controllers.Application.setCollection(name: String)
-GET     /clear                            controllers.Application.clearSession()
+GET     /clear                            controllers.Application.clear()
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()

@@ -86,7 +86,7 @@ public final class Constants {
    * values). Note that there is a '{}' wildcard that has to be replaced with
    * the id of the desired property, prior to usage.
    */
-  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);}}";
+  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'] != null && this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);} else {emit('Unknown', 1)}}";
 
   /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.

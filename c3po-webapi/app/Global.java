@@ -6,15 +6,13 @@ import play.Logger;
 
 import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand.OutputType;
-import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
+import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
 
 public class Global extends GlobalSettings {
-
-  final String[] props = { "mimetype", "format", "valid", "wellformed" };
 
   @Override
   public void onStart(Application app) {
@@ -32,18 +30,6 @@ public class Global extends GlobalSettings {
   public void onStop(Application app) {
     Logger.info("Stopping c3po web app");
     super.onStop(app);
-
-    // final PersistenceLayer pl =
-    // Configurator.getDefaultConfigurator().getPersistence();
-    // final List<String> names = controllers.Application.getCollectionNames();
-    // for (String name : names) {
-    // DBCollection c = pl.getDB().getCollection("statistics_" + name);
-    // c.drop();
-    // for (String p : props) {
-    // c = pl.getDB().getCollection("histogram_" + name + "_" + p);
-    // c.drop();
-    // }
-    // }
   }
 
   private void calculateCollectionStatistics() {
@@ -73,7 +59,7 @@ public class Global extends GlobalSettings {
     final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
 
     for (String name : names) {
-      for (String p : props) {
+      for (String p : controllers.Application.PROPS) {
         final String cName = "histogram_" + name + "_" + p;
         final DBCollection c = pl.getDB().getCollection(cName);
 
