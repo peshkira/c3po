@@ -133,13 +133,13 @@ public class Filter {
       filter.put("parent", parent.getDocument());
     }
     
-    if (matching != null) {
-      filter.put("matching", matching.getDocument());
-    }
-    
-    if (nonmatching != null) {
-      filter.put("nonmatching", nonmatching.getDocument());
-    }
+//    if (matching != null) {
+//      filter.put("matching", matching.getDocument());
+//    }
+//    
+//    if (nonmatching != null) {
+//      filter.put("nonmatching", nonmatching.getDocument());
+//    }
     
     return filter;
   }

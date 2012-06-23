@@ -51,4 +51,5 @@ public class DataHelperTest {
     Assert.assertEquals(e.getMetadata().get(0).getProperty().getKey(), parsed.getMetadata().get(0).getProperty().getKey());
     Assert.assertEquals(source.getName()+" " +source.getVersion(), parsed.getMetadata().get(0).getSources().get(0));
   }
+  
 }

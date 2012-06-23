@@ -14,6 +14,7 @@ import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.MetadataRecord;
 import com.petpet.c3po.datamodel.Property;
 
@@ -33,11 +34,11 @@ public final class DataHelper {
       e.printStackTrace();
     }
   }
-  
+
   public static String getPropertyType(String key) {
     return TYPES.getProperty(key, "STRING");
   }
-  
+
   /**
    * Parses the element from a db object returned by the db.
    * 
@@ -49,11 +50,11 @@ public final class DataHelper {
     String coll = (String) obj.get("collection");
     String uid = (String) obj.get("uid");
     String name = (String) obj.get("name");
-    
-    Element e  = new Element(coll, uid, name);
+
+    Element e = new Element(coll, uid, name);
     e.setId(obj.get("_id").toString());
     e.setMetadata(new ArrayList<MetadataRecord>());
-    
+
     DBObject meta = (BasicDBObject) obj.get("metadata");
     for (String key : meta.keySet()) {
       MetadataRecord rec = new MetadataRecord();
@@ -61,18 +62,18 @@ public final class DataHelper {
       Property p = pl.getCache().getProperty(key);
       rec.setProperty(p);
       rec.setStatus(prop.get("status").toString());
-      
+
       Object value = prop.get("value");
-      
+
       if (value != null) {
         rec.setValue(value.toString());
       }
-      
+
       List<String> values = (List<String>) prop.get("values");
       if (values != null) {
         rec.setValues(values);
       }
-      
+
       List<String> src = (List<String>) prop.get("sources");
       if (src != null) {
         List<String> sources = new ArrayList<String>();
@@ -83,13 +84,39 @@ public final class DataHelper {
         }
         rec.setSources(sources);
       }
-      
+
       e.getMetadata().add(rec);
     }
-    
+
     return e;
   }
 
+  public static Filter parseFilter(DBObject object) {
+    String id = (String) object.get("_id");
+    String c = (String) object.get("collection");
+    String p = (String) object.get("property");
+    String v = (String) object.get("value");
+
+    Filter f = new Filter(c, p, v);
+    f.setId(id);
+
+    DBObject parent = (DBObject) object.get("parent");
+    if (parent != null) {
+      f.setParent(parseFilter(parent));
+    }
+
+    DBObject matching = (DBObject) object.get("matching");
+    if (matching != null) {
+      f.setMatching(parseFilter(matching));
+    }
+
+    DBObject nonmatching = (DBObject) object.get("nonmatching");
+    if (nonmatching != null) {
+      f.setNonmatching(parseFilter(nonmatching));
+    }
+
+    return f;
+  }
 
   private DataHelper() {
 

@@ -172,6 +172,22 @@ $(document).ready(function(){
             function (ev, seriesIndex, pointIndex, data) {
             window.location = '/overview/filter?filter=mimetype&value='+pointIndex;
     });
+
+    $('#formathistogram').bind('jqplotDataClick', 
+            function (ev, seriesIndex, pointIndex, data) {
+            window.location = '/overview/filter?filter=format&value='+pointIndex;
+    });
+
+    $('#validhistogram').bind('jqplotDataClick', 
+            function (ev, seriesIndex, pointIndex, data) {
+            window.location = '/overview/filter?filter=valid&value='+pointIndex;
+    });
+
+    $('#wellformedhistogram').bind('jqplotDataClick', 
+            function (ev, seriesIndex, pointIndex, data) {
+            window.location = '/overview/filter?filter=wellformed&value='+pointIndex;
+    });
+    
 });
 
 

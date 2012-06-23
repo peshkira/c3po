@@ -29,6 +29,8 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.DataHelper;
+
 import common.WebAppConstants;
 
 public class Overview extends Controller {
@@ -77,10 +79,15 @@ public class Overview extends Controller {
       DBCursor c = p.find(Constants.TBL_FILTERS, new BasicDBObject("_id", filterId));
       Filter newFilter = new Filter(collection, filter, filtervalue);
       if (c.count() == 0) { // there is no filter
+        
         p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
-
       } else {
-        // append
+        DBObject next = c.next();
+        Filter parent = DataHelper.parseFilter(next);
+        parent.setMatching(newFilter);
+        newFilter.setParent(parent);
+        p.insert(Constants.TBL_FILTERS, parent.getDocument());
+        p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
       }
 
       session().put(WebAppConstants.CURRENT_FILTER_SESSION, newFilter.getId());
@@ -143,14 +150,12 @@ public class Overview extends Controller {
     final List<String> values = new ArrayList<String>();
     final Graph result = new Graph(property, keys, values);
 
-    BasicDBObject query = getFilterQuery(filter);
+    BasicDBObject query = Application.getFilterQuery(filter);
 
-    System.out.println("Query: " + query);
     HistogramJob job = new HistogramJob(filter.getCollection(), property, query);
 
     final MapReduceOutput output = job.execute();
     final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
-    System.out.println("FILTERED HIST: " + jobresults);
     for (final BasicDBObject dbo : jobresults) {
       keys.add((dbo.getString("_id")));
       values.add(dbo.getString("value"));
@@ -158,24 +163,11 @@ public class Overview extends Controller {
     return result;
   }
 
-  private static BasicDBObject getFilterQuery(Filter filter) {
-    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
-    Filter tmp = filter;
-    do {
-      if (tmp.getValue().equals("Unknown")) {
-        query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-      } else {
-        query.put("metadata." + tmp.getProperty() + ".value", tmp.getValue());
-      }
-
-    } while (tmp.getParent() != null);
-
-    return query;
-  }
+  
 
   private static Statistics getCollectionStatistics(Filter filter) {
     final NumericAggregationJob job = new NumericAggregationJob(filter.getCollection(), "size");
-    final BasicDBObject query = getFilterQuery(filter);
+    final BasicDBObject query = Application.getFilterQuery(filter);
     job.setFilterquery(query);
 
     final MapReduceOutput output = job.execute();
@@ -203,10 +195,9 @@ public class Overview extends Controller {
       job.setType(OutputType.REPLACE);
       job.setOutputCollection("statistics_" + name);
       final MapReduceOutput output = job.execute();
-      final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 
-      if (!results.isEmpty()) {
-        aggregation = (BasicDBObject) results.get(0).get("value");
+      if (output != null) {
+        aggregation = (BasicDBObject) collection.findOne().get("value");
       }
     }
 

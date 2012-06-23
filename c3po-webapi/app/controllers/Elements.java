@@ -102,15 +102,22 @@ public class Elements extends Controller {
 
   public static Result listElements(String collection, int batch, int offset) {
     final List<String> names = Application.getCollectionNames();
-
+    String filter = session().get("current.filter");
+    
     if (collection == null) {
       return ok(elements.render(names, null));
     }
+    
 
     final List<Element> result = new ArrayList<Element>();
     final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     final BasicDBObject query = new BasicDBObject();
     query.put("collection", collection);
+    if (filter != null) {
+      //TODO 
+      //get filter from db and regenerate query...
+      //query = Application.getFilterQuery(filter)
+    }
 
     final DBCursor cursor = pl.getDB().getCollection(Constants.TBL_ELEMENTS).find(query).skip(offset).limit(batch);
 
