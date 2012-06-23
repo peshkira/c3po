@@ -1,5 +1,6 @@
 package com.petpet.c3po.analysis.mapreduce;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
@@ -13,6 +14,8 @@ public abstract class MapReduceJob {
   private OutputType type;
   
   private String c3poCollection;
+  
+  private BasicDBObject filterquery;
 
   public PersistenceLayer getPersistence() {
     if (this.persistence == null) {
@@ -50,6 +53,14 @@ public abstract class MapReduceJob {
 
   public void setC3poCollection(String c3poCollection) {
     this.c3poCollection = c3poCollection;
+  }
+
+  public BasicDBObject getFilterquery() {
+    return filterquery;
+  }
+
+  public void setFilterquery(BasicDBObject filterquery) {
+    this.filterquery = filterquery;
   }
   
   

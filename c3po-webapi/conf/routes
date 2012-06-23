@@ -10,7 +10,7 @@ GET     /clear                            controllers.Application.clear()
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()
-GET     /overview/list                    controllers.Overview.show()
+GET     /overview/filter                  controllers.Overview.filter()
 
 # Elements Page
 GET     /objects                                            controllers.Elements.index()

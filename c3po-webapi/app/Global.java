@@ -6,7 +6,7 @@ import play.Logger;
 
 import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand.OutputType;
-import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
+import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Property;
@@ -35,7 +35,6 @@ public class Global extends GlobalSettings {
   private void calculateCollectionStatistics() {
     Logger.info("Calculating size statistics of each collection");
     final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    final Property size = pl.getCache().getProperty("size");
     final List<String> names = controllers.Application.getCollectionNames();
 
     for (String name : names) {
@@ -45,7 +44,7 @@ public class Global extends GlobalSettings {
       if (c.find().count() == 0) {
         Logger.info("No statistics found for collection " + name + ", rebuilding");
 
-        final NumericAggregationJob job = new NumericAggregationJob(name, size);
+        final NumericAggregationJob job = new NumericAggregationJob(name, "size");
         job.setType(OutputType.REPLACE);
         job.setOutputCollection(cName);
         job.execute();
@@ -66,7 +65,7 @@ public class Global extends GlobalSettings {
         if (c.find().count() == 0) {
           Logger.info("No histogram found for collection " + name + "  and property " + p + ", rebuilding");
 
-          final HistogrammJob job = new HistogrammJob(name, p);
+          final HistogramJob job = new HistogramJob(name, p);
           job.setType(OutputType.REPLACE);
           job.setOutputCollection(cName);
           job.execute();

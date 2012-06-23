@@ -35,6 +35,11 @@ public final class Constants {
   public static final String TBL_SOURCES = "sources";
 
   /**
+   * The filters stored in the db.
+   */
+  public static final String TBL_FILTERS = "filters";
+
+  /**
    * A c3po configuration for the collection on which to operate.
    */
   public static final String CNF_COLLECTION_NAME = "c3po.collection.name";

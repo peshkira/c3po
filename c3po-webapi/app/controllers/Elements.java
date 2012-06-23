@@ -8,20 +8,18 @@ import java.util.List;
 import org.bson.types.ObjectId;
 
 import play.Logger;
-import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
-import views.html.elements;
 import views.html.element;
+import views.html.elements;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
+import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 
@@ -65,10 +63,10 @@ public class Elements extends Controller {
 
     if (data != null && data.getFilter() != null) {
       final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-      HistogrammJob job = null;
+      HistogramJob job = null;
 
       if (!data.getFilter().equals("none")) {
-        job = new HistogrammJob(data.getCollection(), data.getFilter());
+        job = new HistogramJob(data.getCollection(), data.getFilter());
 
         final MapReduceOutput output = job.execute();
         final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");

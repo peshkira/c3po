@@ -7,27 +7,28 @@ import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Property;
 
-public class HistogrammJob extends MapReduceJob {
+public class HistogramJob extends MapReduceJob {
 
-  private String filter;
+  private String property;
   
-  public HistogrammJob(String c, String f) {
+  public HistogramJob(String c, String f) {
     this.setC3poCollection(c);
-    this.filter = f;
+    this.property = f;
+    this.setFilterquery(new BasicDBObject("collection", c));
+  }
+  
+  public HistogramJob(String c, String f, BasicDBObject query) {
+    this(c, f);
+    this.setFilterquery(query);
   }
   
   public MapReduceOutput execute() {
-    
-    final Property p = this.getPersistence().getCache().getProperty(filter);
+    final Property p = this.getPersistence().getCache().getProperty(property);
     final String map = Constants.HISTOGRAM_MAP.replaceAll("\\{\\}", p.getId());
     final DBCollection elements = this.getPersistence().getDB().getCollection(Constants.TBL_ELEMENTS);
-    final BasicDBObject query = new BasicDBObject();
     final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.HISTOGRAM_REDUCE, this.getOutputCollection(),
-        this.getType(), query);
+        this.getType(), this.getFilterquery());
 
-//    query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
-    query.put("collection", this.getC3poCollection());
-    
     return this.getPersistence().mapreduce(Constants.TBL_ELEMENTS, cmd);
   }
 }

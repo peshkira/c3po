@@ -328,6 +328,12 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
     height:100px;
     border-bottom: 4px solid black;
     display:none;
+    color: white;
+    padding:10px;
+}
+
+#filter h2{
+	color: white;
 }
 
 
@@ -554,7 +560,7 @@ li.selected_filter {
 
 .dia {
 	margin-left: 10px;
-	height:400px;
+	height:300px;
 	width:450px;
 }
 

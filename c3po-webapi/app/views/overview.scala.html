@@ -2,7 +2,7 @@
 @import helper._
 
 @main("c3po", collections) {
-<div class="container">
+<div id="overview">
 <script type="text/javascript">
           $(document).ready(function(){
                var visible = false;
@@ -163,10 +163,15 @@ $(document).ready(function(){
         return options;
     };
     
-    var plot1 = $.jqplot('mimetypehistogramm', [mimes], getBarChart("Mime Types"));
-    var plot2 = $.jqplot('formathistogramm', [formats], getBarChart("Formats"));
-    var plot3 = $.jqplot('validhistogramm', [valid], getPieChart("Valid"));
-    var plot4 = $.jqplot('wellformedhistogramm', [wellformed], getPieChart("Well Formed"));
+    var plot1 = $.jqplot('mimetypehistogram', [mimes], getBarChart("Mime Types"));
+    var plot2 = $.jqplot('formathistogram', [formats], getBarChart("Formats"));
+    var plot3 = $.jqplot('validhistogram', [valid], getPieChart("Valid"));
+    var plot4 = $.jqplot('wellformedhistogram', [wellformed], getPieChart("Well Formed"));
+
+    $('#mimetypehistogram').bind('jqplotDataClick', 
+            function (ev, seriesIndex, pointIndex, data) {
+            window.location = '/overview/filter?filter=mimetype&value='+pointIndex;
+    });
 });
 
 
@@ -178,10 +183,10 @@ $(document).ready(function(){
         <h1>Collection '@session.get("current.collection")' - Overview</h1>
         
         @if(graphs != null) {
-        <div id="mimetypehistogramm" class="dia"></div>
-        <div id="formathistogramm" class="dia"></div>
-        <div id="validhistogramm" class="dia"></div>
-        <div id="wellformedhistogramm" class="dia"></div>
+        <div id="mimetypehistogram" class="dia"></div><span id="info"></span>
+        <div id="formathistogram" class="dia"></div>
+        <div id="validhistogram" class="dia"></div>
+        <div id="wellformedhistogram" class="dia"></div>
         }
    </div>
     @if(stats != null) {
@@ -198,7 +203,6 @@ $(document).ready(function(){
          </div>
           }
 </div>
-    
-</div>
+</div>    
 }
 

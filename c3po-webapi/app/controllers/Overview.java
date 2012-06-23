@@ -1,6 +1,5 @@
 package controllers;
 
-import helpers.Filter;
 import helpers.Graph;
 import helpers.GraphData;
 import helpers.Statistics;
@@ -10,9 +9,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import play.Logger;
+import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.overview;
+import views.html.defaultpages.error;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -20,17 +22,20 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
-import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
+import common.WebAppConstants;
 
 public class Overview extends Controller {
 
   public static Result index() {
     final List<String> names = Application.getCollectionNames();
-    String collection = session().get("current.collection");
+    String collection = session().get(WebAppConstants.CURRENT_COLLECTION_SESSION);
     Statistics stats = null;
     GraphData data = null;
     if (collection != null) {
@@ -50,33 +55,59 @@ public class Overview extends Controller {
     return ok(overview.render(names, data, stats));
   }
 
-  public static Result show() {
-    // final Form<Filter> form = form(Filter.class).bindFromRequest();
-    // final Filter data = form.get();
-    // Logger.info("Called Show with name " + data.getCollection() +
-    // " and filter " + data.getFilter());
-    // List<String> collections = Application.getCollectionNames();
-    //
-    // final Graph mimes = getGraph(data, "mimetype");
-    // final Graph formats = getGraph(data, "format");
-    // final Graph fv = getGraph(data, "format_version");
-    // final Graph valid = getGraph(data, "valid");
-    // final Graph wellformed = getGraph(data, "wellformed");
-    //
-    //
-    // final GraphData graphs = new GraphData(Arrays.asList(mimes, formats, fv,
-    // valid, wellformed));
-    //
-    // if (data.getFilter().equals("mimetype")) {
-    // data.setValues(mimes.getKeys());
-    // } else if (data.getFilter().equals("format")) {
-    // data.setValues(formats.getKeys());
-    // }
-    // form.fill(data);
-    // Statistics stats = getCollectionStatistics(data.getCollection(),
-    // data.getFilter(), data.getValue());
-    // return ok(overview.render(collections, form, graphs, stats));
-    return ok();
+  public static Result filter() {
+    final List<String> names = Application.getCollectionNames();
+    String collection = session().get(WebAppConstants.CURRENT_COLLECTION_SESSION);
+    if (collection != null) {
+      // obtain data from request
+      final DynamicForm form = form().bindFromRequest();
+      final String filter = form.get("filter");
+      final int value = Integer.parseInt(form.get("value"));
+
+      final Graph graph = getGraph(collection, filter);
+      graph.sort();
+
+      final String filtervalue = graph.getKeys().get(value);
+
+      Logger.info("Filtering based on " + filter + " " + filtervalue);
+
+      // get current filter from session
+      String filterId = session().get(WebAppConstants.CURRENT_FILTER_SESSION);
+      PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+      DBCursor c = p.find(Constants.TBL_FILTERS, new BasicDBObject("_id", filterId));
+      Filter newFilter = new Filter(collection, filter, filtervalue);
+      if (c.count() == 0) { // there is no filter
+        p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
+
+      } else {
+        // append
+      }
+
+      session().put(WebAppConstants.CURRENT_FILTER_SESSION, newFilter.getId());
+
+      final Graph mimes = getGraph(newFilter, "mimetype");
+      mimes.sort();
+      final Graph formats = getGraph(newFilter, "format");
+      formats.sort();
+      final Graph valid = getGraph(newFilter, "valid");
+      valid.convertToPercentage();
+      valid.sort();
+      final Graph wf = getGraph(newFilter, "wellformed");
+      wf.convertToPercentage();
+      wf.sort();
+      final GraphData data = new GraphData(Arrays.asList(mimes, formats, valid, wf));
+      final Statistics stats = getCollectionStatistics(newFilter);
+
+      return ok(overview.render(names, data, stats));
+
+    }
+    // if there is none
+    // create a new filter based on this
+    // set it as current
+    // after you have the filter
+    // generate the graphs again but based on the current filter
+    // show them in a new view.
+    return notFound("Something went wrong");
   }
 
   private static Graph getGraph(String collection, String property) {
@@ -87,8 +118,8 @@ public class Overview extends Controller {
 
     DBCollection dbc = p.getDB().getCollection("histogram_" + collection + "_" + property);
 
-    if (dbc == null) {
-      final HistogrammJob job = new HistogrammJob(collection, property);
+    if (dbc.find().count() == 0) {
+      final HistogramJob job = new HistogramJob(collection, property);
       final MapReduceOutput output = job.execute();
       final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
 
@@ -107,25 +138,55 @@ public class Overview extends Controller {
     return result;
   }
 
-  private static Graph getGraph(Filter data, String property) {
+  private static Graph getGraph(Filter filter, String property) {
     final List<String> keys = new ArrayList<String>();
     final List<String> values = new ArrayList<String>();
     final Graph result = new Graph(property, keys, values);
 
-    if (data != null && data.getFilter() != null) {
-      final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-      HistogrammJob job = null;
-      job = new HistogrammJob(data.getCollection(), property);
+    BasicDBObject query = getFilterQuery(filter);
 
-      final MapReduceOutput output = job.execute();
-      final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
+    System.out.println("Query: " + query);
+    HistogramJob job = new HistogramJob(filter.getCollection(), property, query);
 
-      for (final BasicDBObject dbo : jobresults) {
-        keys.add((dbo.getString("_id")));
-        values.add(dbo.getString("value"));
-      }
+    final MapReduceOutput output = job.execute();
+    final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
+    System.out.println("FILTERED HIST: " + jobresults);
+    for (final BasicDBObject dbo : jobresults) {
+      keys.add((dbo.getString("_id")));
+      values.add(dbo.getString("value"));
     }
     return result;
+  }
+
+  private static BasicDBObject getFilterQuery(Filter filter) {
+    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
+    Filter tmp = filter;
+    do {
+      if (tmp.getValue().equals("Unknown")) {
+        query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
+      } else {
+        query.put("metadata." + tmp.getProperty() + ".value", tmp.getValue());
+      }
+
+    } while (tmp.getParent() != null);
+
+    return query;
+  }
+
+  private static Statistics getCollectionStatistics(Filter filter) {
+    final NumericAggregationJob job = new NumericAggregationJob(filter.getCollection(), "size");
+    final BasicDBObject query = getFilterQuery(filter);
+    job.setFilterquery(query);
+
+    final MapReduceOutput output = job.execute();
+    final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+    BasicDBObject aggregation = null;
+
+    if (!results.isEmpty()) {
+      aggregation = (BasicDBObject) results.get(0).get("value");
+    }
+
+    return getStatisticsFromResult(aggregation);
   }
 
   private static Statistics getCollectionStatistics(String name) {
@@ -133,28 +194,29 @@ public class Overview extends Controller {
     BasicDBObject aggregation = null;
 
     DBCollection collection = pl.getDB().getCollection("statistics_" + name);
-    if (collection != null) {
+    if (collection.find().count() != 0) {
       aggregation = (BasicDBObject) collection.findOne().get("value");
     }
 
     if (aggregation == null) {
-
-      Property size = pl.getCache().getProperty("size");
-      NumericAggregationJob job = new NumericAggregationJob(name, size);
-
+      final NumericAggregationJob job = new NumericAggregationJob(name, "size");
       job.setType(OutputType.REPLACE);
       job.setOutputCollection("statistics_" + name);
-      MapReduceOutput output = job.execute();
+      final MapReduceOutput output = job.execute();
       final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 
-      if (results.isEmpty()) {
-        return null;
-      } else {
+      if (!results.isEmpty()) {
         aggregation = (BasicDBObject) results.get(0).get("value");
       }
     }
 
-    System.out.println(aggregation);
+    return getStatisticsFromResult(aggregation);
+  }
+
+  public static Statistics getStatisticsFromResult(BasicDBObject aggregation) {
+    if (aggregation == null)
+      return null;
+
     final DecimalFormat df = new DecimalFormat("#.##");
     Statistics stats = new Statistics();
     stats.setCount(aggregation.getInt("count") + " objects");

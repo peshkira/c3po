@@ -27,7 +27,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.HistogrammJob;
+import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
@@ -134,7 +134,7 @@ public class ProfileGenerator {
 
   private Map<String, Long> getFilterValues(final String collection, final String filter) {
     final Map<String, Long> res = new HashMap<String, Long>();
-    final HistogrammJob job = new HistogrammJob(collection, filter);
+    final HistogramJob job = new HistogramJob(collection, filter);
     final MapReduceOutput output = job.execute();
     final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 
@@ -274,7 +274,10 @@ public class ProfileGenerator {
   }
 
   private void processNumericProperty(final PropertyAggregation pa, final Element prop, final Property p) {
-    final NumericAggregationJob job = new NumericAggregationJob(pa.collection, p, pa.filter.getId(), pa.value);
+    final NumericAggregationJob job = new NumericAggregationJob(pa.collection, p.getId());
+    final BasicDBObject query = new BasicDBObject("collection", pa.collection);
+    query.put("metadata."+pa.filter.getId()+".value", pa.value);
+    job.setFilterquery(query);
     final MapReduceOutput output = job.execute();
 
     final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");

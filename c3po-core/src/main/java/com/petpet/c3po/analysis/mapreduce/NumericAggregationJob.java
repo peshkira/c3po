@@ -8,53 +8,37 @@ import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Property;
 
 public class NumericAggregationJob extends MapReduceJob {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(NumericAggregationJob.class);
 
-  private Property property;
-  private String filter; // the id of the filter property.
-  private String value;
+  private String property;
 
-  public NumericAggregationJob(String c, Property p) {
+  public NumericAggregationJob(String c, String p) {
     this.setC3poCollection(c);
     this.property = p;
-    this.filter = null;
-    this.value = null;
+    this.setFilterquery(new BasicDBObject("collection", c));
   }
 
-  public NumericAggregationJob(String c, Property p, String f, String v) {
-    this(c, p);
-    this.filter = f;
-    this.value = v;
-  }
+  // public NumericAggregationJob(String c, String p, String f, String v) {
+  // this(c, p);
+  // this.filter = f;
+  // this.value = v;
+  // }
 
   public MapReduceOutput execute() {
     String map;
     final DBCollection elements = this.getPersistence().getDB().getCollection(Constants.TBL_ELEMENTS);
-    final BasicDBObject query = new BasicDBObject();
+    map = Constants.AGGREGATE_MAP.replaceAll("\\{1\\}", this.property);
 
-    if (filter == null && value == null) {
-      map = Constants.AGGREGATE_MAP.replaceAll("\\{1\\}", this.property.getId());
-      
-    } else {
-      map = Constants.FILTER_AGGREGATE_MAP.replaceAll("\\{1\\}", this.filter).replaceAll("\\{2\\}", this.value)
-          .replaceAll("\\{3\\}", this.property.getId());
-
-      query.put("metadata." + this.filter + ".value", this.value);
-
-    }
-
-    final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.AGGREGATE_REDUCE, this.getOutputCollection(),
-        this.getType(), query);
+    final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.AGGREGATE_REDUCE,
+        this.getOutputCollection(), this.getType(), this.getFilterquery());
 
     cmd.setFinalize(Constants.AGGREGATE_FINALIZE);
 
-    query.put("metadata." + this.property.getId(), new BasicDBObject("$exists", true));
-    query.put("collection", this.getC3poCollection());
-
+     this.getFilterquery().put("metadata." + this.property, new BasicDBObject("$exists", true));
+    // query.put("collection", this.getC3poCollection());
     return this.getPersistence().mapreduce(Constants.TBL_ELEMENTS, cmd);
   }
 }

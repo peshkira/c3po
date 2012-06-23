@@ -70,7 +70,9 @@
             </select>
           </div>
           <div id="partitions"></div>
-          <div id="filter"></div>
+          <div id="filter">
+            <h2>Current Filter: @session.get("current.filter")</h2>
+          </div>
         <div class="container">
           @content
        </div>
