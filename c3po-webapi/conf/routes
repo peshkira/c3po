@@ -30,7 +30,7 @@ GET     /samples                                controllers.Samples.index()
 # Queries
 
 # Export Page
-#GET     /export                                 controllers.Export.index()
+GET     /export                                 controllers.Export.index()
 #GET    /export/matrix/collection/:name         controllers.Export.matrix(name: String)
     
 

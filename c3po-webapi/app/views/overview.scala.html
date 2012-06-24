@@ -219,7 +219,7 @@ $(document).ready(function(){
             @if(session.get("current.collection") == null) {
                <h1>Please select a collection</h1>
             } else {
-              <h1>Collection '@session.get("current.collection")' - Overview</h1>
+              <h1>Overview of '@session.get("current.collection")'</h1>
             }
         </div>
         @if(graphs != null) {

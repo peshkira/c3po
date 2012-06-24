@@ -1,0 +1,24 @@
+@(title: String, collections: List[String])
+
+@main(title, collections){
+        <div class="content">
+            <h2>Export</h2>
+            <p>
+              Currently, there are three possiblities for data export.
+              First, you can export a machine readable profile of your current filter, which can be used as input in the 
+              <a href="http://ifs.tuwien.ac.at/dp/plato" target="_blanl">Planning Tool Plato</a>.
+            </p>
+            <p>
+              Second, you can export a '.csv' file containing all the data for the selected collection, or third - a '.csv' file containing
+              only the current filter. In other words a sparse matrix over all known properties for each element. This '.csv' file is very helpful for further analysis with the help
+              of spreadsheet software such as <a href="http://www.libreoffice.org/" target="_blank">Libre Office</a> or
+              <a href="http://office.microsoft.com/en-us/excel/" target="_blank">Microsoft Excel</a>. 
+            </p>
+        </div>
+        <div class="content">
+            <h2>Plato</h2>
+        </div>
+        <div class="content">
+            <h2>CSV</h2>
+        </div>
+}
