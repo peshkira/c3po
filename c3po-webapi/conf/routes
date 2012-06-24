@@ -5,8 +5,12 @@
 # Home page
 GET     /                                 controllers.Application.index()
 GET     /c3po                             controllers.Application.index()
-POST    /collection                       controllers.Application.setCollection(name: String)
 GET     /clear                            controllers.Application.clear()
+
+#Misc
+POST    /collection                       controllers.Application.setCollection(name: String)
+GET     /filter                           controllers.FilterController.get(uid: String)
+DELETE  /filter                           controllers.FilterController.remove(uid: String)
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()

@@ -14,12 +14,10 @@ import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.overview;
-import views.html.defaultpages.error;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.analysis.mapreduce.HistogramJob;
@@ -27,97 +25,94 @@ import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.DataHelper;
-
 import common.WebAppConstants;
 
 public class Overview extends Controller {
 
   public static Result index() {
     final List<String> names = Application.getCollectionNames();
-    String collection = session().get(WebAppConstants.CURRENT_COLLECTION_SESSION);
+    Filter filter = Application.getFilterFromSession();
+
     Statistics stats = null;
     GraphData data = null;
-    if (collection != null) {
-      stats = getCollectionStatistics(collection);
-      final Graph mimes = getGraph(collection, "mimetype");
+    if (filter != null) {
+      final Graph mimes;
+      final Graph formats;
+      final Graph valid;
+      final Graph wf;
+      Logger.info("filter is not null");
+      if (filter.getParent() == null) {
+        Logger.info("filter has no parent, using cached statistics");
+        // used cached results
+        stats = getCollectionStatistics(filter.getCollection());
+        mimes = getGraph(filter.getCollection(), "mimetype");
+        formats = getGraph(filter.getCollection(), "format");
+        valid = getGraph(filter.getCollection(), "valid");
+        wf = getGraph(filter.getCollection(), "wellformed");
+
+      } else {
+        // calculate new results
+        Logger.info("filter has parent, calculating statisticts");
+        stats = getCollectionStatistics(filter);
+        mimes = getGraph(filter, "mimetype");
+        formats = getGraph(filter, "format");
+        valid = getGraph(filter, "valid");
+        wf = getGraph(filter, "wellformed");
+      }
+      
       mimes.sort();
-      final Graph formats = getGraph(collection, "format");
       formats.sort();
-      final Graph valid = getGraph(collection, "valid");
       valid.convertToPercentage();
       valid.sort();
-      final Graph wf = getGraph(collection, "wellformed");
       wf.convertToPercentage();
       wf.sort();
+
       data = new GraphData(Arrays.asList(mimes, formats, valid, wf));
     }
     return ok(overview.render(names, data, stats));
   }
 
   public static Result filter() {
-    final List<String> names = Application.getCollectionNames();
-    String collection = session().get(WebAppConstants.CURRENT_COLLECTION_SESSION);
-    if (collection != null) {
+    // final List<String> names = Application.getCollectionNames();
+    Filter filter = Application.getFilterFromSession();
+    
+    if (filter != null) {
+      Logger.info("Current filter was: " + filter.getId());
       // obtain data from request
       final DynamicForm form = form().bindFromRequest();
-      final String filter = form.get("filter");
+      final String f = form.get("filter");
       final int value = Integer.parseInt(form.get("value"));
 
-      final Graph graph = getGraph(collection, filter);
-      if (filter.equals("valid") || filter.equals("wellformed")) {
+      // query histogram to check the value of the filter that was selected
+      final Graph graph = getGraph(filter, f);
+      if (f.equals("valid") || f.equals("wellformed")) {
         graph.convertToPercentage();
       }
       graph.sort();
 
       final String filtervalue = graph.getKeys().get(value);
 
-      Logger.info("Filtering based on " + filter + " " + filtervalue);
-
-      // get current filter from session
-      String filterId = session().get(WebAppConstants.CURRENT_FILTER_SESSION);
-      PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-      DBCursor c = p.find(Constants.TBL_FILTERS, new BasicDBObject("_id", filterId));
-      Filter newFilter = new Filter(collection, filter, filtervalue);
-      if (c.count() == 0) { // there is no filter
-        
-        p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
-      } else {
-        DBObject next = c.next();
-        Filter parent = DataHelper.parseFilter(next);
-        parent.setMatching(newFilter);
-        newFilter.setParent(parent);
-        p.insert(Constants.TBL_FILTERS, parent.getDocument());
-        p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
+      if (f.equals(filter.getProperty()) && filtervalue.equals(filter.getValue())) {
+        Logger.debug("Filter matches last filter, skipping");
+        return index(); // return filtering based on current filter.
       }
+
+      Logger.info("Filtering based on new filter: " + filter + " " + filtervalue);
+      // get current filter from session
+      PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+
+      Filter newFilter = new Filter(filter.getCollection(), f, filtervalue);
+      newFilter.setParent(filter);
+      p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
 
       session().put(WebAppConstants.CURRENT_FILTER_SESSION, newFilter.getId());
 
-      final Graph mimes = getGraph(newFilter, "mimetype");
-      mimes.sort();
-      final Graph formats = getGraph(newFilter, "format");
-      formats.sort();
-      final Graph valid = getGraph(newFilter, "valid");
-      valid.convertToPercentage();
-      valid.sort();
-      final Graph wf = getGraph(newFilter, "wellformed");
-      wf.convertToPercentage();
-      wf.sort();
-      final GraphData data = new GraphData(Arrays.asList(mimes, formats, valid, wf));
-      final Statistics stats = getCollectionStatistics(newFilter);
-
-      return ok(overview.render(names, data, stats));
+      return index();
 
     }
-    // if there is none
-    // create a new filter based on this
-    // set it as current
-    // after you have the filter
-    // generate the graphs again but based on the current filter
-    // show them in a new view.
-    return notFound("Something went wrong");
+
+    return badRequest("No filter was found in the session\n");
   }
 
   private static Graph getGraph(String collection, String property) {
@@ -165,8 +160,6 @@ public class Overview extends Controller {
     }
     return result;
   }
-
-  
 
   private static Statistics getCollectionStatistics(Filter filter) {
     final NumericAggregationJob job = new NumericAggregationJob(filter.getCollection(), "size");

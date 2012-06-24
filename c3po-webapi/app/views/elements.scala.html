@@ -42,16 +42,17 @@
                          timeout:  5000,
                          success:  function (oData) {
                              // Process ...
-                             $.ajax ({
-                                 type:     'GET',
-                                 url:      '/objects',
-                                 timeout:  5000,
-                                 success:  function (oData) {
+                             //$.ajax ({
+                             //    type:     'GET',
+                             //    url:      '/objects',
+                             //    timeout:  5000,
+                             //    success:  function (oData) {
                                      // Process ...
-                                     $('#ajax_collection').text(collection);
-                                     $('#objects').replaceWith($(oData).find('#objects'));
-                                 }
-                             });
+                             //        $('#ajax_collection').text(collection);
+                             //        $('#objects').replaceWith($(oData).find('#objects'));
+                             //    }
+                            // });
+                             window.location = '/objects';
                          }
                      });
                });

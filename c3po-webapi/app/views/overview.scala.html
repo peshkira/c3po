@@ -54,7 +54,9 @@
                });
            });
           
-          $(window).unload( function () { $('#spinner').css("opacity","1"); } );
+          $(window).unload( function () { 
+              $('#spinner').css("opacity","1");
+          });
 </script>
 <script type = "text/javascript">
        $(function() {
@@ -214,7 +216,11 @@ $(document).ready(function(){
 <div class="content span-24">
     <div class="span-16">
         <div class="span-12">
-            <h1>Collection '@session.get("current.collection")' - Overview</h1>
+            @if(session.get("current.collection") == null) {
+               <h1>Please select a collection</h1>
+            } else {
+              <h1>Collection '@session.get("current.collection")' - Overview</h1>
+            }
         </div>
         @if(graphs != null) {
         <div class="span-16">

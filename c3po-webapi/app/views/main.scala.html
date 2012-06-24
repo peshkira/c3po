@@ -1,27 +1,26 @@
-@(title: String, collections: List[String])(content: Html)
-@import helper._
+@(title: String, collections: List[String])(content: Html) @import helper._
 
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <title>@title</title>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/navbar.css")">
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-        <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
-        <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.jqplot.min.css")" />
-        <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/excanvas.js")"></script><![endif]-->
-        <script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.barRenderer.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pieRenderer.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.categoryAxisRenderer.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.canvasAxisTickRenderer.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.canvasTextRenderer.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pointLabels.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/spin.min.js")"></script>
+<head>
+<title>@title</title>
+<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+<link rel="stylesheet" href="@routes.Assets.at("stylesheets/navbar.css")">
+<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+<script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.jqplot.min.css")" />
+<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/excanvas.js")"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.barRenderer.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pieRenderer.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.categoryAxisRenderer.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.canvasAxisTickRenderer.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.canvasTextRenderer.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pointLabels.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/spin.min.js")"></script>
 
-        <script type="text/javascript"> 
+<script type="text/javascript"> 
           $(document).ready(function(){
       
               // Requried: Navigation bar drop-down
@@ -64,41 +63,72 @@
               $('#spinner').css("opacity","1");
               };
         </script>
-    </head>
-    <body>
-          <div class = "header">
-              <h1><a href="/c3po">C3PO - Clever, Crafty Content Profiling of Objects</a></h1>
-          </div>
-          <div class="navbar">
-            <nav class="green">
-                <ul class="clear">
-                    <li><a href="#">Home</a></li>
-                    <li><a href="/overview">Overview</a></li>
-                    <li><a href="/objects">Objects</a></li>
-                    <li><a href="/samples">Representatives</a></li>
-                    <li><a href="/export">Export</a></li>
-                    <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" /></li>
-                    <li><img id="partitions_btn" src="@routes.Assets.at("images/filters/graph.png")" /></li>
-                    <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" /></li>
-                </ul>
-            </nav>
-          </div>
-          <div id="collections">
-            <h2>Current collection: <span id="ajax_collection">@session.get("current.collection")</span></h2>
-            Other collections: 
-            <select>
-                @for(c <- collections) {
-                    <option value="@c">@c</option>
+</head>
+<body>
+  <div class="header">
+    <h1>
+      <a href="/c3po">C3PO - Clever, Crafty Content Profiling of Objects</a>
+    </h1>
+  </div>
+  <div class="navbar">
+    <nav class="green">
+      <ul class="clear">
+        <li><a href="#">Home</a>
+        </li>
+        <li><a href="/overview">Overview</a>
+        </li>
+        <li><a href="/objects">Objects</a>
+        </li>
+        <li><a href="/samples">Representatives</a>
+        </li>
+        <li><a href="/export">Export</a>
+        </li>
+        <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" />
+        </li>
+        <li><img id="partitions_btn" src="@routes.Assets.at("images/filters/graph.png")" />
+        </li>
+        <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" />
+        </li>
+      </ul>
+    </nav>
+  </div>
+  <div id="collections">
+    <h2>
+      Current collection: <span id="ajax_collection">@session.get("current.collection")</span>
+    </h2>
+    Other collections: <select> @for(c <- collections) {
+      <option value="@c">@c</option> }
+    </select>
+  </div>
+  <div id="partitions"></div>
+  <div id="filter">
+    @if(session.get("current.filter")) {
+    <script type="text/javascript">
+            $.ajax ({
+                type:     'GET',
+                url:      '/filter?uid=@session.get("current.filter")',
+                dataType:     'json',
+                timeout:  5000,
+                success:  function (oData) {
+                     var filter = oData;
+                     var text = "" + filter.collection;
+                     while(filter.parent != null) {
+                        text += " AND " + filter.property + " = " + filter.value;
+                        filter = filter.parent;
+                     }
+  
+                     $('#c_filter').text(text);
                 }
-            </select>
-          </div>
-          <div id="partitions"></div>
-          <div id="filter">
-            <h2>Current Filter: @session.get("current.filter")</h2>
-          </div>
-        <div class="container">
-          @content
-       </div>
-       <div id="spinner"></div>
-    </body>
+            });
+            </script>
+    <h2>
+      Current Filter: <span id="c_filter"></span>
+    </h2>
+    } else {
+    <h2>No filter selected</h2>
+    }
+  </div>
+  <div class="container">@content</div>
+  <div id="spinner"></div>
+</body>
 </html>
