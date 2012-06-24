@@ -11,10 +11,11 @@ GET     /clear                            controllers.Application.clear()
 POST    /collection                       controllers.Application.setCollection(name: String)
 GET     /filter                           controllers.FilterController.get(uid: String)
 DELETE  /filter                           controllers.FilterController.remove(uid: String)
+POST    /filter                           controllers.FilterController.add()
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()
-GET     /overview/filter                  controllers.Overview.filter()
+#GET     /overview/filter                  controllers.Overview.filter()
 
 # Elements Page
 GET     /objects                                            controllers.Elements.index()

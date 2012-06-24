@@ -41,13 +41,13 @@ public class Filter {
   /**
    * The filter that has to be applied on the matching part of the collection.
    */
-  private Filter matching;
+  private String matching;
 
   /**
    * The filter that has to be applied on the nonmatching part of the
    * collection.
    */
-  private Filter nonmatching;
+  private String nonmatching;
 
   /**
    * Creates a default root filter. This means that the filter has no parent
@@ -108,19 +108,19 @@ public class Filter {
     this.parent = parent;
   }
 
-  public Filter getMatching() {
+  public String getMatching() {
     return matching;
   }
 
-  public void setMatching(Filter matching) {
+  public void setMatching(String matching) {
     this.matching = matching;
   }
 
-  public Filter getNonmatching() {
+  public String getNonmatching() {
     return nonmatching;
   }
 
-  public void setNonmatching(Filter nonmatching) {
+  public void setNonmatching(String nonmatching) {
     this.nonmatching = nonmatching;
   }
   
@@ -133,13 +133,8 @@ public class Filter {
       filter.put("parent", parent.getDocument());
     }
     
-//    if (matching != null) {
-//      filter.put("matching", matching.getDocument());
-//    }
-//    
-//    if (nonmatching != null) {
-//      filter.put("nonmatching", nonmatching.getDocument());
-//    }
+    filter.put("matching", matching);
+    filter.put("nonmatching", nonmatching);
     
     return filter;
   }

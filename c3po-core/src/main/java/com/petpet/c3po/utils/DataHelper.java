@@ -105,15 +105,10 @@ public final class DataHelper {
       f.setParent(parseFilter(parent));
     }
 
-    DBObject matching = (DBObject) object.get("matching");
-    if (matching != null) {
-      f.setMatching(parseFilter(matching));
-    }
-
-    DBObject nonmatching = (DBObject) object.get("nonmatching");
-    if (nonmatching != null) {
-      f.setNonmatching(parseFilter(nonmatching));
-    }
+    String matching = (String) object.get("matching");
+    f.setMatching(matching);
+    String nonmatching = (String) object.get("nonmatching");
+    f.setNonmatching(nonmatching);
 
     return f;
   }
