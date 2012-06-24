@@ -31,6 +31,7 @@ import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Property.PropertyType;
 
@@ -38,8 +39,9 @@ public class ProfileGenerator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProfileGenerator.class);
 
-  private static final String[] PROPERTIES = { "format", "format.version", "puid", "mimetype", "charset", "linebreak", "compressionscheme",
-      "creating.os", "byteorder", "compression.scheme", "colorspace", "icc.profile.name", "icc.profile.version" };
+  private static final String[] PROPERTIES = { "format", "format.version", "puid", "mimetype", "charset", "linebreak",
+      "compressionscheme", "creating.os", "byteorder", "compression.scheme", "colorspace", "icc.profile.name",
+      "icc.profile.version" };
   // "creating.application.name"
 
   private PersistenceLayer persistence;
@@ -84,19 +86,102 @@ public class ProfileGenerator {
     }
   }
 
-  public Document generateProfile(final String collection, final String filter) {
+  public Document generateProfile(Filter filter) {
     final BasicDBObject ref = new BasicDBObject();
-    ref.put("collection", collection);
-
+    ref.put("collection", filter.getCollection());
     final long count = this.persistence.count(Constants.TBL_ELEMENTS, ref);
 
     final Document document = DocumentHelper.createDocument();
-    final Element root = this.createRootElement(document, collection, count);
-    final Element partitions = this.createPartitionsElement(root, filter);
 
-    this.createPartitions(collection, partitions, filter);
+    final Element root = this.createRootElement(document, filter.getCollection(), count);
+    final Element partition = this.createPartition(root, filter);
+    final Element properties = this.createPropertiesElement(partition);
+    this.generateProperties(filter, properties);
+    this.createElements(filter, partition);
 
     return document;
+  }
+
+  // TODO serialize the filter better, not with the temp id.
+  private Element createPartition(Element root, Filter filter) {
+    BasicDBObject query = this.getFilterQuery(filter);
+
+    DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, query);
+
+    final Element partition = root.addElement("partition").addAttribute("filter", filter.getId())
+        .addAttribute("occurrences", cursor.count() + "");
+    return partition;
+  }
+
+  private void generateProperties(final Filter filter, final Element properties) {
+    final List<Property> allprops = this.getProperties(this.persistence.findAll(Constants.TBL_PROEPRTIES));
+    final BasicDBObject query = new BasicDBObject("_id", null);
+
+    for (Property p : allprops) {
+      final BasicDBObject ref = this.getFilterQuery(filter);
+      ref.put("metadata." + p.getId() + ".value", new BasicDBObject("$exists", true));
+      final int count = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+
+      if (count != 0) {
+        this.createPropertyElement(filter, properties, p, count);
+      }
+    }
+  }
+  
+  private void createPropertyElement(final Filter filter, final Element properties, final Property p, int count) {
+    final Element prop = properties.addElement("property").addAttribute("id", p.getKey())
+        .addAttribute("type", p.getType()).addAttribute("count", count + "");
+
+    final PropertyType type = PropertyType.valueOf(p.getType());
+
+    switch (type) {
+      case STRING:
+        this.processStringProperty(filter, prop, p);
+        break;
+      case BOOL:
+        this.processBoolProperty(filter, prop, p);
+        break;
+      case INTEGER:
+      case FLOAT:
+        this.processNumericProperty(filter, prop, p);
+        break;
+    }
+  }
+
+  private BasicDBObject getFilterQuery(Filter filter) {
+    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
+    Filter tmp = filter;
+    do {
+
+      if (tmp.getProperty() == null || tmp.getValue() == null) {
+        tmp = tmp.getParent();
+        continue;
+      } else {
+        if (tmp.getValue().equals("Unknown")) {
+          query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
+        } else {
+          query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
+        }
+      }
+
+      tmp = tmp.getParent();
+    } while (tmp != null);
+
+    System.out.println("FilterQuery: " + query);
+    return query;
+  }
+
+  private static Object inferValue(String value) {
+    Object result = value;
+    if (value.equalsIgnoreCase("true")) {
+      result = new Boolean(true);
+    }
+
+    if (value.equalsIgnoreCase("false")) {
+      result = new Boolean(false);
+    }
+
+    return result;
   }
 
   private Element createRootElement(final Document doc, final String collection, final long count) {
@@ -107,79 +192,17 @@ public class ProfileGenerator {
     return profile;
   }
 
-  private Element createPartitionsElement(final Element root, final String filter) {
-    return root.addElement("partitions").addAttribute("filter", filter);
-  }
-
-  private void createPartitions(final String collection, final Element partitions, final String filter) {
-    // select filter values in collection (e.g. mimetype values)
-    final Map<String, Long> filterValues = this.getFilterValues(collection, filter);
-    final Property f = this.persistence.getCache().getProperty(filter);
-
-    for (final String value : filterValues.keySet()) {
-      final Element partition = partitions.addElement("partition").addAttribute("value", value)
-          .addAttribute("occurrences", filterValues.get(value) + "");
-      final Element properties = this.createPropertiesElement(partition);
-
-      final PropertyAggregation aggr = new PropertyAggregation(collection, f, value);
-      this.createProperties(aggr, properties);
-      this.createElements(aggr, partition);// TODO make this optional.
-
-    }
-
-    // TODO representatives?
-    // shall we add them based on partitions
-    // or based on the whole collection?
-  }
-
-  private Map<String, Long> getFilterValues(final String collection, final String filter) {
-    final Map<String, Long> res = new HashMap<String, Long>();
-    final HistogramJob job = new HistogramJob(collection, filter);
-    final MapReduceOutput output = job.execute();
-    final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
-
-    for (final BasicDBObject dbo : results) {
-      res.put(dbo.getString("_id"), dbo.getLong("value"));
-
-    }
-
-    return res;
-  }
-
-  private void createProperties(final PropertyAggregation pa, final Element properties) {
-    final List<Property> allprops = this.getProperties(this.persistence.findAll(Constants.TBL_PROEPRTIES));
-    final BasicDBObject query = new BasicDBObject("_id", null);
-    
-
-    for (Property p : allprops) {
-      if (!p.getKey().equals(pa.filter.getKey())) {
-        final BasicDBObject ref = new BasicDBObject("collection", pa.collection);
-        
-        ref.put("metadata." + pa.filter.getId() + ".value", pa.value);
-        ref.put("metadata." + p.getId() + ".value", new BasicDBObject("$exists", true));
-
-        final int count = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-
-        if (count != 0) {
-          this.createPropertyElement(pa, properties, p, count);
-        }
-      }
-    }
-  }
-
   private Element createPropertiesElement(final Element partition) {
     return partition.addElement("properties");
   }
 
-  private void createElements(final PropertyAggregation aggr, final Element partition) {
+  private void createElements(final Filter filter, final Element partition) {
     final Element elements = partition.addElement("elements");
-    
-    final BasicDBObject ref = new BasicDBObject("collection", aggr.collection);
-    ref.put("metadata." + aggr.filter.getId() + ".value", aggr.value);
-    
+
+    final BasicDBObject ref = this.getFilterQuery(filter);
     final BasicDBObject keys = new BasicDBObject("_id", null);
     keys.put("uid", 1);
-    
+
     final DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, ref, keys);
 
     while (cursor.hasNext()) {
@@ -189,46 +212,19 @@ public class ProfileGenerator {
 
   }
 
-  private void createPropertyElement(final PropertyAggregation pa, final Element properties, final Property p, int count) {
-    final Element prop = properties.addElement("property").addAttribute("id", p.getKey())
-        .addAttribute("type", p.getType()).addAttribute("count", count + "");
-
-    final PropertyType type = PropertyType.valueOf(p.getType());
-
-    switch (type) {
-      case STRING:
-        this.processStringProperty(pa, prop, p);
-        break;
-      case BOOL:
-        this.processBoolProperty(pa, prop, p);
-        break;
-      case INTEGER:
-      case FLOAT:
-        this.processNumericProperty(pa, prop, p);
-        break;
-    }
-  }
-
-  private void processStringProperty(final PropertyAggregation pa, final Element prop, final Property p) {
-    if (pa.filter.getId().equals(p.getId())) {
-      // skip the filter...
-      return;
-    }
+  private void processStringProperty(final Filter filter, final Element prop, final Property p) {
+//    if (pa.filter.getId().equals(p.getId())) {
+//      // skip the filter...
+//      return;
+//    }
 
     for (final String s : PROPERTIES) {
       if (p.getKey().equals(s)) {
 
-        final String map = Constants.HISTOGRAM_MAP.replaceAll("\\{\\}", p.getId());
-        final DBCollection elements = this.persistence.getDB().getCollection(Constants.TBL_ELEMENTS);
-        final BasicDBObject query = new BasicDBObject();
-        final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.HISTOGRAM_REDUCE, null,
-            OutputType.INLINE, query);
-
-        query.put("collection", pa.collection);
-        query.put("metadata." + pa.filter.getId() + ".value", pa.value);
-        query.put("metadata." + p.getId(), new BasicDBObject("$exists", true));
+        HistogramJob job = new HistogramJob(filter.getCollection(), p.getKey());
+        job.setFilterquery(this.getFilterQuery(filter));
         
-        final MapReduceOutput output = this.persistence.mapreduce(Constants.TBL_ELEMENTS, cmd);
+        final MapReduceOutput output = job.execute();
         final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 
         Collections.sort(results, new Comparator<BasicDBObject>() {
@@ -253,11 +249,10 @@ public class ProfileGenerator {
     }
   }
 
-  private void processBoolProperty(final PropertyAggregation pa, final Element prop, final Property p) {
+  private void processBoolProperty(final Filter filter, final Element prop, final Property p) {
     final BasicDBObject query = new BasicDBObject("_id", null);
-    final BasicDBObject ref = new BasicDBObject("collection", pa.collection);
+    final BasicDBObject ref = this.getFilterQuery(filter);
 
-    ref.put("metadata." + pa.filter.getId() + ".value", pa.value);
     ref.put("metadata." + p.getId() + ".value", true);
 
     final int yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
@@ -266,17 +261,13 @@ public class ProfileGenerator {
 
     final int no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
 
-    // String mode = (yes > no) ? "true" : "false";
-    // prop.addAttribute("mode", mode);
-
     prop.addElement("item").addAttribute("value", "true").addAttribute("count", yes + "");
     prop.addElement("item").addAttribute("value", "false").addAttribute("count", no + "");
   }
 
-  private void processNumericProperty(final PropertyAggregation pa, final Element prop, final Property p) {
-    final NumericAggregationJob job = new NumericAggregationJob(pa.collection, p.getId());
-    final BasicDBObject query = new BasicDBObject("collection", pa.collection);
-    query.put("metadata."+pa.filter.getId()+".value", pa.value);
+  private void processNumericProperty(final Filter filter, final Element prop, final Property p) {
+    final NumericAggregationJob job = new NumericAggregationJob(filter.getCollection(), p.getId());
+    final BasicDBObject query = this.getFilterQuery(filter);
     job.setFilterquery(query);
     final MapReduceOutput output = job.execute();
 

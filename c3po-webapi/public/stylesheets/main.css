@@ -476,6 +476,7 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
     margi-right: 5%;
     margin-top: 50px;
     padding: 30px;
+    padding-bottom: 40px;
     background-color: #FFF;
     border-radius: 3px;
     text-align:justify;
@@ -508,8 +509,7 @@ li.selected_filter {
 	margin:0px;
 }
 
-.pagination_button {
-	margin-top:10px;
+.green_button {
     -moz-box-shadow:inset 0px 1px 0px 0px #caefab;
     -webkit-box-shadow:inset 0px 1px 0px 0px #caefab;
     box-shadow:inset 0px 1px 0px 0px #caefab;
@@ -531,7 +531,7 @@ li.selected_filter {
     text-shadow:1px 1px 0px #aade7c;
 }
 
-.pagination_button:hover {
+.green_button:hover {
     background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #5cb811), color-stop(1, #77d42a) );
     background:-moz-linear-gradient( center top, #5cb811 5%, #77d42a 100% );
     filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#5cb811', endColorstr='#77d42a');
@@ -539,7 +539,7 @@ li.selected_filter {
     color:#306108;
 }
 
-.pagination_button:active {
+.green_button:active {
     position:relative;
     top:1px;
     color:#306108;
@@ -566,6 +566,21 @@ li.selected_filter {
 	margin-left: 10px;
 	height:300px;
 	width:450px;
+}
+
+.export ul {
+	margin:0px !important;
+	padding-left:0px;
+}
+
+.export li{
+	margin-top: 20px;
+	list-style: none;
+}
+
+.export li a {
+	margin-left:50px;
+	float:right;
 }
 
 #spinner {

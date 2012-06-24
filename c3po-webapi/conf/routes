@@ -6,32 +6,27 @@
 GET     /                                 controllers.Application.index()
 GET     /c3po                             controllers.Application.index()
 GET     /clear                            controllers.Application.clear()
-
-#Misc
 POST    /collection                       controllers.Application.setCollection(name: String)
+
+# Filter
 GET     /filter                           controllers.FilterController.get(uid: String)
 DELETE  /filter                           controllers.FilterController.remove(uid: String)
 POST    /filter                           controllers.FilterController.add()
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()
-#GET     /overview/filter                  controllers.Overview.filter()
 
 # Elements Page
-GET     /objects                                            controllers.Elements.index()
-#GET     /objects/list                                       controllers.Elements.list()
-GET     /objects/:id                                        controllers.Elements.show(id: String)
+GET     /objects                          controllers.Elements.index()
+GET     /objects/:id                      controllers.Elements.show(id: String)
 
 # Samples Page
-GET     /samples                                controllers.Samples.index()
-#GET     /samples/collection/:name               controllers.Samples.show(name: String, f = "none")
-#GET     /samples/collection/:name/filter/:f     controllers.Samples.show(name: String, f: String)
-
-# Queries
+GET     /samples                          controllers.Samples.index()
 
 # Export Page
-GET     /export                                 controllers.Export.index()
-#GET    /export/matrix/collection/:name         controllers.Export.matrix(name: String)
+GET     /export                           controllers.Export.index()
+GET     /export/profile                   controllers.Export.xml()
+GET     /export/matrix                    controllers.Export.csv()
     
 
 

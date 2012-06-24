@@ -1,24 +1,99 @@
-@(title: String, collections: List[String])
+@(title: String, collections: List[String]) @main(title, collections){
+<div class="content">
+<script type="text/javascript">
+          $(document).ready(function(){
+              
+               var visible = false;
+               $('#collections_btn').click(function(event) {
+                   visible = $("#collections").is(":visible");
+                   if (visible == true) {
+                      $('#collections').slideUp("fast");
+                   } else {
+                       $('#collections').slideDown("normal");
+                   }
 
-@main(title, collections){
-        <div class="content">
-            <h2>Export</h2>
-            <p>
-              Currently, there are three possiblities for data export.
-              First, you can export a machine readable profile of your current filter, which can be used as input in the 
-              <a href="http://ifs.tuwien.ac.at/dp/plato" target="_blanl">Planning Tool Plato</a>.
-            </p>
-            <p>
-              Second, you can export a '.csv' file containing all the data for the selected collection, or third - a '.csv' file containing
-              only the current filter. In other words a sparse matrix over all known properties for each element. This '.csv' file is very helpful for further analysis with the help
-              of spreadsheet software such as <a href="http://www.libreoffice.org/" target="_blank">Libre Office</a> or
-              <a href="http://office.microsoft.com/en-us/excel/" target="_blank">Microsoft Excel</a>. 
-            </p>
-        </div>
-        <div class="content">
-            <h2>Plato</h2>
-        </div>
-        <div class="content">
-            <h2>CSV</h2>
-        </div>
+               });
+
+               $('#partitions_btn').click(function(event) {
+                   visible = $("#partitions").is(":visible");
+                   if (visible == true) {
+                      $('#partitions').slideUp("fast");
+                   } else {
+                       $('#partitions').slideDown("normal");
+                   }
+
+               });
+
+               $('#filter_btn').click(function(event) {
+                   visible = $("#filter").is(":visible");
+                   if (visible == true) {
+                      $('#filter').slideUp("fast");
+                   } else {
+                       $('#filter').slideDown("normal");
+                   }
+
+               });
+
+               $("#collections select").click(function() {
+                   var collection = $(this).val();
+                   $.ajax ({
+                         type:     'POST',
+                         url:      '/collection?name='+collection,
+                         timeout:  5000,
+                         success:  function (oData) {
+                             startSpinner();
+                             $('#ajax_collection').text(collection);
+                             setTimeout(function() {
+                               window.location = '/export'
+                             }, 500);
+                         }
+                     });
+               });
+           });
+          
+          $(window).unload( function () { 
+              $('#spinner').css("opacity","1");
+          });
+
+          function request(path) {
+              startSpinner();
+        	  $('#spinner').css("opacity","1");
+        	  setTimeout(function() {
+        	  window.location = path;
+        	  }, 500);
+           }
+</script>
+  <h2>Export</h2>
+  <p>
+    Currently, there are three possiblities for data export. First, you can export a machine readable profile of your
+    current filter, which can be used as input in the <a href="http://ifs.tuwien.ac.at/dp/plato" target="_blanl">Planning
+      Tool Plato</a>.
+  </p>
+  <p>
+    Second, you can export a '.csv' file containing all the data for the selected collection, or third - a '.csv' file
+    containing only the current filter. In other words a sparse matrix over all known properties for each element. This
+    '.csv' file is very helpful for further analysis with the help of spreadsheet software such as <a
+      href="http://www.libreoffice.org/" target="_blank">Libre Office</a> or <a
+      href="http://office.microsoft.com/en-us/excel/" target="_blank">Microsoft Excel</a>.
+  </p>
+</div>
+<div class="content">
+  <h2>Plato</h2>
+  <div class="export">
+  <ul>
+    <li>I want to create a real preservation action plan with Plato! <a class="green_button" href="javascript:request('/export/profile')">Download</a></li>
+  </ul>
+  </div>
+</div>
+<div class="content">
+  <h2>CSV</h2>
+  <div class="export">
+    <ul>
+      <li>I want to export the current filter as a .csv file!
+      <a class="green_button" href="javascript:request('/export/matrix')">Download</a></li>
+      <li>I want to export <u>all data</u> in the collection as a .csv file!
+      <a class="green_button" href="javascript:request('/export/matrix')">Download</a></li>
+    </ul>
+  </div>
+</div>
 }

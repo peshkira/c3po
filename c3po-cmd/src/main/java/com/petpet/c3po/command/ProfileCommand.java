@@ -32,13 +32,13 @@ public class ProfileCommand implements Command {
 
     this.pLayer = configurator.getPersistence();
     final ProfileGenerator gen = new ProfileGenerator(this.pLayer);
-
-    final String name = this.getCollectionName();
-    final Document profile = gen.generateProfile(name, "mimetype");// parametrize
-                                                                   // this.
-
-    gen.write(profile, this.getOutputFile(name));
-
+//
+//    final String name = this.getCollectionName();
+//    final Document profile = gen.generateProfile(name, "mimetype");// parametrize
+//                                                                   // this.
+//
+//    gen.write(profile, this.getOutputFile(name));
+//
     final long end = System.currentTimeMillis();
     this.time = end - start;
   }
