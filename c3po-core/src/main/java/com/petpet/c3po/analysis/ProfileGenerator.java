@@ -90,11 +90,25 @@ public class ProfileGenerator {
 
     final Element root = this.createRootElement(document, filter.getCollection(), count);
     final Element partition = this.createPartition(root, filter);
+    this.genereateFilterElement(partition, filter);
     final Element properties = this.createPropertiesElement(partition);
     this.generateProperties(filter, properties);
     this.createElements(filter, partition);
 
     return document;
+  }
+
+  private void genereateFilterElement(Element partition, Filter filter) {
+    Element elmntFilter = partition.addElement("filter");
+    elmntFilter.addAttribute("id", filter.getId());
+    BasicDBObject query = this.getFilterQuery(filter);
+    Element parameters = elmntFilter.addElement("parameters");
+    for (String key : query.keySet()) {
+      Element parameter = parameters.addElement("parameter");
+      parameter.addElement("name").addText(key);
+      parameter.addElement("value").addText(query.getString(key));
+    }
+
   }
 
   // TODO serialize the filter better, not with the temp id.
@@ -103,9 +117,7 @@ public class ProfileGenerator {
 
     DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, query);
 
-    final Element partition = root.addElement("partition").addAttribute("filter", filter.getId())
-        .addAttribute("occurrences", cursor.count() + "");
-    partition.addElement("filter").addText(query.toString());
+    final Element partition = root.addElement("partition").addAttribute("count", cursor.count() + "");
     return partition;
   }
 
@@ -184,7 +196,7 @@ public class ProfileGenerator {
 
   private Element createRootElement(final Document doc, final String collection, final long count) {
     final Element profile = doc.addElement("profile").addAttribute("version", Constants.PROFILE_FORMAT_VERSION)
-        .addAttribute("collection", collection).addAttribute("date", new Date().getTime() + "")
+        .addAttribute("collection", collection).addAttribute("date", new Date() + "")
         .addAttribute("count", count + "");
 
     return profile;
@@ -254,7 +266,7 @@ public class ProfileGenerator {
     if (ref.get(key) != null && ref.get(key).toString().equals("{ \"$exists\" : false}")) {
       prop.getParent().remove(prop);
       return;
-      
+
     } else if (ref.get(key) != null) {
       if (ref.getBoolean(key)) {
         yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
@@ -269,7 +281,7 @@ public class ProfileGenerator {
       no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
 
     }
-    
+
     prop.addElement("item").addAttribute("value", "true").addAttribute("count", yes + "");
     prop.addElement("item").addAttribute("value", "false").addAttribute("count", no + "");
 
