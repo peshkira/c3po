@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -21,11 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.MapReduceCommand;
-import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
@@ -39,9 +34,9 @@ public class ProfileGenerator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProfileGenerator.class);
 
-  private static final String[] PROPERTIES = { "format", "format.version", "puid", "mimetype", "charset", "linebreak",
-      "compressionscheme", "creating.os", "byteorder", "compression.scheme", "colorspace", "icc.profile.name",
-      "icc.profile.version" };
+  private static final String[] PROPERTIES = { "format", "format_version", "puid", "mimetype", "charset", "linebreak",
+      "compressionscheme", "creating_os", "byteorder", "compression_scheme", "colorspace", "icc_profile_name",
+      "icc_profile_version" };
   // "creating.application.name"
 
   private PersistenceLayer persistence;
@@ -110,24 +105,28 @@ public class ProfileGenerator {
 
     final Element partition = root.addElement("partition").addAttribute("filter", filter.getId())
         .addAttribute("occurrences", cursor.count() + "");
+    partition.addElement("filter").addText(query.toString());
     return partition;
   }
 
   private void generateProperties(final Filter filter, final Element properties) {
     final List<Property> allprops = this.getProperties(this.persistence.findAll(Constants.TBL_PROEPRTIES));
-    final BasicDBObject query = new BasicDBObject("_id", null);
+    // final BasicDBObject query = new BasicDBObject("_id", null);
 
     for (Property p : allprops) {
       final BasicDBObject ref = this.getFilterQuery(filter);
-      ref.put("metadata." + p.getId() + ".value", new BasicDBObject("$exists", true));
-      final int count = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+      // if it is already in the query do not overwrite
+      if (!ref.containsField("metadata." + p.getId() + ".value")) {
+        ref.put("metadata." + p.getId() + ".value", new BasicDBObject("$exists", true));
+      }
+      final int count = this.persistence.find(Constants.TBL_ELEMENTS, ref).count();
 
       if (count != 0) {
         this.createPropertyElement(filter, properties, p, count);
       }
     }
   }
-  
+
   private void createPropertyElement(final Filter filter, final Element properties, final Property p, int count) {
     final Element prop = properties.addElement("property").addAttribute("id", p.getKey())
         .addAttribute("type", p.getType()).addAttribute("count", count + "");
@@ -167,7 +166,6 @@ public class ProfileGenerator {
       tmp = tmp.getParent();
     } while (tmp != null);
 
-    System.out.println("FilterQuery: " + query);
     return query;
   }
 
@@ -213,17 +211,12 @@ public class ProfileGenerator {
   }
 
   private void processStringProperty(final Filter filter, final Element prop, final Property p) {
-//    if (pa.filter.getId().equals(p.getId())) {
-//      // skip the filter...
-//      return;
-//    }
-
     for (final String s : PROPERTIES) {
       if (p.getKey().equals(s)) {
 
         HistogramJob job = new HistogramJob(filter.getCollection(), p.getKey());
         job.setFilterquery(this.getFilterQuery(filter));
-        
+
         final MapReduceOutput output = job.execute();
         final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 
@@ -252,17 +245,34 @@ public class ProfileGenerator {
   private void processBoolProperty(final Filter filter, final Element prop, final Property p) {
     final BasicDBObject query = new BasicDBObject("_id", null);
     final BasicDBObject ref = this.getFilterQuery(filter);
+    final String key = "metadata." + p.getId() + ".value";
+    int yes = 0;
+    int no = 0;
 
-    ref.put("metadata." + p.getId() + ".value", true);
+    // when it equals uknown remove the elment.
+    // TODO when it equals conflicted.
+    if (ref.get(key) != null && ref.get(key).toString().equals("{ \"$exists\" : false}")) {
+      prop.getParent().remove(prop);
+      return;
+      
+    } else if (ref.get(key) != null) {
+      if (ref.getBoolean(key)) {
+        yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+      } else {
+        no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+      }
+    } else {
+      ref.put(key, true);
+      yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
 
-    final int yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+      ref.put(key, false);
+      no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
 
-    ref.put("metadata." + p.getId() + ".value", false);
-
-    final int no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-
+    }
+    
     prop.addElement("item").addAttribute("value", "true").addAttribute("count", yes + "");
     prop.addElement("item").addAttribute("value", "false").addAttribute("count", no + "");
+
   }
 
   private void processNumericProperty(final Filter filter, final Element prop, final Property p) {
