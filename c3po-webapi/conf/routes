@@ -6,7 +6,8 @@
 GET     /                                 controllers.Application.index()
 GET     /c3po                             controllers.Application.index()
 GET     /clear                            controllers.Application.clear()
-POST    /collection                       controllers.Application.setCollection(name: String)
+GET     /collections                      controllers.Application.getCollections()
+POST    /collections                       controllers.Application.setCollection(name: String)
 
 # Filter
 GET     /filter                           controllers.FilterController.get(uid: String)
@@ -25,7 +26,7 @@ GET     /samples                          controllers.Samples.index()
 
 # Export Page
 GET     /export                           controllers.Export.index()
-GET     /export/profile                   controllers.Export.xml()
+GET     /export/profile                   controllers.Export.profile()
 GET     /export/matrix                    controllers.Export.csv()
     
 

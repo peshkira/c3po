@@ -41,7 +41,7 @@
                    var collection = $(this).val();
                    $.ajax ({
                          type:     'POST',
-                         url:      '/collection?name='+collection,
+                         url:      '/collections?name='+collection,
                          timeout:  5000,
                          success:  function (oData) {
                         	 startSpinner();

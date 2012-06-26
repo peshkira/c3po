@@ -9,15 +9,12 @@ import play.mvc.Result;
 import views.html.index;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
-import com.sun.tools.internal.jxc.apt.Const;
-
 import common.WebAppConstants;
 
 public class Application extends Controller {
@@ -74,6 +71,42 @@ public class Application extends Controller {
     }
 
     return ok();
+  }
+
+  public static Result getCollections() {
+    Logger.debug("Received a get collections call");
+    final String accept = request().getHeader("Accept");
+
+    if (accept.contains("*/*") || accept.contains("application/xml")) {
+      return collectionsAsXml();
+    } else if (accept.contains("application/json")) {
+      return collectionsAsXml();
+    }
+
+    return badRequest("The accept header is not supported");
+  }
+
+  public static Result collectionsAsXml() {
+    final List<String> names = Application.getCollectionNames();
+    final StringBuffer resp = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+
+    resp.append("<collections>\n");
+
+    for (String s : names) {
+      resp.append("<collection name=\"" + s + "\" />\n");
+    }
+
+    resp.append("</collections>\n");
+
+    response().setContentType("text/xml");
+
+    return ok(resp.toString());
+  }
+
+  public static Result collectionsAsJson() {
+    final List<String> names = Application.getCollectionNames();
+    response().setContentType("application/json");
+    return ok(play.libs.Json.toJson(names));
   }
 
   public static List<String> getCollectionNames() {
