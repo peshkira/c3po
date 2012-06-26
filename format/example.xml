@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile xmlns="http://ifs.tuwien.ac.at/dp/c3po" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" collection="fao" date="Tue Jun 26 17:16:14 CEST 2012" count="42038">
+<partition count="16">
+<filter id="19b9e5e1-837d-44d7-b868-bb18a853da1f">
+<parameters>
+<parameter>
+<name>collection</name>
+<value>fao</value>
+</parameter>
+<parameter>
+<name>metadata.valid.value</name>
+<value>true</value>
+</parameter>
+<parameter>
+<name>metadata.mimetype.value</name>
+<value>{ "$exists" : false}</value>
+</parameter>
+</parameters>
+</filter>
+<properties>
+<property id="mimetype" type="STRING" count="16">
+<item id="Unknown" value="16"/>
+</property>
+<property id="format_version" type="STRING" count="16">
+<item id="1.6" value="15"/>
+<item id="1b" value="1"/>
+</property>
+<property id="puid" type="STRING" count="16">
+<item id="fmt/20" value="15"/>
+<item id="fmt/158" value="1"/>
+</property>
+<property id="size" type="INTEGER" count="16" sum="1.1777819E7" min="231940" max="1632101" avg="736113.6875" var="1.7924024358046487E11" sd="423367.7403634633"/>
+<property id="lastmodified" type="DATE" count="16"/>
+<property id="creating_application_name" type="STRING" count="16"/>
+<property id="checksum_md5" type="STRING" count="16"/>
+<property id="created" type="DATE" count="16"/>
+<property id="lastmodified_fs" type="DATE" count="16"/>
+<property id="wellformed" type="BOOL" count="16">
+<item value="true" count="16"/>
+<item value="false" count="0"/>
+</property>
+<property id="valid" type="BOOL" count="16">
+<item value="true" count="16"/>
+<item value="false" count="0"/>
+</property>
+<property id="title" type="STRING" count="11"/>
+<property id="author" type="STRING" count="11"/>
+<property id="pagecount" type="INTEGER" count="16" sum="116" min="2" max="24" avg="7.25" var="25.312499999999993" sd="5.031152949374526"/>
+<property id="is_tagged" type="BOOL" count="16">
+<item value="true" count="0"/>
+<item value="false" count="16"/>
+</property>
+<property id="has_outline" type="BOOL" count="16">
+<item value="true" count="0"/>
+<item value="false" count="16"/>
+</property>
+<property id="has_annotations" type="BOOL" count="16">
+<item value="true" count="0"/>
+<item value="false" count="16"/>
+</property>
+<property id="is_protected" type="BOOL" count="15">
+<item value="true" count="0"/>
+<item value="false" count="15"/>
+</property>
+<property id="has_forms" type="BOOL" count="15">
+<item value="true" count="11"/>
+<item value="false" count="4"/>
+</property>
+</properties>
+<elements>
+<element uid="\\extweb08\docrep_pdf\fao\010\a0255f\a0255f04.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a0255s\a0255s04.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a0664s\a0664s00.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a0664s\a0664s02.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a0664s\a0664s03.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a0664s\a0664s01.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a0799s\a0799s04.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1100e\a1100e01.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1250e\a1250e22.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1260e\a1260e03.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1260f\a1260f03.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1350e\a1350e01.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1350f\a1350f01.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1350f\a1350f05.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1350s\a1350s01.pdf"/>
+<element uid="\\extweb08\docrep_pdf\fao\010\a1350s\a1350s05.pdf"/>
+</elements>
+</partition>
+</profile>
