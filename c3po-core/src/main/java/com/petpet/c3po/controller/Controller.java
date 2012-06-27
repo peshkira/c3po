@@ -1,5 +1,6 @@
 package com.petpet.c3po.controller;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 
+//TODO generalize the gatherer with the interface.
 public class Controller {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
@@ -77,9 +79,9 @@ public class Controller {
     return this.persistence;
   }
 
-  public synchronized String getNext() {
-    List<String> next = this.gatherer.getNext(1);
-    String result = null;
+  public synchronized InputStream getNext() {
+    List<InputStream> next = this.gatherer.getNext(1);
+    InputStream result = null;
     if (next.isEmpty()) {
       LOGGER.info("Gathering process finished");
 
@@ -89,7 +91,7 @@ public class Controller {
 
     this.counter++;
 
-    if (counter % 500 == 0) {
+    if (counter % 1000 == 0) {
       LOGGER.info("Finished processing {} files", counter);
     }
 

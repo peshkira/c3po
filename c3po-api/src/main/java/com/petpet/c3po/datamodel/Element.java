@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.MetadataRecord.Status;
 import com.petpet.c3po.datamodel.Property.PropertyType;

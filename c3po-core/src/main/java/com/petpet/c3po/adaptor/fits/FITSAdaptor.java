@@ -1,11 +1,10 @@
 package com.petpet.c3po.adaptor.fits;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.RegexRules;
@@ -23,7 +22,7 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   private static final Logger LOG = LoggerFactory.getLogger(FITSAdaptor.class);
 
-  private String file;
+  private InputStream metadata;
 
   private Digester digester;
 
@@ -40,7 +39,7 @@ public class FITSAdaptor extends AbstractAdaptor {
   @Override
   public void configure(Map<String, Object> config) {
     this.setConfig(config);
-    
+
     this.inferDate = this.getBooleanConfig(Constants.CNF_INFER_DATE, false);
     this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
   }
@@ -140,35 +139,27 @@ public class FITSAdaptor extends AbstractAdaptor {
   }
 
   public Element getElement() {
-    InputStream stream = null;
-
-    try {
-      stream = new FileInputStream(this.file);
-    } catch (FileNotFoundException e) {
-      LOG.error("An exception occurred while looking for {}: {}", this.file, e.getMessage());
-    }
-
-    if (stream == null) {
+    if (this.metadata == null) {
       LOG.warn("The input stream is not set, skipping.");
       return null;
     }
 
     try {
       this.digester.push(new DigesterContext(this.getController().getPersistence().getCache()));
-      final DigesterContext context = (DigesterContext) this.digester.parse(stream);
+      final DigesterContext context = (DigesterContext) this.digester.parse(this.metadata);
       final Element element = this.postProcess(context);
 
       return element;
 
     } catch (IOException e) {
-      LOG.error("An exception occurred while processing {}: {}", this.file, e.getMessage());
+      LOG.error("An exception occurred while processing {}: {}", this.metadata, e.getMessage());
     } catch (SAXException e) {
-      LOG.error("An exception occurred while parsing {}: {}", this.file, e.getMessage());
+      LOG.error("An exception occurred while parsing {}: {}", this.metadata, e.getMessage());
     } finally {
       try {
-        stream.close();
+        this.metadata.close();
       } catch (IOException ioe) {
-        LOG.error("An exception occurred while closing {}: {}", this.file, ioe.getMessage());
+        LOG.error("An exception occurred while closing {}: {}", this.metadata, ioe.getMessage());
       }
     }
 
@@ -187,9 +178,9 @@ public class FITSAdaptor extends AbstractAdaptor {
         element.extractCreatedMetadataRecord(this.getController().getPersistence().getCache().getProperty("created"));
       }
 
+      // if for some reason there was no uid, set a random one.
       if (element.getUid() == null) {
-        element.setUid(this.file);
-        // potentially problematic for non fs input.
+        element.setUid(UUID.randomUUID().toString());
       }
     }
 
@@ -198,11 +189,11 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   @Override
   public void run() {
-    String next = this.getController().getNext();
+    InputStream next = this.getController().getNext();
 
     while (next != null) {
       try {
-        this.file = next;
+        this.metadata = next;
 
         final Element element = this.getElement();
 
@@ -210,14 +201,14 @@ public class FITSAdaptor extends AbstractAdaptor {
           this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
 
         } else {
-          LOG.warn("No element could be extracted for file {}", file);
+          LOG.warn("No element could be extracted for file {}", metadata);
           // potentially move file to some place for further investigation.
         }
 
       } catch (Exception e) {
         // save thread from dying due to processing error...
-        LOG.warn("An exception occurred for file '{}': {}", file, e.getMessage());
-//        e.printStackTrace();
+        LOG.warn("An exception occurred for file '{}': {}", metadata, e.getMessage());
+        // e.printStackTrace();
       }
 
       next = this.getController().getNext();

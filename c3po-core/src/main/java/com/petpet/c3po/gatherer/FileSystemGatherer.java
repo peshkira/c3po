@@ -2,6 +2,9 @@ package com.petpet.c3po.gatherer;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +12,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.api.MetaDataGatherer;
 import com.petpet.c3po.common.Constants;
 
-public class FileSystemGatherer {
+public class FileSystemGatherer implements MetaDataGatherer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemGatherer.class);
 
@@ -20,6 +24,8 @@ public class FileSystemGatherer {
   private List<String> files;
 
   private long count;
+
+  private long remaining;
 
   private int pointer;
 
@@ -37,56 +43,36 @@ public class FileSystemGatherer {
     return this.count;
   }
 
-  private long count(File dir, FileFilter filter) {
-    long sum = 0;
-
-    if (dir.isDirectory()) {
-      File[] files = dir.listFiles(filter);
-      for (File f : files) {
-        sum += count(f, filter);
-      }
-    } else {
-      return ++sum;
-    }
-
-    return sum;
+  @Override
+  public long getRemaining() {
+    return this.remaining;
   }
 
-  public List<String> getNext(int count) {
-    List<String> next = new ArrayList<String>();
+  public List<InputStream> getNext(int nr) {
+    List<InputStream> next = new ArrayList<InputStream>();
 
-    if (count <= 0) {
+    if (nr <= 0) {
       return next;
     }
 
-    while (pointer < files.size() && count > 0) {
-      // try {
-      next.add(this.files.get(pointer++));
-      count--;
-      // } catch (FileNotFoundException e) {
-      // e.printStackTrace();
-      // }
+    while (this.pointer < this.files.size() && nr > 0) {
+      try {
+        nr--;
+        this.remaining--;
+        next.add(new FileInputStream(this.files.get(pointer++)));
+      } catch (FileNotFoundException e) {
+        LOG.warn("File '{}' not found: {}", this.files.get(this.pointer), e.getMessage());
+      }
     }
 
     return next;
   }
 
-  public List<String> getAll() {
-    List<String> all = new ArrayList<String>();
-    for (String path : this.files) {
-      // try {
-      all.add(path);
-      // } catch (FileNotFoundException e) {
-      // e.printStackTrace();
-      // }
-    }
-    return all;
-  }
-
-  // TODO fix constants.
   private void init() {
     this.files = new ArrayList<String>();
     this.pointer = 0;
+    this.count = -1;
+    this.remaining = -1;
     String path = (String) this.config.get(Constants.CNF_COLLECTION_LOCATION);
     boolean recursive = (Boolean) this.config.get(Constants.CNF_RECURSIVE);
 
@@ -103,20 +89,26 @@ public class FileSystemGatherer {
     }
 
     final XMLFileFilter filter = new XMLFileFilter(recursive);
-    this.traverseFiles(dir, filter);
-    this.count = this.count(dir, filter);
+
+    this.count = this.traverseFiles(dir, filter);
+    this.remaining = this.count;
 
   }
 
-  private void traverseFiles(File file, FileFilter filter) {
+  private long traverseFiles(File file, FileFilter filter) {
+    long sum = 0;
+
     if (file.isDirectory()) {
       File[] files = file.listFiles(filter);
       for (File f : files) {
-        traverseFiles(f, filter);
+        sum += traverseFiles(f, filter);
       }
     } else {
       this.files.add(file.getAbsolutePath());
+      sum++;
     }
+
+    return sum;
   }
 
   private class XMLFileFilter implements FileFilter {
@@ -138,5 +130,4 @@ public class FileSystemGatherer {
     }
 
   }
-
 }
