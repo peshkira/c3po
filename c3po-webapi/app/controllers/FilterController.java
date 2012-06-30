@@ -71,10 +71,13 @@ public class FilterController extends Controller{
 
       // query histogram to check the value of the filter that was selected
       final Graph graph = getGraph(filter, f);
-      if (f.equals("valid") || f.equals("wellformed")) {
-        graph.convertToPercentage();
-      }
+//      if (f.equals("valid") || f.equals("wellformed")) {
+//        graph.convertToPercentage();
+//      }
       graph.sort();
+      if (f.equals("creating_application_name")) {
+        graph.cutLongTail();
+      }
 
       final String filtervalue = graph.getKeys().get(value);
 

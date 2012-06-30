@@ -42,6 +42,7 @@ public class Overview extends Controller {
       final Graph versions;
       final Graph valid;
       final Graph wf;
+      final Graph creatingapp;
       Logger.info("filter is not null");
       if (filter.getParent() == null) {
         Logger.info("filter has no parent, using cached statistics");
@@ -52,6 +53,7 @@ public class Overview extends Controller {
         versions = FilterController.getGraph(filter.getCollection(), "format_version");
         valid = FilterController.getGraph(filter.getCollection(), "valid");
         wf = FilterController.getGraph(filter.getCollection(), "wellformed");
+        creatingapp = FilterController.getGraph(filter.getCollection(), "creating_application_name");
 
       } else {
         // calculate new results
@@ -62,17 +64,20 @@ public class Overview extends Controller {
         versions = FilterController.getGraph(filter, "format_version");
         valid = FilterController.getGraph(filter, "valid");
         wf = FilterController.getGraph(filter, "wellformed");
+        creatingapp = FilterController.getGraph(filter, "creating_application_name");
       }
 
       mimes.sort();
       formats.sort();
       versions.sort();
-      valid.convertToPercentage();
+//      valid.convertToPercentage();
       valid.sort();
-      wf.convertToPercentage();
+//      wf.convertToPercentage();
       wf.sort();
+      creatingapp.sort();
+      creatingapp.cutLongTail();
 
-      data = new GraphData(Arrays.asList(mimes, formats, versions, valid, wf));
+      data = new GraphData(Arrays.asList(mimes, formats, versions, valid, wf, creatingapp));
     }
     return ok(overview.render(names, data, stats));
   }

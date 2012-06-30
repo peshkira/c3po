@@ -115,6 +115,13 @@ $(document).ready(function(){
                   }
                 ]
             }
+
+            @if(g.getProperty().equals("creating_application_name")) {
+                var creatingapp = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                    ['@k', @g.getValues().get(i)],
+                  }
+                ]
+            }
          }
     ;
 
@@ -133,7 +140,7 @@ $(document).ready(function(){
                     // Here's where we tell the chart it is oriented horizontally.
                     rendererOptions: {
                         barDirection: 'vertical',
-                        barWidth: '15',
+                        barWidth: '12'
                     },
                     color: '#639B00'
                 },
@@ -199,8 +206,9 @@ $(document).ready(function(){
     var plot1 = $.jqplot('mimetypehistogram', [mimes], getBarChart("Mime Types"));
     var plot2 = $.jqplot('formathistogram', [formats], getBarChart("Formats"));
     var plot3 = $.jqplot('formatversionshistogram', [versions], getBarChart("Format Versions"));
-    var plot4 = $.jqplot('validhistogram', [valid], getPieChart("Valid"));
-    var plot5 = $.jqplot('wellformedhistogram', [wellformed], getPieChart("Well Formed"));
+    var plot4 = $.jqplot('validhistogram', [valid], getBarChart("Valid"));
+    var plot5 = $.jqplot('wellformedhistogram', [wellformed], getBarChart("Well Formed"));
+    var plot5 = $.jqplot('createdapphistogram', [creatingapp], getBarChart("Creating Application"));
     
     $('#mimetypehistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
@@ -218,6 +226,15 @@ $(document).ready(function(){
                 });
     });
 
+    
+    $('#formatversionshistogram').bind('jqplotDataClick', 
+            function (ev, seriesIndex, pointIndex, data) {
+            startSpinner();
+            $.post('/filter?filter=format_version&value='+pointIndex, function(data) {
+                window.location = '/overview';  
+                });
+    });
+
     $('#validhistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
     	     startSpinner();
@@ -230,6 +247,14 @@ $(document).ready(function(){
             function (ev, seriesIndex, pointIndex, data) {
     	        startSpinner();
     	        $.post('/filter?filter=wellformed&value='+pointIndex, function(data) {
+                    window.location = '/overview';  
+                    });
+    });
+
+    $('#createdapphistogram').bind('jqplotDataClick', 
+            function (ev, seriesIndex, pointIndex, data) {
+                startSpinner();
+                $.post('/filter?filter=creating_application_name&value='+pointIndex, function(data) {
                     window.location = '/overview';  
                     });
     });
@@ -259,6 +284,9 @@ $(document).ready(function(){
         <div class="span-24 last">
             <div id="validhistogram" class="dia_left"></div>
             <div id="wellformedhistogram" class="dia_right"></div>
+        </div>
+        <div class="span-24 last">
+            <div id="createdapphistogram" class="dia_full"></div>
         </div>
         </div>
         }

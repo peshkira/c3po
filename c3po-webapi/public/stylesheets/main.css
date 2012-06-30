@@ -473,7 +473,8 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 }
 
 .content {
-    margi-right: 5%;
+    margin-right: 5%;
+    margin-left:-5%;
     margin-top: 50px;
     padding: 30px;
     padding-bottom: 40px;
@@ -582,6 +583,12 @@ li.selected_filter {
     margin-left: 10px;
     height:300px;
     width:450px;
+}
+
+.dia_full {
+	margin-left: 10px;
+    height:300px;
+    width:940px;
 }
 
 .export ul {

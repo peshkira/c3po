@@ -19,7 +19,7 @@ import common.WebAppConstants;
 
 public class Application extends Controller {
 
-  public static final String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed" };
+  public static final String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed", "creating_application_name" };
 
   public static Result index() {
     return ok(index.render("c3po", getCollectionNames()));
