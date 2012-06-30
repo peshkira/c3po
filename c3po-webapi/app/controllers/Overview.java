@@ -39,6 +39,7 @@ public class Overview extends Controller {
     if (filter != null) {
       final Graph mimes;
       final Graph formats;
+      final Graph versions;
       final Graph valid;
       final Graph wf;
       Logger.info("filter is not null");
@@ -48,6 +49,7 @@ public class Overview extends Controller {
         stats = FilterController.getCollectionStatistics(filter.getCollection());
         mimes = FilterController.getGraph(filter.getCollection(), "mimetype");
         formats = FilterController.getGraph(filter.getCollection(), "format");
+        versions = FilterController.getGraph(filter.getCollection(), "format_version");
         valid = FilterController.getGraph(filter.getCollection(), "valid");
         wf = FilterController.getGraph(filter.getCollection(), "wellformed");
 
@@ -57,18 +59,20 @@ public class Overview extends Controller {
         stats = FilterController.getCollectionStatistics(filter);
         mimes = FilterController.getGraph(filter, "mimetype");
         formats = FilterController.getGraph(filter, "format");
+        versions = FilterController.getGraph(filter, "format_version");
         valid = FilterController.getGraph(filter, "valid");
         wf = FilterController.getGraph(filter, "wellformed");
       }
 
       mimes.sort();
       formats.sort();
+      versions.sort();
       valid.convertToPercentage();
       valid.sort();
       wf.convertToPercentage();
       wf.sort();
 
-      data = new GraphData(Arrays.asList(mimes, formats, valid, wf));
+      data = new GraphData(Arrays.asList(mimes, formats, versions, valid, wf));
     }
     return ok(overview.render(names, data, stats));
   }

@@ -3,13 +3,14 @@ import java.util.List;
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
+import play.mvc.Result;
+import views.html.defaultpages.notFound;
 
 import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
 
 public class Global extends GlobalSettings {
@@ -30,6 +31,17 @@ public class Global extends GlobalSettings {
   public void onStop(Application app) {
     Logger.info("Stopping c3po web app");
     super.onStop(app);
+  }
+  
+  @Override
+  public Result onBadRequest(String uri, String error){
+    Logger.error("Bad Request: " + uri + " " + error);
+    return super.onBadRequest(uri, error);
+  }
+  
+  public Result onHandlerNotFound(String uri) {
+    Logger.error("Handler not found: " + uri);
+    return super.onHandlerNotFound(uri);
   }
 
   private void calculateCollectionStatistics() {

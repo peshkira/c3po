@@ -94,6 +94,13 @@ $(document).ready(function(){
                   }
                 ]
             }
+            
+            @if(g.getProperty().equals("format_version")) {
+                var versions = [  @for((k, i) <- g.getKeys().zipWithIndex){
+                    ['@k', @g.getValues().get(i)],
+                  }
+                ]
+            }
 
             @if(g.getProperty().equals("valid")) {
                 var valid = [  @for((k, i) <- g.getKeys().zipWithIndex){
@@ -134,22 +141,41 @@ $(document).ready(function(){
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer ,
                     tickOptions: {
                       angle: -30,
-                      fontSize: '10pt'
+                      fontSize: '8pt'
                     }
                 },
                 axes: {
                     // Use a category axis on the x axis and use our custom ticks.
                     xaxis: {
                         renderer: $.jqplot.CategoryAxisRenderer,
+                        tickOptions: {
+                        	formatter: function (format, val) {
+                                if(val.length > 30) {
+                                     val = val.substring(0, 25) + '...';
+                                }
+                                return val;
+                            }
+                        }
                     },
                     // Pad the y axis just a little so bars can get close to, but
                     // not touch, the grid boundaries.  1.2 is the default padding.
                     yaxis: {
                         pad: 1.05,
-                        tickOptions: {formatString: '%d'}
+                        tickOptions: {
+                            formatString: '%d',
+                        }
                     }
                 },
-                sortData: true
+                cursor: {
+                    style: 'pointer',     // A CSS spec for the cursor type to change the
+                                            // cursor to when over plot.
+                    show: true,
+                    showTooltip: false,      // show a tooltip showing cursor position.
+                    useAxesFormatters: true,        // wether to use the same formatter and formatStrings
+                                                    // as used by the axes, or to use the formatString
+                                                    // specified on the cursor with sprintf.
+                }
+                            
             };
 
         return options;
@@ -172,8 +198,9 @@ $(document).ready(function(){
     
     var plot1 = $.jqplot('mimetypehistogram', [mimes], getBarChart("Mime Types"));
     var plot2 = $.jqplot('formathistogram', [formats], getBarChart("Formats"));
-    var plot3 = $.jqplot('validhistogram', [valid], getPieChart("Valid"));
-    var plot4 = $.jqplot('wellformedhistogram', [wellformed], getPieChart("Well Formed"));
+    var plot3 = $.jqplot('formatversionshistogram', [versions], getBarChart("Format Versions"));
+    var plot4 = $.jqplot('validhistogram', [valid], getPieChart("Valid"));
+    var plot5 = $.jqplot('wellformedhistogram', [wellformed], getPieChart("Well Formed"));
     
     $('#mimetypehistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
@@ -223,16 +250,21 @@ $(document).ready(function(){
             }
         </div>
         @if(graphs != null) {
-        <div class="span-16">
-        <div id="mimetypehistogram" class="dia"></div><span id="info"></span>
-        <div id="formathistogram" class="dia"></div>
-        <div id="validhistogram" class="dia"></div>
-        <div id="wellformedhistogram" class="dia"></div>
+        <div class="span-24">
+        <div id="mimetypehistogram" class="dia"></div>
+        <div class="span-24 last">
+            <div id="formathistogram" class="dia_left"></div>
+            <div id="formatversionshistogram" class="dia_right"></div>
+        </div>
+        <div class="span-24 last">
+            <div id="validhistogram" class="dia_left"></div>
+            <div id="wellformedhistogram" class="dia_right"></div>
+        </div>
         </div>
         }
    </div>
     @if(stats != null) {
-        <div id="statistics" class="span-5 last">
+        <div id="statistics" class="">
             <h4>Size Stats</h4><br/>
             Count : @stats.getCount()<br />
             Size : @stats.getSize() <br />

@@ -496,17 +496,19 @@ li.selected_filter {
 } 
 
 #statistics {
-	border: 1px solid #888;
-	margin-right: 10px;
+	border: 2px solid #888;
+	float:right;
+	margin-right: 0px;
 	margin-top: 20px;
-	background-color: #FFF;
 	padding: 15px;
+	color:#585858;
 	font-size: 14px;
-	border-radius: 5px;
+	border-radius: 3px;
 }
 
 #statistics h4 {
 	margin:0px;
+	color:#585858;
 }
 
 .green_button {
@@ -565,7 +567,21 @@ li.selected_filter {
 .dia {
 	margin-left: 10px;
 	height:300px;
-	width:450px;
+	width:400px;
+}
+
+.dia_left {
+	float:left;
+    margin-left: 10px;
+    height:300px;
+    width:450px;
+}
+
+.dia_right {
+    float:right;
+    margin-left: 10px;
+    height:300px;
+    width:450px;
 }
 
 .export ul {
@@ -594,5 +610,10 @@ li.selected_filter {
     position: fixed;
     vertical-align: middle;
     text-align: center;
+}
+
+#slogan {
+	color: #888;
+	font-size:10px;
 }
 
