@@ -38,10 +38,10 @@
                    var collection = $(this).val();
                    $.ajax ({
                          type:     'POST',
-                         url:      '/collections?name='+collection,
+                         url:      '/c3po/collections?name='+collection,
                          timeout:  5000,
                          success:  function (oData) {
-                             window.location = '/objects';
+                             window.location = '/c3po/objects';
                          }
                      });
                });
@@ -88,7 +88,7 @@
        } else {
           
           @for(e <- elements) {
-              <a href="/objects/@e.getId()">@e.getName()</a><br/>
+              <a href="/c3po/objects/@e.getId()">@e.getName()</a><br/>
           }
        }
        

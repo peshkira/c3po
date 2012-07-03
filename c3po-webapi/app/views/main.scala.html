@@ -70,7 +70,7 @@
         		        Accept : "application/json; charset=utf-8",
         		    },
                    type:     'GET',
-                   url:      '/properties',
+                   url:      '/c3po/properties',
                    timeout:  5000,
                    success:  function (oData) {
                      addNewPropertiesSelect(oData);                                         
@@ -101,7 +101,7 @@
                    var property = $(this).val();
                    $.ajax ({
                          type:     'GET',
-                         url:      '/filter/values?filter='+property+'&collection=@session.get("current.collection")',
+                         url:      '/c3po/filter/values?filter='+property+'&collection=@session.get("current.collection")',
                          timeout:  5000,
                          success:  function (oData) {
                              //TODO include type of property in response. Decide
@@ -132,13 +132,13 @@
       <ul class="clear">
         <li><a href="/c3po">Home</a>
         </li>
-        <li><a href="/overview">Overview</a>
+        <li><a href="/c3po/overview">Overview</a>
         </li>
-        <li><a href="/objects">Objects</a>
+        <li><a href="/c3po/objects">Objects</a>
         </li>
-        <li><a href="/samples">Representatives</a>
+        <li><a href="/c3po/samples">Representatives</a>
         </li>
-        <li><a href="/export">Export</a>
+        <li><a href="/c3po/export">Export</a>
         </li>
         <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" />
         </li>
@@ -164,7 +164,7 @@
       <script type="text/javascript">
             $.ajax ({
                 type:     'GET',
-                url:      '/filter?uid=@session.get("current.filter")',
+                url:      '/c3po/filter?uid=@session.get("current.filter")',
                 dataType:     'json',
                 timeout:  5000,
                 success:  function (oData) {

@@ -3,33 +3,34 @@
 # ~~~~
 
 # Home page
-GET     /                                 controllers.Application.index()
-GET     /c3po                             controllers.Application.index()
-GET     /clear                            controllers.Application.clear()
-GET     /collections                      controllers.Application.getCollections()
-POST    /collections                      controllers.Application.setCollection(name: String)
-GET     /properties                       controllers.Application.getProperties()
+#TODO remove the first in production...
+GET     /                                      controllers.Application.index()
+GET     /c3po                                  controllers.Application.index()
+GET     /c3po/clear                            controllers.Application.clear()
+GET     /c3po/collections                      controllers.Application.getCollections()
+POST    /c3po/collections                      controllers.Application.setCollection(name: String)
+GET     /c3po/properties                       controllers.Application.getProperties()
 
 # Filter
-GET     /filter                           controllers.FilterController.get(uid: String)
-DELETE  /filter                           controllers.FilterController.remove(uid: String)
-POST    /filter                           controllers.FilterController.add()
-GET     /filter/values                    controllers.FilterController.getValues()
+GET     /c3po/filter                           controllers.FilterController.get(uid: String)
+DELETE  /c3po/filter                           controllers.FilterController.remove(uid: String)
+POST    /c3po/filter                           controllers.FilterController.add()
+GET     /c3po/filter/values                    controllers.FilterController.getValues()
 
 # Collection Overview
-GET     /overview                         controllers.Overview.index()
+GET     /c3po/overview                         controllers.Overview.index()
 
 # Elements Page
-GET     /objects                          controllers.Elements.index()
-GET     /objects/:id                      controllers.Elements.show(id: String)
+GET     /c3po/objects                          controllers.Elements.index()
+GET     /c3po/objects/:id                      controllers.Elements.show(id: String)
 
 # Samples Page
-GET     /samples                          controllers.Samples.index()
+GET     /c3po/samples                          controllers.Samples.index()
 
 # Export Page
-GET     /export                           controllers.Export.index()
-GET     /export/profile                   controllers.Export.profile()
-GET     /export/matrix                    controllers.Export.csv()
+GET     /c3po/export                           controllers.Export.index()
+GET     /c3po/export/profile                   controllers.Export.profile()
+GET     /c3po/export/matrix                    controllers.Export.csv()
     
 
 

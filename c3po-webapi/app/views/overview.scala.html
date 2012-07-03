@@ -41,13 +41,13 @@
                    var collection = $(this).val();
                    $.ajax ({
                          type:     'POST',
-                         url:      '/collections?name='+collection,
+                         url:      '/c3po/collections?name='+collection,
                          timeout:  5000,
                          success:  function (oData) {
                         	 startSpinner();
                              $('#ajax_collection').text(collection);
                              setTimeout(function() {
-                               window.location = '/overview'
+                               window.location = '/c3po/overview'
                              }, 500);
                          }
                      });
@@ -213,16 +213,16 @@ $(document).ready(function(){
     $('#mimetypehistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
             startSpinner();
-            $.post('/filter?filter=mimetype&value='+pointIndex, function(data) {
-            	window.location = '/overview';  
+            $.post('/c3po/filter?filter=mimetype&value='+pointIndex, function(data) {
+            	window.location = '/c3po/overview';  
             	});
     });
 
     $('#formathistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
             startSpinner();
-            $.post('/filter?filter=format&value='+pointIndex, function(data) {
-                window.location = '/overview';  
+            $.post('/c3po/filter?filter=format&value='+pointIndex, function(data) {
+                window.location = '/c3po/overview';  
                 });
     });
 
@@ -230,32 +230,32 @@ $(document).ready(function(){
     $('#formatversionshistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
             startSpinner();
-            $.post('/filter?filter=format_version&value='+pointIndex, function(data) {
-                window.location = '/overview';  
+            $.post('/c3po/filter?filter=format_version&value='+pointIndex, function(data) {
+                window.location = '/c3po/overview';  
                 });
     });
 
     $('#validhistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
     	     startSpinner();
-    	     $.post('/filter?filter=valid&value='+pointIndex, function(data) {
-                 window.location = '/overview';  
+    	     $.post('/c3po/filter?filter=valid&value='+pointIndex, function(data) {
+                 window.location = '/c3po/overview';  
                  });
     });
 
     $('#wellformedhistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
     	        startSpinner();
-    	        $.post('/filter?filter=wellformed&value='+pointIndex, function(data) {
-                    window.location = '/overview';  
+    	        $.post('/c3po/filter?filter=wellformed&value='+pointIndex, function(data) {
+                    window.location = '/c3po/overview';  
                     });
     });
 
     $('#createdapphistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
                 startSpinner();
-                $.post('/filter?filter=creating_application_name&value='+pointIndex, function(data) {
-                    window.location = '/overview';  
+                $.post('/c3po/filter?filter=creating_application_name&value='+pointIndex, function(data) {
+                    window.location = '/c3po/overview';  
                     });
     });
     

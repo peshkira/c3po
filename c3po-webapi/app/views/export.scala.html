@@ -38,13 +38,13 @@
                    var collection = $(this).val();
                    $.ajax ({
                          type:     'POST',
-                         url:      '/collections?name='+collection,
+                         url:      '/c3po/collections?name='+collection,
                          timeout:  5000,
                          success:  function (oData) {
                              startSpinner();
                              $('#ajax_collection').text(collection);
                              setTimeout(function() {
-                               window.location = '/export'
+                               window.location = '/c3po/export'
                              }, 500);
                          }
                      });
@@ -81,7 +81,7 @@
   <h2>Plato</h2>
   <div class="export">
   <ul>
-    <li>I want to create a real preservation action plan with Plato! <a class="green_button" href="javascript:request('/export/profile')">Download</a></li>
+    <li>I want to create a real preservation action plan with Plato! <a class="green_button" href="javascript:request('/c3po/export/profile')">Download</a></li>
   </ul>
   </div>
 </div>
@@ -90,9 +90,9 @@
   <div class="export">
     <ul>
       <li>I want to export the current filter as a .csv file!
-      <a class="green_button" href="javascript:request('/export/matrix')">Download</a></li>
+      <a class="green_button" href="javascript:request('/c3po/export/matrix')">Download</a></li>
       <li>I want to export <u>all data</u> in the collection as a .csv file!
-      <a class="green_button" href="javascript:request('/export/matrix')">Download</a></li>
+      <a class="green_button" href="javascript:request('/c3po/export/matrix')">Download</a></li>
     </ul>
   </div>
 </div>
