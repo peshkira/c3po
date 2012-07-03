@@ -41,17 +41,6 @@
                          url:      '/collections?name='+collection,
                          timeout:  5000,
                          success:  function (oData) {
-                             // Process ...
-                             //$.ajax ({
-                             //    type:     'GET',
-                             //    url:      '/objects',
-                             //    timeout:  5000,
-                             //    success:  function (oData) {
-                                     // Process ...
-                             //        $('#ajax_collection').text(collection);
-                             //        $('#objects').replaceWith($(oData).find('#objects'));
-                             //    }
-                            // });
                              window.location = '/objects';
                          }
                      });
@@ -93,8 +82,6 @@
   @if(elements != null) {
      <div id="objects" class="content">     
      <h2>Objects</h2>
-    
-     
      
        @if(elements.isEmpty()) {
           The query returned an empty set. May be there are no more objects in the database or it is empty.

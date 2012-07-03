@@ -11,7 +11,7 @@
 <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.jqplot.min.css")" />
 <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/excanvas.js")"></script><![endif]-->
-<script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.barRenderer.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pieRenderer.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.categoryAxisRenderer.min.js")"></script>
@@ -63,6 +63,62 @@
               var spinner = new Spinner(opts).spin(target);
               $('#spinner').css("opacity","1");
               };
+
+           function addNewFilter() {
+        	   $.ajax ({
+        		   headers: { 
+        		        Accept : "application/json; charset=utf-8",
+        		    },
+                   type:     'GET',
+                   url:      '/properties',
+                   timeout:  5000,
+                   success:  function (oData) {
+                     addNewPropertiesSelect(oData);                                         
+                   }
+               });
+           };
+
+           function addNewPropertiesSelect(properties) {
+             var show = false; 
+             if ($('.propertyfilter:last')[0]) {
+                  if($('.propertyfilter:last select').length > 1) {
+                      show = true;
+                   } else {
+                      //shake???                       
+                   }
+             } else {
+                  show = true;
+             }
+
+             if (show) {
+        	   var div = $('<div class="propertyfilter"></div>').appendTo('#filter');
+               var sel = $('<select>').appendTo($(div));
+               $.each(properties, function(i, value) {
+                   $(sel).append($('<option>').text(value).attr('value', value));
+               });
+
+               $(sel).click(function() {
+                   var property = $(this).val();
+                   $.ajax ({
+                         type:     'GET',
+                         url:      '/filter/values?filter='+property+'&collection=@session.get("current.collection")',
+                         timeout:  5000,
+                         success:  function (oData) {
+                             //TODO include type of property in response. Decide
+                             // what to display based on type (ORDINAL, NUMERIC, DATE)
+                             addNewValuesSelect(oData);
+                         }
+                     });
+               });
+           }
+          };
+
+          function addNewValuesSelect(values) {
+              var sel = $('<select>').appendTo($('.propertyfilter:last'));
+              $.each(values, function(i, value) {
+                  $(sel).append($('<option>').text(value).attr('value', value));
+              });
+          }         
         </script>
 </head>
 <body>
@@ -103,8 +159,9 @@
   </div>
   <div id="partitions"></div>
   <div id="filter">
-    @if(session.get("current.filter")) {
-    <script type="text/javascript">
+    <div>
+      @if(session.get("current.filter")) {
+      <script type="text/javascript">
             $.ajax ({
                 type:     'GET',
                 url:      '/filter?uid=@session.get("current.filter")',
@@ -122,12 +179,17 @@
                 }
             });
             </script>
-    <h2>
-      Current Filter: <span id="c_filter"></span>
-    </h2>
-    } else {
-    <h2>No filter selected</h2>
-    }
+
+    <div class="addfilter">
+        <a class="green_button" href="javascript:addNewFilter()">+</a>
+    </div>
+      <h2>
+        Current Filter: <span id="c_filter"></span>
+      </h2>
+      } else {
+      <h2>No collection selected</h2>
+      }
+      </div>
   </div>
   <div class="container">@content</div>
   <div id="spinner"></div>

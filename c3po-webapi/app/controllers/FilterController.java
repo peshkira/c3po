@@ -2,6 +2,7 @@ package controllers;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import helpers.Graph;
@@ -104,6 +105,10 @@ public class FilterController extends Controller{
     }
 
     return badRequest("No filter was found in the session\n");
+  }
+  
+  public static Result getValues() {
+    return ok(play.libs.Json.toJson(Arrays.asList("one", "two", "three")));
   }
   
   public static Graph getGraph(String collection, String property) {

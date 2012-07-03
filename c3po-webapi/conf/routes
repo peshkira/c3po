@@ -7,12 +7,14 @@ GET     /                                 controllers.Application.index()
 GET     /c3po                             controllers.Application.index()
 GET     /clear                            controllers.Application.clear()
 GET     /collections                      controllers.Application.getCollections()
-POST    /collections                       controllers.Application.setCollection(name: String)
+POST    /collections                      controllers.Application.setCollection(name: String)
+GET     /properties                       controllers.Application.getProperties()
 
 # Filter
 GET     /filter                           controllers.FilterController.get(uid: String)
 DELETE  /filter                           controllers.FilterController.remove(uid: String)
 POST    /filter                           controllers.FilterController.add()
+GET     /filter/values                    controllers.FilterController.getValues()
 
 # Collection Overview
 GET     /overview                         controllers.Overview.index()

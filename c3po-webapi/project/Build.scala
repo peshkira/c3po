@@ -13,11 +13,12 @@ object ApplicationBuild extends Build {
       "org.apache.commons" % "commons-digester3" % "3.2",
       "org.apache.commons" % "commons-math" % "2.2",
       "org.mongodb" % "mongo-java-driver" % "2.7.2",
-      "org.slf4j" % "slf4j-log4j12" % "1.6.1"
+      "com.github.play2war" %% "play2-war-core" % "0.5"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
       // Add your own project settings here      
+      resolvers += "Play2war plugins release" at "http://repository-play-war.forge.cloudbees.com/release"
     )
 
 }

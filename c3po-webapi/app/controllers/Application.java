@@ -85,6 +85,25 @@ public class Application extends Controller {
 
     return badRequest("The accept header is not supported");
   }
+  
+  public static Result getProperties() {
+    Logger.debug("Received a get properties call");
+    final String accept = request().getHeader("Accept");
+    
+    if (accept.contains("*/*") || accept.contains("application/xml")) {
+      return TODO;
+    } else if (accept.contains("application/json")) {
+      return propertiesAsJson();
+    }
+    
+    return badRequest("The accept header is not supported");
+  }
+
+  private static Result propertiesAsJson() {
+    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+    List<String> properties = p.distinct(Constants.TBL_PROEPRTIES, "key");
+    return ok(play.libs.Json.toJson(properties));
+  }
 
   public static Result collectionsAsXml() {
     final List<String> names = Application.getCollectionNames();
