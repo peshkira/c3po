@@ -130,22 +130,14 @@
   <div class="navbar">
     <nav class="green">
       <ul class="clear">
-        <li><a href="/c3po">Home</a>
-        </li>
-        <li><a href="/c3po/overview">Overview</a>
-        </li>
-        <li><a href="/c3po/objects">Objects</a>
-        </li>
-        <li><a href="/c3po/samples">Representatives</a>
-        </li>
-        <li><a href="/c3po/export">Export</a>
-        </li>
-        <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" />
-        </li>
-        <li><img id="partitions_btn" src="@routes.Assets.at("images/filters/graph.png")" />
-        </li>
-        <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" />
-        </li>
+        <li><a href="/c3po">Home</a></li>
+        <li><a href="/c3po/overview">Overview</a></li>
+        <li><a href="/c3po/objects">Objects</a></li>
+        <li><a href="/c3po/samples">Representatives</a></li>
+        <li><a href="/c3po/export">Export</a></li>
+        <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" /></li>
+        <li><img id="partitions_btn" src="@routes.Assets.at("images/filters/graph.png")" /></li>
+        <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" /></li>
       </ul>
     </nav>
   </div>
@@ -161,35 +153,13 @@
   <div id="filter">
     <div>
       @if(session.get("current.filter")) {
-      <script type="text/javascript">
-            $.ajax ({
-                type:     'GET',
-                url:      '/c3po/filter?uid=@session.get("current.filter")',
-                dataType:     'json',
-                timeout:  5000,
-                success:  function (oData) {
-                     var filter = oData;
-                     var text = "" + filter.collection;
-                     while(filter.parent != null) {
-                        text += " AND " + filter.property + " = " + filter.value;
-                        filter = filter.parent;
-                     }
-  
-                     $('#c_filter').text(text);
-                }
-            });
-            </script>
-
-    <div class="addfilter">
+      <div class="addfilter">
         <a class="green_button" href="javascript:addNewFilter()">+</a>
-    </div>
-      <h2>
-        Current Filter: <span id="c_filter"></span>
-      </h2>
+      </div>
       } else {
       <h2>No collection selected</h2>
       }
-      </div>
+    </div>
   </div>
   <div class="container">@content</div>
   <div id="spinner"></div>

@@ -330,6 +330,7 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
     display:none;
     color: white;
     padding:10px;
+    overflow: scroll;
 }
 
 #filter h2{
