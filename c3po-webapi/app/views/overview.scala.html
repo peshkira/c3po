@@ -168,7 +168,7 @@ $(document).ready(function(){
     $('#mimetypehistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
             startSpinner();
-            $.post('/c3po/filter?filter=mimetype&value='+pointIndex, function(data) {
+            $.post('/c3po/filter?filter=mimetype&value='+pointIndex+'&type=graph', function(data) {
             	window.location = '/c3po/overview';  
             	});
     });
@@ -176,7 +176,7 @@ $(document).ready(function(){
     $('#formathistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
             startSpinner();
-            $.post('/c3po/filter?filter=format&value='+pointIndex, function(data) {
+            $.post('/c3po/filter?filter=format&value='+pointIndex+'&type=graph', function(data) {
                 window.location = '/c3po/overview';  
                 });
     });
@@ -185,7 +185,7 @@ $(document).ready(function(){
     $('#formatversionshistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
             startSpinner();
-            $.post('/c3po/filter?filter=format_version&value='+pointIndex, function(data) {
+            $.post('/c3po/filter?filter=format_version&value='+pointIndex+'&type=graph', function(data) {
                 window.location = '/c3po/overview';  
                 });
     });
@@ -193,7 +193,7 @@ $(document).ready(function(){
     $('#validhistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
     	     startSpinner();
-    	     $.post('/c3po/filter?filter=valid&value='+pointIndex, function(data) {
+    	     $.post('/c3po/filter?filter=valid&value='+pointIndex+'&type=graph', function(data) {
                  window.location = '/c3po/overview';  
                  });
     });
@@ -201,7 +201,7 @@ $(document).ready(function(){
     $('#wellformedhistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
     	        startSpinner();
-    	        $.post('/c3po/filter?filter=wellformed&value='+pointIndex, function(data) {
+    	        $.post('/c3po/filter?filter=wellformed&value='+pointIndex+'&type=graph', function(data) {
                     window.location = '/c3po/overview';  
                     });
     });
@@ -209,7 +209,7 @@ $(document).ready(function(){
     $('#createdapphistogram').bind('jqplotDataClick', 
             function (ev, seriesIndex, pointIndex, data) {
                 startSpinner();
-                $.post('/c3po/filter?filter=creating_application_name&value='+pointIndex, function(data) {
+                $.post('/c3po/filter?filter=creating_application_name&value='+pointIndex+'&type=graph', function(data) {
                     window.location = '/c3po/overview';  
                     });
     });

@@ -2,6 +2,7 @@ package com.petpet.c3po.analysis.mapreduce;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MapReduceCommand.OutputType;
+import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 
@@ -63,6 +64,6 @@ public abstract class MapReduceJob {
     this.filterquery = filterquery;
   }
   
-  
+  public abstract MapReduceOutput execute();
 
 }

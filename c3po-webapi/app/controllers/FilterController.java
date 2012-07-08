@@ -19,6 +19,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.analysis.mapreduce.HistogramJob;
+import com.petpet.c3po.analysis.mapreduce.MapReduceJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -65,18 +66,18 @@ public class FilterController extends Controller {
     Filter filter = Application.getFilterFromSession();
     BasicDBObject query = new BasicDBObject("descriminator", filter.getDescriminator());
     query.put("property", property);
-    
-     DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
-     if (cursor.count() == 0) {
-       Logger.debug("No filter found for property: " + property);
-     } else if (cursor.count() == 1) {
-       Logger.debug("Removing filter for property: " + property);
-       Filter tmp = DataHelper.parseFilter(cursor.next());
-       p.getDB().getCollection(Constants.TBL_FILTERS).remove(tmp.getDocument());
-     } else {
-       Logger.error("Something went wrong, while removing filter for property: " + property);
-       throw new RuntimeException("Two many filters found for property " + property);
-     }
+
+    DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
+    if (cursor.count() == 0) {
+      Logger.debug("No filter found for property: " + property);
+    } else if (cursor.count() == 1) {
+      Logger.debug("Removing filter for property: " + property);
+      Filter tmp = DataHelper.parseFilter(cursor.next());
+      p.getDB().getCollection(Constants.TBL_FILTERS).remove(tmp.getDocument());
+    } else {
+      Logger.error("Something went wrong, while removing filter for property: " + property);
+      throw new RuntimeException("Two many filters found for property " + property);
+    }
 
     // TODO change uid to property and value
     // find such property and value in the current filter and remove...
@@ -92,11 +93,13 @@ public class FilterController extends Controller {
       final DynamicForm form = form().bindFromRequest();
       final String f = form.get("filter");
       final String v = form.get("value");
-      try {
-        final int value = Integer.parseInt(v);
-        return addFromGraph(filter, f, value);
-      } catch (NumberFormatException nfe) {
+      final String t = form.get("type");
+
+      if (t == null || t.equals("normal")) {
         return addFromFilter(filter, f, v);
+      } else if (t.equals("graph")) {
+        int value = Integer.parseInt(v);
+        return addFromGraph(filter, f, value);
       }
     }
 
@@ -115,7 +118,7 @@ public class FilterController extends Controller {
       if (tmp.getProperty() != null && tmp.getProperty().equals(f)) {
         Logger.debug("Filter is already present, changing value");
         p.getDB().getCollection(Constants.TBL_FILTERS).remove(tmp.getDocument());
-        
+
         tmp.setValue(v);
         p.insert(Constants.TBL_FILTERS, tmp.getDocument());
         existing = true;
@@ -165,15 +168,20 @@ public class FilterController extends Controller {
   private static PropertyValuesFilter getValues(String c, String p) {
     Logger.debug("get property values filter for " + c + " and property " + p);
     final Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
-    final HistogramJob job = new HistogramJob(c, p);
+    final Property property = cache.getProperty(p);
+    final MapReduceJob job = new HistogramJob(c, p);
     final MapReduceOutput output = job.execute();
     final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
     final List<String> result = new ArrayList<String>();
+
     for (final BasicDBObject dbo : jobresults) {
-      result.add((dbo.getString("_id")));
+      String val = dbo.getString("_id");
+      if (val.endsWith(".0")) {
+        val = val.substring(0, val.length() - 2);
+      }
+      result.add(val);
     }
 
-    Property property = cache.getProperty(p);
     PropertyValuesFilter f = new PropertyValuesFilter();
     f.setProperty(property.getId());
     f.setType(property.getType());

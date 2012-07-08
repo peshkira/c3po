@@ -72,10 +72,8 @@
 
               @if(session.get("client.filter.show")){
                 @if(session.get("client.filter.show").equals("true")) {
-                    console.log('showing');
                     $('#filter').css('display', 'block');
                 } else {
-              	  console.log('hiding');
               	  $('#filter').css('display', 'none');
                 }
               }
@@ -99,7 +97,6 @@
 
               // build the current filter elements.
               $.get('/c3po/filters', function(data) {
-                  console.log(data);
                   $.each(data, function(i, pvf) {
                 	  addNewFilter();
                 	  var div = $('.propertyfilter')[i];
@@ -228,7 +225,7 @@
             
         	  var type = pvf.type;
 
-              if (type == "STRING" || type == "BOOL") {
+              if (type == "STRING" || type == "BOOL" || type == "DATE") {
                 
                 var sel = $('<select>').appendTo($(filterdiv));
                 var values = pvf.values;
@@ -239,7 +236,7 @@
                 $(sel).click(function() {
                 	var value = $(this).val();
                 	startSpinner();
-                    $.post('/c3po/filter?filter=' + pvf.property + '&value='+value, function(data) {
+                    $.post('/c3po/filter?filter=' + pvf.property + '&value='+value + '&type=normal', function(data) {
                         window.location.reload();
                         });
                 });
@@ -247,6 +244,7 @@
             	  console.log("property type selected " + pvf.type);
               } else if (type == "DATE") {
             	  console.log("property type selected " + pvf.type);
+                  
               }
           };
 
@@ -297,6 +295,13 @@
     } else {
     <h2>No collection selected</h2>
     }
+  </div>
+  <div id="filterpopup">
+    <div class="popupreason">The property you selected requires special settings. Please configure:</div>
+    <div class="popupconfig">
+        <label for="text"></label>
+        <input id="text" type="text"/>
+    </div>
   </div>
   <div class="container">@content</div>
   <div id="spinner"></div>

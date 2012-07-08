@@ -94,6 +94,16 @@ public final class Constants {
   public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'] != null && this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);} else {emit('Unknown', 1)}}";
 
   /**
+   * A javascript Map funcrtion for building a histogram over a specific date
+   * property. All occurrences of that property are used. If they are conflicted
+   * then they are aggregated under one key 'Conflcited'. If the property is
+   * missing, then the values are aggregated under the key 'Unknown'. Otherwise
+   * the year is used as the key. Note that there is a '{}' wildcard that has to
+   * be replaced with the id of the desired property, prior to usage.
+   */
+  public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value.getFullYear(), 1);}else{emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
+
+  /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
    */
   public static final String HISTOGRAM_REDUCE = "function reduce(key, values) {var res = 0;values.forEach(function (v) {res += v;});return res;}";

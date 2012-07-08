@@ -1,8 +1,9 @@
 package controllers;
 
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import play.Logger;
@@ -17,6 +18,8 @@ import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.datamodel.Property.PropertyType;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 import common.WebAppConstants;
@@ -59,16 +62,16 @@ public class Application extends Controller {
   }
 
   public static Result setSettings() {
-    
+
     DynamicForm form = form().bindFromRequest();
     String setting = form.get("setting");
     String value = form.get("value");
-    
+
     session().put(setting, value);
-    Logger.debug("changed setting '" + setting + "' to value: '" + value +"'");
+    Logger.debug("changed setting '" + setting + "' to value: '" + value + "'");
     return ok();
   }
-  
+
   public static Result getSettings() {
     return TODO;
   }
@@ -157,8 +160,9 @@ public class Application extends Controller {
   }
 
   public static BasicDBObject getFilterQuery(Filter filter) {
+    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
-    DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
+    DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
 
     BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
 
@@ -167,8 +171,24 @@ public class Application extends Controller {
       DBObject next = cursor.next();
       tmp = DataHelper.parseFilter(next);
       if (tmp.getValue() != null) {
+
+        Property property = pl.getCache().getProperty(tmp.getProperty());
+
         if (tmp.getValue().equals("Unknown")) {
           query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
+        } else if (property.getType().equals(PropertyType.DATE.toString())) {
+
+          Calendar cal = Calendar.getInstance();
+          cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
+          Date start = cal.getTime();
+          cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
+          Date end = cal.getTime();
+
+          BasicDBObject date = new BasicDBObject();
+          date.put("$lte", end);
+          date.put("$gte", start);
+
+          query.put("metadata." + tmp.getProperty() + ".value", date);
         } else {
           query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
         }

@@ -338,6 +338,28 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 	color: white;
 }
 
+#filterpopup{
+position:absolute;
+z-index:10;
+margin-left:25%;
+top: 35%;
+width:50%;
+height:200px;
+text-align:center;
+color:#FF0000;
+border: 4px solid #68A200;
+background-color:#FFF;
+border-radius: 5px;
+font: 14px Verdana, Arial, Helvetica, sans-serif;
+display: none;
+}
+
+#filterpopup .popupreason{
+	padding: 10px;
+	font-size: 12pt;
+	color: #888;
+}
+
 #addfilter {
 	float:right;
     margin-right:20px;
