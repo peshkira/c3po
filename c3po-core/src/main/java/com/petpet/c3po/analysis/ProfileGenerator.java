@@ -29,6 +29,7 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Property.PropertyType;
+import com.petpet.c3po.utils.DataHelper;
 
 public class ProfileGenerator {
 
@@ -100,7 +101,7 @@ public class ProfileGenerator {
 
   private void genereateFilterElement(Element partition, Filter filter) {
     Element elmntFilter = partition.addElement("filter");
-    elmntFilter.addAttribute("id", filter.getId());
+    elmntFilter.addAttribute("id", filter.getDescriminator());
     BasicDBObject query = this.getFilterQuery(filter);
     Element parameters = elmntFilter.addElement("parameters");
     for (String key : query.keySet()) {
@@ -160,23 +161,21 @@ public class ProfileGenerator {
   }
 
   private BasicDBObject getFilterQuery(Filter filter) {
+    BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+    DBCursor cursor = this.persistence.find(Constants.TBL_FILTERS, ref);
+
     BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
-    Filter tmp = filter;
-    do {
 
-      if (tmp.getProperty() == null || tmp.getValue() == null) {
-        tmp = tmp.getParent();
-        continue;
+    Filter tmp;
+    while (cursor.hasNext()) {
+      DBObject next = cursor.next();
+      tmp = DataHelper.parseFilter(next);
+      if (tmp.getValue().equals("Unknown")) {
+        query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
       } else {
-        if (tmp.getValue().equals("Unknown")) {
-          query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-        } else {
-          query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
-        }
+        query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
       }
-
-      tmp = tmp.getParent();
-    } while (tmp != null);
+    }
 
     return query;
   }
@@ -196,8 +195,7 @@ public class ProfileGenerator {
 
   private Element createRootElement(final Document doc, final String collection, final long count) {
     final Element profile = doc.addElement("profile").addAttribute("version", Constants.PROFILE_FORMAT_VERSION)
-        .addAttribute("collection", collection).addAttribute("date", new Date() + "")
-        .addAttribute("count", count + "");
+        .addAttribute("collection", collection).addAttribute("date", new Date() + "").addAttribute("count", count + "");
 
     return profile;
   }

@@ -1,12 +1,13 @@
 package controllers;
 
+import helpers.Graph;
+import helpers.PropertyValuesFilter;
+import helpers.Statistics;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import helpers.Graph;
-import helpers.Statistics;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -15,20 +16,51 @@ import play.mvc.Result;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import com.mongodb.MapReduceOutput;
 import com.mongodb.MapReduceCommand.OutputType;
+import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
+import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
-import common.WebAppConstants;
 
-public class FilterController extends Controller{
+public class FilterController extends Controller {
+
+  /**
+   * Gets all selected filters and returns them to the client, so that it can
+   * reconstruct the page.
+   * 
+   * @return
+   */
+  public static Result getAll() {
+    Logger.debug("in method getAll(), retrieving all properties");
+    List<PropertyValuesFilter> filters = new ArrayList<PropertyValuesFilter>();
+    Filter filter = Application.getFilterFromSession();
+
+    if (filter != null) {
+      BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+      DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
+
+      while (cursor.hasNext()) {
+        Filter tmp = DataHelper.parseFilter(cursor.next());
+        if (tmp.getProperty() != null && tmp.getValue() != null) {
+          PropertyValuesFilter f = getValues(tmp.getCollection(), tmp.getProperty());
+          f.setSelected(tmp.getValue());
+          filters.add(f);
+        }
+      }
+    }
+
+    return ok(play.libs.Json.toJson(filters));
+
+  }
 
   public static Result get(String uid) {
+    Logger.debug("in method get(String uid), getting filter with id");
     Logger.info("Getting Filter Representation " + uid);
     PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     DBCursor cursor = p.find(Constants.TBL_FILTERS, new BasicDBObject("_id", uid));
@@ -36,81 +68,133 @@ public class FilterController extends Controller{
     if (cursor.count() == 1) {
       return ok(cursor.next().toString());
     }
-    
+
     return notFound("{error: 'Not Found'}");
   }
-  
-  public static Result remove(String uid) {
+
+  public static Result remove(String property) {
+    Logger.debug("in method remove(String property), removing filter with property " + property);
     PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    DBCursor cursor = p.find(Constants.TBL_FILTERS, new BasicDBObject("_id", uid));
+    Filter filter = Application.getFilterFromSession();
+    BasicDBObject query = new BasicDBObject("descriminator", filter.getDescriminator());
+    query.put("property", property);
     
-    if (cursor.count() == 1) {
-      Filter root = DataHelper.parseFilter(cursor.next());
-      while (root != null) {
-        p.getDB().getCollection(Constants.TBL_FILTERS).remove(root.getDocument());
-        DBCursor c = p.find(Constants.TBL_FILTERS, new BasicDBObject("_id", root.getMatching()));
-        if (c.count() == 1) {
-          root = DataHelper.parseFilter(c.next());
-        } else {
-          root = null;
-        }
-      }
-    }
+     DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
+     if (cursor.count() == 0) {
+       Logger.debug("No filter found for property: " + property);
+     } else if (cursor.count() == 1) {
+       Logger.debug("Removing filter for property: " + property);
+       Filter tmp = DataHelper.parseFilter(cursor.next());
+       p.getDB().getCollection(Constants.TBL_FILTERS).remove(tmp.getDocument());
+     } else {
+       Logger.error("Something went wrong, while removing filter for property: " + property);
+       throw new RuntimeException("Two many filters found for property " + property);
+     }
+
+    // TODO change uid to property and value
+    // find such property and value in the current filter and remove...
     return ok();
   }
-  
+
   public static Result add() {
+    Logger.debug("in method add(), adding new filter");
     // final List<String> names = Application.getCollectionNames();
     Filter filter = Application.getFilterFromSession();
-    
+
     if (filter != null) {
-      Logger.info("Current filter was: " + filter.getId());
-      // obtain data from request
       final DynamicForm form = form().bindFromRequest();
       final String f = form.get("filter");
-      final int value = Integer.parseInt(form.get("value"));
-
-      // query histogram to check the value of the filter that was selected
-      final Graph graph = getGraph(filter, f);
-//      if (f.equals("valid") || f.equals("wellformed")) {
-//        graph.convertToPercentage();
-//      }
-      graph.sort();
-      if (f.equals("creating_application_name")) {
-        graph.cutLongTail();
+      final String v = form.get("value");
+      try {
+        final int value = Integer.parseInt(v);
+        return addFromGraph(filter, f, value);
+      } catch (NumberFormatException nfe) {
+        return addFromFilter(filter, f, v);
       }
-
-      final String filtervalue = graph.getKeys().get(value);
-
-      if (f.equals(filter.getProperty()) && filtervalue.equals(filter.getValue())) {
-        Logger.debug("Filter matches last filter, skipping");
-        return ok(); // return filtering based on current filter.
-      }
-
-      Logger.info("Filtering based on new filter: " + filter + " " + filtervalue);
-      // get current filter from session
-      PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-
-      Filter newFilter = new Filter(filter.getCollection(), f, filtervalue);
-      newFilter.setParent(filter);
-      p.getDB().getCollection(Constants.TBL_FILTERS).remove(filter.getDocument());
-      filter.setMatching(newFilter.getId());
-      p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
-      p.insert(Constants.TBL_FILTERS, filter.getDocument());
-
-      session().put(WebAppConstants.CURRENT_FILTER_SESSION, newFilter.getId());
-
-      return ok();
-
     }
 
     return badRequest("No filter was found in the session\n");
   }
-  
-  public static Result getValues() {
-    return ok(play.libs.Json.toJson(Arrays.asList("one", "two", "three")));
+
+  private static Result addFromFilter(Filter filter, String f, String v) {
+    Logger.debug("in method addFromFilter(), adding new filter with property '" + f + "' and value '" + v + "'");
+    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+
+    BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+    DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
+    boolean existing = false;
+    while (cursor.hasNext()) {
+      Filter tmp = DataHelper.parseFilter(cursor.next());
+      if (tmp.getProperty() != null && tmp.getProperty().equals(f)) {
+        Logger.debug("Filter is already present, changing value");
+        p.getDB().getCollection(Constants.TBL_FILTERS).remove(tmp.getDocument());
+        
+        tmp.setValue(v);
+        p.insert(Constants.TBL_FILTERS, tmp.getDocument());
+        existing = true;
+        break;
+      }
+    }
+
+    if (!existing) {
+      Logger.info("Filtering based on new filter: " + filter + " " + v);
+      Filter newFilter = new Filter(filter.getCollection(), f, v);
+      newFilter.setDescriminator(filter.getDescriminator());
+      p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
+    }
+
+    return ok();
+
   }
-  
+
+  private static Result addFromGraph(Filter filter, String f, int value) {
+    Logger.debug("in method addFromGraph(), adding new filter with property '" + f + "' and position value '" + value
+        + "'");
+    Logger.info("Current filter was: " + filter.getDescriminator());
+    // query histogram to check the value of the filter that was selected
+    final Graph graph = getGraph(filter, f);
+    graph.sort();
+
+    if (f.equals("creating_application_name")) {
+      graph.cutLongTail();
+    }
+
+    final String filtervalue = graph.getKeys().get(value);
+
+    return addFromFilter(filter, f, filtervalue);
+  }
+
+  public static Result getValues() {
+    Logger.debug("in method getValues(), retrieving values for selected property");
+    final DynamicForm form = form().bindFromRequest();
+    final String c = form.get("collection");
+    final String p = form.get("filter");
+
+    final PropertyValuesFilter f = getValues(c, p);
+
+    return ok(play.libs.Json.toJson(f));
+  }
+
+  private static PropertyValuesFilter getValues(String c, String p) {
+    Logger.debug("get property values filter for " + c + " and property " + p);
+    final Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+    final HistogramJob job = new HistogramJob(c, p);
+    final MapReduceOutput output = job.execute();
+    final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
+    final List<String> result = new ArrayList<String>();
+    for (final BasicDBObject dbo : jobresults) {
+      result.add((dbo.getString("_id")));
+    }
+
+    Property property = cache.getProperty(p);
+    PropertyValuesFilter f = new PropertyValuesFilter();
+    f.setProperty(property.getId());
+    f.setType(property.getType());
+    f.setValues(result);
+
+    return f;
+  }
+
   public static Graph getGraph(String collection, String property) {
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     final List<String> keys = new ArrayList<String>();
@@ -138,7 +222,7 @@ public class FilterController extends Controller{
     }
     return result;
   }
-  
+
   public static Graph getGraph(Filter filter, String property) {
     final List<String> keys = new ArrayList<String>();
     final List<String> values = new ArrayList<String>();

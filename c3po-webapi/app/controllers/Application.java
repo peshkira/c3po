@@ -1,7 +1,9 @@
 package controllers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import play.Logger;
 import play.mvc.Controller;
@@ -10,6 +12,7 @@ import views.html.index;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
@@ -19,7 +22,8 @@ import common.WebAppConstants;
 
 public class Application extends Controller {
 
-  public static final String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed", "creating_application_name" };
+  public static final String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed",
+      "creating_application_name" };
 
   public static Result index() {
     return ok(index.render("c3po", getCollectionNames()));
@@ -42,6 +46,7 @@ public class Application extends Controller {
     Filter f;
     if (cursor.count() == 0) {
       f = new Filter(c, null, null);
+      f.setDescriminator(UUID.randomUUID().toString());
       p.insert(Constants.TBL_FILTERS, f.getDocument());
     } else {
       f = DataHelper.parseFilter(cursor.next());
@@ -49,29 +54,30 @@ public class Application extends Controller {
 
     session().clear();
     session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
-    session().put(WebAppConstants.CURRENT_FILTER_SESSION, f.getId());
+    session().put(WebAppConstants.CURRENT_FILTER_SESSION, f.getDescriminator());
     return ok("The collection was changed successfully\n");
   }
 
-  public static Result removeLastFilter() {
-    final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    final Filter filter = getFilterFromSession();
-    Logger.debug("Removing last filter");
-
-    if (filter != null) {
-      Filter parent = filter.getParent();
-      if (parent == null) {
-        Logger.debug("Removing all");
-        session().clear();
-      } else {
-        Logger.debug("Removing this");
-        session().put(WebAppConstants.CURRENT_FILTER_SESSION, parent.getId());
-        p.getDB().getCollection(Constants.TBL_FILTERS).remove(filter.getDocument());
-      }
-    }
-
-    return ok();
-  }
+  // public static Result removeLastFilter() {
+  // final PersistenceLayer p =
+  // Configurator.getDefaultConfigurator().getPersistence();
+  // final Filter filter = getFilterFromSession();
+  // Logger.debug("Removing last filter");
+  //
+  // if (filter != null) {
+  // Filter parent = filter.getParent();
+  // if (parent == null) {
+  // Logger.debug("Removing all");
+  // session().clear();
+  // } else {
+  // Logger.debug("Removing this");
+  // session().put(WebAppConstants.CURRENT_FILTER_SESSION, parent.getId());
+  // p.getDB().getCollection(Constants.TBL_FILTERS).remove(filter.getDocument());
+  // }
+  // }
+  //
+  // return ok();
+  // }
 
   public static Result getCollections() {
     Logger.debug("Received a get collections call");
@@ -85,17 +91,17 @@ public class Application extends Controller {
 
     return badRequest("The accept header is not supported");
   }
-  
+
   public static Result getProperties() {
     Logger.debug("Received a get properties call");
     final String accept = request().getHeader("Accept");
-    
+
     if (accept.contains("*/*") || accept.contains("application/xml")) {
       return TODO;
     } else if (accept.contains("application/json")) {
       return propertiesAsJson();
     }
-    
+
     return badRequest("The accept header is not supported");
   }
 
@@ -140,7 +146,10 @@ public class Application extends Controller {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     String f = session().get(WebAppConstants.CURRENT_FILTER_SESSION);
     if (f != null) {
-      DBCursor cursor = pl.find(Constants.TBL_FILTERS, new BasicDBObject("_id", f));
+      BasicDBObject fQuery = new BasicDBObject("descriminator", f);
+      fQuery.put("property", null);
+      fQuery.put("value", null);
+      DBCursor cursor = pl.find(Constants.TBL_FILTERS, fQuery);
       if (cursor.count() == 1) {
         Filter filter = DataHelper.parseFilter(cursor.next());
         return filter;
@@ -154,25 +163,25 @@ public class Application extends Controller {
   }
 
   public static BasicDBObject getFilterQuery(Filter filter) {
-    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
-    Filter tmp = filter;
-    do {
+    BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+    DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
 
-      if (tmp.getProperty() == null || tmp.getValue() == null) {
-        tmp = tmp.getParent();
-        continue;
-      } else {
+    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
+
+    Filter tmp;
+    while (cursor.hasNext()) {
+      DBObject next = cursor.next();
+      tmp = DataHelper.parseFilter(next);
+      if (tmp.getValue() != null) {
         if (tmp.getValue().equals("Unknown")) {
           query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
         } else {
           query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
         }
       }
+    }
 
-      tmp = tmp.getParent();
-    } while (tmp != null);
-
-    System.out.println("FilterQuery: " + query);
+    Logger.debug("FilterQuery: " + query.toString());
     return query;
   }
 

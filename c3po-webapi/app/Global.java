@@ -4,7 +4,6 @@ import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 import play.mvc.Result;
-import views.html.defaultpages.notFound;
 
 import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand.OutputType;

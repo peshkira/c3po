@@ -10,9 +10,13 @@
    </appender>
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%coloredLevel %logger{15} - %message%n%xException{5}</pattern>
+  <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%-4relative %coloredLevel %c - %msg%n%xException{5}</pattern>
+        </layout>
+    <!-- <encoder>
+      <pattern>%coloredLevel %logger - %message%n%xException{5}</pattern>
     </encoder>
+    -->
   </appender>
   
   <logger name="play" level="INFO" />

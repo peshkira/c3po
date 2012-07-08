@@ -4,39 +4,32 @@ import helpers.Graph;
 import helpers.GraphData;
 import helpers.Statistics;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import play.Logger;
-import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.overview;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import com.mongodb.MapReduceCommand.OutputType;
-import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.HistogramJob;
-import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
-import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
-import common.WebAppConstants;
 
 public class Overview extends Controller {
-
+  
   public static Result index() {
     final List<String> names = Application.getCollectionNames();
     Filter filter = Application.getFilterFromSession();
-
+    
     Statistics stats = null;
     GraphData data = null;
     if (filter != null) {
+      BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+      DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
+      
       final Graph mimes;
       final Graph formats;
       final Graph versions;
@@ -44,7 +37,7 @@ public class Overview extends Controller {
       final Graph wf;
       final Graph creatingapp;
       Logger.info("filter is not null");
-      if (filter.getParent() == null) {
+      if (cursor.count() == 1) { //only root filter
         Logger.info("filter has no parent, using cached statistics");
         // used cached results
         stats = FilterController.getCollectionStatistics(filter.getCollection());

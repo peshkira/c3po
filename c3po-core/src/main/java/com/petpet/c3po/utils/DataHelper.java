@@ -92,23 +92,13 @@ public final class DataHelper {
   }
 
   public static Filter parseFilter(DBObject object) {
-    String id = (String) object.get("_id");
+    String d = (String) object.get("descriminator");
     String c = (String) object.get("collection");
     String p = (String) object.get("property");
     String v = (String) object.get("value");
 
     Filter f = new Filter(c, p, v);
-    f.setId(id);
-
-    DBObject parent = (DBObject) object.get("parent");
-    if (parent != null) {
-      f.setParent(parseFilter(parent));
-    }
-
-    String matching = (String) object.get("matching");
-    f.setMatching(matching);
-    String nonmatching = (String) object.get("nonmatching");
-    f.setNonmatching(nonmatching);
+    f.setDescriminator(d);
 
     return f;
   }

@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="@routes.Assets.at("stylesheets/navbar.css")">
 <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/jquery-ui-1.8.21.min.js")" type="text/javascript"></script>
 <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.jqplot.min.css")" />
 <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/excanvas.js")"></script><![endif]-->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
@@ -38,6 +39,19 @@
               $('nav ul li:first-child').addClass('first');
               $('nav ul li:last-child').addClass('lastnav');
               $('nav ul li ul').parent().append('<span class="dropdown"></span>').addClass('drop');
+
+              $.get('/c3po/filters', function(data) {
+                  console.log(data);
+                  $.each(data, function(i, pvf) {
+                	  addNewFilter();
+                	  var div = $('.propertyfilter')[i];
+                      $(div).children('select').val(pvf.property);
+                      $(div).attr('oldValue', pvf.property);
+                      showValuesSelect(div, pvf);
+                      $(div).children('select:last').val(pvf.selected); 
+                  });
+
+              });
 
           });
 
@@ -72,53 +86,111 @@
                    type:     'GET',
                    url:      '/c3po/properties',
                    timeout:  5000,
+                   async: false,
                    success:  function (oData) {
-                     addNewPropertiesSelect(oData);                                         
+                     addNewPropertiesSelect(oData); 
+                                                            
                    }
                });
+
            };
 
+           //adds a new select with all properties for the next filter selection 
            function addNewPropertiesSelect(properties) {
+             //check if the previous filter is already setup accordingly 
              var show = false; 
              if ($('.propertyfilter:last')[0]) {
                   if($('.propertyfilter:last select').length > 1) {
                       show = true;
                    } else {
-                      //shake???                       
+                      $('.propertyfilter:last').effect("shake", {distance:10, times:3, direction: 'up'}, 80);
+                         
                    }
              } else {
                   show = true;
              }
 
+             // if previous filter is ready, then show 
              if (show) {
+                 //create new div 
         	   var div = $('<div class="propertyfilter"></div>').appendTo('#filter');
+
+               //append delete button and install delete handler
+        	   var deletediv = $('<div class="delete"><a class="red_button" href="#">-</a></div>').appendTo($(div));
+        	   $(deletediv).click(function() {
+        		    var property = $(this).siblings('select:first').val();
+        		    $.ajax({
+        		        type:     'DELETE',
+        		        url:      '/c3po/filter?property=' + property,
+        		        timeout:  5000,
+        		        success:  function(oData) {
+        		        	window.location.reload();
+                        }
+                    });
+        		    $(this).parent().remove();
+        		    
+               });
+
+              // for each property and an option in the html select                
                var sel = $('<select>').appendTo($(div));
                $.each(properties, function(i, value) {
                    $(sel).append($('<option>').text(value).attr('value', value));
                });
 
+               // if the select is clicked then get the values for the current
+               // option. 
                $(sel).click(function() {
                    var property = $(this).val();
+                   var old = $(this).parent().attr('oldValue');
+                   $(this).parent().attr('oldValue', property);
+                   $.ajax ({
+                       type:     'DELETE',
+                       async:    false,
+                       url:      '/c3po/filter?property='+old,
+                       timeout:  5000
+                   });
                    $.ajax ({
                          type:     'GET',
                          url:      '/c3po/filter/values?filter='+property+'&collection=@session.get("current.collection")',
                          timeout:  5000,
                          success:  function (oData) {
-                             //TODO include type of property in response. Decide
-                             // what to display based on type (ORDINAL, NUMERIC, DATE)
-                             addNewValuesSelect(oData);
+                             showValuesSelect(div, oData);
                          }
                      });
                });
            }
           };
 
-          function addNewValuesSelect(values) {
-              var sel = $('<select>').appendTo($('.propertyfilter:last'));
-              $.each(values, function(i, value) {
-                  $(sel).append($('<option>').text(value).attr('value', value));
-              });
-          }         
+          function showValuesSelect(filterdiv, pvf) {
+              //first remove filtervalues if property was already selected 
+        	  if ($(filterdiv).children('select').length > 1) {
+                  ($(filterdiv).children('select:last')).remove();
+              }
+            
+        	  var type = pvf.type;
+
+              if (type == "STRING" || type == "BOOL") {
+                
+                var sel = $('<select>').appendTo($(filterdiv));
+                var values = pvf.values;
+                $.each(values, function(i, value) {
+                    $(sel).append($('<option>').text(value).attr('value', value));
+                });
+
+                $(sel).click(function() {
+                	var value = $(this).val();
+                	startSpinner();
+                    $.post('/c3po/filter?filter=' + pvf.property + '&value='+value, function(data) {
+                        window.location.reload();
+                        });
+                });
+              }else if (type == "INTEGER"){
+            	  console.log("property type selected " + pvf.type);
+              } else if (type == "DATE") {
+            	  console.log("property type selected " + pvf.type);
+              }
+          };
+
         </script>
 </head>
 <body>
@@ -136,7 +208,6 @@
         <li><a href="/c3po/samples">Representatives</a></li>
         <li><a href="/c3po/export">Export</a></li>
         <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" /></li>
-        <li><img id="partitions_btn" src="@routes.Assets.at("images/filters/graph.png")" /></li>
         <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" /></li>
       </ul>
     </nav>
@@ -151,15 +222,14 @@
   </div>
   <div id="partitions"></div>
   <div id="filter">
-    <div>
-      @if(session.get("current.filter")) {
-      <div class="addfilter">
-        <a class="green_button" href="javascript:addNewFilter()">+</a>
-      </div>
-      } else {
-      <h2>No collection selected</h2>
-      }
+    @if(session.get("current.filter")) {
+    <div id="addfilter">
+      <a class="green_button" href="javascript:addNewFilter()">+</a>
     </div>
+    <h2>Filter</h2>
+    } else {
+    <h2>No collection selected</h2>
+    }
   </div>
   <div class="container">@content</div>
   <div id="spinner"></div>

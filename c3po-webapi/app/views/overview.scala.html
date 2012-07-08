@@ -17,16 +17,6 @@
 
                });
 
-               $('#partitions_btn').click(function(event) {
-                   visible = $("#partitions").is(":visible");
-                   if (visible == true) {
-                      $('#partitions').slideUp("fast");
-                   } else {
-                       $('#partitions').slideDown("normal");
-                   }
-
-               });
-
                $('#filter_btn').click(function(event) {
                    visible = $("#filter").is(":visible");
                    if (visible == true) {
@@ -269,9 +259,9 @@ $(document).ready(function(){
     <div class="span-16">
         <div class="span-12">
             @if(session.get("current.collection") == null) {
-               <h1>Please select a collection</h1>
+               <h2>Please select a collection</h2>
             } else {
-              <h1>Overview of '@session.get("current.collection")'</h1>
+              <h2>Overview of '@session.get("current.collection")'</h2>
             }
         </div>
         @if(graphs != null) {

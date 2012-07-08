@@ -1,7 +1,5 @@
 package com.petpet.c3po.datamodel;
 
-import java.util.UUID;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -15,7 +13,7 @@ import com.mongodb.DBObject;
  */
 public class Filter {
   
-  private String id;
+  private String descriminator;
 
   /**
    * The collection that is filtered.
@@ -33,22 +31,7 @@ public class Filter {
    */
   private String value;
 
-  /**
-   * The parent filter of this filter.
-   */
-  private Filter parent;
-
-  /**
-   * The filter that has to be applied on the matching part of the collection.
-   */
-  private String matching;
-
-  /**
-   * The filter that has to be applied on the nonmatching part of the
-   * collection.
-   */
-  private String nonmatching;
-
+  
   /**
    * Creates a default root filter. This means that the filter has no parent
    * filter.
@@ -64,16 +47,14 @@ public class Filter {
     this.collection = collection;
     this.property = property;
     this.value = value;
-    this.parent = null;
-    this.id = UUID.randomUUID().toString();
   }
 
-  public String getId() {
-    return id;
+  public String getDescriminator() {
+    return descriminator;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public void setDescriminator(String id) {
+    this.descriminator = id;
   }
 
   public String getCollection() {
@@ -100,41 +81,12 @@ public class Filter {
     this.value = value;
   }
 
-  public Filter getParent() {
-    return parent;
-  }
-
-  public void setParent(Filter parent) {
-    this.parent = parent;
-  }
-
-  public String getMatching() {
-    return matching;
-  }
-
-  public void setMatching(String matching) {
-    this.matching = matching;
-  }
-
-  public String getNonmatching() {
-    return nonmatching;
-  }
-
-  public void setNonmatching(String nonmatching) {
-    this.nonmatching = nonmatching;
-  }
-  
   public DBObject getDocument() {
-    final BasicDBObject filter = new BasicDBObject("_id", this.id);
+    final BasicDBObject filter = new BasicDBObject();
+    filter.put("descriminator", this.descriminator);
     filter.put("collection", collection);
     filter.put("property", property);
     filter.put("value", value);
-    if(parent != null) {
-      filter.put("parent", parent.getDocument());
-    }
-    
-    filter.put("matching", matching);
-    filter.put("nonmatching", nonmatching);
     
     return filter;
   }
