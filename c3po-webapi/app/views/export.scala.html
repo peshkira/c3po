@@ -2,53 +2,7 @@
 <div class="content">
 <script type="text/javascript">
           $(document).ready(function(){
-              
-               var visible = false;
-               $('#collections_btn').click(function(event) {
-                   visible = $("#collections").is(":visible");
-                   if (visible == true) {
-                      $('#collections').slideUp("fast");
-                   } else {
-                       $('#collections').slideDown("normal");
-                   }
-
-               });
-
-               $('#partitions_btn').click(function(event) {
-                   visible = $("#partitions").is(":visible");
-                   if (visible == true) {
-                      $('#partitions').slideUp("fast");
-                   } else {
-                       $('#partitions').slideDown("normal");
-                   }
-
-               });
-
-               $('#filter_btn').click(function(event) {
-                   visible = $("#filter").is(":visible");
-                   if (visible == true) {
-                      $('#filter').slideUp("fast");
-                   } else {
-                       $('#filter').slideDown("normal");
-                   }
-
-               });
-
-               $("#collections select").click(function() {
-                   var collection = $(this).val();
-                   $.ajax ({
-                         type:     'POST',
-                         url:      '/c3po/collections?name='+collection,
-                         timeout:  5000,
-                         success:  function (oData) {
-                             startSpinner();
-                             $('#ajax_collection').text(collection);
-                             setTimeout(function() {
-                               window.location = '/c3po/export'
-                             }, 500);
-                         }
-                     });
-               });
+             
            });
           
           $(window).unload( function () { 

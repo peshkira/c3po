@@ -1,11 +1,12 @@
 package controllers;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import play.Logger;
+import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.index;
@@ -52,32 +53,25 @@ public class Application extends Controller {
       f = DataHelper.parseFilter(cursor.next());
     }
 
-    session().clear();
     session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
     session().put(WebAppConstants.CURRENT_FILTER_SESSION, f.getDescriminator());
     return ok("The collection was changed successfully\n");
   }
 
-  // public static Result removeLastFilter() {
-  // final PersistenceLayer p =
-  // Configurator.getDefaultConfigurator().getPersistence();
-  // final Filter filter = getFilterFromSession();
-  // Logger.debug("Removing last filter");
-  //
-  // if (filter != null) {
-  // Filter parent = filter.getParent();
-  // if (parent == null) {
-  // Logger.debug("Removing all");
-  // session().clear();
-  // } else {
-  // Logger.debug("Removing this");
-  // session().put(WebAppConstants.CURRENT_FILTER_SESSION, parent.getId());
-  // p.getDB().getCollection(Constants.TBL_FILTERS).remove(filter.getDocument());
-  // }
-  // }
-  //
-  // return ok();
-  // }
+  public static Result setSettings() {
+    
+    DynamicForm form = form().bindFromRequest();
+    String setting = form.get("setting");
+    String value = form.get("value");
+    
+    session().put(setting, value);
+    Logger.debug("changed setting '" + setting + "' to value: '" + value +"'");
+    return ok();
+  }
+  
+  public static Result getSettings() {
+    return TODO;
+  }
 
   public static Result getCollections() {
     Logger.debug("Received a get collections call");
@@ -189,16 +183,6 @@ public class Application extends Controller {
     session().clear();
 
     final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    // final List<String> names = controllers.Application.getCollectionNames();
-    // for (String name : names) {
-    // DBCollection c = pl.getDB().getCollection("statistics_" + name);
-    // c.drop();
-    // for (String p : PROPS) {
-    // c = pl.getDB().getCollection("histogram_" + name + "_" + p);
-    // c.drop();
-    // }
-    // }
-
     pl.getDB().getCollection(Constants.TBL_FILTERS).drop();
 
     return redirect("/c3po");

@@ -59,19 +59,6 @@ public class FilterController extends Controller {
 
   }
 
-  public static Result get(String uid) {
-    Logger.debug("in method get(String uid), getting filter with id");
-    Logger.info("Getting Filter Representation " + uid);
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    DBCursor cursor = p.find(Constants.TBL_FILTERS, new BasicDBObject("_id", uid));
-
-    if (cursor.count() == 1) {
-      return ok(cursor.next().toString());
-    }
-
-    return notFound("{error: 'Not Found'}");
-  }
-
   public static Result remove(String property) {
     Logger.debug("in method remove(String property), removing filter with property " + property);
     PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();

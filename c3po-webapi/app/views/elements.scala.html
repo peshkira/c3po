@@ -3,48 +3,7 @@
 @main("c3po", collections) {
 <script type="text/javascript">
           $(document).ready(function(){
-               var visible = false;
-               $('#collections_btn').click(function(event) {
-                   visible = $("#collections").is(":visible");
-                   if (visible == true) {
-                      $('#collections').slideUp("fast");
-                   } else {
-                       $('#collections').slideDown("normal");
-                   }
-
-               });
-
-               $('#partitions_btn').click(function(event) {
-                   visible = $("#partitions").is(":visible");
-                   if (visible == true) {
-                      $('#partitions').slideUp("fast");
-                   } else {
-                       $('#partitions').slideDown("normal");
-                   }
-
-               });
-
-               $('#filter_btn').click(function(event) {
-                   visible = $("#filter").is(":visible");
-                   if (visible == true) {
-                      $('#filter').slideUp("fast");
-                   } else {
-                       $('#filter').slideDown("normal");
-                   }
-
-               });
-
-               $("#collections select").click(function() {
-                   var collection = $(this).val();
-                   $.ajax ({
-                         type:     'POST',
-                         url:      '/c3po/collections?name='+collection,
-                         timeout:  5000,
-                         success:  function (oData) {
-                             window.location = '/c3po/objects';
-                         }
-                     });
-               });
+           
            });
 </script>
 <script type="text/javascript">
@@ -92,11 +51,13 @@
           }
        }
        
-       <div id="prev">
-            <a id="prev" class="green_button">Prev</a>
-        </div>
-        <div id="next">
-            <a id="next" class="green_button">Next</a>
+       <div class="objectsnavigator">
+         <div id="prev">
+              <a id="prev" class="green_button">Prev</a>
+          </div>
+          <div id="next">
+              <a id="next" class="green_button">Next</a>
+          </div>
         </div>
      </div>
    } else {

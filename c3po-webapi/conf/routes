@@ -10,10 +10,11 @@ GET     /c3po/clear                            controllers.Application.clear()
 GET     /c3po/collections                      controllers.Application.getCollections()
 POST    /c3po/collections                      controllers.Application.setCollection(name: String)
 GET     /c3po/properties                       controllers.Application.getProperties()
+POST    /c3po/settings                         controllers.Application.setSettings()
+GET     /c3po/settings                         controllers.Application.getSettings()
 
 # Filter
 GET     /c3po/filters                          controllers.FilterController.getAll()
-GET     /c3po/filter                           controllers.FilterController.get(uid: String)
 DELETE  /c3po/filter                           controllers.FilterController.remove(property: String)
 POST    /c3po/filter                           controllers.FilterController.add()
 GET     /c3po/filter/values                    controllers.FilterController.getValues()

@@ -40,6 +40,64 @@
               $('nav ul li:last-child').addClass('lastnav');
               $('nav ul li ul').parent().append('<span class="dropdown"></span>').addClass('drop');
 
+              // Add click events on buttons in navigation bar. 
+              var visible = false;
+              $('#collections_btn').click(function(event) {
+                  visible = $("#collections").is(":visible");
+                  if (visible == true) {
+                     $('#collections').slideUp("fast");
+                  } else {
+                     $('#collections').slideDown("normal");
+                  }
+                  changeSetting('client.collections.show', !visible);
+              });
+
+              $('#filter_btn').click(function(event) {
+                  visible = $("#filter").is(":visible");
+                  if (visible == true) {
+                     $('#filter').slideUp("fast");
+                  } else {
+                      $('#filter').slideDown("normal");
+                  }
+                  changeSetting('client.filter.show', !visible);
+              });
+
+              @if(session.get("client.collections.show") != null) {
+                 @if(session.get("client.collections.show").equals("true")) {
+                	     $('#collections').css('display', 'block');
+                 } else {
+                	     $('#collections').css('display', 'none');
+                 }
+              }
+
+              @if(session.get("client.filter.show")){
+                @if(session.get("client.filter.show").equals("true")) {
+                    console.log('showing');
+                    $('#filter').css('display', 'block');
+                } else {
+              	  console.log('hiding');
+              	  $('#filter').css('display', 'none');
+                }
+              }
+
+              // add click event on the collection chooser html select element .
+              $("#collections select").click(function() {
+                  var collection = $(this).val();
+                  $.ajax ({
+                        type:     'POST',
+                        url:      '/c3po/collections?name='+collection,
+                        timeout:  5000,
+                        success:  function (oData) {
+                            startSpinner();
+                            $('#ajax_collection').text(collection);
+                            setTimeout(function() {
+                              window.location.reload();
+                            }, 300);
+                        }
+                    });
+              });
+
+              // build the current filter elements.
               $.get('/c3po/filters', function(data) {
                   console.log(data);
                   $.each(data, function(i, pvf) {
@@ -52,9 +110,9 @@
                   });
 
               });
+          }); //end document ready
 
-          });
-
+          //global startSpinner function... 
           function startSpinner() {
               var opts = {
                       lines: 13, // The number of lines to draw
@@ -78,6 +136,7 @@
               $('#spinner').css("opacity","1");
               };
 
+           //global addNewFilter function 
            function addNewFilter() {
         	   $.ajax ({
         		   headers: { 
@@ -116,7 +175,7 @@
         	   var div = $('<div class="propertyfilter"></div>').appendTo('#filter');
 
                //append delete button and install delete handler
-        	   var deletediv = $('<div class="delete"><a class="red_button" href="#">-</a></div>').appendTo($(div));
+        	   var deletediv = $('<div class="delete"><a class="red_button" href="#">x</a></div>').appendTo($(div));
         	   $(deletediv).click(function() {
         		    var property = $(this).siblings('select:first').val();
         		    $.ajax({
@@ -191,6 +250,15 @@
               }
           };
 
+          function changeSetting(setting, value) {
+        	  $.ajax ({
+                  type:     'POST',
+                  url:      '/c3po/settings?setting='+setting+'&value='+value,
+                  timeout:  5000,
+                  async:    false
+              });
+          };          
+
         </script>
 </head>
 <body>
@@ -220,7 +288,6 @@
       <option value="@c">@c</option> }
     </select>
   </div>
-  <div id="partitions"></div>
   <div id="filter">
     @if(session.get("current.filter")) {
     <div id="addfilter">
