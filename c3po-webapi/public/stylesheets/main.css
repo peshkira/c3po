@@ -345,7 +345,6 @@ margin-left:25%;
 top: 35%;
 width:50%;
 height:200px;
-text-align:center;
 color:#FF0000;
 border: 4px solid #68A200;
 background-color:#FFF;
@@ -358,6 +357,43 @@ display: none;
 	padding: 10px;
 	font-size: 12pt;
 	color: #888;
+	text-align:center;
+}
+
+#filterpopup .close {
+	position: relative;
+	margin-top: -15px;
+	margin-left: 98%;
+	cursor:pointer;
+}
+
+#filterpopup .popupconfig {
+	margin-top:30px;
+	margin-left:20px;
+}
+
+#filterpopup .popupconfig select {
+	margin-right:15px;
+}
+
+#filterpopup .popupconfig input[type="text"] {
+	background-color:#F5F5F5;
+    border-top:1px solid #69E45C;
+    border-right:1px solid #69E45C;
+    border-bottom:1px solid #69E45C;
+    border-left:11px solid #69E45C;
+    padding:0px 8px;
+    margin-right: 15px;
+    color: #000;
+    font-size:12px;
+    font-weight:bold;
+    font-style:italic;
+    outline: none;
+	
+}
+
+#filterpopup .popupconfig input[type="text"]:focus {
+	box-shadow:0px 0px 3px #69E45C;
 }
 
 #addfilter {
@@ -596,3 +632,14 @@ display: none;
 #next {
 	float:right;
 }
+
+.activeoverlay {
+	z-index:10;
+	opacity:.7;
+	height:100%;
+	width:100%;
+	position:fixed;
+	background-color:#333;
+}
+
+

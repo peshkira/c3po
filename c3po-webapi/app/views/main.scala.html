@@ -107,6 +107,10 @@
                   });
 
               });
+
+              $('#filterpopup .close').click(function(){
+            	  hideValueOptionDialog(false);
+              })
           }); //end document ready
 
           //global startSpinner function... 
@@ -242,9 +246,7 @@
                 });
               }else if (type == "INTEGER"){
             	  console.log("property type selected " + pvf.type);
-              } else if (type == "DATE") {
-            	  console.log("property type selected " + pvf.type);
-                  
+                  showValueOptionDialog()
               }
           };
 
@@ -255,11 +257,41 @@
                   timeout:  5000,
                   async:    false
               });
-          };          
+          }; 
+
+          function showValueOptionDialog() {
+              $("#overlay").addClass('activeoverlay');
+               
+        	  var popup = $('#filterpopup');
+              popup.children('.popupreason').text('This is an integer property and it requires the selection of an algorithm for the histogram bins.');
+              popup.children('.popupconfig').append($('<select><option value="fixed">fixed</option><option value="sturge">Sturge\'s</option><option value="sqrt">Square-root choice</option></select>'));
+              popup.css({'display': 'block', 'z-index':11});
+
+              $('.popupconfig select').click(function() {
+                  $('.popupconfig .green_button').remove();
+                  $('.popupconfig input').remove();
+                  if ($(this).val() == "fixed") {
+                      $('.popupconfig').append($('<input type="text" placeholder="nr of bins" />'));
+                  }
+
+                  $('.popupconfig').append($('<a class="green_button" href="javascript:hideValueOptionDialog(true)">Apply</a>'))
+              });
+          };
+
+          function hideValueOptionDialog(apply) {
+              $('#overlay').removeClass('activeoverlay');
+              var popup = $('#filterpopup');
+              popup.css({'display':'none'});
+        	  if (apply) {
+
+              }
+        	  popup.children('.popupconfig').children().remove(); 
+          }         
 
         </script>
 </head>
 <body>
+  <div id="overlay"></div>
   <div class="header">
     <h1>
       <a href="/c3po">C3PO - Clever, Crafty Content Profiling of Objects</a>
@@ -297,11 +329,9 @@
     }
   </div>
   <div id="filterpopup">
+    <div class="close"><img src="@routes.Assets.at("images/close.png")" /></div>
     <div class="popupreason">The property you selected requires special settings. Please configure:</div>
-    <div class="popupconfig">
-        <label for="text"></label>
-        <input id="text" type="text"/>
-    </div>
+    <div class="popupconfig"></div>
   </div>
   <div class="container">@content</div>
   <div id="spinner"></div>
