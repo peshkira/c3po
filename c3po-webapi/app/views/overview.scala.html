@@ -32,53 +32,48 @@
 @if(graphs != null) {
 <script type="text/javascript">
 $(document).ready(function(){
-    // For horizontal bar charts, x an y values must will be "flipped"
-    // from their vertical bar counterpart.
-    
-        @for(g <- graphs.getGraphs()) {
-            @if(g.getProperty().equals("mimetype")) {
-                var mimes = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', @g.getValues().get(i)],
+            var data = {
+              @for(g <- graphs.getGraphs()) {
+                  '@g.getProperty()': [  @for((k, i) <- g.getKeys().zipWithIndex){
+                      ['@k', @g.getValues().get(i)],
                   }
-                ]
-            } 
+                  ],
+                  }
+              };
 
-            @if(g.getProperty().equals("format")) {
-                var formats = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', @g.getValues().get(i)],
-                  }
-                ]
-            }
-            
-            @if(g.getProperty().equals("format_version")) {
-                var versions = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', @g.getValues().get(i)],
-                  }
-                ]
-            }
+            var idx = 0;
+            var graphsdiv = $('#graphs');
+            $.each(data, function(i, d) {
+            	var container;
+            	var clazz;
+            	  console.log(d.length);
+                if (idx % 2 == 0) {
+                   container = $('<div class="span-24">').appendTo(graphsdiv);
+                   clazz = "dia_left";
+                } else if (idx % 2 == 1) {
+                   container = graphsdiv.children('.span-24:last');
+                   clazz = "dia_right";
+                }
 
-            @if(g.getProperty().equals("valid")) {
-                var valid = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', (@g.getValues().get(i))],
-                  }
-                ]
-            }
+                if (d.length > 30) {
+                   container = $('<div class="span-24">').appendTo(graphsdiv);
+                   clazz = "dia_full";
+                }
 
-            @if(g.getProperty().equals("wellformed")) {
-                var wellformed = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', @g.getValues().get(i)],
-                  }
-                ]
-            }
-
-            @if(g.getProperty().equals("creating_application_name")) {
-                var creatingapp = [  @for((k, i) <- g.getKeys().zipWithIndex){
-                    ['@k', @g.getValues().get(i)],
-                  }
-                ]
-            }
-         }
-    ;
+                container.append('<div id="'+ i + '" class="'+ clazz + '">');
+                $('#' + i).bind('jqplotDataClick', 
+                        function (ev, seriesIndex, pointIndex, data) {
+                        startSpinner();
+                        $.post('/c3po/filter?filter=' + i + '&value='+pointIndex+'&type=graph', function(data) {
+                         window.location = '/c3po/overview';  
+                         });
+                });
+                $.jqplot(i, [d], getBarChart(prettifyTitle(i)));
+                if (idx == 0) {
+                    idx++;
+                }
+                idx++;
+            })
 
     function getBarChart(ttl) {
         var options = {
@@ -157,62 +152,11 @@ $(document).ready(function(){
 
         return options;
     };
-    
-    var plot1 = $.jqplot('mimetypehistogram', [mimes], getBarChart("Mime Types"));
-    var plot2 = $.jqplot('formathistogram', [formats], getBarChart("Formats"));
-    var plot3 = $.jqplot('formatversionshistogram', [versions], getBarChart("Format Versions"));
-    var plot4 = $.jqplot('validhistogram', [valid], getBarChart("Valid"));
-    var plot5 = $.jqplot('wellformedhistogram', [wellformed], getBarChart("Well Formed"));
-    var plot5 = $.jqplot('createdapphistogram', [creatingapp], getBarChart("Creating Application"));
-    
-    $('#mimetypehistogram').bind('jqplotDataClick', 
-            function (ev, seriesIndex, pointIndex, data) {
-            startSpinner();
-            $.post('/c3po/filter?filter=mimetype&value='+pointIndex+'&type=graph', function(data) {
-            	window.location = '/c3po/overview';  
-            	});
-    });
 
-    $('#formathistogram').bind('jqplotDataClick', 
-            function (ev, seriesIndex, pointIndex, data) {
-            startSpinner();
-            $.post('/c3po/filter?filter=format&value='+pointIndex+'&type=graph', function(data) {
-                window.location = '/c3po/overview';  
-                });
-    });
-
-    
-    $('#formatversionshistogram').bind('jqplotDataClick', 
-            function (ev, seriesIndex, pointIndex, data) {
-            startSpinner();
-            $.post('/c3po/filter?filter=format_version&value='+pointIndex+'&type=graph', function(data) {
-                window.location = '/c3po/overview';  
-                });
-    });
-
-    $('#validhistogram').bind('jqplotDataClick', 
-            function (ev, seriesIndex, pointIndex, data) {
-    	     startSpinner();
-    	     $.post('/c3po/filter?filter=valid&value='+pointIndex+'&type=graph', function(data) {
-                 window.location = '/c3po/overview';  
-                 });
-    });
-
-    $('#wellformedhistogram').bind('jqplotDataClick', 
-            function (ev, seriesIndex, pointIndex, data) {
-    	        startSpinner();
-    	        $.post('/c3po/filter?filter=wellformed&value='+pointIndex+'&type=graph', function(data) {
-                    window.location = '/c3po/overview';  
-                    });
-    });
-
-    $('#createdapphistogram').bind('jqplotDataClick', 
-            function (ev, seriesIndex, pointIndex, data) {
-                startSpinner();
-                $.post('/c3po/filter?filter=creating_application_name&value='+pointIndex+'&type=graph', function(data) {
-                    window.location = '/c3po/overview';  
-                    });
-    });
+    function prettifyTitle(title) {
+        title = title.replace(/_/g, " ");
+    	return title.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    }
     
 });
 
@@ -230,19 +174,8 @@ $(document).ready(function(){
             }
         </div>
         @if(graphs != null) {
-        <div class="span-24">
-        <div id="mimetypehistogram" class="dia"></div>
-        <div class="span-24 last">
-            <div id="formathistogram" class="dia_left"></div>
-            <div id="formatversionshistogram" class="dia_right"></div>
-        </div>
-        <div class="span-24 last">
-            <div id="validhistogram" class="dia_left"></div>
-            <div id="wellformedhistogram" class="dia_right"></div>
-        </div>
-        <div class="span-24 last">
-            <div id="createdapphistogram" class="dia_full"></div>
-        </div>
+        <div id="graphs">
+       
         </div>
         }
    </div>
