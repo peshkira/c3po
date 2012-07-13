@@ -10,6 +10,7 @@ GET     /c3po/clear                            controllers.Application.clear()
 GET     /c3po/collections                      controllers.Application.getCollections()
 POST    /c3po/collections                      controllers.Application.setCollection(name: String)
 GET     /c3po/properties                       controllers.Application.getProperties()
+GET     /c3po/property                         controllers.Application.getProperty(name: String)
 POST    /c3po/settings                         controllers.Application.setSettings()
 GET     /c3po/settings                         controllers.Application.getSettings()
 
@@ -21,6 +22,7 @@ GET     /c3po/filter/values                    controllers.FilterController.getV
 
 # Collection Overview
 GET     /c3po/overview                         controllers.Overview.index()
+GET     /c3po/overview/graph                   controllers.Overview.getGraph(property: String)
 
 # Elements Page
 GET     /c3po/objects                          controllers.Elements.index()

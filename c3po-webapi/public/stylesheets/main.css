@@ -467,6 +467,11 @@ display: none;
 	color:#585858;
 }
 
+#more {
+	float:right;
+	margin-left: 100px;
+}
+
 .green_button {
     -moz-box-shadow:inset 0px 1px 0px 0px #caefab;
     -webkit-box-shadow:inset 0px 1px 0px 0px #caefab;

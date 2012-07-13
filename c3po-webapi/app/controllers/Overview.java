@@ -18,6 +18,7 @@ import com.mongodb.DBCursor;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.DataHelper;
 
 public class Overview extends Controller {
 
@@ -40,11 +41,40 @@ public class Overview extends Controller {
       } else {
         // calculate new results
         stats = FilterController.getCollectionStatistics(filter);
-        data = Overview.getDefaultGraphs(filter, false);
+
+        List<String> properties = new ArrayList<String>();
+        while (cursor.hasNext()) {
+          Filter tmp = DataHelper.parseFilter(cursor.next());
+          if (tmp.getProperty() != null) {
+            properties.add(tmp.getProperty());
+          }
+        }
+        data = Overview.getAllGraphs(filter, properties);
       }
 
     }
     return ok(overview.render(names, data, stats));
+  }
+  
+  public static Result getGraph(String property) {
+    Filter filter = Application.getFilterFromSession();
+    Graph g = null;
+    if (filter != null) {
+      BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+      DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
+      if (cursor.count() == 1) { // only root filter
+        g = FilterController.getGraph(filter.getCollection(), property);
+      } else {
+        g = FilterController.getGraph(filter, property);
+      }
+      g.sort();
+
+      if (g.getKeys().size() > 100) {
+        g.cutLongTail();
+      }
+      
+    }
+    return ok(play.libs.Json.toJson(g));
   }
 
   private static GraphData getDefaultGraphs(Filter f, boolean root) {
@@ -58,7 +88,7 @@ public class Overview extends Controller {
       }
 
       graph.sort();
-      
+
       if (graph.getKeys().size() > 100) {
         graph.cutLongTail();
       }
@@ -68,6 +98,27 @@ public class Overview extends Controller {
     }
 
     return new GraphData(graphs);
+  }
+
+  private static GraphData getAllGraphs(Filter f, List<String> props) {
+    GraphData graphs = getDefaultGraphs(f, false);
+
+    for (String prop : props) {
+      boolean found = false;
+      for (String def : Application.PROPS) {
+        if (prop.equals(def)) {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        Graph graph = FilterController.getGraph(f, prop);
+        graphs.getGraphs().add(graph);
+      }
+    }
+
+    return graphs;
   }
 
 }

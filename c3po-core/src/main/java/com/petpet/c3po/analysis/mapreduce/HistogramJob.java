@@ -1,5 +1,8 @@
 package com.petpet.c3po.analysis.mapreduce;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,28 +15,42 @@ import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Property.PropertyType;
 
 public class HistogramJob extends MapReduceJob {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(HistogramJob.class);
 
   private String property;
-  
+
   public HistogramJob(String c, String f) {
     this.setC3poCollection(c);
     this.property = f;
     this.setFilterquery(new BasicDBObject("collection", c));
   }
-  
+
   public HistogramJob(String c, String f, BasicDBObject query) {
     this(c, f);
     this.setFilterquery(query);
   }
-  
+
   public MapReduceOutput execute() {
     final Property p = this.getPersistence().getCache().getProperty(property);
     String map;
     if (p.getType().equals(PropertyType.DATE.toString())) {
       map = Constants.DATE_HISTOGRAM_MAP.replace("{}", p.getId());
-      this.getFilterquery().append("metadata." + this.property + ".value", new BasicDBObject("$type", 9));//for date...
+
+      String constrainKey = "metadata." + this.property + ".value";
+      BasicDBObject constraintValue = new BasicDBObject("$type", 9);
+      BasicDBObject prop = (BasicDBObject) this.getFilterquery().remove("metadata." + this.property + ".value");
+      if (prop != null) {
+        LOG.info("Old Date Property: " + prop.toString());
+        List<BasicDBObject> and = new ArrayList<BasicDBObject>();
+        and.add(new BasicDBObject("metadata." + this.property + ".value", prop));
+        and.add(new BasicDBObject(constrainKey, constraintValue));
+        this.getFilterquery().put("$and", and);// for date...
+      } else {
+        this.getFilterquery().append(constrainKey, constraintValue);
+      }
+
+      LOG.info("Date Filter Query adjusted: " + this.getFilterquery().toString());
     } else {
       map = Constants.HISTOGRAM_MAP.replace("{}", p.getId());
     }

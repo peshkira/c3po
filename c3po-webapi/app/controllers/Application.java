@@ -27,7 +27,7 @@ import common.WebAppConstants;
 public class Application extends Controller {
 
   public static final String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed",
-      "creating_application_name" };
+      "creating_application_name", "created" };
 
   public static Result index() {
     return ok(index.render("c3po", getCollectionNames()));
@@ -100,6 +100,22 @@ public class Application extends Controller {
     }
 
     return badRequest("The accept header is not supported");
+  }
+  
+  public static Result getProperty(String name) {
+    Logger.debug("Received a get property call");
+    final String accept = request().getHeader("Accept");
+    if (accept.contains("*/*") || accept.contains("application/json")) {
+      return propertyAsJson(name);
+    } else {
+      return TODO;
+    }
+  }
+
+  private static Result propertyAsJson(String name) {
+    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+    Property property = p.getCache().getProperty(name);
+    return ok(play.libs.Json.toJson(property));
   }
 
   private static Result propertiesAsJson() {

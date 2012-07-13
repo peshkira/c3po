@@ -145,7 +145,12 @@ public class FilterController extends Controller {
     final Graph graph = getGraph(filter, f);
     graph.sort();
 
-    if (f.equals("creating_application_name")) {
+//    if (f.equals("creating_application_name")) {
+//      graph.cutLongTail();
+//    }
+    
+    //TODO check!!!
+    if (graph.getKeys().size() > 100) {
       graph.cutLongTail();
     }
 
@@ -230,8 +235,13 @@ public class FilterController extends Controller {
     final MapReduceOutput output = job.execute();
     final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
     for (final BasicDBObject dbo : jobresults) {
-      keys.add((dbo.getString("_id")));
+      String key = dbo.getString("_id");
+      if (key.endsWith(".0")) {
+        key= key.substring(0, key.length() - 2);
+      }
+      keys.add(key);
       values.add(dbo.getString("value"));
+      
     }
     return result;
   }
