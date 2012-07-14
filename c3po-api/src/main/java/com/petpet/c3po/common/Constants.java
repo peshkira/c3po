@@ -91,10 +91,10 @@ public final class Constants {
    * values). Note that there is a '{}' wildcard that has to be replaced with
    * the id of the desired property, prior to usage.
    */
-  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'] != null && this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);} else {emit('Unknown', 1)}}";
+  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);}else{emit('Conflicted', 1);}} else {emit('Unknown', 1);}}";
 
   /**
-   * A javascript Map funcrtion for building a histogram over a specific date
+   * A javascript Map function for building a histogram over a specific date
    * property. All occurrences of that property are used. If they are conflicted
    * then they are aggregated under one key 'Conflcited'. If the property is
    * missing, then the values are aggregated under the key 'Unknown'. Otherwise
@@ -102,6 +102,18 @@ public final class Constants {
    * be replaced with the id of the desired property, prior to usage.
    */
   public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value.getFullYear(), 1);}else{emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
+
+  /**
+   * A javascript Map function for building a histogram with fixed bin size. It
+   * takes two wilde cards as parameters - The {1} is the numeric property and
+   * the {2} is the bin size. The result contains the bins, where the id is from
+   * 0 to n and the value is the number of occurrences. Note that each bin has a
+   * fixed size so the label can be easily calculated. For example the id 0
+   * marks the number of elements where the numeric property was between 0 and
+   * the width, the id 1 marks the number of elements where the numeric property
+   * was between the width and 2*width and so on.
+   */
+  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['{1}'] != null) {if (this.metadata['{1}'].status !== 'CONFLICT') {var idx = Math.round(this.metadata['{1}'].value / {2});emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
