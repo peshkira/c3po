@@ -1,5 +1,7 @@
 package com.petpet.c3po.analysis.mapreduce;
 
+import java.util.Map;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
@@ -17,6 +19,8 @@ public abstract class MapReduceJob {
   private String c3poCollection;
   
   private BasicDBObject filterquery;
+  
+  private Map<String, String> config;
 
   public PersistenceLayer getPersistence() {
     if (this.persistence == null) {
@@ -65,5 +69,13 @@ public abstract class MapReduceJob {
   }
   
   public abstract MapReduceOutput execute();
+
+  public Map<String, String> getConfig() {
+    return config;
+  }
+
+  public void setConfig(Map<String, String> config) {
+    this.config = config;
+  }
 
 }

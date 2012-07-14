@@ -64,6 +64,7 @@
                       url:      '/c3po/overview/graph?property='+property,
                       timeout:  5000,
                       success:  function (oData) {
+                          hideOptions();
                           var hist = [];
                           $.each(oData.keys, function(i, k) {
                               hist.push([oData.keys[i], parseInt(oData.values[i])]);
@@ -72,24 +73,27 @@
                           var data = {};
                           data[id] = hist;
                           drawGraphs(data);
-                          hideOptions();
+                          
                       }   
                   });
                   
               } else {
             	  var popup = $('#filterpopup');
                   popup.children('.popupreason').text('This is an integer property and it requires the selection of an algorithm for the histogram bins.');
-                  popup.children('.popupconfig').append($('<select><option value="fixed">fixed</option><option value="sturge">Sturge\'s</option><option value="sqrt">Square-root choice</option></select>'));
+
+                  if (popup.children('.popupconfig').children('select').length == 1) {
+                      popup.children('.popupconfig').append($('<select><option value="fixed">fixed</option><option value="sturge">Sturge\'s</option><option value="sqrt">Square-root choice</option></select>'));
+                  }
                   popup.css({'display': 'block', 'z-index':11});
 
-                  $('.popupconfig select').click(function() {
+                  $('.popupconfig select:last').click(function() {
                       $('.popupconfig .green_button').remove();
                       $('.popupconfig input').remove();
                       if ($(this).val() == "fixed") {
-                          $('.popupconfig').append($('<input type="text" placeholder="nr of bins" />'));
+                          $('.popupconfig').append($('<input type="text" placeholder="bin width" />'));
                       }
 
-                      $('.popupconfig').append($('<a class="green_button" href="javascript:hideOptions()">Apply</a>'))
+                      $('.popupconfig').append($('<a class="green_button" href="javascript:applyIntegerHistogramSelection()">Apply</a>'))
                   });
                   
               }
@@ -100,7 +104,35 @@
               var popup = $('#filterpopup');
               popup.css({'display':'none'});
               popup.children('.popupconfig').children().remove(); 
-          }  
+          } 
+
+          function applyIntegerHistogramSelection() {
+              var selects = $('.popupconfig').children('select');
+              var property = $('.popupconfig').children('select:first').val();
+              var alg = $('.popupconfig').children('select:last').val();
+              var width = -1;
+              if (alg == "fixed") {
+                  width = $('.popupconfig input:first').val();
+              }
+
+              $.ajax({
+            	  type:     'GET',
+                  url:      '/c3po/overview/graph?property='+property + "&alg=" + alg + "&width="+width,
+                  timeout:  5000,
+                  success:  function (oData) {
+                      var hist = [];
+                      $.each(oData.keys, function(i, k) {
+                          hist.push([oData.keys[i], parseInt(oData.values[i])]);
+                      });
+                      var id = oData.property;
+                      var data = {};
+                      data[id] = hist;
+                      $('#' + id).remove(); //remove the old graph if exist 
+                      drawGraphs(data);
+                      hideOptions();
+                  }   
+              });
+          } 
 </script>
 <script type = "text/javascript">
        $(function() {
@@ -169,9 +201,7 @@ function getBarChart(ttl) {
                                  val = val.substring(0, 25) + '...';
                             }
 
-                            if (val.match(".0$") == ".0") {
-                                val = val.substring(0, val.length - 2);
-                            }
+                           //val = (val.replace(/\.0/g, "")); 
                             return val;
                         }
                     }
@@ -185,9 +215,18 @@ function getBarChart(ttl) {
                     }
                 }
             },
+            highlighter: {
+                show: true, 
+                tooltipLocation: 'n',
+                showTooltip: true,
+                useAxesFormatters: true,
+                sizeAdjust: 0.5,
+                tooltipAxes: 'y',
+                bringSeriesToFront : true,
+                tooltipOffset: 30,
+                },
             cursor: {
-                style: 'pointer',     // A CSS spec for the cursor type to change the
-                                        // cursor to when over plot.
+                style: 'pointer',     // A CSS spec for the cursor type to change the cursor to when over plot.
                 show: true,
                 showTooltip: false,      // show a tooltip showing cursor position.
                 useAxesFormatters: true,        // wether to use the same formatter and formatStrings

@@ -6,7 +6,9 @@ import helpers.Statistics;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import play.Logger;
 import play.data.DynamicForm;
@@ -79,8 +81,6 @@ public class FilterController extends Controller {
       throw new RuntimeException("Two many filters found for property " + property);
     }
 
-    // TODO change uid to property and value
-    // find such property and value in the current filter and remove...
     return ok();
   }
 
@@ -143,17 +143,7 @@ public class FilterController extends Controller {
     Logger.info("Current filter was: " + filter.getDescriminator());
     // query histogram to check the value of the filter that was selected
     final Graph graph = getGraph(filter, f);
-    graph.sort();
-
-//    if (f.equals("creating_application_name")) {
-//      graph.cutLongTail();
-//    }
     
-    //TODO check!!!
-    if (graph.getKeys().size() > 100) {
-      graph.cutLongTail();
-    }
-
     final String filtervalue = graph.getKeys().get(value);
 
     return addFromFilter(filter, f, filtervalue);
@@ -195,6 +185,29 @@ public class FilterController extends Controller {
     return f;
   }
 
+  public static Graph getGraph(String property) {
+    Filter filter = Application.getFilterFromSession();
+
+    DynamicForm form = form().bindFromRequest();
+    String alg = form.get("alg");
+    Graph g = null;
+
+    if (alg == null) {
+      g = getOrdinalGraph(filter, property);
+    } else {
+      g = getNumericGraph(filter, property, form);
+    }
+    
+    if (g != null) {
+      g.sort();
+      
+      if (g.getKeys().size() > 100) {
+        g.cutLongTail();
+      }
+    }
+    return g;
+  }
+
   public static Graph getGraph(String collection, String property) {
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     final List<String> keys = new ArrayList<String>();
@@ -209,17 +222,33 @@ public class FilterController extends Controller {
       final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
 
       for (final BasicDBObject dbo : jobresults) {
-        keys.add((dbo.getString("_id")));
+        String key = dbo.getString("_id");
+        if (key.endsWith(".0")) {
+          key = key.substring(0, key.length() - 2);
+        }
+        keys.add(key);
         values.add(dbo.getString("value"));
       }
     } else {
       DBCursor cursor = dbc.find();
       while (cursor.hasNext()) {
         BasicDBObject dbo = (BasicDBObject) cursor.next();
-        keys.add(dbo.getString("_id"));
+        String key = dbo.getString("_id");
+        if (key.endsWith(".0")) {
+          key = key.substring(0, key.length() - 2);
+        }
+        keys.add(key);
         values.add(dbo.getString("value"));
       }
     }
+    
+
+    result.sort();
+
+    if (result.getKeys().size() > 100) {
+      result.cutLongTail();
+    }
+    
     return result;
   }
 
@@ -237,11 +266,18 @@ public class FilterController extends Controller {
     for (final BasicDBObject dbo : jobresults) {
       String key = dbo.getString("_id");
       if (key.endsWith(".0")) {
-        key= key.substring(0, key.length() - 2);
+        key = key.substring(0, key.length() - 2);
       }
       keys.add(key);
       values.add(dbo.getString("value"));
-      
+
+    }
+    
+
+    result.sort();
+
+    if (result.getKeys().size() > 100) {
+      result.cutLongTail();
     }
     return result;
   }
@@ -302,4 +338,186 @@ public class FilterController extends Controller {
     return stats;
   }
 
+  private static Graph getOrdinalGraph(Filter filter, String property) {
+    Graph g = null;
+    if (filter != null) {
+      BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+      DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
+      if (cursor.count() == 1) { // only root filter
+        g = FilterController.getGraph(filter.getCollection(), property);
+      } else {
+        g = FilterController.getGraph(filter, property);
+      }
+     
+    }
+
+    return g;
+  }
+
+  private static Graph getNumericGraph(Filter filter, String property, DynamicForm form) {
+
+    // TODO find number of elements based on filter...
+    // calculate bins...
+    // find classes based on number of bins...
+    // map reduce this property based on the classes...
+    Graph g = null;
+    String alg = form.get("alg");
+    if (alg.equals("fixed")) {
+      int width = 50;
+      try {
+        width = Integer.parseInt(form.get("width"));
+      } catch (NumberFormatException e) {
+        Logger.warn("Not a number, using default bin width: 50");
+      }
+
+      g = getFixedWidthHistogram(filter, property, width);
+    } else if (alg.equals("sturge")) {
+      // bins = log2 n + 1
+      g = getSturgesHistogramm(filter, property);
+    } else if (alg.equals("sqrt")) {
+      // bins = sqrt(n);
+      g = getSquareRootHistogram(filter, property);
+    }
+    
+    return g;
+  }
+
+  private static Graph getFixedWidthHistogram(Filter filter, String property, int width) {
+    BasicDBObject query = Application.getFilterQuery(filter);
+    MapReduceJob job = new NumericAggregationJob(filter.getCollection(), property);
+    job.setFilterquery(query);
+
+    MapReduceOutput output = job.execute();
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+    Graph g = null;
+    if (!results.isEmpty()) {
+      BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
+      long min = aggregation.getLong("min");
+      long max = aggregation.getLong("max");
+
+      int bins = (int) ((max - min) / width);
+      System.out.println("bins: " + bins);
+      Map<String, String> config = new HashMap<String, String>();
+      config.put("bin_width", width+"");
+      
+      job = new HistogramJob(filter.getCollection(), property);
+      job.setFilterquery(query);
+      job.setConfig(config);
+      output = job.execute();
+      results = (List<BasicDBObject>) output.getCommandResult().get("results");
+      List<String> keys = new ArrayList<String>();
+      List<String> values = new ArrayList<String>();
+      System.out.println("results: " + results.size());
+      for (BasicDBObject obj : results) {
+        String id = obj.getString("_id");
+
+        if (id.equals("Unknown") || id.equals("Conflicted")) {
+          keys.add(id);
+        } else {
+//          System.out.println("id  is : " + id);
+          int low = (int) Double.parseDouble(id) * width;
+          int high = low + width;
+          keys.add(low + " - " + high);
+        }
+        values.add(obj.getString("value"));
+      }
+
+      g = new Graph(property, keys, values);
+    }
+
+    return g;
+
+  }
+  
+  private static Graph getSturgesHistogramm(Filter f, String property) {
+    BasicDBObject query = Application.getFilterQuery(f);
+    DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_ELEMENTS, query);
+    int n = cursor.size();
+    int bins = (int) ((Math.log(n) / Math.log(2)) + 1);
+    System.out.println("bins: " + bins);
+    MapReduceJob job = new NumericAggregationJob(f.getCollection(), property);
+    job.setFilterquery(query);
+
+    MapReduceOutput output = job.execute();
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+    Graph g = null;
+    if (!results.isEmpty()) {
+      BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
+      long max = aggregation.getLong("max");
+      int width = (int) (max / bins);
+      Map<String, String> config = new HashMap<String, String>();
+      config.put("bin_width", width+"");
+      
+      job = new HistogramJob(f.getCollection(), property);
+      job.setFilterquery(query);
+      job.setConfig(config);
+      output = job.execute();
+      results = (List<BasicDBObject>) output.getCommandResult().get("results");
+      List<String> keys = new ArrayList<String>();
+      List<String> values = new ArrayList<String>();
+      System.out.println("results: " + results.size());
+      for (BasicDBObject obj : results) {
+        String id = obj.getString("_id");
+
+        if (id.equals("Unknown") || id.equals("Conflicted")) {
+          keys.add(id);
+        } else {
+          int low = (int) Double.parseDouble(id) * width;
+          int high = low + width;
+          keys.add(low + " - " + high);
+        }
+        values.add(obj.getString("value"));
+      }
+
+      g = new Graph(property, keys, values);
+    }
+
+    return g;
+  }
+  
+  private static Graph getSquareRootHistogram(Filter f, String property) {
+    BasicDBObject query = Application.getFilterQuery(f);
+    DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_ELEMENTS, query);
+    int n = cursor.size();
+    int bins = (int) Math.sqrt(n);
+    System.out.println("bins: " + bins);
+    MapReduceJob job = new NumericAggregationJob(f.getCollection(), property);
+    job.setFilterquery(query);
+
+    MapReduceOutput output = job.execute();
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+    Graph g = null;
+    if (!results.isEmpty()) {
+      BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
+      long max = aggregation.getLong("max");
+      int width = (int) (max / bins);
+      Map<String, String> config = new HashMap<String, String>();
+      config.put("bin_width", width+"");
+      
+      job = new HistogramJob(f.getCollection(), property);
+      job.setFilterquery(query);
+      job.setConfig(config);
+      output = job.execute();
+      results = (List<BasicDBObject>) output.getCommandResult().get("results");
+      List<String> keys = new ArrayList<String>();
+      List<String> values = new ArrayList<String>();
+      System.out.println("results: " + results.size());
+      for (BasicDBObject obj : results) {
+        String id = obj.getString("_id");
+
+        if (id.equals("Unknown") || id.equals("Conflicted")) {
+          keys.add(id);
+        } else {
+          int low = (int) Double.parseDouble(id) * width;
+          int high = low + width;
+          keys.add(low + " - " + high);
+        }
+        values.add(obj.getString("value"));
+      }
+
+      g = new Graph(property, keys, values);
+    }
+
+    return g;
+  }
 }

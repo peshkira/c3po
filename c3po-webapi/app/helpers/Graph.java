@@ -75,7 +75,13 @@ public class Graph {
           pos = i;
         }
       }
-      v.add(values.remove(pos));
+      String val = values.remove(pos);
+        
+      if (val.endsWith(".0")) {
+        val = val.substring(0, val.length() - 2);
+      }
+      
+      v.add(val);
       k.add(keys.remove(pos));
     }
 

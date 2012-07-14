@@ -5,7 +5,6 @@ import helpers.GraphData;
 import helpers.Statistics;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import play.Logger;
@@ -55,25 +54,17 @@ public class Overview extends Controller {
     }
     return ok(overview.render(names, data, stats));
   }
-  
-  public static Result getGraph(String property) {
-    Filter filter = Application.getFilterFromSession();
-    Graph g = null;
-    if (filter != null) {
-      BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
-      DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
-      if (cursor.count() == 1) { // only root filter
-        g = FilterController.getGraph(filter.getCollection(), property);
-      } else {
-        g = FilterController.getGraph(filter, property);
-      }
-      g.sort();
 
-      if (g.getKeys().size() > 100) {
-        g.cutLongTail();
+  public static Result getGraph(String property) {
+
+    for (String p : Application.PROPS) {
+      if (p.equals(property)) {
+        return ok();
       }
-      
     }
+
+    Graph g = FilterController.getGraph(property);
+
     return ok(play.libs.Json.toJson(g));
   }
 
@@ -87,11 +78,6 @@ public class Overview extends Controller {
         graph = FilterController.getGraph(f, prop);
       }
 
-      graph.sort();
-
-      if (graph.getKeys().size() > 100) {
-        graph.cutLongTail();
-      }
       graphs.add(graph);
 
       // TODO decide when to cut long tail...

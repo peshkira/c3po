@@ -51,6 +51,10 @@ public class HistogramJob extends MapReduceJob {
       }
 
       LOG.info("Date Filter Query adjusted: " + this.getFilterquery().toString());
+    } else if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
+      String width = this.getConfig().get("bin_width");
+      map = Constants.NUMERIC_HISTOGRAM_MAP.replace("{1}", this.property).replace("{2}", width);
+      
     } else {
       map = Constants.HISTOGRAM_MAP.replace("{}", p.getId());
     }
