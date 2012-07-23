@@ -3,17 +3,17 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
   <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
     <param name="Target" value="System.out" />
-    <param name="Threshold" value="INFO" />
+    <param name="Threshold" value="DEBUG" />
     <layout class="org.apache.log4j.PatternLayout">
       <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p [%c{1}] %m%n" />
     </layout>
   </appender>
-  <appender name="FILEAPPENDER" class="com.petpet.c3po.utils.C3POFileAppender">
+  <!-- <appender name="FILEAPPENDER" class="com.petpet.c3po.utils.C3POFileAppender">
     <param name="Threshold" value="TRACE" />
     <layout class="org.apache.log4j.PatternLayout">
       <param name="ConversionPattern" value="%d{HH:mm:ss,SSS} %-5p [%c{1}] %m%n" />
     </layout>
-  </appender>
+  </appender> -->
   <logger name="org.apache.commons.digester3">
     <level value="INFO" />
   </logger>
@@ -22,6 +22,6 @@
   </logger>
   <root>
     <appender-ref ref="CONSOLE" />
-    <appender-ref ref="FILEAPPENDER" />
+    <!-- <appender-ref ref="FILEAPPENDER" /> -->
   </root>
 </log4j:configuration>

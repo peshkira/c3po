@@ -3,6 +3,8 @@ package com.petpet.c3po.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -10,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
@@ -17,6 +20,7 @@ import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.MetadataRecord;
 import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.datamodel.Property.PropertyType;
 
 public final class DataHelper {
 
@@ -102,6 +106,59 @@ public final class DataHelper {
 
     return f;
   }
+
+  public static BasicDBObject getFilterQuery(Filter filter) {
+    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
+    BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+    DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
+
+    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
+
+    Filter tmp;
+    while (cursor.hasNext()) {
+      DBObject next = cursor.next();
+      tmp = DataHelper.parseFilter(next);
+      if (tmp.getValue() != null) {
+
+        Property property = pl.getCache().getProperty(tmp.getProperty());
+
+        if (tmp.getValue().equals("Unknown")) {
+          query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
+        } else if (property.getType().equals(PropertyType.DATE.toString())) {
+
+          Calendar cal = Calendar.getInstance();
+          cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
+          Date start = cal.getTime();
+          cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
+          Date end = cal.getTime();
+
+          BasicDBObject date = new BasicDBObject();
+          date.put("$lte", end);
+          date.put("$gte", start);
+
+          query.put("metadata." + tmp.getProperty() + ".value", date);
+        } else {
+          query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
+        }
+      }
+    }
+
+    return query;
+  }
+  
+  private static Object inferValue(String value) {
+    Object result = value;
+    if (value.equalsIgnoreCase("true")) {
+      result = new Boolean(true);
+    }
+
+    if (value.equalsIgnoreCase("false")) {
+      result = new Boolean(false);
+    }
+
+    return result;
+  }
+
 
   private DataHelper() {
 

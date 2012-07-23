@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -30,7 +29,6 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Property.PropertyType;
-import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 
 public class ProfileGenerator {
@@ -95,6 +93,7 @@ public class ProfileGenerator {
     this.genereateFilterElement(partition, filter);
     final Element properties = this.createPropertiesElement(partition);
     this.generateProperties(filter, properties);
+    this.createSamples(filter, partition);
     this.createElements(filter, partition);
 
     return document;
@@ -103,7 +102,7 @@ public class ProfileGenerator {
   private void genereateFilterElement(Element partition, Filter filter) {
     Element elmntFilter = partition.addElement("filter");
     elmntFilter.addAttribute("id", filter.getDescriminator());
-    BasicDBObject query = this.getFilterQuery(filter);
+    BasicDBObject query = DataHelper.getFilterQuery(filter);
     Element parameters = elmntFilter.addElement("parameters");
     for (String key : query.keySet()) {
       Element parameter = parameters.addElement("parameter");
@@ -115,7 +114,7 @@ public class ProfileGenerator {
 
   // TODO serialize the filter better, not with the temp id.
   private Element createPartition(Element root, Filter filter) {
-    BasicDBObject query = this.getFilterQuery(filter);
+    BasicDBObject query = DataHelper.getFilterQuery(filter);
 
     DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, query);
 
@@ -128,7 +127,7 @@ public class ProfileGenerator {
     // final BasicDBObject query = new BasicDBObject("_id", null);
 
     for (Property p : allprops) {
-      final BasicDBObject ref = this.getFilterQuery(filter);
+      final BasicDBObject ref = DataHelper.getFilterQuery(filter);
       // if it is already in the query do not overwrite
       if (!ref.containsField("metadata." + p.getId() + ".value")) {
         ref.put("metadata." + p.getId() + ".value", new BasicDBObject("$exists", true));
@@ -158,62 +157,10 @@ public class ProfileGenerator {
       case FLOAT:
         this.processNumericProperty(filter, prop, p);
         break;
-      case DATE: 
+      case DATE:
         this.processDateProperty(filter, prop, p);
         break;
     }
-  }
-
-  private BasicDBObject getFilterQuery(Filter filter) {
-    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
-    DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
-
-    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
-
-    Filter tmp;
-    while (cursor.hasNext()) {
-      DBObject next = cursor.next();
-      tmp = DataHelper.parseFilter(next);
-      if (tmp.getValue() != null) {
-
-        Property property = pl.getCache().getProperty(tmp.getProperty());
-
-        if (tmp.getValue().equals("Unknown")) {
-          query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-        } else if (property.getType().equals(PropertyType.DATE.toString())) {
-
-          Calendar cal = Calendar.getInstance();
-          cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
-          Date start = cal.getTime();
-          cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
-          Date end = cal.getTime();
-
-          BasicDBObject date = new BasicDBObject();
-          date.put("$lte", end);
-          date.put("$gte", start);
-
-          query.put("metadata." + tmp.getProperty() + ".value", date);
-        } else {
-          query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
-        }
-      }
-    }
-
-    return query;
-  }
-
-  private static Object inferValue(String value) {
-    Object result = value;
-    if (value.equalsIgnoreCase("true")) {
-      result = new Boolean(true);
-    }
-
-    if (value.equalsIgnoreCase("false")) {
-      result = new Boolean(false);
-    }
-
-    return result;
   }
 
   private Element createRootElement(final Document doc, final String collection, final long count) {
@@ -227,10 +174,21 @@ public class ProfileGenerator {
     return partition.addElement("properties");
   }
 
+  private void createSamples(final Filter filter, final Element partition) {
+    final Element samples = partition.addElement("samples");
+    final RepresentativeGenerator sg = new SizeRepresentativeGenerator();
+    sg.setFilter(filter);
+    final List<String> output = sg.execute(5);
+
+    for (String s : output) {
+      samples.addElement("sample").addAttribute("uid", s);
+    }
+  }
+
   private void createElements(final Filter filter, final Element partition) {
     final Element elements = partition.addElement("elements");
 
-    final BasicDBObject ref = this.getFilterQuery(filter);
+    final BasicDBObject ref = DataHelper.getFilterQuery(filter);
     final BasicDBObject keys = new BasicDBObject("_id", null);
     keys.put("uid", 1);
 
@@ -248,7 +206,7 @@ public class ProfileGenerator {
       if (p.getKey().equals(s)) {
 
         HistogramJob job = new HistogramJob(filter.getCollection(), p.getKey());
-        job.setFilterquery(this.getFilterQuery(filter));
+        job.setFilterquery(DataHelper.getFilterQuery(filter));
 
         final MapReduceOutput output = job.execute();
         final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
@@ -277,7 +235,7 @@ public class ProfileGenerator {
 
   private void processBoolProperty(final Filter filter, final Element prop, final Property p) {
     final BasicDBObject query = new BasicDBObject("_id", null);
-    final BasicDBObject ref = this.getFilterQuery(filter);
+    final BasicDBObject ref = DataHelper.getFilterQuery(filter);
     final String key = "metadata." + p.getId() + ".value";
     int yes = 0;
     int no = 0;
@@ -308,10 +266,10 @@ public class ProfileGenerator {
 
   }
 
-  //if also a histogram is done, do not forget the bin_width...
+  // if also a histogram is done, do not forget the bin_width...
   private void processNumericProperty(final Filter filter, final Element prop, final Property p) {
     final NumericAggregationJob job = new NumericAggregationJob(filter.getCollection(), p.getId());
-    final BasicDBObject query = this.getFilterQuery(filter);
+    final BasicDBObject query = DataHelper.getFilterQuery(filter);
     job.setFilterquery(query);
     final MapReduceOutput output = job.execute();
 
@@ -326,11 +284,11 @@ public class ProfileGenerator {
     prop.addAttribute("var", removeTrailingZero(aggregation.getString("variance")));
     prop.addAttribute("sd", removeTrailingZero(aggregation.getString("stddev")));
   }
-  
+
   private void processDateProperty(Filter filter, Element prop, Property p) {
     final HistogramJob job = new HistogramJob(filter.getCollection(), p.getKey());
-    job.setFilterquery(this.getFilterQuery(filter));
-    
+    job.setFilterquery(DataHelper.getFilterQuery(filter));
+
     MapReduceOutput output = job.execute();
     List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
     for (BasicDBObject obj : results) {
@@ -347,8 +305,6 @@ public class ProfileGenerator {
 
     return str;
   }
-  
- 
 
   // TODO find a better place for this and remove it from here and CSVGenerator
   /**

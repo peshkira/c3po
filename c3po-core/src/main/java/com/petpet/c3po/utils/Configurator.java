@@ -99,6 +99,7 @@ public final class Configurator {
         stream = new FileInputStream(f);
         this.config.load(stream);
         LOG.info("User defined config is successfully loaded");
+        LOG.debug(this.config.toString());
 
       } catch (final IOException e) {
         LOG.warn("Could not load user defined properties file '{}', cause: {}", USER_PROPERTIES, e.getMessage());

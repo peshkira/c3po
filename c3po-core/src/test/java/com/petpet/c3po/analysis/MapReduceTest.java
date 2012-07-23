@@ -1,4 +1,4 @@
-package com.petpet.c3po.dao;
+package com.petpet.c3po.analysis;
 
 import junit.framework.Assert;
 
