@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -29,6 +30,7 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Property.PropertyType;
+import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 
 public class ProfileGenerator {
@@ -37,8 +39,7 @@ public class ProfileGenerator {
 
   private static final String[] PROPERTIES = { "format", "format_version", "puid", "mimetype", "charset", "linebreak",
       "compressionscheme", "creating_os", "byteorder", "compression_scheme", "colorspace", "icc_profile_name",
-      "icc_profile_version" };
-  // "creating.application.name"
+      "icc_profile_version", "created", "creating.application.name" };
 
   private PersistenceLayer persistence;
 
@@ -157,12 +158,16 @@ public class ProfileGenerator {
       case FLOAT:
         this.processNumericProperty(filter, prop, p);
         break;
+      case DATE: 
+        this.processDateProperty(filter, prop, p);
+        break;
     }
   }
 
   private BasicDBObject getFilterQuery(Filter filter) {
+    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
-    DBCursor cursor = this.persistence.find(Constants.TBL_FILTERS, ref);
+    DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
 
     BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
 
@@ -170,10 +175,28 @@ public class ProfileGenerator {
     while (cursor.hasNext()) {
       DBObject next = cursor.next();
       tmp = DataHelper.parseFilter(next);
-      if (tmp.getValue().equals("Unknown")) {
-        query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-      } else {
-        query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
+      if (tmp.getValue() != null) {
+
+        Property property = pl.getCache().getProperty(tmp.getProperty());
+
+        if (tmp.getValue().equals("Unknown")) {
+          query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
+        } else if (property.getType().equals(PropertyType.DATE.toString())) {
+
+          Calendar cal = Calendar.getInstance();
+          cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
+          Date start = cal.getTime();
+          cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
+          Date end = cal.getTime();
+
+          BasicDBObject date = new BasicDBObject();
+          date.put("$lte", end);
+          date.put("$gte", start);
+
+          query.put("metadata." + tmp.getProperty() + ".value", date);
+        } else {
+          query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
+        }
       }
     }
 
@@ -285,6 +308,7 @@ public class ProfileGenerator {
 
   }
 
+  //if also a histogram is done, do not forget the bin_width...
   private void processNumericProperty(final Filter filter, final Element prop, final Property p) {
     final NumericAggregationJob job = new NumericAggregationJob(filter.getCollection(), p.getId());
     final BasicDBObject query = this.getFilterQuery(filter);
@@ -302,6 +326,19 @@ public class ProfileGenerator {
     prop.addAttribute("var", removeTrailingZero(aggregation.getString("variance")));
     prop.addAttribute("sd", removeTrailingZero(aggregation.getString("stddev")));
   }
+  
+  private void processDateProperty(Filter filter, Element prop, Property p) {
+    final HistogramJob job = new HistogramJob(filter.getCollection(), p.getKey());
+    job.setFilterquery(this.getFilterQuery(filter));
+    
+    MapReduceOutput output = job.execute();
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+    for (BasicDBObject obj : results) {
+      String id = removeTrailingZero(obj.getString("_id"));
+      String val = removeTrailingZero(obj.getString("value"));
+      prop.addElement("item").addAttribute("id", id).addAttribute("value", val);
+    }
+  }
 
   private String removeTrailingZero(final String str) {
     if (str != null && str.endsWith(".0")) {
@@ -310,8 +347,10 @@ public class ProfileGenerator {
 
     return str;
   }
+  
+ 
 
-  // TODO find a better place for this and remove it from the CSVGenerator
+  // TODO find a better place for this and remove it from here and CSVGenerator
   /**
    * Extracts {@link Property} objects from the given cursor and only sets the
    * id and the name field.
@@ -343,17 +382,4 @@ public class ProfileGenerator {
     return result;
   }
 
-  private class PropertyAggregation {
-    protected String collection;
-
-    protected Property filter;
-
-    protected String value;
-
-    public PropertyAggregation(final String c, final Property f, final String v) {
-      this.collection = c;
-      this.filter = f;
-      this.value = v;
-    }
-  }
 }

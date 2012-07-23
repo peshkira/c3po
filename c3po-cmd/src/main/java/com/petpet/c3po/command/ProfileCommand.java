@@ -1,6 +1,7 @@
 package com.petpet.c3po.command;
 
 import java.io.File;
+import java.util.UUID;
 
 import org.apache.commons.cli.Option;
 import org.dom4j.Document;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
 
 public class ProfileCommand implements Command {
@@ -32,13 +34,14 @@ public class ProfileCommand implements Command {
 
     this.pLayer = configurator.getPersistence();
     final ProfileGenerator gen = new ProfileGenerator(this.pLayer);
-//
-//    final String name = this.getCollectionName();
-//    final Document profile = gen.generateProfile(name, "mimetype");// parametrize
-//                                                                   // this.
-//
-//    gen.write(profile, this.getOutputFile(name));
-//
+
+    final String name = this.getCollectionName();
+    Filter f = new Filter(name, null, null);
+    f.setDescriminator(UUID.randomUUID().toString());
+    final Document profile = gen.generateProfile(f);
+
+    gen.write(profile, this.getOutputFile(name));
+
     final long end = System.currentTimeMillis();
     this.time = end - start;
   }

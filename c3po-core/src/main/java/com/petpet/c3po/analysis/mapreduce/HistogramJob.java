@@ -50,7 +50,7 @@ public class HistogramJob extends MapReduceJob {
         this.getFilterquery().append(constrainKey, constraintValue);
       }
 
-      LOG.info("Date Filter Query adjusted: " + this.getFilterquery().toString());
+      LOG.debug("Date Filter Query adjusted: " + this.getFilterquery().toString());
     } else if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
       String width = this.getConfig().get("bin_width");
       map = Constants.NUMERIC_HISTOGRAM_MAP.replace("{1}", this.property).replace("{2}", width);
@@ -59,7 +59,7 @@ public class HistogramJob extends MapReduceJob {
       map = Constants.HISTOGRAM_MAP.replace("{}", p.getId());
     }
 
-    LOG.info("Executing histogramm map reduce job with following map:\n{}", map);
+    LOG.debug("Executing histogramm map reduce job with following map:\n{}", map);
     final DBCollection elements = this.getPersistence().getDB().getCollection(Constants.TBL_ELEMENTS);
     final MapReduceCommand cmd = new MapReduceCommand(elements, map, Constants.HISTOGRAM_REDUCE,
         this.getOutputCollection(), this.getType(), this.getFilterquery());
