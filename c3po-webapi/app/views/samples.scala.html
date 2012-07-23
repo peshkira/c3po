@@ -1,0 +1,23 @@
+@(collections: List[String], elements: List[com.petpet.c3po.datamodel.Element])
+@import helper._
+@main("c3po", collections) {
+  @if(elements != null) {
+     <div id="objects" class="content">     
+     <h2>Sample Objects</h2>
+     
+       @if(elements.isEmpty()) {
+          The query returned an empty set. May be there are no more objects in the database or it is empty.
+       } else {
+          
+          @for(e <- elements) {
+              <a href="/c3po/objects/@e.getId()">@e.getName()</a><br/>
+          }
+       }
+       
+     </div>
+   } else {
+    <div id="objects" class="content">     
+     <h2>Please select a collection</h2>
+     </div>
+   } 
+}
