@@ -11,6 +11,7 @@ public final class CommandConstants {
   public static final String RECURSIVE_OPTION = "recursive";
   public static final String ANONYMIZE_OPTION = "anonymize";
   public static final String HELP_OPTION = "help";
+  public static final String VERSION_OPTION = "version";
 
   public static final String GATHER_DIR_ARGUMENT = "fits dir";
   public static final String PROFILE_FILEPATH_ARGUMENT = "output file directory";
@@ -24,10 +25,12 @@ public final class CommandConstants {
   public static final String RECURSIVE_DESCRIPTION = "Does the parsing operation recursively. To be used in combination with -g.";
   public static final String HELP_DESCRIPTION = "Prints this message";
   public static final String ANONYMIZE_DESCRIPTION = "Anonymizes the database by removing the filename and filepath of each element in the collection";
+  public static final String VERSION_DESCRIPTION = "Prints out version information";
 
   public static final String EXPORT_MIME = "mime type";
 
   public static final String EXPORT_MIME_DESCRIPTION = "All elements in the matrix will have the corresponding mimetype";
+
 
 
 

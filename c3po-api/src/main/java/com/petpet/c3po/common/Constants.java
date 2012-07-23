@@ -20,6 +20,13 @@ public final class Constants {
   public static final String PROFILE_FORMAT_VERSION = "0.1";
 
   /**
+   * The version of the core module.
+   */
+  public static final String CORE_VERSION = "0.1.1";
+  
+  public static final String API_VERSION = "0.1.0";
+
+  /**
    * The elements collection in the document store.
    */
   public static final String TBL_ELEMENTS = "elements";

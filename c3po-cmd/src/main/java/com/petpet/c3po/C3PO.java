@@ -17,11 +17,14 @@ import com.petpet.c3po.command.CommandConstants;
 import com.petpet.c3po.command.GatherCommand;
 import com.petpet.c3po.command.HelpCommand;
 import com.petpet.c3po.command.ProfileCommand;
+import com.petpet.c3po.command.VersionCommand;
 import com.petpet.c3po.command.WrongArgumentCommand;
 
 public class C3PO {
 
   private static final Logger LOG = LoggerFactory.getLogger(C3PO.class);
+  
+  public static final String VERSION = "0.1.1";
 
   private Options getOptions() {
 
@@ -47,7 +50,10 @@ public class C3PO {
 
     final Option recursive = new Option("r", CommandConstants.RECURSIVE_OPTION, false,
         CommandConstants.RECURSIVE_DESCRIPTION);
+    
     final Option help = new Option("h", CommandConstants.HELP_OPTION, false, CommandConstants.HELP_DESCRIPTION);
+    
+    final Option version = new Option("v", CommandConstants.VERSION_OPTION, false, CommandConstants.VERSION_DESCRIPTION); 
 
     final OptionGroup exclusive = new OptionGroup();
     exclusive.setRequired(false);
@@ -59,6 +65,7 @@ public class C3PO {
     final OptionGroup exclusive2 = new OptionGroup();
     exclusive2.setRequired(true);
     exclusive2.addOption(help);
+    exclusive2.addOption(version);
     exclusive2.addOption(collection);
 
     final Options options = new Options();
@@ -78,6 +85,9 @@ public class C3PO {
       if (line.hasOption(CommandConstants.HELP_OPTION)) {
 
         new HelpCommand(o).execute();
+        
+      } else if (line.hasOption(CommandConstants.VERSION_OPTION)) {
+        new VersionCommand().execute();
 
       } else if (line.hasOption(CommandConstants.GATHER_OPTION)) {
 

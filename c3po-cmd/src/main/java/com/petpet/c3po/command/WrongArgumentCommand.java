@@ -15,7 +15,7 @@ public class WrongArgumentCommand implements Command {
 
   @Override
   public void execute() {
-    System.err.println("Error: " + message);
+    System.err.println("Sometimes I don't understand human behaviour [" + message + "]");
     new HelpCommand(this.options).execute();
   }
 
