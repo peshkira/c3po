@@ -96,4 +96,8 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
 
     return result;
   }
+  
+  public String getType() {
+    return "size'o'matic 3000";
+  }
 }

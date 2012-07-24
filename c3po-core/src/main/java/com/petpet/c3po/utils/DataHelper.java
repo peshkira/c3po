@@ -21,6 +21,7 @@ import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.MetadataRecord;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Property.PropertyType;
+import com.petpet.c3po.datamodel.Source;
 
 public final class DataHelper {
 
@@ -95,6 +96,19 @@ public final class DataHelper {
     return e;
   }
 
+  public static Source parseSource(DBObject object) {
+    String id = (String) object.get("_id");
+    String name = (String) object.get("name");
+    String version = (String) object.get("version");
+
+    Source s = new Source();
+    s.setId(id);
+    s.setName(name);
+    s.setVersion(version);
+
+    return s;
+  }
+
   public static Filter parseFilter(DBObject object) {
     String d = (String) object.get("descriminator");
     String c = (String) object.get("collection");
@@ -145,7 +159,7 @@ public final class DataHelper {
 
     return query;
   }
-  
+
   private static Object inferValue(String value) {
     Object result = value;
     if (value.equalsIgnoreCase("true")) {
@@ -158,7 +172,6 @@ public final class DataHelper {
 
     return result;
   }
-
 
   private DataHelper() {
 

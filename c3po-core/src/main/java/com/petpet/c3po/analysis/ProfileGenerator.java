@@ -27,6 +27,8 @@ import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.datamodel.MetadataRecord;
+import com.petpet.c3po.datamodel.MetadataRecord.Status;
 import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.datamodel.Property.PropertyType;
 import com.petpet.c3po.utils.DataHelper;
@@ -175,13 +177,36 @@ public class ProfileGenerator {
   }
 
   private void createSamples(final Filter filter, final Element partition) {
-    final Element samples = partition.addElement("samples");
     final RepresentativeGenerator sg = new SizeRepresentativeGenerator();
+    final Element samples = partition.addElement("samples");
+    samples.addAttribute("type", sg.getType());
     sg.setFilter(filter);
     final List<String> output = sg.execute(5);
 
     for (String s : output) {
-      samples.addElement("sample").addAttribute("uid", s);
+      createSampleElement(samples, s);
+    }
+  }
+
+  private void createSampleElement(final Element samples, final String uid) {
+    DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, new BasicDBObject("uid", uid));
+    assert cursor.count() == 1;
+
+    com.petpet.c3po.datamodel.Element element = DataHelper.parseElement(cursor.next(), this.persistence);
+
+    Element sample = samples.addElement("sample").addAttribute("uid", uid);
+    for (MetadataRecord mr : element.getMetadata()) {
+
+      if (mr.getStatus().equals(Status.CONFLICT)) {
+        for (int i = 0; i < mr.getValues().size(); i++) {
+          sample.addElement("record").addAttribute("name", mr.getProperty().getKey())
+              .addAttribute("value", mr.getValues().get(i)).addAttribute("tool", mr.getSources().get(i));
+        }
+
+      } else {
+        sample.addElement("record").addAttribute("name", mr.getProperty().getKey())
+            .addAttribute("value", mr.getValue()).addAttribute("tool", mr.getSources().get(0));
+      }
     }
   }
 

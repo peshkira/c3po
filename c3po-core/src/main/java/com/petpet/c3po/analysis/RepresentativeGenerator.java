@@ -36,6 +36,14 @@ public abstract class RepresentativeGenerator {
    */
   public abstract List<String> execute(int limit);
 
+  /**
+   * Retrieves the type/name of the algorithm used to identify the sample
+   * objects.
+   * 
+   * @return the type.
+   */
+  public abstract String getType();
+
   public Filter getFilter() {
     return filter;
   }
