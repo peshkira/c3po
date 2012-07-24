@@ -166,8 +166,9 @@ public class ProfileGenerator {
   }
 
   private Element createRootElement(final Document doc, final String collection, final long count) {
-    final Element profile = doc.addElement("profile").addAttribute("version", Constants.PROFILE_FORMAT_VERSION)
-        .addAttribute("collection", collection).addAttribute("date", new Date() + "").addAttribute("count", count + "");
+    final Element profile = doc.addElement("profile", "http://ifs.tuwien.ac.at/dp/c3po")
+        .addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance").addAttribute("collection", collection)
+        .addAttribute("date", new Date() + "").addAttribute("count", count + "");
 
     return profile;
   }
@@ -194,10 +195,11 @@ public class ProfileGenerator {
 
     com.petpet.c3po.datamodel.Element element = DataHelper.parseElement(cursor.next(), this.persistence);
 
+
     Element sample = samples.addElement("sample").addAttribute("uid", uid);
     for (MetadataRecord mr : element.getMetadata()) {
-
-      if (mr.getStatus().equals(Status.CONFLICT)) {
+      
+      if (mr.getStatus().equals(Status.CONFLICT.toString())) {
         for (int i = 0; i < mr.getValues().size(); i++) {
           sample.addElement("record").addAttribute("name", mr.getProperty().getKey())
               .addAttribute("value", mr.getValues().get(i)).addAttribute("tool", mr.getSources().get(i));

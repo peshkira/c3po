@@ -60,8 +60,9 @@ public class Export extends Controller {
     PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     ProfileGenerator generator = new ProfileGenerator(p);
     Document profile = generator.generateProfile(filter);
-    generator.write(profile, "profiles/" + filter.getCollection() + ".xml");
+    String path = "profiles/" + filter.getCollection() + "_" + filter.getDescriminator() + ".xml";
+    generator.write(profile, path);
 
-    return ok(new File("profiles/" + filter.getCollection() + ".xml"));
+    return ok(new File(path));
   }
 }

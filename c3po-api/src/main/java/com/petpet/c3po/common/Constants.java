@@ -17,6 +17,7 @@ public final class Constants {
   /**
    * The version of the generated profile.
    */
+  @Deprecated
   public static final String PROFILE_FORMAT_VERSION = "0.1";
 
   /**

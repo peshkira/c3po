@@ -69,7 +69,6 @@ public final class DataHelper {
       rec.setStatus(prop.get("status").toString());
 
       Object value = prop.get("value");
-
       if (value != null) {
         rec.setValue(value.toString());
       }
