@@ -354,7 +354,6 @@ display: none;
 }
 
 #filterpopup .popupreason{
-	padding: 10px;
 	font-size: 12pt;
 	color: #888;
 	text-align:center;
@@ -362,13 +361,13 @@ display: none;
 
 #filterpopup .close {
 	position: relative;
-	margin-top: -15px;
+	margin-top: -12px;
 	margin-left: 98%;
 	cursor:pointer;
 }
 
 #filterpopup .popupconfig {
-	margin-top:30px;
+	margin-top:10px;
 	margin-left:20px;
 }
 
@@ -389,12 +388,34 @@ display: none;
     font-weight:bold;
     font-style:italic;
     outline: none;
+    width: 200px;
 	
 }
 
 #filterpopup .popupconfig input[type="text"]:focus {
 	box-shadow:0px 0px 3px #69E45C;
 }
+
+#filterpopup .popupconfig textarea {
+    background-color:#F5F5F5;
+    border-top:1px solid #69E45C;
+    border-right:1px solid #69E45C;
+    border-bottom:1px solid #69E45C;
+    border-left:11px solid #69E45C;
+    margin-right: 20px;
+    color: #000;
+    font-size:12px;
+    font-style:italic;
+    outline: none;
+    width: 400px;
+    height: 75px;  
+    vertical-align:bottom;
+}
+
+#filterpopup .popupconfig textarea:focus {
+    box-shadow:0px 0px 3px #69E45C;
+}
+
 
 #addfilter {
 	float:right;
@@ -645,6 +666,27 @@ display: none;
 	width:100%;
 	position:fixed;
 	background-color:#333;
+}
+
+#feedback {
+    position: fixed;
+    top: 60%;
+    right: -70px;
+    width: 150px;
+    height: 35px;
+    border: 2px solid #CECECE;
+    background-color: #4CBA34;
+    color: white;
+    -webkit-transform:rotate(270deg);
+    -moz-transform:rotate(270deg);
+    -o-transform: rotate(270deg);
+    text-align: center;
+    vertical-align: center;
+    padding-top: 0px;
+    padding-bottom: 20px;
+    font-size: 22px;
+    font-family: Copperplate, "Copperplate Gothic Light", fantasy;
+    cursor: pointer;
 }
 
 

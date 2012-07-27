@@ -112,6 +112,36 @@
               $('#filterpopup .close').click(function(){
             	  hideValueOptionDialog(false);
               })
+
+              //add feedback animation
+              $('#feedback').hover(function() {
+                  $(this).animate({
+                      right: '+=10',
+                      }, 200, function() {}
+                  );
+                  }, function() {
+                      $(this).animate({
+                          right: '-=10',
+                          }, 200, function() {}
+                      );
+                      
+              });
+
+              //add click event on feedback 
+              $('#feedback').click(function() {
+            	  $("#overlay").addClass('activeoverlay');
+            	  var popup = $('#filterpopup');
+                  popup.children('.popupreason').html('Do you have feedback or questions?<br/>Let us know and we will get right back to you by email.');
+                  popup.children('.popupconfig').append('<input type="text" placeholder="Your Email" /><br/>');
+                  popup.children('.popupconfig').append('<textarea placeholder="Feedback"></textarea>');
+                  var button = $('<a class="green_button" href="#">Send</a>').appendTo(popup.children('.popupconfig'));
+                  popup.css({'display': 'block', 'z-index':11});
+
+                  button.click(function() {
+                      alert('send email');
+                  })
+              });
+              
           }); //end document ready
 
           //global startSpinner function... 
@@ -336,5 +366,6 @@
   </div>
   <div class="container">@content</div>
   <div id="spinner"></div>
+  <div id="feedback">feedback</div>
 </body>
 </html>
