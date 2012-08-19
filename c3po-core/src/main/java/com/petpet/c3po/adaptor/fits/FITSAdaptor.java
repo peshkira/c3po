@@ -48,6 +48,7 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.createElementRules();
     this.createIdentityRules();
     this.createFileInfoRules();
+    this.createRepresentationInfoRules();
     this.createFileStatusRules();
     this.createMetaDataRules();
   }
@@ -81,6 +82,15 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.createValueRule("fits/fileinfo/copyrightBasis");
     this.createValueRule("fits/fileinfo/copyrightNote");
     this.createValueRule("fits/fileinfo/creatingos");
+  }
+  
+  /**
+   * This is not part of the original FITS specification,
+   * but it is reading out representation information out of
+   * RODA, if the FITS was provided by RODA.
+   */
+  private void createRepresentationInfoRules() {
+    this.createValueRule("fits/representationinfo/original");
   }
 
   private void createFileStatusRules() {
