@@ -73,8 +73,13 @@ public final class DataHelper {
         rec.setValue(value.toString());
       }
 
-      List<String> values = (List<String>) prop.get("values");
-      if (values != null) {
+      //because of boolean and other type conversions.
+      List<?> tmp= (List) prop.get("values");
+      if (tmp != null) {
+        List<String> values = new ArrayList<String>();
+        for (Object o : tmp) {
+          values.add(o.toString());
+        }
         rec.setValues(values);
       }
 

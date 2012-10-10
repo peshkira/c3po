@@ -184,7 +184,9 @@ public class ProfileGenerator {
     sg.setFilter(filter);
     final List<String> output = sg.execute(5);
 
+    LOG.debug("Found {} representatives", output.size());
     for (String s : output) {
+      LOG.info("Processing sample {}", s);
       createSampleElement(samples, s);
     }
   }
@@ -198,16 +200,16 @@ public class ProfileGenerator {
 
     Element sample = samples.addElement("sample").addAttribute("uid", uid);
     for (MetadataRecord mr : element.getMetadata()) {
-      
+      LOG.debug("Metadata record: {}", mr.getProperty().getKey());
       if (mr.getStatus().equals(Status.CONFLICT.toString())) {
         for (int i = 0; i < mr.getValues().size(); i++) {
           sample.addElement("record").addAttribute("name", mr.getProperty().getKey())
-              .addAttribute("value", mr.getValues().get(i)).addAttribute("tool", mr.getSources().get(i));
+              .addAttribute("value", mr.getValues().get(i).toString()).addAttribute("tool", mr.getSources().get(i));
         }
 
       } else {
         sample.addElement("record").addAttribute("name", mr.getProperty().getKey())
-            .addAttribute("value", mr.getValue()).addAttribute("tool", mr.getSources().get(0));
+            .addAttribute("value", mr.getValue().toString()).addAttribute("tool", mr.getSources().get(0));
       }
     }
   }
