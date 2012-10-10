@@ -13,7 +13,8 @@ object ApplicationBuild extends Build {
       "org.apache.commons" % "commons-digester3" % "3.2",
       "org.apache.commons" % "commons-math" % "2.2",
       "org.mongodb" % "mongo-java-driver" % "2.7.2",
-      "com.github.play2war" %% "play2-war-core" % "0.5"
+      "com.github.play2war" %% "play2-war-core" % "0.5",
+      "com.typesafe" %% "play-plugins-mailer" % "2.0.2"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(

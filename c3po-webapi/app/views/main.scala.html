@@ -132,13 +132,31 @@
             	  $("#overlay").addClass('activeoverlay');
             	  var popup = $('#filterpopup');
                   popup.children('.popupreason').html('Do you have feedback or questions?<br/>Let us know and we will get right back to you by email.');
-                  popup.children('.popupconfig').append('<input type="text" placeholder="Your Email" /><br/>');
-                  popup.children('.popupconfig').append('<textarea placeholder="Feedback"></textarea>');
+                  popup.children('.popupconfig').append('<input id="mail" type="text" placeholder="Your Email" /><br/>');
+                  popup.children('.popupconfig').append('<textarea id="message" placeholder="Feedback"></textarea>');
                   var button = $('<a class="green_button" href="#">Send</a>').appendTo(popup.children('.popupconfig'));
                   popup.css({'display': 'block', 'z-index':11});
 
                   button.click(function() {
-                      alert('send email');
+                      var mail = $('#mail').val()
+                      var msg = $('#message').val();
+                      var data = {'email': mail, 'message':msg};
+                	  $.ajax ({
+                          type:     'POST',
+                          url:      '/c3po/feedback',
+                          dataType: 'json',
+                          data: data,
+                          timeout:  5000,
+                          async: false,
+                          success:  function (oData) {
+                        	  hideValueOptionDialog(false);                                        
+                          },
+                          error:    function (oData) {
+                              $('.popupreason').fadeOut('fast', function() {
+                            	    $(this).css({'color': 'red'}).html('An error occurred while sending the email! Error message is: <br />' + oData.responseText).fadeIn('slow');
+                              })
+                          }
+                      });
                   })
               });
               
@@ -313,6 +331,7 @@
               $('#overlay').removeClass('activeoverlay');
               var popup = $('#filterpopup');
               popup.css({'display':'none'});
+              $('.popupreason').css({'color': '#888'});
         	  if (apply) {
 
               }

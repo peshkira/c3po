@@ -344,7 +344,7 @@ z-index:10;
 margin-left:25%;
 top: 35%;
 width:50%;
-height:200px;
+height:230px;
 color:#FF0000;
 border: 4px solid #68A200;
 background-color:#FFF;
@@ -357,6 +357,7 @@ display: none;
 	font-size: 12pt;
 	color: #888;
 	text-align:center;
+	padding-bottom: 10px;
 }
 
 #filterpopup .close {
@@ -389,6 +390,7 @@ display: none;
     font-style:italic;
     outline: none;
     width: 200px;
+    height:30px;
 	
 }
 
