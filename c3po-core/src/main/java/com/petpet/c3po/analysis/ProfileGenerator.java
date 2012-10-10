@@ -43,8 +43,11 @@ public class ProfileGenerator {
 
   private PersistenceLayer persistence;
 
-  public ProfileGenerator(final PersistenceLayer persistence) {
+  private final RepresentativeGenerator sampleSelector;
+
+  public ProfileGenerator(final PersistenceLayer persistence, RepresentativeGenerator generator) {
     this.persistence = persistence;
+    this.sampleSelector = generator;
   }
 
   public void write(final String xml) {
@@ -182,11 +185,10 @@ public class ProfileGenerator {
   }
 
   private void createSamples(final Filter filter, final Element partition) {
-    final RepresentativeGenerator sg = new SizeRepresentativeGenerator();
     final Element samples = partition.addElement("samples");
-    samples.addAttribute("type", sg.getType());
-    sg.setFilter(filter);
-    final List<String> output = sg.execute(5);
+    samples.addAttribute("type", this.sampleSelector.getType());
+    this.sampleSelector.setFilter(filter);
+    final List<String> output = this.sampleSelector.execute(5);
 
     LOG.debug("Found {} representatives", output.size());
     for (String s : output) {

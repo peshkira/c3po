@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.analysis.ProfileGenerator;
+import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
+import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
@@ -33,14 +35,16 @@ public class ProfileCommand implements Command {
     configurator.configure();
 
     this.pLayer = configurator.getPersistence();
-    final ProfileGenerator gen = new ProfileGenerator(this.pLayer);
+    final String alg = configurator.getStringProperty("c3po.samples.algorithm");
+    final RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
+    final ProfileGenerator profileGen = new ProfileGenerator(this.pLayer, samplesGen);
 
     final String name = this.getCollectionName();
     Filter f = new Filter(name, null, null);
     f.setDescriminator(UUID.randomUUID().toString());
-    final Document profile = gen.generateProfile(f);
+    final Document profile = profileGen.generateProfile(f);
 
-    gen.write(profile, this.getOutputFile(name));
+    profileGen.write(profile, this.getOutputFile(name));
 
     final long end = System.currentTimeMillis();
     this.time = end - start;

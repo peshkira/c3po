@@ -32,6 +32,7 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
 
   @Override
   public List<String> execute(int limit) {
+    LOG.info("Applying {} algorithm for representatice selection", this.getType());
     final List<String> result = new ArrayList<String>();
     final BasicDBObject query = DataHelper.getFilterQuery(this.getFilter());
     LOG.debug("Query: " + query.toString());
