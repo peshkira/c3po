@@ -108,6 +108,10 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   public List distinct(String collection, String key) {
     return this.db.getCollection(collection).distinct(key);
   }
+  
+  public List distinct(String collection, String key, DBObject query) {
+    return this.db.getCollection(collection).distinct(key, query);
+  }
 
   @Override
   public void insert(String collection, DBObject data) {

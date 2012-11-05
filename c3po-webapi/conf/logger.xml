@@ -2,28 +2,24 @@
     
   <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
   
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-     <file>${application.home}/logs/application.log</file>
+ <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+     <file>../standalone/log/c3po-web.log</file>
      <encoder>
-       <pattern>%date - [%level] - from %logger in %thread %n%message%n%xException%n</pattern>
+       <pattern>%date - [%level] [%logger]: %message%n%xException</pattern>
      </encoder>
    </appender>
-
+ 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-  <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%-4relative %coloredLevel %c - %msg%n%xException{5}</pattern>
-        </layout>
-    <!-- <encoder>
-      <pattern>%coloredLevel %logger - %message%n%xException{5}</pattern>
-    </encoder>
-    -->
+    <layout class="ch.qos.logback.classic.PatternLayout">
+        <pattern>%date - [%level] [%logger]: %message%n%xException</pattern>
+    </layout>
   </appender>
-  
-  <logger name="play" level="INFO" />
+ 
+  <logger name="play" level="DEBUG" />
   <logger name="application" level="DEBUG" />
   <logger name="com.petpet" level="DEBUG" />
 
-  <root level="ERROR">
+  <root level="INFO">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
   </root>

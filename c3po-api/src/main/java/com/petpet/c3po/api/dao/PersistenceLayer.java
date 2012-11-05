@@ -37,6 +37,8 @@ public interface PersistenceLayer {
   DBCursor find(String collection, DBObject ref, DBObject keys);
   
   List distinct(String collection, String key);
+  
+  List distinct(String collection, String key, DBObject query);
 
   void insert(String collection, DBObject data);
 

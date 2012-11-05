@@ -3,7 +3,6 @@ import java.util.List;
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
-import play.mvc.Result;
 
 import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand.OutputType;
@@ -32,16 +31,16 @@ public class Global extends GlobalSettings {
     super.onStop(app);
   }
   
-  @Override
-  public Result onBadRequest(String uri, String error){
-    Logger.error("Bad Request: " + uri + " " + error);
-    return super.onBadRequest(uri, error);
-  }
-  
-  public Result onHandlerNotFound(String uri) {
-    Logger.error("Handler not found: " + uri);
-    return super.onHandlerNotFound(uri);
-  }
+//  @Override
+//  public Result onBadRequest(String uri, String error){
+//    Logger.error("Bad Request: " + uri + " " + error);
+//    return badRequest(uri, error);
+//  }
+//  
+//  public Result onHandlerNotFound(String uri) {
+//    Logger.error("Handler not found: " + uri);
+//    return notFound();
+//  }
 
   private void calculateCollectionStatistics() {
     Logger.info("Calculating size statistics of each collection");
