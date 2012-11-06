@@ -33,7 +33,7 @@ public class FITSAdaptor extends AbstractAdaptor {
   public FITSAdaptor() {
     this.digester = new Digester(); // not thread safe
     this.digester.setRules(new RegexRules(new SimpleRegexMatcher()));
-    this.createRules();
+    this.createParsingRules();
   }
 
   @Override
@@ -44,7 +44,7 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
   }
 
-  private void createRules() {
+  private void createParsingRules() {
     this.createElementRules();
     this.createIdentityRules();
     this.createFileInfoRules();
@@ -83,11 +83,10 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.createValueRule("fits/fileinfo/copyrightNote");
     this.createValueRule("fits/fileinfo/creatingos");
   }
-  
+
   /**
-   * This is not part of the original FITS specification,
-   * but it is reading out representation information out of
-   * RODA, if the FITS was provided by RODA.
+   * This is not part of the original FITS specification, but it is reading out
+   * representation information out of RODA, if the FITS was provided by RODA.
    */
   private void createRepresentationInfoRules() {
     this.createValueRule("fits/representationinfo/original");
@@ -155,8 +154,10 @@ public class FITSAdaptor extends AbstractAdaptor {
     }
 
     try {
-      this.digester.push(new DigesterContext(this.getController().getPersistence().getCache()));
-      final DigesterContext context = (DigesterContext) this.digester.parse(this.metadata);
+      DigesterContext context = new DigesterContext(this.getController().getPersistence().getCache(),
+          this.getPreProcessingRules());
+      this.digester.push(context);
+      context = (DigesterContext) this.digester.parse(this.metadata);
       final Element element = this.postProcess(context);
 
       return element;
@@ -192,6 +193,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       if (element.getUid() == null) {
         element.setUid(UUID.randomUUID().toString());
       }
+
     }
 
     return element;

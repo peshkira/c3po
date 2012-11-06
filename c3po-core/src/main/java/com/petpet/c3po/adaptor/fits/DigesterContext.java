@@ -3,6 +3,7 @@ package com.petpet.c3po.adaptor.fits;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.petpet.c3po.adaptor.rules.PreProcessingRule;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
@@ -20,10 +21,13 @@ public class DigesterContext {
 
   private List<String> formatSources;
 
-  public DigesterContext(Cache cache) {
+  private List<PreProcessingRule> rules;
+
+  public DigesterContext(Cache cache, List<PreProcessingRule> rules) {
     this.cache = cache;
     this.values = new ArrayList<MetadataRecord>();
     this.formatSources = new ArrayList<String>();
+    this.rules = rules;
   }
 
   public List<MetadataRecord> getValues() {
@@ -44,19 +48,31 @@ public class DigesterContext {
 
   public void createValue(String value, String status, String toolname, String version, String pattern) {
     final String propKey = this.substringPath(pattern);
-    final Property property = this.getProperty(propKey);
-    final Source source = this.cache.getSource(toolname, version);
 
-    final MetadataRecord r = new MetadataRecord();
-    r.setProperty(property);
-    r.setValue(value);
-    r.getSources().add(source.getId());
+    boolean shouldContinue = true;
 
-    if (status != null) {
-      r.setStatus(status);
+    for (PreProcessingRule r : rules) {
+      if (r.shouldSkip(propKey, value, status, toolname, version)) {
+        shouldContinue = false;
+        break;
+      }
     }
 
-    this.addValue(r);
+    if (shouldContinue) {
+      final Property property = this.getProperty(propKey);
+      final Source source = this.cache.getSource(toolname, version);
+
+      final MetadataRecord r = new MetadataRecord();
+      r.setProperty(property);
+      r.setValue(value);
+      r.getSources().add(source.getId());
+
+      if (status != null) {
+        r.setStatus(status);
+      }
+
+      this.addValue(r);
+    }
   }
 
   public void createIdentity(String format, String mimetype) {

@@ -1,6 +1,8 @@
 package com.petpet.c3po.controller;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
+import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
+import com.petpet.c3po.adaptor.rules.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
@@ -56,10 +60,12 @@ public class Controller {
 
   private void startJobs(int threads, Map<String, Object> adaptorcnf) {
     this.pool = Executors.newFixedThreadPool(threads);
+    List<ProcessingRule> rules = this.getRules();
 
     for (int i = 0; i < threads; i++) {
       final FITSAdaptor f = new FITSAdaptor();
       f.setController(this);
+      f.setRules(rules);
       f.configure(adaptorcnf);
 
       this.pool.submit(f);
@@ -96,6 +102,13 @@ public class Controller {
     }
 
     return result;
+  }
+
+  // TODO this should be generated via some user input.
+  private List<ProcessingRule> getRules() {
+    List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
+    rules.add(new HtmlInfoProcessingRule());
+    return rules;
   }
 
 }
