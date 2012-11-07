@@ -25,12 +25,14 @@ public class Export extends Controller {
     Logger.debug("Received a profile generation call");
     final String accept = request().getHeader("Accept");
 
+    final DynamicForm form = form().bindFromRequest();
+    final String c = form.get("collection");
+    final String e = form.get("includeelements");
+
     Filter filter = Application.getFilterFromSession();
+    boolean include = false;
 
     if (filter == null) {
-      final DynamicForm form = form().bindFromRequest();
-      final String c = form.get("collection");
-
       if (c == null) {
         return badRequest("No collection parameter provided\n");
       } else if (!Application.getCollectionNames().contains(c)) {
@@ -40,8 +42,12 @@ public class Export extends Controller {
       filter = new Filter(c, null, null);
     }
 
+    if (e != null) {
+      include = Boolean.valueOf(e);
+    }
+
     if (accept.contains("*/*") || accept.contains("application/xml")) {
-      return profileAsXml(filter);
+      return profileAsXml(filter, include);
     }
 
     Logger.debug("The accept header is not supported: " + accept);
@@ -49,30 +55,38 @@ public class Export extends Controller {
   }
 
   public static Result csv() {
-//    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-//    CSVGenerator generator = new CSVGenerator(p);
+    // PersistenceLayer p =
+    // Configurator.getDefaultConfigurator().getPersistence();
+    // CSVGenerator generator = new CSVGenerator(p);
     return TODO;
   }
 
-  private static Result profileAsXml(Filter filter) {
-    Logger.debug("Generating profile for filter " + filter.getDocument());
-
-    File result = generateProfile(filter);
+  private static Result profileAsXml(Filter filter, boolean includeelements) {
+    File result = generateProfile(filter, includeelements);
 
     return ok(result);
   }
 
-  private static File generateProfile(Filter filter) {
-    String path = "profiles/" + filter.getCollection() + "_" + filter.getDescriminator() + ".xml";
+  private static File generateProfile(Filter filter, boolean includeelements) {
+    StringBuilder pathBuilder = new StringBuilder();
+    pathBuilder.append("profiles/").append(filter.getCollection()).append("_").append(filter.getDescriminator());
+    if (includeelements) {
+      pathBuilder.append("_").append("elements");
+    }
+
+    pathBuilder.append(".xml");
+
+    String path = pathBuilder.toString();
 
     Logger.debug("Looking for collection profile " + path);
 
     File file = new File(path);
 
     if (!file.exists()) {
+      Logger.debug("File does not exist. Generating profile for filter " + filter.getDocument());
       PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
       ProfileGenerator generator = new ProfileGenerator(p);
-      Document profile = generator.generateProfile(filter);
+      Document profile = generator.generateProfile(filter, includeelements);
 
       generator.write(profile, path);
       file = new File(path);

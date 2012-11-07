@@ -84,6 +84,10 @@ public class ProfileGenerator {
   }
 
   public Document generateProfile(Filter filter) {
+    return this.generateProfile(filter, false);
+  }
+
+  public Document generateProfile(Filter filter, boolean includeelements) {
     final BasicDBObject ref = new BasicDBObject();
     ref.put("collection", filter.getCollection());
     final long count = this.persistence.count(Constants.TBL_ELEMENTS, ref);
@@ -96,7 +100,7 @@ public class ProfileGenerator {
     final Element properties = this.createPropertiesElement(partition);
     this.generateProperties(filter, properties);
     this.createSamples(filter, partition);
-    this.createElements(filter, partition);
+    this.createElements(filter, partition, includeelements);
 
     return document;
   }
@@ -197,7 +201,6 @@ public class ProfileGenerator {
 
     com.petpet.c3po.datamodel.Element element = DataHelper.parseElement(cursor.next(), this.persistence);
 
-
     Element sample = samples.addElement("sample").addAttribute("uid", uid);
     for (MetadataRecord mr : element.getMetadata()) {
       LOG.debug("Metadata record: {}", mr.getProperty().getKey());
@@ -214,20 +217,21 @@ public class ProfileGenerator {
     }
   }
 
-  private void createElements(final Filter filter, final Element partition) {
+  private void createElements(final Filter filter, final Element partition, boolean includeelements) {
     final Element elements = partition.addElement("elements");
 
-    final BasicDBObject ref = DataHelper.getFilterQuery(filter);
-    final BasicDBObject keys = new BasicDBObject("_id", null);
-    keys.put("uid", 1);
+    if (includeelements) {
+      final BasicDBObject ref = DataHelper.getFilterQuery(filter);
+      final BasicDBObject keys = new BasicDBObject("_id", null);
+      keys.put("uid", 1);
 
-    final DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, ref, keys);
+      final DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, ref, keys);
 
-    while (cursor.hasNext()) {
-      final DBObject element = cursor.next();
-      elements.addElement("element").addAttribute("uid", (String) element.get("uid"));
+      while (cursor.hasNext()) {
+        final DBObject element = cursor.next();
+        elements.addElement("element").addAttribute("uid", (String) element.get("uid"));
+      }
     }
-
   }
 
   private void processStringProperty(final Filter filter, final Element prop, final Property p) {
