@@ -10,7 +10,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.export;
 
-import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Filter;
@@ -50,19 +49,36 @@ public class Export extends Controller {
   }
 
   public static Result csv() {
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    CSVGenerator generator = new CSVGenerator(p);
+//    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+//    CSVGenerator generator = new CSVGenerator(p);
     return TODO;
   }
 
   private static Result profileAsXml(Filter filter) {
     Logger.debug("Generating profile for filter " + filter.getDocument());
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    ProfileGenerator generator = new ProfileGenerator(p);
-    Document profile = generator.generateProfile(filter);
-    String path = "profiles/" + filter.getCollection() + "_" + filter.getDescriminator() + ".xml";
-    generator.write(profile, path);
 
-    return ok(new File(path));
+    File result = generateProfile(filter);
+
+    return ok(result);
   }
+
+  private static File generateProfile(Filter filter) {
+    String path = "profiles/" + filter.getCollection() + "_" + filter.getDescriminator() + ".xml";
+
+    Logger.debug("Looking for collection profile " + path);
+
+    File file = new File(path);
+
+    if (!file.exists()) {
+      PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+      ProfileGenerator generator = new ProfileGenerator(p);
+      Document profile = generator.generateProfile(filter);
+
+      generator.write(profile, path);
+      file = new File(path);
+    }
+
+    return file;
+  }
+
 }
