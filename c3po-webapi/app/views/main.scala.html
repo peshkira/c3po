@@ -163,8 +163,9 @@
           }); //end document ready
 
           //global startSpinner function... 
-          function startSpinner() {
-              var opts = {
+          
+          function getSpinnerOpts() {
+        	  var opts = {
                       lines: 13, // The number of lines to draw
                       length: 7, // The length of each line
                       width: 4, // The line thickness
@@ -181,10 +182,38 @@
                       left: 'auto' // Left position relative to parent in px
                     };
 
-              var target = document.getElementById('spinner');
-              var spinner = new Spinner(opts).spin(target);
-              $('#spinner').css("opacity","1");
-              };
+            return opts;
+          }
+
+          $.fn.spin = function(opts) {
+        	  this.each(function() {
+        	    var $this = $(this),
+        	        data = $this.data();
+
+        	    if (data.spinner) {
+        	      data.spinner.stop();
+        	      delete data.spinner;
+        	    }
+        	    if (opts !== false) {
+        	      data.spinner = new Spinner($.extend({color: $this.css('color')}, opts)).spin(this);
+        	    }
+        	  });
+        	  return this;
+        	};
+
+        	 function startSpinner() {
+                 console.log('starting spinner');
+                 $('#spinner').css("opacity", "1");
+                 $('#spinner').spin(getSpinnerOpts());
+                 
+             };
+
+             function stopSpinner() {
+                 console.log('stopping spinner');
+                 $('#spinner').spin(false);
+                 $('#spinner').css("opacity", "0");
+                 
+             };
 
            //global addNewFilter function 
            function addNewFilter() {
@@ -350,13 +379,20 @@
   <div class="navbar">
     <nav class="green">
       <ul class="clear">
-        <li><a href="/c3po">Home</a></li>
-        <li><a href="/c3po/overview">Overview</a></li>
-        <li><a href="/c3po/objects">Objects</a></li>
-        <li><a href="/c3po/samples">Representatives</a></li>
-        <li><a href="/c3po/export">Export</a></li>
-        <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" /></li>
-        <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" /></li>
+        <li><a href="/c3po">Home</a>
+        </li>
+        <li><a href="/c3po/overview">Overview</a>
+        </li>
+        <li><a href="/c3po/objects">Objects</a>
+        </li>
+        <li><a href="/c3po/samples">Representatives</a>
+        </li>
+        <li><a href="/c3po/export">Export</a>
+        </li>
+        <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" />
+        </li>
+        <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" />
+        </li>
       </ul>
     </nav>
   </div>
@@ -379,7 +415,9 @@
     }
   </div>
   <div id="filterpopup">
-    <div class="close"><img src="@routes.Assets.at("images/close.png")" /></div>
+    <div class="close">
+      <img src="@routes.Assets.at("images/close.png")" />
+    </div>
     <div class="popupreason">The property you selected requires special settings. Please configure:</div>
     <div class="popupconfig"></div>
   </div>

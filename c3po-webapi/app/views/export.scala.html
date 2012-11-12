@@ -12,9 +12,12 @@
           function request(path) {
               startSpinner();
         	  $('#spinner').css("opacity","1");
-        	  setTimeout(function() {
-        	  window.location = path;
-        	  }, 500);
+        	  setTimeout(
+                    function() {
+                        window.location = path;
+                        stopSpinner();          
+                    },
+                    500);
            }
 </script>
   <h2>Export</h2>

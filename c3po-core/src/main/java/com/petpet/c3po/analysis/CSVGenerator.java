@@ -1,5 +1,6 @@
 package com.petpet.c3po.analysis;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,10 +14,12 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.utils.DataHelper;
 
 public class CSVGenerator {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(CSVGenerator.class);
 
   private PersistenceLayer persistence;
@@ -55,6 +58,7 @@ public class CSVGenerator {
    * @param output
    *          the output file
    */
+  @Deprecated
   public void exportAll(String collection, String mimetype, String output) {
     final DBCursor matrix = this.buildMatrix(collection, mimetype);
     final DBCursor allprops = this.persistence.findAll(Constants.TBL_PROEPRTIES);
@@ -95,15 +99,41 @@ public class CSVGenerator {
    * @param output
    *          the output file
    */
+  @Deprecated
   public void export(final String collection, final String mimetype, final List<Property> props, String output) {
     final DBCursor matrix = this.buildMatrix(collection, mimetype, props);
 
     this.write(matrix, props, output);
   }
 
+  public void export(final Filter filter, String output) {
+    final DBCursor allprops = this.persistence.findAll(Constants.TBL_PROEPRTIES);
+    final List<Property> props = this.getProperties(allprops);
+
+    this.export(filter, props, output);
+  }
+
+  public void export(final Filter filter, final List<Property> props, String output) {
+    BasicDBObject query = DataHelper.getFilterQuery(filter);
+    DBCursor matrix = this.persistence.find(Constants.TBL_ELEMENTS, query);
+
+    this.write(matrix, props, output);
+  }
+
   private void write(DBCursor matrix, List<Property> props, String output) {
     try {
-      final FileWriter writer = new FileWriter(output);
+
+      final File file = new File(output);
+
+      LOG.info("Will export data in {}", file.getAbsolutePath());
+
+      if (file.getParentFile() != null && !file.getParentFile().exists()) {
+        file.getParentFile().mkdirs();
+      }
+
+      file.createNewFile();
+
+      final FileWriter writer = new FileWriter(file);
 
       // build header of csv
       writer.append("uid, ");
@@ -149,6 +179,7 @@ public class CSVGenerator {
     return this.persistence.find("elements", ref, query);
   }
 
+  @Deprecated
   private DBCursor buildMatrix(final String collection, final String mimetype) {
     final BasicDBObject ref = new BasicDBObject("collection", collection);
     final BasicDBObject query = new BasicDBObject();
@@ -210,14 +241,14 @@ public class CSVGenerator {
 
     return this.persistence.find(Constants.TBL_ELEMENTS, ref, query);
   }
-  
+
   private String getValueFromMetaDataRecord(final BasicDBObject value) {
     String result = "";
     if (value != null) {
       final Object v = value.get("value");
       result = (v == null) ? "CONFLICT" : replace(v.toString());
     }
-    
+
     return result;
   }
 

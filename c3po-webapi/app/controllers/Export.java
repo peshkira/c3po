@@ -1,6 +1,8 @@
 package controllers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import org.dom4j.Document;
 
@@ -10,6 +12,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.export;
 
+import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
@@ -59,10 +62,22 @@ public class Export extends Controller {
   }
 
   public static Result csv() {
-    // PersistenceLayer p =
-    // Configurator.getDefaultConfigurator().getPersistence();
-    // CSVGenerator generator = new CSVGenerator(p);
-    return TODO;
+    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+    CSVGenerator generator = new CSVGenerator(p);
+    
+    Filter filter = Application.getFilterFromSession();
+    
+    String collection = filter.getCollection();
+    String path = "exports/" + collection + "_" + filter.getDescriminator() + "_matrix.csv";
+    generator.exportAll(collection, path);
+    
+    File file = new File(path);
+    
+    try {
+      return ok(new FileInputStream(file));
+    } catch (FileNotFoundException e) {
+      return internalServerError(e.getMessage());
+    }
   }
 
   private static Result profileAsXml(Filter filter, boolean includeelements) {
