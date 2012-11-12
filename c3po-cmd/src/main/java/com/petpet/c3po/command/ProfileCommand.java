@@ -40,9 +40,11 @@ public class ProfileCommand implements Command {
     final ProfileGenerator profileGen = new ProfileGenerator(this.pLayer, samplesGen);
 
     final String name = this.getCollectionName();
-    Filter f = new Filter(name, null, null);
+    final boolean include = this.getIncludeElements();
+    final Filter f = new Filter(name, null, null);
     f.setDescriminator(UUID.randomUUID().toString());
-    final Document profile = profileGen.generateProfile(f);
+    
+    final Document profile = profileGen.generateProfile(f, include);
 
     profileGen.write(profile, this.getOutputFile(name));
 
@@ -77,6 +79,16 @@ public class ProfileCommand implements Command {
 
     LOG.warn("No collection identifier found, using DefaultCollection");
     return "DefaultCollection";
+  }
+  
+  private boolean getIncludeElements() {
+    for (Option o : this.options) {
+      if (o.getLongOpt().equals(CommandConstants.PROFILE_INCLUDE_ELEMENT_IDENTIFIERS)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   @Override
