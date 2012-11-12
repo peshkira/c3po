@@ -141,7 +141,9 @@ public final class DataHelper {
         Property property = pl.getCache().getProperty(tmp.getProperty());
 
         if (tmp.getValue().equals("Unknown")) {
+          query.put("metadata." + tmp.getProperty() + ".values", new BasicDBObject("$exists", false));
           query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
+          
         } else if (property.getType().equals(PropertyType.DATE.toString())) {
 
           Calendar cal = Calendar.getInstance();
@@ -155,6 +157,10 @@ public final class DataHelper {
           date.put("$gte", start);
 
           query.put("metadata." + tmp.getProperty() + ".value", date);
+          
+        } else if (tmp.getValue().equals("Conflicted")) {
+          query.put("metadata." + tmp.getProperty() + ".status", MetadataRecord.Status.CONFLICT.toString());
+          
         } else {
           query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
         }

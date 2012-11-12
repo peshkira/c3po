@@ -9,6 +9,8 @@ import views.html.samples;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
+import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
+import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.analysis.SizeRepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
@@ -20,10 +22,12 @@ import com.petpet.c3po.utils.DataHelper;
 public class Samples extends Controller {
 
   public static Result index() {
+    final Configurator configurator = Configurator.getDefaultConfigurator();
+    final PersistenceLayer pl = configurator.getPersistence();
     final List<String> names = Application.getCollectionNames();
-    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     final Filter filter = Application.getFilterFromSession();
-    final SizeRepresentativeGenerator sg = new SizeRepresentativeGenerator();
+    final String alg = configurator.getStringProperty("c3po.samples.algorithm");
+    final RepresentativeGenerator sg = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
     sg.setFilter(filter);
 
     List<Element> result = new ArrayList<Element>();

@@ -11,6 +11,8 @@ import play.mvc.Result;
 import views.html.export;
 
 import com.petpet.c3po.analysis.ProfileGenerator;
+import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
+import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
@@ -84,8 +86,11 @@ public class Export extends Controller {
 
     if (!file.exists()) {
       Logger.debug("File does not exist. Generating profile for filter " + filter.getDocument());
-      PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-      ProfileGenerator generator = new ProfileGenerator(p);
+      Configurator configurator = Configurator.getDefaultConfigurator();
+      PersistenceLayer p = configurator.getPersistence();
+      String alg = configurator.getStringProperty("c3po.samples.algorithm");
+      RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
+      ProfileGenerator generator = new ProfileGenerator(p, samplesGen);
       Document profile = generator.generateProfile(filter, includeelements);
 
       generator.write(profile, path);
