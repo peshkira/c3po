@@ -24,7 +24,7 @@ public final class Constants {
    * The version of the core module.
    */
   public static final String CORE_VERSION = "0.1.1";
-  
+
   public static final String API_VERSION = "0.1.0";
 
   /**
@@ -46,6 +46,11 @@ public final class Constants {
    * The filters stored in the db.
    */
   public static final String TBL_FILTERS = "filters";
+
+  /**
+   * The actions done on a collection basis in the db.
+   */
+  public static final String TBL_ACTIONLOGS = "actionlogs";
 
   /**
    * A c3po configuration for the collection on which to operate.

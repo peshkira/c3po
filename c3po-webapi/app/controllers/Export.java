@@ -14,7 +14,9 @@ import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.datamodel.ActionLog;
 import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.Configurator;
 
 public class Export extends Controller {
@@ -84,7 +86,7 @@ public class Export extends Controller {
 
     File file = new File(path);
 
-    if (!file.exists()) {
+    if (!file.exists() || isCollectionUpdated(filter.getCollection())) {
       Logger.debug("File does not exist. Generating profile for filter " + filter.getDocument());
       Configurator configurator = Configurator.getDefaultConfigurator();
       PersistenceLayer p = configurator.getPersistence();
@@ -95,9 +97,28 @@ public class Export extends Controller {
 
       generator.write(profile, path);
       file = new File(path);
+
+      ActionLogHelper alHelper = new ActionLogHelper(p);
+      alHelper.recordAction(new ActionLog(filter.getCollection(), ActionLog.PROFILE_ACTION));
     }
 
     return file;
+  }
+
+  private static boolean isCollectionUpdated(String collection) {
+    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+    ActionLogHelper alHelper = new ActionLogHelper(p);
+    ActionLog lastAction = alHelper.getLastAction(collection);
+
+    boolean isUpdated = true;
+
+    if (lastAction != null) {
+      if (lastAction.getAction().equals(ActionLog.PROFILE_ACTION)) {
+        isUpdated = false;
+      }
+    }
+
+    return isUpdated;
   }
 
 }

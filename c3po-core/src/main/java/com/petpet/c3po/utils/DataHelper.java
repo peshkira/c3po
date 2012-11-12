@@ -16,6 +16,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.ActionLog;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.MetadataRecord;
@@ -73,8 +74,8 @@ public final class DataHelper {
         rec.setValue(value.toString());
       }
 
-      //because of boolean and other type conversions.
-      List<?> tmp= (List) prop.get("values");
+      // because of boolean and other type conversions.
+      List<?> tmp = (List) prop.get("values");
       if (tmp != null) {
         List<String> values = new ArrayList<String>();
         for (Object o : tmp) {
@@ -125,6 +126,14 @@ public final class DataHelper {
     return f;
   }
 
+  public static ActionLog parseActionLog(DBObject object) {
+    String c = (String) object.get("collection");
+    String a = (String) object.get("action");
+    Date d = (Date) object.get("date");
+
+    return new ActionLog(c, a, d);
+  }
+
   public static BasicDBObject getFilterQuery(Filter filter) {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
@@ -143,7 +152,7 @@ public final class DataHelper {
         if (tmp.getValue().equals("Unknown")) {
           query.put("metadata." + tmp.getProperty() + ".values", new BasicDBObject("$exists", false));
           query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-          
+
         } else if (property.getType().equals(PropertyType.DATE.toString())) {
 
           Calendar cal = Calendar.getInstance();
@@ -157,10 +166,10 @@ public final class DataHelper {
           date.put("$gte", start);
 
           query.put("metadata." + tmp.getProperty() + ".value", date);
-          
+
         } else if (tmp.getValue().equals("Conflicted")) {
           query.put("metadata." + tmp.getProperty() + ".status", MetadataRecord.Status.CONFLICT.toString());
-          
+
         } else {
           query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
         }

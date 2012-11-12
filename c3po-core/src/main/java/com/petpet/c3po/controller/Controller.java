@@ -2,7 +2,6 @@ package com.petpet.c3po.controller;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,9 @@ import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
 import com.petpet.c3po.adaptor.rules.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.ActionLog;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
+import com.petpet.c3po.utils.ActionLogHelper;
 
 //TODO generalize the gatherer with the interface.
 public class Controller {
@@ -75,7 +76,18 @@ public class Controller {
 
     try {
       // What happens if the time out occurrs first?
-      this.pool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+      boolean terminated = this.pool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+      if (terminated) {
+        LOGGER.info("Gathering process finished successfully");
+        String collection = (String) adaptorcnf.get(Constants.CNF_COLLECTION_ID);
+        ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
+        new ActionLogHelper(this.persistence).recordAction(log);
+        
+      } else {
+        LOGGER.error("Time out occurred, gathering process was terminated");
+      }
+
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -88,10 +100,8 @@ public class Controller {
   public synchronized InputStream getNext() {
     List<InputStream> next = this.gatherer.getNext(1);
     InputStream result = null;
-    if (next.isEmpty()) {
-      LOGGER.info("Gathering process finished");
 
-    } else {
+    if (!next.isEmpty()) {
       result = next.get(0);
     }
 
