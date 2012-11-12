@@ -8,6 +8,7 @@ bin/
 c3po-core/output.xml
 c3po-webapi/war/
 */profiles/*
+*/exports/*
 */*.csv
 */logs/
 */log

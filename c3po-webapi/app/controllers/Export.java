@@ -61,23 +61,48 @@ public class Export extends Controller {
     return badRequest("The provided accept header '" + accept + "' is not supported");
   }
 
-  public static Result csv() {
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    CSVGenerator generator = new CSVGenerator(p);
-    
+  public static Result exportAllToCSV() {
+    CSVGenerator generator = getGenerator();
+
     Filter filter = Application.getFilterFromSession();
-    
+
     String collection = filter.getCollection();
     String path = "exports/" + collection + "_" + filter.getDescriminator() + "_matrix.csv";
     generator.exportAll(collection, path);
-    
+
     File file = new File(path);
-    
+
     try {
       return ok(new FileInputStream(file));
     } catch (FileNotFoundException e) {
       return internalServerError(e.getMessage());
     }
+  }
+
+  public static Result exportFilterToCSV() {
+    CSVGenerator generator = getGenerator();
+
+    Filter filter = Application.getFilterFromSession();
+
+    String collection = filter.getCollection();
+    String path = "exports/" + collection + "_" + filter.getDescriminator() + "_matrix.csv";
+    generator.export(filter, path);
+
+    File file = new File(path);
+
+    try {
+      return ok(new FileInputStream(file));
+    } catch (FileNotFoundException e) {
+      return internalServerError(e.getMessage());
+    }
+  }
+
+  private static CSVGenerator getGenerator() {
+    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+    CSVGenerator generator = new CSVGenerator(p);
+
+    return generator;
+
   }
 
   private static Result profileAsXml(Filter filter, boolean includeelements) {
