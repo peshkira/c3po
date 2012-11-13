@@ -267,25 +267,27 @@
         		    
                });
 
-              // for each property and an option in the html select                
+              // for each property add an option in the html select                
                var sel = $('<select>').appendTo($(div));
+               $(sel).append($('<option>').text("").attr('value',''));
                $.each(properties, function(i, value) {
                    $(sel).append($('<option>').text(value).attr('value', value));
                });
 
                // if the select is clicked then get the values for the current
                // option. 
-               $(sel).click(function() {
+               $(sel).change(function() {
                    var property = $(this).val();
-                   var old = $(this).parent().attr('oldValue');
-                   $(this).parent().attr('oldValue', property);
-                   $.ajax ({
+                   if (property) {
+                     var old = $(this).parent().attr('oldValue');
+                     $(this).parent().attr('oldValue', property);
+                     $.ajax ({
                        type:     'DELETE',
                        async:    false,
                        url:      '/c3po/filter?property='+old,
                        timeout:  5000
-                   });
-                   $.ajax ({
+                     });
+                     $.ajax ({
                          type:     'GET',
                          url:      '/c3po/filter/values?filter='+property+'&collection=@session.get("current.collection")',
                          timeout:  5000,
@@ -293,6 +295,12 @@
                              showValuesSelect(div, oData);
                          }
                      });
+                   } else {
+                	   $(sel).effect("highlight", {color:'#FF1400'} , "slow");
+                	   if ($(div).children('select').length > 1) {
+                           ($(div).children('select:last')).remove();
+                       }
+                   }
                });
            }
           };
@@ -309,16 +317,25 @@
                 
                 var sel = $('<select>').appendTo($(filterdiv));
                 var values = pvf.values;
+                
+                $(sel).append($('<option>').text("").attr('value',''));
                 $.each(values, function(i, value) {
                     $(sel).append($('<option>').text(value).attr('value', value));
                 });
 
-                $(sel).click(function() {
+                $(sel).change(function() {
                 	var value = $(this).val();
-                	startSpinner();
-                    $.post('/c3po/filter?filter=' + pvf.property + '&value='+value + '&type=normal', function(data) {
+
+                    if (value) {
+                      startSpinner();
+                      $.post('/c3po/filter?filter=' + pvf.property + '&value='+value + '&type=normal', function(data) {
                         window.location.reload();
-                        });
+                      });
+                    } else {
+                    	$(sel).effect("highlight", {color:'#FF1400'} , "slow");
+                      
+                    }
+                    
                 });
               }else if (type == "INTEGER"){
             	  console.log("property type selected " + pvf.type);
