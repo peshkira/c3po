@@ -37,13 +37,14 @@
               var config = popup.children('.popupconfig');
 
               var sel = $('<select>').appendTo($(config));
+              $(sel).append($('<option>').text("").attr('value',''));
               $.each(properties, function(i, value) {
                   $(sel).append($('<option>').text(value).attr('value', value));
               });
               
               popup.css({'display': 'block', 'z-index':11});
 
-              $('.popupconfig select').click(function() {
+              $('.popupconfig select').change(function() {
             	  $.ajax ({
                       type:     'GET',
                       url:      '/c3po/property?name=' + $(this).val(),
