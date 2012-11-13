@@ -79,7 +79,7 @@ public class Application extends Controller {
     if (accept.contains("*/*") || accept.contains("application/xml")) {
       return collectionsAsXml();
     } else if (accept.contains("application/json")) {
-      return collectionsAsXml();
+      return collectionsAsJson();
     }
 
     return badRequest("The accept header is not supported");
@@ -147,6 +147,7 @@ public class Application extends Controller {
     PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
     List<String> collections = (List<String>) persistence.distinct(Constants.TBL_ELEMENTS, "collection");
     Collections.sort(collections);
+    collections.add(0, "");
     return collections;
 
   }

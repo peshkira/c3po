@@ -45,7 +45,7 @@
               var visible = false;
               $('#collections_btn').click(function(event) {
                   visible = $("#collections").is(":visible");
-                  if (visible == true) {
+                  if (visible) {
                      $('#collections').slideUp("fast");
                   } else {
                      $('#collections').slideDown("normal");
@@ -55,7 +55,7 @@
 
               $('#filter_btn').click(function(event) {
                   visible = $("#filter").is(":visible");
-                  if (visible == true) {
+                  if (visible) {
                      $('#filter').slideUp("fast");
                   } else {
                       $('#filter').slideDown("normal");
@@ -80,7 +80,7 @@
               }
 
               // add click event on the collection chooser html select element .
-              $("#collections select").click(function() {
+              $("#collections select").change(function() {
                   var collection = $(this).val();
                   $.ajax ({
                         type:     'POST',
@@ -202,14 +202,12 @@
         	};
 
         	 function startSpinner() {
-                 console.log('starting spinner');
                  $('#spinner').css("opacity", "1");
                  $('#spinner').spin(getSpinnerOpts());
                  
              };
 
              function stopSpinner() {
-                 console.log('stopping spinner');
                  $('#spinner').spin(false);
                  $('#spinner').css("opacity", "0");
                  
