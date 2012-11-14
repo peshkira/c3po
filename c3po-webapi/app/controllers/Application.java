@@ -26,9 +26,12 @@ public class Application extends Controller {
       "creating_application_name", "created" };
 
   public static Result index() {
+    
+    buildSession();
+    
     return ok(index.render("c3po", getCollectionNames()));
   }
-
+  
   public static Result setCollection(String c) {
     Logger.debug("Received collection setup change for " + c);
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
@@ -38,15 +41,19 @@ public class Application extends Controller {
       return notFound("No collection '" + c + "' was found");
     }
 
+    Filter f = new Filter(c, null, null);
+    
+    buildSession();
+    String session = session(WebAppConstants.SESSION_ID);
+    System.out.println("session: " + session);
+    f.setDescriminator(session);
+    
     BasicDBObject query = new BasicDBObject("collection", c);
-    query.put("property", null);
-    query.put("value", null);
+    query.put("descriminator", session);
+    System.out.println("Query: " + query.toString());
 
     DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
-    Filter f;
     if (cursor.count() == 0) {
-      f = new Filter(c, null, null);
-      f.setDescriminator(UUID.randomUUID().toString());
       p.insert(Constants.TBL_FILTERS, f.getDocument());
     } else {
       f = DataHelper.parseFilter(cursor.next());
@@ -154,9 +161,12 @@ public class Application extends Controller {
 
   public static Filter getFilterFromSession() {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    String f = session().get(WebAppConstants.CURRENT_FILTER_SESSION);
+    String f = session(WebAppConstants.CURRENT_FILTER_SESSION);
+    String c = session(WebAppConstants.CURRENT_COLLECTION_SESSION);
+    
     if (f != null) {
       BasicDBObject fQuery = new BasicDBObject("descriminator", f);
+      fQuery.put("collection", c);
       fQuery.put("property", null);
       fQuery.put("value", null);
       DBCursor cursor = pl.find(Constants.TBL_FILTERS, fQuery);
@@ -196,5 +206,12 @@ public class Application extends Controller {
     }
 
     return result;
+  }
+  
+  private static void buildSession() {
+    String session = session(WebAppConstants.SESSION_ID);
+    if (session == null) {
+      session(WebAppConstants.SESSION_ID, UUID.randomUUID().toString());
+    }
   }
 }

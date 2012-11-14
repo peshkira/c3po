@@ -18,6 +18,7 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
+import common.WebAppConstants;
 
 public class Overview extends Controller {
 
@@ -29,6 +30,7 @@ public class Overview extends Controller {
     GraphData data = null;
     if (filter != null) {
       BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+      ref.put("collection", session(WebAppConstants.CURRENT_COLLECTION_SESSION));
       DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
 
       Logger.info("filter is not null");

@@ -137,6 +137,7 @@ public final class DataHelper {
   public static BasicDBObject getFilterQuery(Filter filter) {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+    ref.put("collection", filter.getCollection());
     DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
 
     BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
@@ -188,6 +189,7 @@ public final class DataHelper {
       }
     }
 
+    LOG.debug("FILTER QUERY: {}", query.toString());
     return query;
   }
 

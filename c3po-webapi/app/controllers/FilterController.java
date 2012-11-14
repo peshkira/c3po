@@ -48,6 +48,7 @@ public class FilterController extends Controller {
 
     if (filter != null) {
       BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+      ref.put("collection", filter.getCollection());
       DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
 
       while (cursor.hasNext()) {
@@ -72,6 +73,7 @@ public class FilterController extends Controller {
     PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     Filter filter = Application.getFilterFromSession();
     BasicDBObject query = new BasicDBObject("descriminator", filter.getDescriminator());
+    query.put("collection", filter.getCollection());
     query.put("property", property);
 
     DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
@@ -119,6 +121,7 @@ public class FilterController extends Controller {
     PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
 
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
+    ref.put("collection", filter.getCollection());
     DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
     boolean existing = false;
     while (cursor.hasNext()) {
@@ -146,7 +149,7 @@ public class FilterController extends Controller {
   }
 
   private static Result addFromGraph(Filter filter, String f, int value, String alg, String width) {
-    Logger.debug("in method addFromGraph(), adding new filter with property '" + f + "' and position value '" + value
+    Logger.debug("in method addFromGraph(), adding new filter with property '" + f.toString() + "' and position value '" + value
         + "'");
     Logger.info("Current filter was: " + filter.getDescriminator());
     // query histogram to check the value of the filter that was selected
