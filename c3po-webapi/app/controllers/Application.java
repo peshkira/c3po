@@ -129,6 +129,7 @@ public class Application extends Controller {
 
   public static Result collectionsAsXml() {
     final List<String> names = Application.getCollectionNames();
+    names.remove(0);
     final StringBuffer resp = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
     resp.append("<collections>\n");
@@ -146,6 +147,7 @@ public class Application extends Controller {
 
   public static Result collectionsAsJson() {
     final List<String> names = Application.getCollectionNames();
+    names.remove(0);
     response().setContentType("application/json");
     return ok(play.libs.Json.toJson(names));
   }
