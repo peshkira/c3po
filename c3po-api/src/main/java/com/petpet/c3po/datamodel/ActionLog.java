@@ -10,6 +10,8 @@ public class ActionLog {
   
   public static final String PROFILE_ACTION = "profile";
 
+  public static final String ANALYSIS_ACTION = "analysis";
+
   private String collection;
 
   private String action;

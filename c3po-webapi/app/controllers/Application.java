@@ -1,5 +1,6 @@
 package controllers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,10 @@ import views.html.index;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
+import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.analysis.mapreduce.CollectionPropertiesJob;
+import com.petpet.c3po.analysis.mapreduce.JobResult;
+import com.petpet.c3po.analysis.mapreduce.MapReduceJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
@@ -26,12 +31,12 @@ public class Application extends Controller {
       "creating_application_name", "created" };
 
   public static Result index() {
-    
+
     buildSession();
-    
+
     return ok(index.render("c3po", getCollectionNames()));
   }
-  
+
   public static Result setCollection(String c) {
     Logger.debug("Received collection setup change for " + c);
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
@@ -42,12 +47,12 @@ public class Application extends Controller {
     }
 
     Filter f = new Filter(c, null, null);
-    
+
     buildSession();
     String session = session(WebAppConstants.SESSION_ID);
     System.out.println("session: " + session);
     f.setDescriminator(session);
-    
+
     BasicDBObject query = new BasicDBObject("collection", c);
     query.put("descriminator", session);
     System.out.println("Query: " + query.toString());
@@ -123,7 +128,21 @@ public class Application extends Controller {
 
   private static Result propertiesAsJson() {
     PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    List<String> properties = p.distinct(Constants.TBL_PROEPRTIES, "key");
+    List<String> properties = new ArrayList<String>();
+
+    String collection = session(WebAppConstants.CURRENT_COLLECTION_SESSION);
+    MapReduceJob job = new CollectionPropertiesJob(collection);
+    JobResult output = job.run();
+
+    List<BasicDBObject> results = output.getResults();
+    if (results != null && results.size() > 0) {
+      for (BasicDBObject dbo : results) {
+        properties.add((String) dbo.get("_id"));
+      }
+    } else {
+      properties.addAll(p.distinct(Constants.TBL_PROEPRTIES, "key"));
+    }
+
     return ok(play.libs.Json.toJson(properties));
   }
 
@@ -165,7 +184,7 @@ public class Application extends Controller {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     String f = session(WebAppConstants.CURRENT_FILTER_SESSION);
     String c = session(WebAppConstants.CURRENT_COLLECTION_SESSION);
-    
+
     if (f != null) {
       BasicDBObject fQuery = new BasicDBObject("descriminator", f);
       fQuery.put("collection", c);
@@ -209,7 +228,7 @@ public class Application extends Controller {
 
     return result;
   }
-  
+
   private static void buildSession() {
     String session = session(WebAppConstants.SESSION_ID);
     if (session == null) {

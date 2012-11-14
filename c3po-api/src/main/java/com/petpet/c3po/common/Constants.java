@@ -159,6 +159,11 @@ public final class Constants {
    * average, standard deviation and variance.
    */
   public static final String AGGREGATE_FINALIZE = "function finalize(key, value){ value.avg = value.sum / value.count;value.variance = value.diff / value.count;value.stddev = Math.sqrt(value.variance);return value;}";
+  
+  
+  public static final String PROPERTIES_IN_COLLECTION_MAP = "function map() {for (var key in this) {if (key == 'metadata') {for (var subkey in this[key]) {emit(subkey, null);}}}}";
+  
+  public static final String PROPERTIES_IN_COLLECTION_REDUCE = "function reduce(key, values) {return null;}";
 
   // "function reduce(key, values) {var res = {count: 0}; values.forEach(function (v) {res.count += v.count}); return res;}";
 

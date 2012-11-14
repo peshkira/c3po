@@ -67,15 +67,18 @@ public abstract class MapReduceJob {
   public void setFilterquery(BasicDBObject filterquery) {
     this.filterquery = filterquery;
   }
-  
-  public abstract MapReduceOutput execute();
 
   public Map<String, String> getConfig() {
     return config;
   }
-
+  
   public void setConfig(Map<String, String> config) {
     this.config = config;
   }
+  
+  @Deprecated
+  public abstract MapReduceOutput execute();
+  
+  public abstract JobResult run();
 
 }

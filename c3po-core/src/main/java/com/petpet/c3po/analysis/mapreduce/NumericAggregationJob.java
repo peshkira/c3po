@@ -41,4 +41,9 @@ public class NumericAggregationJob extends MapReduceJob {
     // query.put("collection", this.getC3poCollection());
     return this.getPersistence().mapreduce(Constants.TBL_ELEMENTS, cmd);
   }
+
+  @Override
+  public JobResult run() {
+    return new JobResult(this.execute());
+  }
 }

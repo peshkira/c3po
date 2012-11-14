@@ -102,9 +102,7 @@ public class Overview extends Controller {
       }
 
       if (!found) {
-        System.out.println("Overview getAllGraphs before");
         Graph graph = FilterController.getGraph(f, prop);
-        System.out.println("Overview getAllGraphs after");
         graphs.getGraphs().add(graph);
       }
     }

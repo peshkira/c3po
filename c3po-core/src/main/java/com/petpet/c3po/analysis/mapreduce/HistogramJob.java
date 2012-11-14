@@ -74,6 +74,11 @@ public class HistogramJob extends MapReduceJob {
 
     return this.getPersistence().mapreduce(Constants.TBL_ELEMENTS, cmd);
   }
+  
+  @Override
+  public JobResult run() {
+    return new JobResult(this.execute());
+  }
 
   public static int inferBinWidth(String val) {
     String[] values = val.split(" - ");
