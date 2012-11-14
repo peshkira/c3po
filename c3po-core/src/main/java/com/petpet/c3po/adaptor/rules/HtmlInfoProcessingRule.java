@@ -48,7 +48,7 @@ public class HtmlInfoProcessingRule implements PreProcessingRule {
   @Override
   public boolean shouldSkip(String property, String value, String status, String tool, String version) {
 
-    if (tool.equalsIgnoreCase("HtmlInfo")) {
+    if (tool != null && tool.equalsIgnoreCase("HtmlInfo")) {
 
       if (property.endsWith("rences")) {
         int tagIndex = property.indexOf("Tag");

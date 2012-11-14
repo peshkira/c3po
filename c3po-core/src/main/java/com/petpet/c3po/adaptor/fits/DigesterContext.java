@@ -78,20 +78,30 @@ public class DigesterContext {
   public void createIdentity(String format, String mimetype) {
     final Property pf = this.getProperty("format");
     final Property pm = this.getProperty("mimetype");
-
-    MetadataRecord fmt = new MetadataRecord();
-    fmt.setProperty(pf);
-    fmt.setValue(format);
-    fmt.getSources().addAll(this.formatSources);
-
-    MetadataRecord mime = new MetadataRecord();
-    mime.setProperty(pm);
-    mime.setValue(mimetype);
-    mime.getSources().addAll(this.formatSources);
-
-    this.addValue(fmt);
-    this.addValue(mime);
+    
+    this.createIdentityForProperty(pf, format);
+    this.createIdentityForProperty(pm, mimetype);
+    
     this.formatSources.clear();
+  }
+  
+  private void createIdentityForProperty(Property property, String value) {
+    boolean shouldContinue = true;
+    
+    for (PreProcessingRule r : rules) {
+      if (r.shouldSkip(property.getId(), value, null, null, null)) {
+        shouldContinue = false;
+        break;
+      }
+    }
+    
+    if (shouldContinue) {
+      MetadataRecord rec = new MetadataRecord();
+      rec.setProperty(property);
+      rec.setValue(value);
+      rec.getSources().addAll(this.formatSources);
+      this.addValue(rec);
+    }
   }
 
   public void addIdentityTool(String toolname, String version) {

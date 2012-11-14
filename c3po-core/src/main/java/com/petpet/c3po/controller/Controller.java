@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
+import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
 import com.petpet.c3po.adaptor.rules.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -118,6 +119,7 @@ public class Controller {
   private List<ProcessingRule> getRules() {
     List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
     rules.add(new HtmlInfoProcessingRule());
+    rules.add(new EmptyValueProcessingRule());
     return rules;
   }
 
