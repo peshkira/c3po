@@ -152,6 +152,9 @@ public final class DataHelper {
         if (tmp.getValue().equals("Unknown")) {
           query.put("metadata." + tmp.getProperty() + ".values", new BasicDBObject("$exists", false));
           query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
+          
+        } else if (tmp.getValue().equals("Conflicted")) {
+          query.put("metadata." + tmp.getProperty() + ".status", MetadataRecord.Status.CONFLICT.toString());
 
         } else if (property.getType().equals(PropertyType.DATE.toString())) {
 
@@ -167,9 +170,18 @@ public final class DataHelper {
 
           query.put("metadata." + tmp.getProperty() + ".value", date);
 
-        } else if (tmp.getValue().equals("Conflicted")) {
-          query.put("metadata." + tmp.getProperty() + ".status", MetadataRecord.Status.CONFLICT.toString());
-
+        } else if (property.getType().equals(PropertyType.INTEGER.toString())) {
+          String val = tmp.getValue();
+          String[] constraints = val.split(" - ");
+          String low = constraints[0];
+          String high = constraints[1];
+          
+          BasicDBObject range = new BasicDBObject();
+          range.put("$lte", Long.parseLong(high));
+          range.put("$gte", Long.parseLong(low));
+          
+          query.put("metadata." + tmp.getProperty() + ".value", range);
+          
         } else {
           query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
         }

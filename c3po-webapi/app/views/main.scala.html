@@ -99,12 +99,12 @@
               // build the current filter elements.
               $.get('/c3po/filters', function(data) {
                   $.each(data, function(i, pvf) {
-                	  addNewFilter();
-                	  var div = $('.propertyfilter')[i];
-                      $(div).children('select').val(pvf.property);
-                      $(div).attr('oldValue', pvf.property);
-                      showValuesSelect(div, pvf);
-                      $(div).children('select:last').val(pvf.selected); 
+                	addNewFilter();
+                	var div = $('.propertyfilter')[i];
+                    $(div).children('select').val(pvf.property);
+                    $(div).attr('oldValue', pvf.property);
+                    showValuesSelect(div, pvf);
+                    $(div).children('select:last').val(pvf.selected); 
                   });
 
               });
@@ -236,11 +236,11 @@
              //check if the previous filter is already setup accordingly 
              var show = false; 
              if ($('.propertyfilter:last')[0]) {
-                  if($('.propertyfilter:last select').length > 1) {
+                 var selects = $('.propertyfilter:last select');
+                  if(selects.length > 1 && $(selects[1]).val() !== "") {
                       show = true;
                    } else {
                       $('.propertyfilter:last').effect("shake", {distance:10, times:3, direction: 'up'}, 80);
-                         
                    }
              } else {
                   show = true;
@@ -287,14 +287,34 @@
                        url:      '/c3po/filter?property='+old,
                        timeout:  5000
                      });
+
+                     var url = '/c3po/filter/values?filter='+property+'&collection=@session.get("current.collection")';
+
                      $.ajax ({
                          type:     'GET',
-                         url:      '/c3po/filter/values?filter='+property+'&collection=@session.get("current.collection")',
+                         async:    false,
+                         url:      '/c3po/property?name=' + property,
                          timeout:  5000,
-                         success:  function (oData) {
-                             showValuesSelect(div, oData);
+                         success: function (oData) {
+                            if (oData.type == 'INTEGER') {
+                                //show popup and ask 
+                                $("#overlay").addClass('activeoverlay');
+                                showIntegerPropertyDialog('getValuesForProperty("' + url + '")');
+                             
+                            } else { 
+                                $.ajax ({
+                                    type:     'GET',
+                                    url:      url,
+                                    timeout:  5000,
+                                    success:  function (oData) {
+                                      showValuesSelect(div, oData);
+                                    }
+                                });
+                            }	    
                          }
-                     });
+                       });
+
+                   
                    } else {
                 	   $(sel).effect("highlight", {color:'#FF1400'} , "slow");
                 	   if ($(div).children('select').length > 1) {
@@ -305,6 +325,61 @@
            }
           };
 
+          function getUrlForIntegerProperty(url) {
+        	  var selects = $('.popupconfig').children('select');
+              var property = $('.popupconfig').children('select:first').val();
+              var alg = $('.popupconfig').children('select:last').val();
+              var width = -1;
+              url += "&alg=" + alg
+
+              if (alg == "fixed") {
+                  width = $('.popupconfig input:first').val();
+                  url += "&width=" + width;
+              }
+
+              return url;
+          }
+
+          function getValuesForProperty(url) {
+             url = getUrlForIntegerProperty(url);
+             
+              $.ajax ({
+                  type:     'GET',
+                  url:      url,
+                  timeout:  5000,
+                  success:  function (oData) {
+                      var div = $(".propertyfilter:last");
+                      hidePopupDialog();
+                      showValuesSelect(div, oData);
+                  }
+              });
+          }
+
+          function showIntegerPropertyDialog(func) {
+              var popup = $('#filterpopup');
+              popup.children('.popupreason').text('This is an integer property and it requires the selection of an algorithm for the histogram bins.');
+              popup.children('.popupconfig').append($('<select><option value="fixed">fixed</option><option value="sturge">Sturge\'s</option><option value="sqrt">Square-root choice</option></select>'));
+              popup.css({'display': 'block', 'z-index':11});
+
+              $('.popupconfig select:last').click(function() {
+                 $('.popupconfig .green_button').remove();
+                 $('.popupconfig input').remove();
+                 if ($(this).val() == "fixed") {
+                     $('.popupconfig').append($('<input type="text" placeholder="bin width" />'));
+                  }
+
+                  $('.popupconfig').append($('<a class="green_button" href=javascript:'+ func + '>Apply</a>'))
+              });
+            }
+
+          function hidePopupDialog() {
+              $('#overlay').removeClass('activeoverlay');
+              var popup = $('#filterpopup');
+              popup.css({'display':'none'});
+              popup.children('.popupconfig').children().remove(); 
+          } 
+            
+
           function showValuesSelect(filterdiv, pvf) {
               //first remove filtervalues if property was already selected 
         	  if ($(filterdiv).children('select').length > 1) {
@@ -312,35 +387,26 @@
               }
             
         	  var type = pvf.type;
-
-              if (type == "STRING" || type == "BOOL" || type == "DATE") {
+              var sel = $('<select>').appendTo($(filterdiv));
+              var values = pvf.values;
                 
-                var sel = $('<select>').appendTo($(filterdiv));
-                var values = pvf.values;
-                
-                $(sel).append($('<option>').text("").attr('value',''));
-                $.each(values, function(i, value) {
-                    $(sel).append($('<option>').text(value).attr('value', value));
-                });
+              $(sel).append($('<option>').text("").attr('value',''));
+              $.each(values, function(i, value) {
+                  $(sel).append($('<option>').text(value).attr('value', value));
+              });
 
-                $(sel).change(function() {
-                	var value = $(this).val();
+              $(sel).change(function() {
+              	var value = $(this).val();
 
-                    if (value) {
-                      startSpinner();
-                      $.post('/c3po/filter?filter=' + pvf.property + '&value='+value + '&type=normal', function(data) {
-                        window.location.reload();
-                      });
-                    } else {
-                    	$(sel).effect("highlight", {color:'#FF1400'} , "slow");
-                      
-                    }
-                    
-                });
-              }else if (type == "INTEGER"){
-            	  console.log("property type selected " + pvf.type);
-                  showValueOptionDialog()
-              }
+                if (value) {
+                  startSpinner();
+                  $.post('/c3po/filter?filter=' + pvf.property + '&value='+value + '&type=normal', function(data) {
+                     window.location.reload();
+                  });
+                 } else {
+                 	$(sel).effect("highlight", {color:'#FF1400'} , "slow");
+                 }
+              });
           };
 
           function changeSetting(setting, value) {

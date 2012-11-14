@@ -2,19 +2,24 @@ package helpers;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 public class Graph {
 
   private String property;
+  private Map<String, String> options;
   private List<String> keys;
   private List<String> values;
 
   public Graph() {
-
+    this.setOptions(new HashMap<String, String>());
   }
 
   public Graph(String p, List<String> keys, List<String> values) {
+    this();
     this.property = p;
     this.keys = keys;
     this.values = values;
@@ -120,4 +125,13 @@ public class Graph {
     this.keys = k;
     this.values = v;
   }
+
+  public Map<String, String> getOptions() {
+    return options;
+  }
+
+  public void setOptions(Map<String, String> options) {
+    this.options = options;
+  }
+
 }

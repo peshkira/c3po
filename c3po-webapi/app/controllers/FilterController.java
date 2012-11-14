@@ -18,6 +18,7 @@ import play.mvc.Result;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.analysis.mapreduce.HistogramJob;
@@ -28,6 +29,7 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.datamodel.Property.PropertyType;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 
@@ -51,7 +53,10 @@ public class FilterController extends Controller {
       while (cursor.hasNext()) {
         Filter tmp = DataHelper.parseFilter(cursor.next());
         if (tmp.getProperty() != null && tmp.getValue() != null) {
-          PropertyValuesFilter f = getValues(tmp.getCollection(), tmp.getProperty());
+          final Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+          final Property property = cache.getProperty(tmp.getProperty());
+          PropertyValuesFilter f = getValues(tmp.getCollection(), property, tmp.getValue());
+
           f.setSelected(tmp.getValue());
           filters.add(f);
         }
@@ -94,12 +99,15 @@ public class FilterController extends Controller {
       final String f = form.get("filter");
       final String v = form.get("value");
       final String t = form.get("type");
+      final String a = form.get("alg");
+      final String w = form.get("width");
 
       if (t == null || t.equals("normal")) {
         return addFromFilter(filter, f, v);
       } else if (t.equals("graph")) {
         int value = Integer.parseInt(v);
-        return addFromGraph(filter, f, value);
+
+        return addFromGraph(filter, f, value, a, w);
       }
     }
 
@@ -137,13 +145,22 @@ public class FilterController extends Controller {
 
   }
 
-  private static Result addFromGraph(Filter filter, String f, int value) {
+  private static Result addFromGraph(Filter filter, String f, int value, String alg, String width) {
     Logger.debug("in method addFromGraph(), adding new filter with property '" + f + "' and position value '" + value
         + "'");
     Logger.info("Current filter was: " + filter.getDescriminator());
     // query histogram to check the value of the filter that was selected
-    final Graph graph = getGraph(filter, f);
-    
+
+    final Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+    final Property property = cache.getProperty(f);
+    Graph graph = null;
+
+    if (property.getType().equals(Property.PropertyType.INTEGER.toString())) {
+      graph = getNumericGraph(filter, f, alg, width);
+    } else {
+      graph = getGraph(filter, f);
+    }
+
     final String filtervalue = graph.getKeys().get(value);
 
     return addFromFilter(filter, f, filtervalue);
@@ -155,32 +172,81 @@ public class FilterController extends Controller {
     final String c = form.get("collection");
     final String p = form.get("filter");
 
-    final PropertyValuesFilter f = getValues(c, p);
+    // get algorithm and width
+    final String a = form.get("alg");
+    final String w = form.get("width");
+
+    final Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+    final Property property = cache.getProperty(p);
+    PropertyValuesFilter f = null;
+    if (property.getType().equals(PropertyType.INTEGER.toString())) {
+      f = getNumericValues(c, property, a, w);
+    } else {
+      f = getValues(c, property, null);
+    }
 
     return ok(play.libs.Json.toJson(f));
   }
 
-  private static PropertyValuesFilter getValues(String c, String p) {
-    Logger.debug("get property values filter for " + c + " and property " + p);
-    final Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
-    final Property property = cache.getProperty(p);
-    final MapReduceJob job = new HistogramJob(c, p);
-    final MapReduceOutput output = job.execute();
-    final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
-    final List<String> result = new ArrayList<String>();
+  private static PropertyValuesFilter getValues(String c, Property p, String v) {
+    Logger.debug("get property values filter for " + c + " and property " + p.getId());
 
-    for (final BasicDBObject dbo : jobresults) {
-      String val = dbo.getString("_id");
-      if (val.endsWith(".0")) {
-        val = val.substring(0, val.length() - 2);
-      }
-      result.add(val);
+    final MapReduceJob job = new HistogramJob(c, p.getId());
+
+    if (p.getType().equals(PropertyType.INTEGER.toString())) {
+      // int width = (v == null) ? 10 : HistogramJob.inferBinWidth(v);
+      int width = HistogramJob.inferBinWidth(v);
+
+      HashMap<String, String> config = new HashMap<String, String>();
+      config.put("bin_width", width + "");
+      job.setConfig(config);
+    }
+
+    final MapReduceOutput output = job.execute();
+    final List<String> keys = new ArrayList<String>();
+    final List<String> values = new ArrayList<String>();
+
+    if (p.getType().equals(PropertyType.INTEGER.toString())) {
+      // int width = (v == null) ? 10 : HistogramJob.inferBinWidth(v);
+      int width = HistogramJob.inferBinWidth(v);
+
+      calculateNumericHistogramResults(output, keys, values, width);
+    } else {
+      calculateHistogramResults(output, keys, values);
     }
 
     PropertyValuesFilter f = new PropertyValuesFilter();
-    f.setProperty(property.getId());
-    f.setType(property.getType());
-    f.setValues(result);
+    f.setProperty(p.getId());
+    f.setType(p.getType());
+    f.setValues(keys); // this is not a mistake.
+    f.setSelected(v);
+
+    return f;
+  }
+
+  private static PropertyValuesFilter getNumericValues(String c, Property p, String alg, String width) {
+    Filter filter = Application.getFilterFromSession();
+    Graph graph = null;
+
+    if (alg.equals("fixed")) {
+      int w = Integer.parseInt(width);
+      graph = getFixedWidthHistogram(filter, p.getId(), w);
+    } else if (alg.equals("sqrt")) {
+      graph = getSquareRootHistogram(filter, p.getId());
+    } else if (alg.equals("sturge")) {
+      graph = getSturgesHistogramm(filter, p.getId());
+    }
+
+    graph.sort();
+//
+//    if (graph.getKeys().size() > 100) {
+//      graph.cutLongTail();
+//    }
+    
+    PropertyValuesFilter f = new PropertyValuesFilter();
+    f.setProperty(p.getId());
+    f.setType(p.getType());
+    f.setValues(graph.getKeys()); // this is not a mistake.
 
     return f;
   }
@@ -195,12 +261,12 @@ public class FilterController extends Controller {
     if (alg == null) {
       g = getOrdinalGraph(filter, property);
     } else {
-      g = getNumericGraph(filter, property, form);
+      g = getNumericGraph(filter, property, form.get("alg"), form.get("width"));
     }
-    
+
     if (g != null) {
       g.sort();
-      
+
       if (g.getKeys().size() > 100) {
         g.cutLongTail();
       }
@@ -217,38 +283,25 @@ public class FilterController extends Controller {
     DBCollection dbc = p.getDB().getCollection("histogram_" + collection + "_" + property);
 
     if (dbc.find().count() == 0) {
-      final HistogramJob job = new HistogramJob(collection, property);
+      final MapReduceJob job = new HistogramJob(collection, property);
       final MapReduceOutput output = job.execute();
-      final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
 
-      for (final BasicDBObject dbo : jobresults) {
-        String key = dbo.getString("_id");
-        if (key.endsWith(".0")) {
-          key = key.substring(0, key.length() - 2);
-        }
-        keys.add(key);
-        values.add(dbo.getString("value"));
-      }
+      calculateHistogramResults(output, keys, values);
+
     } else {
       DBCursor cursor = dbc.find();
       while (cursor.hasNext()) {
         BasicDBObject dbo = (BasicDBObject) cursor.next();
-        String key = dbo.getString("_id");
-        if (key.endsWith(".0")) {
-          key = key.substring(0, key.length() - 2);
-        }
-        keys.add(key);
-        values.add(dbo.getString("value"));
+        parseHistogram(dbo, keys, values);
       }
     }
-    
 
     result.sort();
 
     if (result.getKeys().size() > 100) {
       result.cutLongTail();
     }
-    
+
     return result;
   }
 
@@ -256,29 +309,40 @@ public class FilterController extends Controller {
     final List<String> keys = new ArrayList<String>();
     final List<String> values = new ArrayList<String>();
     final Graph result = new Graph(property, keys, values);
+    final BasicDBObject query = Application.getFilterQuery(filter);
+    final MapReduceJob job = new HistogramJob(filter.getCollection(), property, query);
 
-    BasicDBObject query = Application.getFilterQuery(filter);
+    final Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+    final Property p = cache.getProperty(property);
+    long width = -1;
 
-    HistogramJob job = new HistogramJob(filter.getCollection(), property, query);
+    if (p.getType().equals(PropertyType.INTEGER.toString())) {
+      DBObject range = (DBObject) query.get("metadata." + property + ".value");
+      
+      Long low = (Long) range.get("$gte");
+      Long high = (Long) range.get("$lte");
+      
+      width = high - low + 1; //because of lte/gte
 
-    final MapReduceOutput output = job.execute();
-    final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
-    for (final BasicDBObject dbo : jobresults) {
-      String key = dbo.getString("_id");
-      if (key.endsWith(".0")) {
-        key = key.substring(0, key.length() - 2);
-      }
-      keys.add(key);
-      values.add(dbo.getString("value"));
+      HashMap<String, String> config = new HashMap<String, String>();
+      config.put("bin_width", width + "");
+      job.setConfig(config);
 
     }
-    
 
+    final MapReduceOutput output = job.execute();
+    if (p.getType().equals(PropertyType.INTEGER.toString())) {
+      calculateNumericHistogramResults(output, keys, values, width);
+    } else {
+     calculateHistogramResults(output, keys, values);
+    }
+    
     result.sort();
 
     if (result.getKeys().size() > 100) {
       result.cutLongTail();
     }
+    
     return result;
   }
 
@@ -348,29 +412,30 @@ public class FilterController extends Controller {
       } else {
         g = FilterController.getGraph(filter, property);
       }
-     
+
     }
 
     return g;
   }
 
-  private static Graph getNumericGraph(Filter filter, String property, DynamicForm form) {
+  private static Graph getNumericGraph(Filter filter, String property, String alg, String w) {
 
     // TODO find number of elements based on filter...
     // calculate bins...
     // find classes based on number of bins...
     // map reduce this property based on the classes...
     Graph g = null;
-    String alg = form.get("alg");
     if (alg.equals("fixed")) {
       int width = 50;
       try {
-        width = Integer.parseInt(form.get("width"));
+        width = Integer.parseInt(w);
       } catch (NumberFormatException e) {
         Logger.warn("Not a number, using default bin width: 50");
       }
 
       g = getFixedWidthHistogram(filter, property, width);
+      g.getOptions().put("width", w);
+
     } else if (alg.equals("sturge")) {
       // bins = log2 n + 1
       g = getSturgesHistogramm(filter, property);
@@ -378,6 +443,12 @@ public class FilterController extends Controller {
       // bins = sqrt(n);
       g = getSquareRootHistogram(filter, property);
     }
+
+    g.getOptions().put("type", PropertyType.INTEGER.toString());
+    g.getOptions().put("alg", alg);
+
+    
+    g.sort();
     
     return g;
   }
@@ -396,10 +467,9 @@ public class FilterController extends Controller {
       long max = aggregation.getLong("max");
 
       int bins = (int) ((max - min) / width);
-      System.out.println("bins: " + bins);
       Map<String, String> config = new HashMap<String, String>();
-      config.put("bin_width", width+"");
-      
+      config.put("bin_width", width + "");
+
       job = new HistogramJob(filter.getCollection(), property);
       job.setFilterquery(query);
       job.setConfig(config);
@@ -407,20 +477,8 @@ public class FilterController extends Controller {
       results = (List<BasicDBObject>) output.getCommandResult().get("results");
       List<String> keys = new ArrayList<String>();
       List<String> values = new ArrayList<String>();
-      System.out.println("results: " + results.size());
-      for (BasicDBObject obj : results) {
-        String id = obj.getString("_id");
 
-        if (id.equals("Unknown") || id.equals("Conflicted")) {
-          keys.add(id);
-        } else {
-//          System.out.println("id  is : " + id);
-          int low = (int) Double.parseDouble(id) * width;
-          int high = low + width;
-          keys.add(low + " - " + high);
-        }
-        values.add(obj.getString("value"));
-      }
+      calculateNumericHistogramResults(output, keys, values, width);
 
       g = new Graph(property, keys, values);
     }
@@ -428,13 +486,12 @@ public class FilterController extends Controller {
     return g;
 
   }
-  
+
   private static Graph getSturgesHistogramm(Filter f, String property) {
     BasicDBObject query = Application.getFilterQuery(f);
     DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_ELEMENTS, query);
     int n = cursor.size();
     int bins = (int) ((Math.log(n) / Math.log(2)) + 1);
-    System.out.println("bins: " + bins);
     MapReduceJob job = new NumericAggregationJob(f.getCollection(), property);
     job.setFilterquery(query);
 
@@ -446,41 +503,28 @@ public class FilterController extends Controller {
       long max = aggregation.getLong("max");
       int width = (int) (max / bins);
       Map<String, String> config = new HashMap<String, String>();
-      config.put("bin_width", width+"");
-      
+      config.put("bin_width", width + "");
+
       job = new HistogramJob(f.getCollection(), property);
       job.setFilterquery(query);
       job.setConfig(config);
       output = job.execute();
-      results = (List<BasicDBObject>) output.getCommandResult().get("results");
       List<String> keys = new ArrayList<String>();
       List<String> values = new ArrayList<String>();
-      System.out.println("results: " + results.size());
-      for (BasicDBObject obj : results) {
-        String id = obj.getString("_id");
 
-        if (id.equals("Unknown") || id.equals("Conflicted")) {
-          keys.add(id);
-        } else {
-          int low = (int) Double.parseDouble(id) * width;
-          int high = low + width;
-          keys.add(low + " - " + high);
-        }
-        values.add(obj.getString("value"));
-      }
+      calculateNumericHistogramResults(output, keys, values, width);
 
       g = new Graph(property, keys, values);
     }
 
     return g;
   }
-  
+
   private static Graph getSquareRootHistogram(Filter f, String property) {
     BasicDBObject query = Application.getFilterQuery(f);
     DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_ELEMENTS, query);
     int n = cursor.size();
     int bins = (int) Math.sqrt(n);
-    System.out.println("bins: " + bins);
     MapReduceJob job = new NumericAggregationJob(f.getCollection(), property);
     job.setFilterquery(query);
 
@@ -492,32 +536,52 @@ public class FilterController extends Controller {
       long max = aggregation.getLong("max");
       int width = (int) (max / bins);
       Map<String, String> config = new HashMap<String, String>();
-      config.put("bin_width", width+"");
-      
+      config.put("bin_width", width + "");
+
       job = new HistogramJob(f.getCollection(), property);
       job.setFilterquery(query);
       job.setConfig(config);
       output = job.execute();
-      results = (List<BasicDBObject>) output.getCommandResult().get("results");
       List<String> keys = new ArrayList<String>();
       List<String> values = new ArrayList<String>();
-      System.out.println("results: " + results.size());
-      for (BasicDBObject obj : results) {
-        String id = obj.getString("_id");
 
-        if (id.equals("Unknown") || id.equals("Conflicted")) {
-          keys.add(id);
-        } else {
-          int low = (int) Double.parseDouble(id) * width;
-          int high = low + width;
-          keys.add(low + " - " + high);
-        }
-        values.add(obj.getString("value"));
-      }
+      calculateNumericHistogramResults(output, keys, values, width);
 
       g = new Graph(property, keys, values);
     }
 
     return g;
+  }
+
+  private static void calculateHistogramResults(MapReduceOutput output, List<String> keys, List<String> values) {
+    final List<BasicDBObject> jobresults = (List<BasicDBObject>) output.getCommandResult().get("results");
+    for (final BasicDBObject dbo : jobresults) {
+      parseHistogram(dbo, keys, values);
+    }
+  }
+
+  private static void calculateNumericHistogramResults(MapReduceOutput output, List<String> keys, List<String> values,
+      long width) {
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+    for (BasicDBObject obj : results) {
+      
+      String id = obj.getString("_id");
+
+      if (!id.equals("Unknown") && !id.equals("Conflicted")) {
+        long low = (int) Double.parseDouble(id) * width;
+        long high = low + width - 1;
+        keys.add(low + " - " + high);
+      } 
+      values.add(obj.getString("value"));
+    }
+  }
+
+  private static void parseHistogram(BasicDBObject dbo, List<String> keys, List<String> values) {
+    String key = dbo.getString("_id");
+    if (key.endsWith(".0")) {
+      key = key.substring(0, key.length() - 2);
+    }
+    keys.add(key);
+    values.add(dbo.getString("value"));
   }
 }

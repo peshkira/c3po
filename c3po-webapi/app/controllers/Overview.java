@@ -57,6 +57,7 @@ public class Overview extends Controller {
 
   public static Result getGraph(String property) {
 
+    // if it is one of the default properties, do not draw..
     for (String p : Application.PROPS) {
       if (p.equals(property)) {
         return ok();
@@ -99,7 +100,9 @@ public class Overview extends Controller {
       }
 
       if (!found) {
+        System.out.println("Overview getAllGraphs before");
         Graph graph = FilterController.getGraph(f, prop);
+        System.out.println("Overview getAllGraphs after");
         graphs.getGraphs().add(graph);
       }
     }

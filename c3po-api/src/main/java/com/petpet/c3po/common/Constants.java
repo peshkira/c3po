@@ -126,7 +126,7 @@ public final class Constants {
    * the width, the id 1 marks the number of elements where the numeric property
    * was between the width and 2*width and so on.
    */
-  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['{1}'] != null) {if (this.metadata['{1}'].status !== 'CONFLICT') {var idx = Math.round(this.metadata['{1}'].value / {2});emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
+  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['{1}'] != null) {if (this.metadata['{1}'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['{1}'].value / {2});emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
