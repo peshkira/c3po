@@ -5,9 +5,10 @@
   <parent>
     <artifactId>c3po</artifactId>
     <groupId>com.petpet</groupId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
   </parent>
   <artifactId>c3po-cmd</artifactId>
+  <version>0.2.0</version>
   <name>C3PO Command Line App</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -47,12 +48,12 @@
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-api</artifactId>
-      <version>0.1.0</version>
+      <version>0.2.0</version>
     </dependency>
     <dependency>
       <groupId>com.petpet</groupId>
       <artifactId>c3po-core</artifactId>
-      <version>0.1.1</version>
+      <version>0.2.0</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -61,5 +62,4 @@
     </dependency>
   </dependencies>
 
-  <version>0.1.1</version>
 </project>

@@ -192,7 +192,7 @@ public class ProfileGenerator {
 
     LOG.debug("Found {} representatives", output.size());
     for (String s : output) {
-      LOG.info("Processing sample {}", s);
+      LOG.debug("Processing sample {}", s);
       createSampleElement(samples, s);
     }
   }
