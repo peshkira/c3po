@@ -701,6 +701,10 @@ display: none;
 ################################################                
 */
 
+#samples #objects {
+	display: none;
+}
+
 #algorithm_descriptions {
 	display: none;
 }

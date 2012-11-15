@@ -17,7 +17,7 @@ public class RepresentativeAlgorithmFactory {
   /**
    * The known algorithms.
    */
-  private static final String[] ALGORITHMS = { "size", "systematic sampling" };
+  private static final String[] ALGORITHMS = { "size", "syssampling", "distsampling" };
 
   /**
    * The factory method.
@@ -42,8 +42,11 @@ public class RepresentativeAlgorithmFactory {
         gen = new SizeRepresentativeGenerator();
         break;
       case 1:
+      case 2:
         gen = new SystematicSamplingRepresentativeGenerator();
         break;
+      default:
+        gen = new SizeRepresentativeGenerator();
     }
 
     return gen;

@@ -1,7 +1,7 @@
 @(collections: List[String])
 @import helper._
 @main("c3po", collections) {
-     <div id="samples" class="content">    
+   <div id="samples" class="content">    
      <div id="more">
         <a id="btn_samples"  href="#" class="green_button">Get Samples</a>
      </div> 
@@ -12,8 +12,8 @@
         of samples (max 100), so that it fits your use case best. Remember that the algorithms are always applied with respect to the
         current filter, so please double check. <a id="algorithms" href="#algorithm_descriptions">Tell me more about these algorithms!</a>
      </p>
-     <div>
-     </div id="objects"></div>
+     <div id="objects"></div>
+    </div>
    
    <div id="algorithm_descriptions" class="content">
     <div class="algorithms">
@@ -44,9 +44,78 @@
       });
 
       $("a#btn_samples").click(function() {
-          
-
+          showAlgOptionsDialog();
       });
+
+      function showAlgOptionsDialog() {
+          $("#overlay").addClass('activeoverlay');
+          var algorithms = [
+                            {'key':'size', 'name':'Size\'o\'Matic'},
+                            {'key':'syssampling', 'name': 'Sys Sampling'},
+                            {'key': 'distsampling', 'name':'Dist Sampling'}
+                           ];
+           
+          var popup = $('#filterpopup');
+          var config = popup.children('.popupconfig');
+          var sel = $('<select></select>').appendTo(config);
+
+          popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
+
+          $.each(algorithms, function(i, alg) {
+              $(sel).append("<option value=" + alg['key'] + ">" + alg['name'] +"</option>");              
+          });
+
+          var text = $('<input type="text" placeholder="nr of samples" />').appendTo(config);
+          var btn = $('<a id="btn_runsamples" class="green_button" href="#">Apply</a>').appendTo(config);
+                    
+          popup.css({'display': 'block', 'z-index':11});
+
+          $(btn).click(function() {
+              var alg = sel.val();
+              var size = 10;
+              var tSize = text.val();  
+
+              if (tSize) {
+                var s = parseInt(tSize);
+                if (s !== NaN && s > 0 && s <= 100) {
+                    size = s;
+                }
+              }
+              
+              hidePopupDialog();
+              startSpinner();
+              getSamples(alg, size);
+          });
+      };
+
+      function getSamples(alg, size) {
+        $.ajax ({
+              headers: { 
+                   Accept : "application/json; charset=utf-8",
+               },
+              type:     'GET',
+              url:      '/c3po/samples/get?alg=' + alg + '&size=' + size,
+              timeout:  5000,
+              success:  function (oData) {
+                showSamples(oData);  
+                stopSpinner();
+              },
+              error: function(oData) {
+                stopSpinner();
+              }
+          });
+      };
+
+      function showSamples(samples) {
+          var objects = $('div#objects');
+          objects.fadeOut('normal', function(){
+              $(this).children().remove();
+              $.each(samples, function(i, sample){
+                  objects.append('<a href="/c3po/objects/' + sample.id +'">' + sample.name + '</a><br />');
+              });
+              objects.fadeIn('normal');
+          });
+      }; 
    });
    
    </script> 
