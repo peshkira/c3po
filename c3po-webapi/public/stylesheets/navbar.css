@@ -1,17 +1,15 @@
-.clear:after { content: "."; display: block; height: 0; clear: both; visibility: hidden;}
-html[xmlns] .clear { display: block;}
-* html .clear { height: 1%;}
 
-nav.green {background-color:#8CCE00;border-top: 1px solid #507D00; border-bottom: 1px solid #507D00; border-radius: 2px; display: block!important;}
+
+nav.green {background-color:#8CCE00;border-top: 1px solid #507D00; border-bottom: 1px solid #507D00; border-radius: 0px; display: block!important;}
 nav.green ul {margin: 0px; padding: 0px; border-left: 1px solid #507D00;border-right: 1px solid #507D00; }
 
 /* Top level */
-nav.green li {list-style: none; float: left; border-right: 1px solid #507D00; position: relative;}
-nav.green li.first, nav li.first a {border-top-left-radius: 2px; border-bottom-left-radius: 2px; -webkit-border-top-left-radius: 2px; -moz-border-bottom-left-radius: 2px; border-left: 0px solid #507D00;}
-nav.green li.lastnav, nav li.lastnav a {border-right: 1px solid #507D00; border-top-right-radius: 2px; border-bottom-right-radius: 2px; -webkit-border-top-right-radius: 2px; -moz-border-bottom-right-radius: 2px;}
+nav.green li {list-style: none; float: left; border-right: 1px solid #507D00; position: relative; margin-top: 2px}
+nav.green li.first, nav li.first a {border-top-left-radius: 2px; border-bottom-left-radius: 0px; -webkit-border-top-left-radius: 0px; -moz-border-bottom-left-radius: 0px; border-left: 0px solid #507D00;}
+nav.green li.lastnav, nav li.lastnav a {border-right: 1px solid #507D00; border-top-right-radius: 0px; border-bottom-right-radius: 0px; -webkit-border-top-right-radius: 0px; -moz-border-bottom-right-radius: 0px;}
 nav.green li.drop a {padding-right: 35px;}
 nav.green li a {display: block; padding: 5px 40px 5px; text-decoration: none; background-color:#8CCE00;  background-image: url(../images/menu/navigation-sprite-green.png);  background-repeat: repeat-x; font-size: 14px; color: #2A4600; border-top: 1px solid #80C900; border-left: 1px solid #A3FF00; text-shadow: 0px 1px 2px #9DF600;}
-nav.green li img {cursor:pointer; display: block; padding: 5px 0px 5px; text-decoration: none; background-color:#8CCE00;  background-image: url(../images/menu/navigation-sprite-green.png);  background-repeat: repeat-x; font-size: 14px; color: #2A4600; border-top: 1px solid #80C900; text-shadow: 0px 1px 2px #9DF600;}
+nav.green li img {cursor:pointer; display: block; padding: 5px 0px 5px; text-decoration: none; font-size: 14px; color: #2A4600;  text-shadow: 0px 1px 2px #9DF600;}
 nav.green li a {background-position: 0px 0px;}
 nav.green li a:hover, nav li.active a {background-position: 0px -46px;}
 nav.green li a:active {background-position: 0px -72px;}

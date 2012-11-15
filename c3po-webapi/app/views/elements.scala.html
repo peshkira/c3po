@@ -1,11 +1,11 @@
 @(collections: List[String], elements: List[com.petpet.c3po.datamodel.Element])
 @import helper._
-@main("c3po - objects", collections){
-<script type="text/javascript">
-          $(document).ready(function(){
-           
-           });
-</script>
+
+@scripts = {
+<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+}
+
+@main("c3po - objects", collections, scripts){
 <script type="text/javascript">
 
        $(function(){

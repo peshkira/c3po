@@ -1,6 +1,10 @@
 @(title: String, collections: List[String])
 
-@main(title, collections){
+@scripts = {
+<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+}
+
+@main(title, collections, scripts){
 <div class="content">
 <script type="text/javascript">
           $(document).ready(function(){

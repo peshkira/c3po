@@ -12,6 +12,7 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pointLabels.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.cursor.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.highlighter.min.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/overview.js")"></script>
 }
 
@@ -20,16 +21,16 @@
 @if(graphs != null) {
 <script type="text/javascript">
 $(document).ready(function(){
-            var data = {
-              @for(g <- graphs.getGraphs()) {
-                  '@g.getProperty()': [  @for((k, i) <- g.getKeys().zipWithIndex){
-                      ['@k', @g.getValues().get(i)],
-                  }
-                  ],
-                  }
-              };
 
-            drawGraphs(data);
+  var data = {
+     @for(g <- graphs.getGraphs()) {
+      '@g.getProperty()': [  @for((k, i) <- g.getKeys().zipWithIndex){
+         ['@k', @g.getValues().get(i)],
+       }
+       ],
+      }
+  };
+  drawGraphs(data);
 });
 
 </script>

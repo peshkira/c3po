@@ -1,6 +1,11 @@
 @(collections: List[String])
 @import helper._ 
-@main("c3po - samples", collections) {
+
+@scripts = {
+<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+}
+
+@main("c3po - samples", collections, scripts) {
 <div id="samples" class="content">
   <div id="more">
     <a id="btn_samples" href="#" class="green_button">Get Samples</a>

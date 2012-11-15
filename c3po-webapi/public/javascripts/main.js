@@ -451,4 +451,8 @@ function hideValueOptionDialog(apply) {
 	popup.css({'display':'none'});
 	$('.popupreason').css({'color': '#888'});
 	popup.children('.popupconfig').children().remove(); 
-}         
+}
+
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}

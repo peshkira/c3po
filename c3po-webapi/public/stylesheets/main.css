@@ -278,13 +278,19 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 	z-index:1
 }
 
-.github img {
-}
-
 .header {
 	white-space:nowrap;
 	margin-top:0px;
 	width:100%;
+	background: #8CCE00;
+	height: 82px;
+	display: none;
+}
+
+.header .logo {
+	width: 92px;
+	margin: 5px 20px;
+	float: left;
 }
 
 .header a {
@@ -293,18 +299,31 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 
 .header h1{
 	margin-bottom:0px;
-	padding: 15px;
-    background: #8CCE00;
+	padding-top: 25px;
     color: #FFF;
+    font-size: 26pt;
 }
 
-.navbar img{
-	width: 22px;
-	padding-top:0px;
+.navbar {
+	background:#8CCE00;
+	height: 36px;
+	border-bottom: 1px solid #507D00;
+}
+
+.navbar img {
+	width: 24px;
+	padding-top:3px;
     margin-left: 15px;
     margin-right: 15px;
-    /* border: 1px solid #888; */
-    border-radius: 2px;
+}
+
+img.smalllogo{
+	position: relative;
+    top: 0px;
+    right: 0px;
+    float: right;	
+    width: 36px;
+    
 }
 
 #collections {
@@ -445,20 +464,6 @@ display: none;
 .title {
 	margin-top:10px;
 	width:300px;
-}
-
-#clear a {
-	position:absolute;
-	float:right;
-	width:24px;
-	height:24px;
-	margin-left:97.5%;
-	margin-right:5px;
-	background: url('../images/clear.png');
-}
-
-#clear a:hover {
-	background: url('../images/clear_active.png');
 }
 
 .content {
