@@ -1,23 +1,53 @@
-@(collections: List[String], elements: List[com.petpet.c3po.datamodel.Element])
+@(collections: List[String])
 @import helper._
 @main("c3po", collections) {
-  @if(elements != null) {
-     <div id="objects" class="content">     
+     <div id="samples" class="content">    
+     <div id="more">
+        <a id="btn_samples"  href="#" class="green_button">Get Samples</a>
+     </div> 
      <h2>Sample Objects</h2>
-     
-       @if(elements.isEmpty()) {
-          The query returned an empty set. May be there are no more objects in the database or it is empty.
-       } else {
+     <p>
+        Sample objects are such objects that are representative to your collection (or filter). The definition of representativeness
+        can vary a lot, so c3po offers you different algorithms for the selection. You can choose the type of algorithm and the number
+        of samples (max 100), so that it fits your use case best. Remember that the algorithms are always applied with respect to the
+        current filter, so please double check. <a id="algorithms" href="#algorithm_descriptions">Tell me more about these algorithms!</a>
+     </p>
+     <div>
+     </div id="objects"></div>
+   
+   <div id="algorithm_descriptions" class="content">
+    <div class="algorithms">
+        <div class="algorithmname">Size'o'Matic 3000</div>
+        <div class="algorithmdescription">
+            The Size'o'Matic 3000 selects the smallest and the largest objects and fills the rest of the representative set with
+            random objects near to the average objects size.
+        </div>
+        <div class="algorithmname">SysSampler</div>
+        <div class="algorithmdescription">
+            This algorithm implements a common statistical approach, called systematic sampling. It divides the collection in
+            bins and selects one element per bin at random. All elements have equal probability to be chosen.
+        </div>
+        <div class="algorithmname">DistSampler</div>
+        <div class="algorithmdescription">
+            The distribution sampling algorithm takes a small number of properties as input and selects sample objects
+            that together have (nearly) the same distribution as the whole collection or filter.
+        </div>
+    </div>
+   </div>
+   
+   <script type="text/javascript">
+   $(document).ready(function() {
+      $("a#algorithms").click(function() {
+          event.preventDefault();
+          $("div#algorithm_descriptions").toggle('normal');
+          $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
+      });
+
+      $("a#btn_samples").click(function() {
           
-          @for(e <- elements) {
-              <a href="/c3po/objects/@e.getId()">@e.getName()</a><br/>
-          }
-       }
-       
-     </div>
-   } else {
-    <div id="objects" class="content">     
-     <h2>Please select a collection</h2>
-     </div>
-   } 
+
+      });
+   });
+   
+   </script> 
 }

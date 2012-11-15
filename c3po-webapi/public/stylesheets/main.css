@@ -266,6 +266,10 @@ hr.space {background:#fff;color:#fff;visibility:hidden;}
 .clearfix, .container {display:block;}
 .clear {clear:both;}
 
+.container h2, h3, h4 {
+	font-family: 'Sanchez', serif;
+}
+
 .github {
 	position: absolute;
 	top: 0; 
@@ -687,8 +691,26 @@ display: none;
     padding-top: 0px;
     padding-bottom: 20px;
     font-size: 22px;
-    font-family: Copperplate, "Copperplate Gothic Light", fantasy;
+    font-family: 'Sanchez', serif;
     cursor: pointer;
 }
 
+/*
+################################################
+                    SAMPLES
+################################################                
+*/
+
+#algorithm_descriptions {
+	display: none;
+}
+
+.algorithmname {
+    font-family: 'Sanchez', serif;
+    font-size: 20px;
+}
+
+.algorithmdescription {
+	margin-bottom: 15px;
+}
 

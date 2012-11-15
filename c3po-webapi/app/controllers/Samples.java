@@ -31,17 +31,17 @@ public class Samples extends Controller {
     sg.setFilter(filter);
 
     List<Element> result = new ArrayList<Element>();
-    if (filter != null) {
-      List<String> output = sg.execute();
-      BasicDBObject query = new BasicDBObject("uid", new BasicDBObject("$in", output));
-      DBCursor cursor = pl.find(Constants.TBL_ELEMENTS, query);
-      System.out.println(cursor.count());
-      while (cursor.hasNext()) {
-        result.add(DataHelper.parseElement(cursor.next(), pl));
-      }
-    }
+//    if (filter != null) {
+//      List<String> output = sg.execute();
+//      BasicDBObject query = new BasicDBObject("uid", new BasicDBObject("$in", output));
+//      DBCursor cursor = pl.find(Constants.TBL_ELEMENTS, query);
+//      System.out.println(cursor.count());
+//      while (cursor.hasNext()) {
+//        result.add(DataHelper.parseElement(cursor.next(), pl));
+//      }
+//    }
 
-    return ok(samples.render(names, result));
+    return ok(samples.render(names));
   }
 
 }
