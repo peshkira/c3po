@@ -163,7 +163,6 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
 
   private List<String> getProperties() {
     final Map<String, Object> options = this.getOptions();
-    // unchecked ...
     List<String> properties = (List<String>) options.get("properties");
 
     if (properties == null) {
@@ -173,24 +172,24 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
     return properties;
   }
 
-  public static void main(String... args) {
-    Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure();
-    PersistenceLayer pl = configurator.getPersistence();
-
-    Map<String, Object> options = new HashMap<String, Object>();
-    options.put("properties", Arrays.asList("valid", "format"));
-
-    Filter f = new Filter("roda", null, null);
-    DistributionRepresentativeGenerator drg = new DistributionRepresentativeGenerator();
-    drg.setOptions(options);
-    drg.setFilter(f);
-
-    List<String> result = drg.execute();
-    System.out.println("REPRESENTATIVES");
-    for (String s : result) {
-      System.out.println(s);
-    }
-  }
+//  public static void main(String... args) {
+//    Configurator configurator = Configurator.getDefaultConfigurator();
+//    configurator.configure();
+//    PersistenceLayer pl = configurator.getPersistence();
+//
+//    Map<String, Object> options = new HashMap<String, Object>();
+//    options.put("properties", Arrays.asList("valid", "format"));
+//
+//    Filter f = new Filter("roda", null, null);
+//    DistributionRepresentativeGenerator drg = new DistributionRepresentativeGenerator();
+//    drg.setOptions(options);
+//    drg.setFilter(f);
+//
+//    List<String> result = drg.execute();
+//    System.out.println("REPRESENTATIVES");
+//    for (String s : result) {
+//      System.out.println(s);
+//    }
+//  }
 
 }

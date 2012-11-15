@@ -1,6 +1,8 @@
 package controllers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import play.Logger;
@@ -26,14 +28,21 @@ public class Samples extends Controller {
     return ok(samples.render(names));
   }
 
-  public static Result getSamples(String alg, int size) {
-    Logger.debug("in method getSamples alg " + alg + " size " + size);
+  public static Result getSamples(String alg, int size, String props) {
+    Logger.debug("in method getSamples alg " + alg + " size " + size + " props " + props);
     final Configurator configurator = Configurator.getDefaultConfigurator();
     final PersistenceLayer pl = configurator.getPersistence();
     final Filter filter = Application.getFilterFromSession();
-
     final RepresentativeGenerator sg = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
     sg.setFilter(filter);
+
+    if (alg.equals("distsampling")) {
+      final String[] properties = props.split(",");
+      final HashMap<String, Object> options = new HashMap<String, Object>();
+      options.put("properties", Arrays.asList(properties));
+      sg.setOptions(options);
+    }
+
 
     List<Element> samples = new ArrayList<Element>();
     if (filter != null) {

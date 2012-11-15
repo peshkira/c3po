@@ -42,8 +42,10 @@ public class RepresentativeAlgorithmFactory {
         gen = new SizeRepresentativeGenerator();
         break;
       case 1:
-      case 2:
         gen = new SystematicSamplingRepresentativeGenerator();
+        break;
+      case 2:
+        gen = new DistributionRepresentativeGenerator();
         break;
       default:
         gen = new SizeRepresentativeGenerator();

@@ -1,41 +1,39 @@
 @(collections: List[String])
-@import helper._
+@import helper._ 
 @main("c3po - samples", collections) {
-   <div id="samples" class="content">    
-     <div id="more">
-        <a id="btn_samples"  href="#" class="green_button">Get Samples</a>
-     </div> 
-     <h2>Sample Objects</h2>
-     <p>
-        Sample objects are such objects that are representative to your collection (or filter). The definition of representativeness
-        can vary a lot, so c3po offers you different algorithms for the selection. You can choose the type of algorithm and the number
-        of samples (max 100), so that it fits your use case best. Remember that the algorithms are always applied with respect to the
-        current filter, so please double check. <a id="algorithms" href="#algorithm_descriptions">Tell me more about these algorithms!</a>
-     </p>
-     <div id="objects"></div>
-    </div>
-   
-   <div id="algorithm_descriptions" class="content">
-    <div class="algorithms">
-        <div class="algorithmname">Size'o'Matic 3000</div>
-        <div class="algorithmdescription">
-            The Size'o'Matic 3000 selects the smallest and the largest objects and fills the rest of the representative set with
-            random objects near to the average objects size.
-        </div>
-        <div class="algorithmname">SysSampler</div>
-        <div class="algorithmdescription">
-            This algorithm implements a common statistical approach, called systematic sampling. It divides the collection in
-            bins and selects one element per bin at random. All elements have equal probability to be chosen.
-        </div>
-        <div class="algorithmname">DistSampler</div>
-        <div class="algorithmdescription">
-            The distribution sampling algorithm takes a small number of properties as input and selects sample objects
-            that together have (nearly) the same distribution as the whole collection or filter.
-        </div>
-    </div>
-   </div>
-   
-   <script type="text/javascript">
+<div id="samples" class="content">
+  <div id="more">
+    <a id="btn_samples" href="#" class="green_button">Get Samples</a>
+  </div>
+  <h2>Sample Objects</h2>
+  <p>
+    Sample objects are such objects that are representative to your collection (or filter). The definition of
+    representativeness can vary a lot, so c3po offers you different algorithms for the selection. You can choose the
+    type of algorithm and the number of samples (max 100), so that it fits your use case best. Remember that the
+    algorithms are always applied with respect to the current filter, so please double check. <a id="algorithms"
+      href="#algorithm_descriptions">Tell me more about these algorithms!</a>
+  </p>
+  <div id="objects"></div>
+</div>
+
+<div id="algorithm_descriptions" class="content">
+  <div class="algorithms">
+    <div class="algorithmname">Size'o'Matic 3000</div>
+    <div class="algorithmdescription">The Size'o'Matic 3000 selects the smallest and the largest objects and fills
+      the rest of the representative set with random objects near to the average objects size.</div>
+    <div class="algorithmname">SysSampler</div>
+    <div class="algorithmdescription">This algorithm implements a common statistical approach, called systematic
+      sampling. It divides the collection in bins and selects one element per bin at random. All elements have equal
+      probability to be chosen.</div>
+    <div class="algorithmname">DistSampler</div>
+    <div class="algorithmdescription">The distribution sampling algorithm takes a small number of properties as
+      input and selects sample objects that together have (nearly) the same distribution as the whole collection or
+      filter. Note, that if you select too many properties, or a special combination of properties, it could happen, that
+      no representatives can be found.</div>
+  </div>
+</div>
+
+<script type="text/javascript">
    $(document).ready(function() {
       $("a#algorithms").click(function() {
           event.preventDefault();
@@ -60,41 +58,79 @@
           var sel = $('<select></select>').appendTo(config);
 
           popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
-
+          $(sel).append("<option/>");
           $.each(algorithms, function(i, alg) {
               $(sel).append("<option value=" + alg['key'] + ">" + alg['name'] +"</option>");              
           });
 
-          var text = $('<input type="text" placeholder="nr of samples" />').appendTo(config);
-          var btn = $('<a id="btn_runsamples" class="green_button" href="#">Apply</a>').appendTo(config);
+          $(sel).change(function() {
+              var val = $(this).val();
+              if (val == "") {
+                  $(this).effect("highlight", {color:'#FF1400'} , "slow");
+                  config.children('input').remove();
+                  config.children('a').remove();
+                   
+              } else {
+                var text = $('<input type="text" placeholder="nr of samples" />').appendTo(config);
+
+                if (val == "distsampling") {
+                	$.ajax ({
+                        headers: { 
+                            Accept : "application/json; charset=utf-8",
+                        },
+                        type:     'GET',
+                        url:      '/c3po/properties',
+                        timeout:  5000,
+                        async: false,
+                        success:  function (properties) {
+                        	var propsel = $('<select multiple>').appendTo(config);
+                            $.each(properties, function(i, value) {
+                                $(propsel).append($('<option>').text(value).attr('value', value));
+                            });
+                        }
+                    });
+                }
+                
+                var btn = $('<a id="btn_runsamples" class="green_button" href="#">Apply</a>').appendTo(config);
+                
+                
+                
+                $(btn).click(function() {
+                    var alg = sel.val();
+                    var size = 10;
+                    var tSize = text.val();  
+
+                    if (tSize) {
+                      var s = parseInt(tSize);
+                      if (s !== NaN && s > 0 && s <= 100) {
+                          size = s;
+                      }
+                    }
+
+                    var options = [];
+                    if (alg == "distsampling") {
+                        options = $('.popupconfig select:last').val();
+                    }
                     
+                    hidePopupDialog();
+                    startSpinner();
+                    getSamples(alg, size, options);
+                });
+              }
+          });
+
           popup.css({'display': 'block', 'z-index':11});
 
-          $(btn).click(function() {
-              var alg = sel.val();
-              var size = 10;
-              var tSize = text.val();  
-
-              if (tSize) {
-                var s = parseInt(tSize);
-                if (s !== NaN && s > 0 && s <= 100) {
-                    size = s;
-                }
-              }
-              
-              hidePopupDialog();
-              startSpinner();
-              getSamples(alg, size);
-          });
+         
       };
 
-      function getSamples(alg, size) {
+      function getSamples(alg, size, options) {
         $.ajax ({
               headers: { 
                    Accept : "application/json; charset=utf-8",
                },
               type:     'GET',
-              url:      '/c3po/samples/get?alg=' + alg + '&size=' + size,
+              url:      '/c3po/samples/get?alg=' + alg + '&size=' + size + '&props=' + options,
               timeout:  5000,
               success:  function (oData) {
                 showSamples(oData);  
@@ -118,5 +154,5 @@
       }; 
    });
    
-   </script> 
+   </script>
 }

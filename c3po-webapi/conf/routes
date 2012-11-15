@@ -30,7 +30,7 @@ GET     /c3po/objects/:id                      controllers.Elements.show(id: Str
 
 # Samples Page
 GET     /c3po/samples                          controllers.Samples.index()
-GET     /c3po/samples/get                      controllers.Samples.getSamples(alg: String, size: Int)
+GET     /c3po/samples/get                      controllers.Samples.getSamples(alg: String, size: Int, props: String ?= "")
 
 # Export Page
 GET     /c3po/export                           controllers.Export.index()
