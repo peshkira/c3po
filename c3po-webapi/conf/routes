@@ -11,8 +11,8 @@ GET     /c3po/collections                      controllers.Application.getCollec
 POST    /c3po/collections                      controllers.Application.setCollection(name: String)
 GET     /c3po/properties                       controllers.Application.getProperties()
 GET     /c3po/property                         controllers.Application.getProperty(name: String)
-POST    /c3po/settings                         controllers.Application.setSettings()
-GET     /c3po/settings                         controllers.Application.getSettings()
+POST    /c3po/settings                         controllers.Application.setSetting()
+GET     /c3po/settings                         controllers.Application.getSetting(key: String)
 
 # Filter
 GET     /c3po/filters                          controllers.FilterController.getAll()

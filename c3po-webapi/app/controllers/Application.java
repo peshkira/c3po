@@ -69,7 +69,7 @@ public class Application extends Controller {
     return ok("The collection was changed successfully\n");
   }
 
-  public static Result setSettings() {
+  public static Result setSetting() {
 
     DynamicForm form = form().bindFromRequest();
     String setting = form.get("setting");
@@ -80,8 +80,9 @@ public class Application extends Controller {
     return ok();
   }
 
-  public static Result getSettings() {
-    return TODO;
+  public static Result getSetting(String key) {
+    String value = session(key);
+    return ok(play.libs.Json.toJson(value));
   }
 
   public static Result getCollections() {
