@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.MetaDataGatherer;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.DigitalObjectStream;
 
 public class FileSystemGatherer implements MetaDataGatherer {
 
@@ -48,8 +48,8 @@ public class FileSystemGatherer implements MetaDataGatherer {
     return this.remaining;
   }
 
-  public List<InputStream> getNext(int nr) {
-    List<InputStream> next = new ArrayList<InputStream>();
+  public List<DigitalObjectStream> getNext(int nr) {
+    List<DigitalObjectStream> next = new ArrayList<DigitalObjectStream>();
 
     if (nr <= 0) {
       return next;
@@ -59,7 +59,11 @@ public class FileSystemGatherer implements MetaDataGatherer {
       try {
         nr--;
         this.remaining--;
-        next.add(new FileInputStream(this.files.get(pointer++)));
+
+        String fileName = this.files.get(pointer++);
+        DigitalObjectStream dos = new DigitalObjectStream(fileName, new FileInputStream(fileName));
+        next.add(dos);
+
       } catch (FileNotFoundException e) {
         LOG.warn("File '{}' not found: {}", this.files.get(this.pointer), e.getMessage());
       }

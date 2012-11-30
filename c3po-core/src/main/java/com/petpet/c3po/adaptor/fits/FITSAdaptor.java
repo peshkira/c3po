@@ -1,7 +1,6 @@
 package com.petpet.c3po.adaptor.fits;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -15,6 +14,7 @@ import org.xml.sax.SAXException;
 
 import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.datamodel.DigitalObjectStream;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
 
@@ -22,7 +22,7 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   private static final Logger LOG = LoggerFactory.getLogger(FITSAdaptor.class);
 
-  private InputStream metadata;
+  private DigitalObjectStream metadata;
 
   private Digester digester;
 
@@ -157,7 +157,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       DigesterContext context = new DigesterContext(this.getController().getPersistence().getCache(),
           this.getPreProcessingRules());
       this.digester.push(context);
-      context = (DigesterContext) this.digester.parse(this.metadata);
+      context = (DigesterContext) this.digester.parse(this.metadata.getData());
       final Element element = this.postProcess(context);
 
       return element;
@@ -168,7 +168,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       LOG.error("An exception occurred while parsing {}: {}", this.metadata, e.getMessage());
     } finally {
       try {
-        this.metadata.close();
+        this.metadata.getData().close();
       } catch (IOException ioe) {
         LOG.error("An exception occurred while closing {}: {}", this.metadata, ioe.getMessage());
       }
@@ -201,7 +201,7 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   @Override
   public void run() {
-    InputStream next = this.getController().getNext();
+    DigitalObjectStream next = this.getController().getNext();
 
     while (next != null) {
       try {
@@ -213,13 +213,13 @@ public class FITSAdaptor extends AbstractAdaptor {
           this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
 
         } else {
-          LOG.warn("No element could be extracted for file {}", metadata);
+          LOG.warn("No element could be extracted for file {}", metadata.getFileName());
           // potentially move file to some place for further investigation.
         }
 
       } catch (Exception e) {
         // save thread from dying due to processing error...
-        LOG.warn("An exception occurred for file '{}': {}", metadata, e.getMessage());
+        LOG.warn("An exception occurred for file '{}': {}", metadata.getFileName(), e.getMessage());
         // e.printStackTrace();
       }
 

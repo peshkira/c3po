@@ -1,6 +1,5 @@
 package com.petpet.c3po.controller;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +18,7 @@ import com.petpet.c3po.adaptor.rules.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.ActionLog;
+import com.petpet.c3po.datamodel.DigitalObjectStream;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
 
@@ -98,9 +98,9 @@ public class Controller {
     return this.persistence;
   }
 
-  public synchronized InputStream getNext() {
-    List<InputStream> next = this.gatherer.getNext(1);
-    InputStream result = null;
+  public synchronized DigitalObjectStream getNext() {
+    List<DigitalObjectStream> next = this.gatherer.getNext(1);
+    DigitalObjectStream result = null;
 
     if (!next.isEmpty()) {
       result = next.get(0);
