@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
 import play.Logger;
 import play.data.DynamicForm;
@@ -12,11 +15,13 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.export;
 
+import com.mongodb.BasicDBObject;
 import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.ActionLog;
 import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.ActionLogHelper;
@@ -126,7 +131,7 @@ public class Export extends Controller {
 
     File file = new File(path);
 
-    if (!file.exists() || isCollectionUpdated(filter.getCollection())) {
+    if (!file.exists() || isCollectionUpdated(filter.getCollection()) || isNewFilter(file, filter)) {
       Logger.debug("File does not exist. Generating profile for filter " + filter.getDocument());
       Configurator configurator = Configurator.getDefaultConfigurator();
       PersistenceLayer p = configurator.getPersistence();
@@ -159,6 +164,36 @@ public class Export extends Controller {
     }
 
     return isUpdated;
+  }
+
+  private static boolean isNewFilter(File file, Filter filter) {
+    long profileFiltersCount = -1;
+    long profileObjectsCount = -1;
+    
+    boolean isNew = true;
+    try {
+      final SAXReader reader = new SAXReader();
+      Document doc = reader.read(file);
+      Element partition = doc.getRootElement().element("partition");
+      profileFiltersCount = partition.element("filter").element("parameters").elements().size();
+      profileObjectsCount = Long.parseLong(partition.attributeValue("count"));
+
+    } catch (final DocumentException e) {
+      //do nothing...
+      //just regenerate the profile...
+    }
+
+    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+    long filtersCount = persistence.count(Constants.TBL_FILTERS,
+        new BasicDBObject("descriminator", filter.getDescriminator()));
+    long filterObjectsCount = persistence.count(Constants.TBL_ELEMENTS, Application.getFilterQuery(filter));
+
+    if (filtersCount == profileFiltersCount && profileObjectsCount == filterObjectsCount) {
+      isNew = false;
+    }
+    
+    return isNew; 
+
   }
 
 }
