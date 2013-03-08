@@ -102,9 +102,14 @@
       <version>0.2.0</version>
     </dependency>
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-archiver</artifactId>
       <version>2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>izpack</groupId>
+      <artifactId>standalone-compiler</artifactId>
+      <version>4.1.0</version>
       <type>jar</type>
     </dependency>
   </dependencies>

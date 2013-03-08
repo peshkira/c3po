@@ -31,7 +31,7 @@ public class SizeRepresentativeGeneratorTest {
   
   @Test
   public void shouldTestGeneration() throws Exception {
-    Configurator.getDefaultConfigurator().configure();
+    
     SizeRepresentativeGenerator gen = new SizeRepresentativeGenerator();
     Filter filter  = new Filter("test", null, null);
     gen.setFilter(filter);

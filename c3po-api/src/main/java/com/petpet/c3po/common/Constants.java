@@ -63,7 +63,7 @@ public final class Constants {
   public static final String CNF_COLLECTION_LOCATION = "c3po.collection.location";
 
   /**
-   * Experimental property allowing to infer the date of the objects, if their
+   * Experimental property allowing to infer the date of tshe objects, if their
    * file names have a specific format.
    */
   public static final String CNF_INFER_DATE = "adaptor.inference.date";
@@ -77,6 +77,11 @@ public final class Constants {
    * A configuartion for recursive processing.
    */
   public static final String CNF_RECURSIVE = "c3po.recursive";
+  
+  /**
+   * A configuration for processing with extraction.
+   */
+  public static final String CNF_EXTRACT = "c3po.extract";
 
   /**
    * The thread count configuration during meta data harvesting.

@@ -133,7 +133,25 @@ public final class DataHelper {
 
     return new ActionLog(c, a, d);
   }
+  public static List<String> getFilteredElements(Filter filter)
+  {
+    final List<String> result = new ArrayList<String>();
+    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
+    final BasicDBObject query = DataHelper.getFilterQuery(filter);
+    LOG.debug("Query: " + query.toString());
+    long count = pl.count(Constants.TBL_ELEMENTS, query);
+    if (count > 0)
+    {
+      DBCursor cursor = pl.find(Constants.TBL_ELEMENTS, query);
+      while (cursor.hasNext()) {
+        result.add(DataHelper.parseElement(cursor.next(), pl).getUid());
+      }
+    }
+    return result;
+  
+  }
 
+          
   public static BasicDBObject getFilterQuery(Filter filter) {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());

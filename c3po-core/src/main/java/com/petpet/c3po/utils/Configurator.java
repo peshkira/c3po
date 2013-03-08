@@ -20,27 +20,22 @@ import com.petpet.c3po.dao.DefaultPersistenceLayer;
  * 
  */
 public final class Configurator {
-
   /**
    * Default logger.
    */
   private static final Logger LOG = LoggerFactory.getLogger(Configurator.class);
-
   /**
    * The user specified configuration file path. Can be found in ~/.c3poconfig
    */
   public static final String USER_PROPERTIES = System.getProperty("user.home") + File.separator + ".c3poconfig";
-
   /**
    * The Default persistence layer implementation.
    */
   private DefaultPersistenceLayer persistence;
-
   /**
    * A properties object holding the loaded configuration of the application.
    */
   private Properties config;
-
   /**
    * Obtains the singleton instance of this class.
    * 
@@ -49,14 +44,12 @@ public final class Configurator {
   public static Configurator getDefaultConfigurator() {
     return ConfiguratorHolder.UNIQUE_INSTANCE;
   }
-
   /**
    * Hidden default constructor.
    */
   private Configurator() {
 
   }
-
   // TODO change docs when everything is implemented.
   /**
    * Configures the application in the following order: <br>
@@ -72,7 +65,6 @@ public final class Configurator {
     this.loadKnownProperties();
     this.initializeHelpers();
   }
-
   /**
    * Loads the default configuration file and then looks in the users home for a
    * specific configuration. All properties defined there will overwrite the
@@ -88,7 +80,7 @@ public final class Configurator {
       LOG.error("Default config file not found! {}", e.getMessage());
     }
 
-    LOG.info("Lookig for user defined config file: {}", USER_PROPERTIES);
+    LOG.info("Looking for user defined config file: {}", USER_PROPERTIES);
 
     final File f = new File(USER_PROPERTIES);
 
@@ -118,11 +110,9 @@ public final class Configurator {
     }
 
   }
-
   public PersistenceLayer getPersistence() {
     return this.persistence;
   }
-
   /**
    * Gets a String representation for the property key or an empty string if no
    * property was found.
@@ -134,7 +124,6 @@ public final class Configurator {
   public String getStringProperty(final String key) {
     return this.config.getProperty(key, "");
   }
-
   /**
    * Returns an integer value for the specified property key or -1.
    * 
@@ -145,7 +134,6 @@ public final class Configurator {
   public int getIntProperty(final String key) {
     return Integer.parseInt(this.config.getProperty(key, "-1"));
   }
-
   /**
    * Returns a boolean value for the specified property key or false if none was
    * found.
@@ -157,7 +145,6 @@ public final class Configurator {
   public boolean getBooleanProperty(final String key) {
     return Boolean.valueOf(this.config.getProperty(key, "false"));
   }
-
   /**
    * Initializes an empty cache and the default persistence layer.
    */
@@ -170,7 +157,6 @@ public final class Configurator {
     this.persistence.setCache(c);
     this.persistence.connect(this.config);
   }
-
   /**
    * Initializes some helper objects.
    */
@@ -181,7 +167,6 @@ public final class Configurator {
     DataHelper.init();
     // initialize any other helpers...
   }
-
   private void loadKnownProperties() {
     // TODO
     // load known properties file
@@ -192,7 +177,6 @@ public final class Configurator {
     // lastChanged
 
   }
-
   /**
    * Static instance holder.
    * 

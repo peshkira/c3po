@@ -22,7 +22,10 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
   private PersistenceLayer pl;
 
   public SizeRepresentativeGenerator() {
-    this.pl = Configurator.getDefaultConfigurator().getPersistence();
+    Configurator  configurator = Configurator.getDefaultConfigurator();
+    configurator.configure();
+    
+    pl = configurator.getPersistence();
   }
 
   @Override

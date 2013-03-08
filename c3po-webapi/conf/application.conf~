@@ -62,5 +62,3 @@ smtp.ssl=no
 feedback.mail.to="petrov@ifs.tuwien.ac.at"
 feedback.mail.subject="[C3PO] Feedback"
 
-
-application.context=/c3po/
