@@ -92,9 +92,9 @@ public class FileSystemGatherer implements MetaDataGatherer {
       return;
     }
 
-    final XMLFileFilter filter = new XMLFileFilter(recursive);
+//    final XMLFileFilter filter = new XMLFileFilter(recursive);
 
-    this.count = this.traverseFiles(dir, filter);
+    this.count = this.traverseFiles(dir, null);
     this.remaining = this.count;
 
   }
@@ -127,7 +127,7 @@ public class FileSystemGatherer implements MetaDataGatherer {
     public boolean accept(File pathname) {
       boolean accept = false;
 
-      if ((pathname.isDirectory() && this.recursive) || pathname.getName().endsWith(".xml"))
+      if ((pathname.isDirectory() && this.recursive))
         accept = true;
 
       return accept;
