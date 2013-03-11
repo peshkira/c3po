@@ -32,13 +32,14 @@ public class TIKAAdaptor extends AbstractAdaptor {
     DigitalObjectStream object = this.getController().getNext();
 
     while (object != null) {
+      LOG.debug("Parsing file: {}", object.getFileName());
       try {
         Map<String, String> metadata = TIKAResultParser.KeyValueMap(object.getData());
         Element element = this.createElement(metadata);
         
         if (element != null) {
           this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
-          LOG.info("Storing file");
+          LOG.debug("Storing element: {}", element.getUid());
         } else {
           LOG.error("Could not parse element from {}", object.getFileName());
         }
@@ -64,6 +65,7 @@ public class TIKAAdaptor extends AbstractAdaptor {
     
     for (String key : metadata.keySet()) {
       String value = metadata.get(key);
+      key = key.replace('.', '_');
       Property prop = cache.getProperty(TIKAHelper.getPropertyKeyByTikaName(key));
       MetadataRecord record = new MetadataRecord(prop, value);
       record.setSources(Arrays.asList("Tika"));

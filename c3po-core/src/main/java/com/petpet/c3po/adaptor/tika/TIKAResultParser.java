@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * A TIKA Result parser.
+ * A TIKA Result parser. Thanks to Per for his contribution
  * 
  * @author Per Møldrup-Dalum
  * 
@@ -41,18 +41,16 @@ public class TIKAResultParser {
     while (line != null) {
       // Regex to scan for 1 or more whitespace characters
       String[] tokens = line.split("\\s+");
-      if (tokens.length < 2) {
-        // ignore key without any values
-        continue;
-      }
+      if (tokens.length >= 2) {
+        // remove ':' from head if it is the last character
+        String head = tokens[0];
+        if (head.length() > 0 && head.charAt(head.length() - 1) == ':') {
+          head = head.substring(0, head.length() - 1);
+        }
 
-      // remove ':' from head if it is the last character
-      String head = tokens[0];
-      if (head.length() > 0 && head.charAt(head.length() - 1) == ':') {
-        head = head.substring(0, head.length() - 1);
+        map.put(head, join(tail(tokens), " "));
       }
-
-      map.put(head, join(tail(tokens), " "));
+      
       line = bufferedReader.readLine();
     }
 
