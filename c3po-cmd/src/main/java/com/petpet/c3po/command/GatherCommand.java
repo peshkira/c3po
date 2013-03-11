@@ -11,6 +11,7 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
 public class GatherCommand implements Command {
 
@@ -38,12 +39,17 @@ public class GatherCommand implements Command {
     final Map<String, Object> conf = new HashMap<String, Object>();
     conf.put(Constants.CNF_COLLECTION_NAME, getCollectionName());
     conf.put(Constants.CNF_COLLECTION_LOCATION, this.getMetaDataPath());
+    conf.put(Constants.CNF_INPUT_TYPE, this.getAdaptorType());
     conf.put(Constants.CNF_RECURSIVE, this.isRecursive());
     conf.put(Constants.CNF_THREAD_COUNT, configurator.getIntProperty(Constants.CNF_THREAD_COUNT));
     conf.put(Constants.CNF_INFER_DATE, configurator.getBooleanProperty(Constants.CNF_INFER_DATE));
 
     final Controller ctrl = new Controller(this.pLayer);
-    ctrl.collect(conf);
+    try {
+      ctrl.collect(conf);
+    } catch (C3POConfigurationException e) {
+       LOG.error(e.getMessage());
+    }
 
     this.pLayer.close();
     long end = System.currentTimeMillis();
@@ -79,6 +85,17 @@ public class GatherCommand implements Command {
 
     LOG.warn("No collection identifier found, using DefaultCollection");
     return "DefaultCollection";
+  }
+  
+  private String getAdaptorType() {
+    for (Option o : this.options) {
+      if (o.getArgName().equals(CommandConstants.GATHER_INPUT_TYPE_ARGUMENT)) {
+        return o.getValue();
+      }
+    }
+    
+    LOG.warn("No input type found");
+    return null;
   }
 
   // private DigitalCollection getCollection(final String name) {

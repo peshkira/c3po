@@ -53,6 +53,10 @@ public class C3PO {
 
     final Option includeelements = new Option("ie", CommandConstants.PROFILE_INCLUDE_ELEMENT_IDENTIFIERS, false,
         CommandConstants.PROFILE_INCLUDE_ELEMENTS_DESCRIPTION);
+    
+    final Option inputtype = OptionBuilder.hasArgs(1).withArgName(CommandConstants.GATHER_INPUT_TYPE_ARGUMENT)
+        .withDescription(CommandConstants.GATHER_INPUT_TYPE_DESCRIPTION).isRequired(true)
+        .withLongOpt(CommandConstants.GATHER_INPUT_TYPE_OPTION).create("i");
 
     final Option help = new Option("h", CommandConstants.HELP_OPTION, false, CommandConstants.HELP_DESCRIPTION);
 
@@ -74,12 +78,17 @@ public class C3PO {
     final OptionGroup exclusive3 = new OptionGroup();
     exclusive3.addOption(recursive);
     exclusive3.addOption(includeelements);
+    
+    final OptionGroup exclusive4 = new OptionGroup();
+    exclusive4.setRequired(false);
+    exclusive4.addOption(inputtype);
 
     final Options options = new Options();
     options.addOptionGroup(exclusive);
     options.addOptionGroup(exclusive2);
     options.addOptionGroup(exclusive3);
-
+    options.addOptionGroup(exclusive4);
+    
     return options;
   }
 
@@ -94,7 +103,7 @@ public class C3PO {
         new HelpCommand(o).execute();
 
       } else if (line.hasOption(CommandConstants.VERSION_OPTION)) {
-        
+
         new VersionCommand().execute();
 
       } else if (line.hasOption(CommandConstants.GATHER_OPTION)) {
@@ -102,21 +111,21 @@ public class C3PO {
         final GatherCommand cmd = new GatherCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
-        
+
       } else if (line.hasOption(CommandConstants.PROFILE_OPTION)) {
 
         final ProfileCommand cmd = new ProfileCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
-        
+
       } else if (line.hasOption(CommandConstants.ANONYMIZE_OPTION)) {
 
         final AnonymizeCommand cmd = new AnonymizeCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
-        
+
       } else if (line.hasOption(CommandConstants.EXPORT_OPTION)) {
-        
+
         final CSVExportCommand cmd = new CSVExportCommand(line.getOptions());
         cmd.execute();
         LOG.info("Execution time: {}ms", cmd.getTime());
