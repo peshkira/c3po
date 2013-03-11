@@ -49,11 +49,24 @@ public class TIKAResultParser {
         }
 
         map.put(head, join(tail(tokens), " "));
+        
+        if (head.equals("Content-Type")) {
+          processtMimetype(map, join(tail(tokens), " "));
+        }
+        
       }
       
       line = bufferedReader.readLine();
     }
 
     return map;
+  }
+
+  private static void processtMimetype(Map<String, String> map, String value) {
+    String[] split = value.split("; ");
+    if (split.length > 1) {
+      map.put("Content-Type", split[0]);
+      map.put("charset", split[1].substring(8)); //8 because of 'charset='
+    }
   }
 }
