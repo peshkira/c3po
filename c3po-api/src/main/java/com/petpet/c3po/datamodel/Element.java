@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -118,11 +119,34 @@ public class Element {
   public String getId() {
     return id;
   }
-  
+
   public void setId(String id) {
     this.id = id;
   }
-  
+
+  /**
+   * Removes all records for the given property id and returs a 
+   * list of all removed metadata records.
+   * 
+   * @param property
+   *          the id of the property
+   * @return returns the records of the element matching this property that were deleted.
+   */
+  public List<MetadataRecord> removeMetadata(String property) {
+    List<MetadataRecord> result = new ArrayList<MetadataRecord>();
+    
+    Iterator<MetadataRecord> iterator = this.metadata.iterator();
+    while(iterator.hasNext()) {
+      MetadataRecord next = iterator.next();
+      if (next.getProperty().getId().equals(property)) {
+        result.add(next);
+        iterator.remove();
+      }
+    }
+    
+    return result;
+  }
+
   /**
    * Tries to parse a creation date out of the name of the current element. Some
    * sources include a timestamp in the name. The usage of this method can be

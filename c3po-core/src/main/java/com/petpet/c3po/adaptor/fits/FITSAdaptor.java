@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.petpet.c3po.adaptor.AbstractAdaptor;
+import com.petpet.c3po.adaptor.rules.PostProcessingRule;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.DigitalObjectStream;
 import com.petpet.c3po.datamodel.Element;
@@ -178,7 +179,7 @@ public class FITSAdaptor extends AbstractAdaptor {
   }
 
   private Element postProcess(DigesterContext context) {
-    final Element element = context.getElement();
+    Element element = context.getElement();
     final List<MetadataRecord> values = context.getValues();
 
     if (element != null) {
@@ -195,6 +196,11 @@ public class FITSAdaptor extends AbstractAdaptor {
       }
 
     }
+    
+    List<PostProcessingRule> postProcessingRules = this.getPostProcessingRules();
+    for (PostProcessingRule rule : postProcessingRules) {
+      element = rule.process(element);
+    }
 
     return element;
   }
@@ -208,8 +214,8 @@ public class FITSAdaptor extends AbstractAdaptor {
         this.metadata = next;
 
         final Element element = this.getElement();
-
         if (element != null) {
+          
           this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
 
         } else {
@@ -220,7 +226,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       } catch (Exception e) {
         // save thread from dying due to processing error...
         LOG.warn("An exception occurred for file '{}': {}", metadata.getFileName(), e.getMessage());
-        // e.printStackTrace();
+        //e.printStackTrace();
       }
 
       next = this.getController().getNext();
