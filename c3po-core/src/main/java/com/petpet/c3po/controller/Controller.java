@@ -1,17 +1,5 @@
 package com.petpet.c3po.controller;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
@@ -21,6 +9,19 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.ActionLog;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 //TODO generalize the gatherer with the interface.
 public class Controller {
@@ -30,22 +31,70 @@ public class Controller {
   private ExecutorService pool;
   private FileSystemGatherer gatherer;
   private int counter = 0;
-
+  private long TotalSize=0;
   public Controller(PersistenceLayer pLayer) {
     this.persistence = pLayer;
   }
+  
+private void processArchivesBin( Map<String, Object> config, File[] archiveFiles, int startPosition, int endPosition)
+{
+    String path = (String) config.get(Constants.CNF_COLLECTION_LOCATION);
+    File tmpDir = gatherer.createDirectory(archiveFiles[startPosition].getParent()+"/tmp");
+    for (int j=startPosition; j < endPosition; j++)
+    {
+        gatherer.Extract(archiveFiles[j], tmpDir.getPath());
+    }
+    config.put(Constants.CNF_COLLECTION_LOCATION, tmpDir.getPath());
+    {
+        gatherer = new FileSystemGatherer(config);
+        int threads = (Integer) config.get(Constants.CNF_THREAD_COUNT);
+        Map<String, Object> adaptorcnf = this.getAdaptorConfig(config);
+        String tmpSizeinGB = new DecimalFormat("#####.#####").format(gatherer.getSize()/1024.0/1024.0/1024.0); 
+        TotalSize +=gatherer.getSize();
+        LOGGER.info("{} files of size "+ tmpSizeinGB +" GB to be processed for collection {}", gatherer.getCount(), config.get(Constants.CNF_COLLECTION_NAME));
+        this.startJobs(threads, adaptorcnf);
+    }
+    gatherer.deleteDirectory(tmpDir.getPath());
+    config.put(Constants.CNF_COLLECTION_LOCATION, path);
+     
+
+}
 
   public void collect(Map<String, Object> config) {
-    this.gatherer = new FileSystemGatherer(config);
+    boolean isToExtract = (Boolean) config.get(Constants.CNF_EXTRACT);
+      
+    if (!isToExtract) {
+        this.gatherer = new FileSystemGatherer(config);
 
-    int threads = (Integer) config.get(Constants.CNF_THREAD_COUNT);
-    Map<String, Object> adaptorcnf = this.getAdaptorConfig(config);
+        int threads = (Integer) config.get(Constants.CNF_THREAD_COUNT);
+        Map<String, Object> adaptorcnf = this.getAdaptorConfig(config);
 
-    LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(),
-        config.get(Constants.CNF_COLLECTION_NAME));
-
-    this.startJobs(threads, adaptorcnf);
-
+        LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(),
+            config.get(Constants.CNF_COLLECTION_NAME));
+     //IMPLEMENT HERE PARTIAL PROCESSING OF ZIP-FILES
+        this.startJobs(threads, adaptorcnf);
+    } else {
+        gatherer = new FileSystemGatherer(isToExtract);
+        String path = (String) config.get(Constants.CNF_COLLECTION_LOCATION);
+        File dir = new File(path);
+        
+        File[] ArchiveFiles=gatherer.GetListOfFiles(dir, gatherer.archivefilter);
+        int archivesPerBin=50;
+        LOGGER.info("{} archives to be processed", ArchiveFiles.length);
+        try{
+            int startPosition=0;
+            int endPosition=0;
+            
+            while (endPosition <= ArchiveFiles.length && startPosition<=endPosition) {                
+               endPosition= (startPosition+archivesPerBin)<ArchiveFiles.length?(startPosition+archivesPerBin):ArchiveFiles.length;
+               processArchivesBin(config, ArchiveFiles, startPosition, endPosition);
+               startPosition += archivesPerBin;
+               
+            }
+            String tmpSizeinGB = new DecimalFormat("###########.#####").format(TotalSize/1024.0/1024.0/1024.0); 
+            LOGGER.info("TOTAL: {} files of size "+ tmpSizeinGB +" GB processed for collection {}", counter, config.get(Constants.CNF_COLLECTION_NAME));
+        } catch (Exception ignored){ }
+    }
   }
 
   private Map<String, Object> getAdaptorConfig(Map<String, Object> config) {
@@ -110,6 +159,7 @@ public class Controller {
 
     if (counter % 1000 == 0) {
       LOGGER.info("Finished processing {} files", counter);
+      
     }
 
     return result;

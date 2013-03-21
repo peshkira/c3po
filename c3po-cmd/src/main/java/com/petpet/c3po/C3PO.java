@@ -50,6 +50,9 @@ public class C3PO {
 
     final Option recursive = new Option("r", CommandConstants.RECURSIVE_OPTION, false,
         CommandConstants.RECURSIVE_DESCRIPTION);
+    
+    final Option extract = new Option("x", CommandConstants.EXTRACT_OPTION, false,
+        CommandConstants.EXTRACT_DESCRIPTION);
 
     final Option includeelements = new Option("ie", CommandConstants.PROFILE_INCLUDE_ELEMENT_IDENTIFIERS, false,
         CommandConstants.PROFILE_INCLUDE_ELEMENTS_DESCRIPTION);
@@ -73,13 +76,18 @@ public class C3PO {
     
     final OptionGroup exclusive3 = new OptionGroup();
     exclusive3.addOption(recursive);
+        
     exclusive3.addOption(includeelements);
+    
+    final OptionGroup exclusive4 = new OptionGroup();
+    exclusive4.addOption(extract);
+        
 
     final Options options = new Options();
     options.addOptionGroup(exclusive);
     options.addOptionGroup(exclusive2);
     options.addOptionGroup(exclusive3);
-
+    options.addOptionGroup(exclusive4); 
     return options;
   }
 

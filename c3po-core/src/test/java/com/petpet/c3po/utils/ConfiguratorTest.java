@@ -12,7 +12,8 @@ import com.petpet.c3po.common.Constants;
 public class ConfiguratorTest {
   
   private TestConfigGenerator helper;
-
+ private Configurator configurator;
+ private PersistenceLayer persistence;
   @Before
   public void setup() {
     this.helper = new TestConfigGenerator();
@@ -26,15 +27,13 @@ public class ConfiguratorTest {
 
   @Test
   public void shouldLoadDefaultConfiguration() throws Exception {
-    final Configurator configurator = Configurator.getDefaultConfigurator();
+    configurator = Configurator.getDefaultConfigurator();
     configurator.configure();
     
-    final PersistenceLayer persistence = configurator.getPersistence();
+    persistence = configurator.getPersistence();
     Assert.assertTrue(persistence.isConnected());
     Assert.assertEquals(persistence.getDB().getName(), "c3po");
-    
     Assert.assertEquals(8, configurator.getIntProperty(Constants.CNF_THREAD_COUNT));
-    
   }
   
   @Test
@@ -45,15 +44,14 @@ public class ConfiguratorTest {
     
     this.helper.copyTestConfigFile();
     // then test
-    final Configurator configurator = Configurator.getDefaultConfigurator();
+    configurator = Configurator.getDefaultConfigurator();
     configurator.configure();
     
-    final PersistenceLayer persistence = configurator.getPersistence();
+    persistence = configurator.getPersistence();
     Assert.assertTrue(persistence.isConnected());
     Assert.assertEquals(persistence.getDB().getName(), "test");
     
     Assert.assertEquals(42, configurator.getIntProperty(Constants.CNF_THREAD_COUNT));
-    
     // then delete userconfig file
     // then restore the old user config file
     // see tearDown() method

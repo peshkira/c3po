@@ -10,6 +10,7 @@ public final class CommandConstants {
   public static final String EXPORT_OPTION = "export";
   public static final String COLLECTION_OPTION = "collection";
   public static final String RECURSIVE_OPTION = "recursive";
+  public static final String EXTRACT_OPTION = "extract";
   public static final String ANONYMIZE_OPTION = "anonymize";
   public static final String HELP_OPTION = "help";
   public static final String VERSION_OPTION = "version";
@@ -25,6 +26,7 @@ public final class CommandConstants {
   public static final String EXPORT_DESCRIPTION = "The file path where the file will be writtent to";
   public static final String COLLECTION_DESCRIPTION = "The collection identifier, e.g 'My Pictures'";
   public static final String RECURSIVE_DESCRIPTION = "Does the parsing operation recursively. To be used in combination with -g.";
+  public static final String EXTRACT_DESCRIPTION = "Extracts an archive before analysing it's content.";
   public static final String HELP_DESCRIPTION = "Prints this message";
   public static final String ANONYMIZE_DESCRIPTION = "Anonymizes the database by removing the filename and filepath of each element in the collection";
   public static final String VERSION_DESCRIPTION = "Prints out version information";

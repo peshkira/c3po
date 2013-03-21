@@ -39,6 +39,7 @@ public class GatherCommand implements Command {
     conf.put(Constants.CNF_COLLECTION_NAME, getCollectionName());
     conf.put(Constants.CNF_COLLECTION_LOCATION, this.getMetaDataPath());
     conf.put(Constants.CNF_RECURSIVE, this.isRecursive());
+    conf.put(Constants.CNF_EXTRACT, this.isToExtract());
     conf.put(Constants.CNF_THREAD_COUNT, configurator.getIntProperty(Constants.CNF_THREAD_COUNT));
     conf.put(Constants.CNF_INFER_DATE, configurator.getBooleanProperty(Constants.CNF_INFER_DATE));
 
@@ -66,7 +67,15 @@ public class GatherCommand implements Command {
         return true;
       }
     }
-
+    return false;
+  }
+  
+  private Boolean isToExtract() {
+    for (Option o : this.options) {
+      if (o.getLongOpt().equals(CommandConstants.EXTRACT_OPTION)) {
+        return true;
+      }
+    }
     return false;
   }
 

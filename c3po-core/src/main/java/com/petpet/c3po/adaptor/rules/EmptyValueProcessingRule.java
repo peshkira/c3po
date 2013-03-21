@@ -4,10 +4,7 @@ public class EmptyValueProcessingRule implements PreProcessingRule {
 
   @Override
   public boolean shouldSkip(String property, String value, String status, String tool, String version) {
-    if (value.equals("")) {
-      return true;
-    }
-    return false;
+      return value.equals("");
   }
 
   @Override

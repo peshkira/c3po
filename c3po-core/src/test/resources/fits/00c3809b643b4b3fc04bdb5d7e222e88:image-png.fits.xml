@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.0" timestamp="9/6/12 11:40 AM">
+  <identification>
+    <identity format="Portable Network Graphics" mimetype="image/png" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Exiftool" toolversion="7.74" />
+      <tool toolname="Droid" toolversion="3.0" />
+      <tool toolname="ffident" toolversion="0.2" />
+      <version toolname="Droid" toolversion="3.0">1.0</version>
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">fmt/11</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">1970:01:16 12:17:38+01:00</lastmodified>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/0/wael/number10.gov.uk/052012/unpacker/20120510160013-00003/00c3809b643b4b3fc04bdb5d7e222e88:image-png</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">unpacker/20120510160013-00003/00c3809b643b4b3fc04bdb5d7e222e88:image-png</filename>
+    <size toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">467</size>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">725e3fa23bbe9d10b461e89cae2f86ab</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1336658000</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata>
+    <image>
+      <compressionScheme toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">Deflate/Inflate</compressionScheme>
+      <imageWidth toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">16</imageWidth>
+      <imageHeight toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">16</imageHeight>
+      <scanningSoftwareName toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">Adobe Fireworks CS4</scanningSoftwareName>
+    </image>
+  </metadata>
+</fits>
+
