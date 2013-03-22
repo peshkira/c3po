@@ -5,6 +5,7 @@ public final class CommandConstants {
   public static final String C3PO_CMD_VERSION = "0.2";
 
   public static final String GATHER_OPTION = "gather";
+  public static final String GATHER_INPUT_TYPE_OPTION = "inputtype";
   public static final String PROFILE_OPTION = "profile";
   public static final String PROFILE_INCLUDE_ELEMENT_IDENTIFIERS = "includeelements";
   public static final String EXPORT_OPTION = "export";
@@ -15,6 +16,7 @@ public final class CommandConstants {
   public static final String VERSION_OPTION = "version";
 
   public static final String GATHER_DIR_ARGUMENT = "fits dir";
+  public static final String GATHER_INPUT_TYPE_ARGUMENT = "input type";
   public static final String PROFILE_FILEPATH_ARGUMENT = "output file directory";
   public static final String EXPORT_OUTPUT_PATH = "output file";
   public static final String COLLECTION_ID_ARGUMENT = "collection name";
@@ -33,7 +35,10 @@ public final class CommandConstants {
 
   public static final String EXPORT_MIME_DESCRIPTION = "All elements in the matrix will have the corresponding mimetype";
 
+  public static final String GATHER_INPUT_TYPE_DESCRIPTION = "Use one of 'FITS' or 'TIKA', to select the type of the input files.";
 
+  
+  
   private CommandConstants() {
   }
 }

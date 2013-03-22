@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSHelper;
+import com.petpet.c3po.adaptor.tika.TIKAHelper;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.dao.DefaultPersistenceLayer;
@@ -178,6 +179,7 @@ public final class Configurator {
     LOG.debug("Initializing helpers.");
     XMLUtils.init();
     FITSHelper.init();
+    TIKAHelper.init();
     DataHelper.init();
     // initialize any other helpers...
   }

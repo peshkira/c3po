@@ -61,6 +61,13 @@ public final class Constants {
    * A c3po configuration for the location where the metadata is.
    */
   public static final String CNF_COLLECTION_LOCATION = "c3po.collection.location";
+  
+  /**
+   * A c3po configuration for the type of the input files. 
+   * Currently only FITS and TIKA are supported. This config is
+   * required for the controller to operate.
+   */
+  public static final String CNF_INPUT_TYPE = "c3po.input.type";
 
   /**
    * Experimental property allowing to infer the date of the objects, if their

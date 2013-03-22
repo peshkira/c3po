@@ -11,17 +11,20 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
 import com.petpet.c3po.adaptor.rules.ProcessingRule;
+import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.datamodel.ActionLog;
 import com.petpet.c3po.datamodel.DigitalObjectStream;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
+import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
 //TODO generalize the gatherer with the interface.
 public class Controller {
@@ -36,17 +39,43 @@ public class Controller {
     this.persistence = pLayer;
   }
 
-  public void collect(Map<String, Object> config) {
+  public void collect(Map<String, Object> config) throws C3POConfigurationException {
+    
+    this.checkConfiguration(config);
+    
     this.gatherer = new FileSystemGatherer(config);
 
     int threads = (Integer) config.get(Constants.CNF_THREAD_COUNT);
+    String type = (String) config.get(Constants.CNF_INPUT_TYPE);
     Map<String, Object> adaptorcnf = this.getAdaptorConfig(config);
 
     LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(),
         config.get(Constants.CNF_COLLECTION_NAME));
 
-    this.startJobs(threads, adaptorcnf);
+    this.startJobs(type, threads, adaptorcnf);
 
+  }
+
+  /**
+   * Checks the config passed to this controller for required values.
+   * @param config
+   * @throws C3POConfigurationException
+   */
+  private void checkConfiguration(final Map<String, Object> config) throws C3POConfigurationException {
+    String inputType = (String) config.get(Constants.CNF_INPUT_TYPE);
+    if (inputType == null || (!inputType.equals("TIKA") && !inputType.equals("FITS"))) {
+      throw new C3POConfigurationException("No input type specified. Please use one of FITS or TIKA.");
+    }
+    
+    String path = (String) config.get(Constants.CNF_COLLECTION_LOCATION);
+    if (path == null) {
+      throw new C3POConfigurationException("No input file path provided. Please provide a path to the input files.");
+    }
+    
+    String name = (String) config.get(Constants.CNF_COLLECTION_NAME);
+    if (name == null || name.equals("")) {
+      throw new C3POConfigurationException("The name of the collection is not set. Please set a name.");
+    }
   }
 
   private Map<String, Object> getAdaptorConfig(Map<String, Object> config) {
@@ -61,12 +90,12 @@ public class Controller {
     return adaptorcnf;
   }
 
-  private void startJobs(int threads, Map<String, Object> adaptorcnf) {
+  private void startJobs(String type, int threads, Map<String, Object> adaptorcnf) {
     this.pool = Executors.newFixedThreadPool(threads);
     List<ProcessingRule> rules = this.getRules();
 
     for (int i = 0; i < threads; i++) {
-      final FITSAdaptor f = new FITSAdaptor();
+      final AbstractAdaptor f = this.getAdaptor(type);
       f.setController(this);
       f.setRules(rules);
       f.configure(adaptorcnf);
@@ -123,6 +152,16 @@ public class Controller {
     rules.add(new EmptyValueProcessingRule());
     rules.add(new FormatVersionResolutionRule());
     return rules;
+  }
+  
+  private AbstractAdaptor getAdaptor(String type) {
+    if (type.equals("FITS")) {
+      return new FITSAdaptor();
+    } else if (type.equals("TIKA")) {
+      return new TIKAAdaptor();
+    }
+    
+    return null;
   }
 
 }
