@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/peshkira/c3po.png)](https://travis-ci.org/peshkira/c3po)
+
 C3PO
 ===================================================
 
@@ -11,27 +13,29 @@ within a content repository and a list of all objects that fall into the particu
 a specific format plays an important role for integration with a planning component, content repositories and monitoring systems and thus for the
 automation of the entire cycle of planning and operations.
 
-Representative Subsets
-------------------------
 In order to support the decision making c3po makes use of different algorithms that choose a small set of sample records (up to 100)
 based on the size of objects, the distribution of specific characteristics, or other common features.
 Currently there are three algorithms: one based on size statistics, one based on systematic sampling and one
 that searches for a subset with similar distribution of preselected properties.
+
+Releases
+------------------------
+Please refer to [this](https://github.com/peshkira/c3po/wiki/Downloads)
 
 Setup
 ------------------------
 Please refer to [this](https://github.com/peshkira/c3po/wiki/Setup-Guide) guide.
 
 Development
-----------------------
-Please refere to [this](https://github.com/peshkira/c3po/wiki/Development-Guide) guide.
+------------------------
+Please refer to [this](https://github.com/peshkira/c3po/wiki/Development-Guide) guide.
 
 Screenshot
 ------------------------
 ![Collection Overview](https://dl.dropbox.com/u/8290338/blog/c3po_overview.png "Collection Overview")
 
 More Information
------------------------
+------------------------
 You can find more information in the following links:
 - [Website](http://ifs.tuwien.ac.at/imp/c3po)
 - [Blog Post](http://www.openplanetsfoundation.org/blogs/2012-11-19-c3po-content-profiling-tool-preservation-analysis)

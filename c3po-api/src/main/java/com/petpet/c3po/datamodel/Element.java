@@ -369,6 +369,10 @@ public class Element {
         if (meta.containsField(r.getProperty().getId())) {
           conflicting = (BasicDBObject) meta.get(r.getProperty().getId());
           values = (List<Object>) conflicting.get("values");
+          if(values == null) {
+            values = new ArrayList<Object>();
+            values.add(conflicting.get("value"));
+          }
           sources = (List<Object>) conflicting.get("sources");
           values.add(this.getTypedValue(r.getProperty().getType(), r.getValue()));
           sources.add(r.getSources().get(0));

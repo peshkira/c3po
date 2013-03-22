@@ -226,7 +226,6 @@ public class FITSAdaptor extends AbstractAdaptor {
       } catch (Exception e) {
         // save thread from dying due to processing error...
         LOG.warn("An exception occurred for file '{}': {}", metadata.getFileName(), e.getMessage());
-        //e.printStackTrace();
       }
 
       next = this.getController().getNext();
