@@ -31,7 +31,16 @@ public class TIKAResultParser {
     return Arrays.copyOfRange(s, 1, s.length);
   }
 
-  public static Map<String, String> KeyValueMap(InputStream input) throws IOException {
+  /**
+   * Reads a file line by line and assumes it is a raw TIKA output.
+   * 
+   * @param input
+   *          the input stream to the file
+   * @return a {@link Map} with the properties as keys and the values as values
+   * @throws IOException
+   *           if an io problem occurs.
+   */
+  public static Map<String, String> getKeyValueMap(InputStream input) throws IOException {
     InputStreamReader streamReader = new InputStreamReader(input, "UTF-8");
     BufferedReader bufferedReader = new BufferedReader(streamReader);
 
@@ -39,34 +48,50 @@ public class TIKAResultParser {
 
     String line = bufferedReader.readLine();
     while (line != null) {
-      // Regex to scan for 1 or more whitespace characters
-      String[] tokens = line.split("\\s+");
+      // Regex to scan for 1 or more ": " colon- whitespace occurrences
+      String[] tokens = line.split(": ", -1);
       if (tokens.length >= 2) {
         // remove ':' from head if it is the last character
-        String head = tokens[0];
+        String head = "";
+        for (int i = 0; i < tokens.length - 1; i++) {
+          head += tokens[i];
+        }
+
         if (head.length() > 0 && head.charAt(head.length() - 1) == ':') {
           head = head.substring(0, head.length() - 1);
         }
 
         map.put(head, join(tail(tokens), " "));
-        
+
         if (head.equals("Content-Type")) {
           processtMimetype(map, join(tail(tokens), " "));
         }
-        
+
       }
-      
+
       line = bufferedReader.readLine();
     }
 
     return map;
   }
 
+  /**
+   * A simple helper method to process Apache Tikas extended Content-Type. It is
+   * in the form of e.g 'text/html; charset=utf-8'. The method will split it
+   * into two properties: Content-Type and charset and will store them in the
+   * map accordingly.
+   * 
+   * @param map
+   *          in which to store the new properties and their values.
+   * @param value
+   *          the the actual value of the original Content-Type as delivered by
+   *          Tika.
+   */
   private static void processtMimetype(Map<String, String> map, String value) {
     String[] split = value.split("; ");
     if (split.length > 1) {
       map.put("Content-Type", split[0]);
-      map.put("charset", split[1].substring(8)); //8 because of 'charset='
+      map.put("charset", split[1].substring(8)); // 8 because of 'charset='
     }
   }
 }

@@ -20,8 +20,17 @@ public class TIKAHelper {
     }
   }
 
-  public static String getPropertyKeyByTikaName(String fitsname) {
-    final String prop = (String) TIKA_PROPS.get(fitsname);
-    return (prop == null) ? fitsname : prop;
+  
+  /**
+   * For now we support only the specified properties within the file
+   * as the TIKA adaptor is still experimental
+   * @param name the name of the property
+   * @return the normalised property key corresponding to TIKAs property name
+   */
+  public static String getPropertyKeyByTikaName(String name) {
+    final String prop = (String) TIKA_PROPS.get(name);
+    return prop;
   }
+  
+ 
 }

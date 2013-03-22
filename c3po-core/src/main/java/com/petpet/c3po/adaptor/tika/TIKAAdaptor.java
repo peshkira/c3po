@@ -16,15 +16,16 @@ import com.petpet.c3po.datamodel.DigitalObjectStream;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.MetadataRecord;
 import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.datamodel.Source;
 
 public class TIKAAdaptor extends AbstractAdaptor {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(TIKAAdaptor.class);
-  
+
   private String collection;
-  
+
   public TIKAAdaptor() {
-    
+
   }
 
   @Override
@@ -34,50 +35,55 @@ public class TIKAAdaptor extends AbstractAdaptor {
     while (object != null) {
       LOG.debug("Parsing file: {}", object.getFileName());
       try {
-        Map<String, String> metadata = TIKAResultParser.KeyValueMap(object.getData());
+        Map<String, String> metadata = TIKAResultParser.getKeyValueMap(object.getData());
         Element element = this.createElement(metadata);
-        
+
         if (element != null) {
           this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
           LOG.debug("Storing element: {}", element.getUid());
         } else {
           LOG.error("Could not parse element from {}", object.getFileName());
         }
-        
+
       } catch (IOException e) {
         e.printStackTrace();
       }
-      
+
       object = this.getController().getNext();
     }
   }
 
   private Element createElement(Map<String, String> metadata) {
-    
+
     String name = metadata.remove("resourceName");
     if (name == null) {
       return null;
     }
-    
+
     Element element = new Element(name, name);
     Cache cache = this.getController().getPersistence().getCache();
     List<MetadataRecord> records = new ArrayList<MetadataRecord>();
-    
+
     for (String key : metadata.keySet()) {
       String value = metadata.get(key);
       key = key.replace('.', '_');
-      Property prop = cache.getProperty(TIKAHelper.getPropertyKeyByTikaName(key));
-      MetadataRecord record = new MetadataRecord(prop, value);
-      record.setSources(Arrays.asList("Tika"));
-      records.add(record);
+      key = TIKAHelper.getPropertyKeyByTikaName(key);
+      
+      if (key != null) {
+        Property prop = cache.getProperty(key);
+        MetadataRecord record = new MetadataRecord(prop, value);
+        Source source = cache.getSource("Tika", "");
+        record.setSources(Arrays.asList(source.getId()));
+        records.add(record);
+      }
     }
-    
+
     element.setMetadata(records);
     element.setCollection(this.collection);
     return element;
-    
+
   }
-  
+
   @Override
   public void configure(Map<String, Object> config) {
     this.setConfig(config);
