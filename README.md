@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/openplanets/c3po.png)](https://travis-ci.org/openplanets/c3po)
+
 C3PO
 ===================================================
 
