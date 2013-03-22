@@ -6,6 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.petpet.c3po.datamodel.Filter;
@@ -28,7 +29,8 @@ public class SizeRepresentativeGeneratorTest {
   public void tearDown() {
     this.helper.restoreUserConfigFile();
   }
-  
+
+  @Ignore
   @Test
   public void shouldTestGeneration() throws Exception {
     Configurator.getDefaultConfigurator().configure();

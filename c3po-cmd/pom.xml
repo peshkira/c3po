@@ -8,7 +8,7 @@
     <version>0.2.0</version>
   </parent>
   <artifactId>c3po-cmd</artifactId>
-  <version>0.2.0</version>
+  <version>0.2.1</version>
   <name>C3PO Command Line App</name>
   <url>http://maven.apache.org</url>
   <properties>
