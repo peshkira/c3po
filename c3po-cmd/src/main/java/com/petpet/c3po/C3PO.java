@@ -55,7 +55,7 @@ public class C3PO {
         CommandConstants.PROFILE_INCLUDE_ELEMENTS_DESCRIPTION);
     
     final Option inputtype = OptionBuilder.hasArgs(1).withArgName(CommandConstants.GATHER_INPUT_TYPE_ARGUMENT)
-        .withDescription(CommandConstants.GATHER_INPUT_TYPE_DESCRIPTION).isRequired(true)
+        .withDescription(CommandConstants.GATHER_INPUT_TYPE_DESCRIPTION).isRequired(false)
         .withLongOpt(CommandConstants.GATHER_INPUT_TYPE_OPTION).create("i");
 
     final Option help = new Option("h", CommandConstants.HELP_OPTION, false, CommandConstants.HELP_DESCRIPTION);

@@ -94,8 +94,8 @@ public class GatherCommand implements Command {
       }
     }
     
-    LOG.warn("No input type found");
-    return null;
+    LOG.warn("No meta data input type found. Using default 'FITS'");
+    return "FITS";
   }
 
   // private DigitalCollection getCollection(final String name) {
