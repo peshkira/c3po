@@ -69,12 +69,10 @@
           });
 
           $(sel).change(function() {
+        	  $(this).siblings().remove()
               var val = $(this).val();
-              if (val == "") {
+              if (val === "") {
                   $(this).effect("highlight", {color:'#FF1400'} , "slow");
-                  config.children('input').remove();
-                  config.children('a').remove();
-                   
               } else {
                 var text = $('<input type="text" placeholder="nr of samples" />').appendTo(config);
 
