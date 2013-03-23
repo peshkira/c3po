@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://ifs.tuwien.ac.at/dp/c3po"
+     targetNamespace="http://ifs.tuwien.ac.at/dp/c3po" elementFormDefault="qualified" version="1.0"
+     >
+<xs:element name="profile">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="partition"/>
+    </xs:sequence>
+    <xs:attribute name="collection" use="required" type="xs:string"/>
+    <xs:attribute name="count" use="required" type="xs:integer"/>
+    <xs:attribute name="date" use="required"/>
+  </xs:complexType>
+</xs:element>
+<xs:element name="partition">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="filter"/>
+      <xs:element ref="properties"/>
+      <xs:element ref="samples"/>
+      <xs:element ref="elements"/>
+    </xs:sequence>
+    <xs:attribute name="count" use="required" type="xs:integer"/>
+  </xs:complexType>
+</xs:element>
+<xs:element name="filter">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" />
+  </xs:complexType>
+</xs:element>
+<xs:element name="properties">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" ref="property"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+<xs:element name="property">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="item"/>
+    </xs:sequence>
+    <xs:attribute name="avg" type="xs:decimal"/>
+    <xs:attribute name="count" use="required" type="xs:integer"/>
+    <xs:attribute name="id" use="required" type="xs:string"/>
+    <xs:attribute name="max" type="xs:double"/>
+    <xs:attribute name="min" type="xs:double"/>
+    <xs:attribute name="sd" type="xs:double"/>
+    <xs:attribute name="sum" type="xs:double"/>
+    <xs:attribute name="type" use="required" type="xs:string"/>
+    <xs:attribute name="var" type="xs:double"/>
+  </xs:complexType>
+</xs:element>
+<xs:element name="item">
+  <xs:complexType>
+    <xs:attribute name="count" type="xs:integer"/>
+    <xs:attribute name="id"/>
+    <xs:attribute name="value" use="required" type="xs:string"/>
+  </xs:complexType>
+</xs:element>
+<xs:element name="samples">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" ref="sample" />
+    </xs:sequence>
+    <xs:attribute name="type" type="xs:string" />
+  </xs:complexType>
+</xs:element>
+<xs:element name="sample">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="unbounded" ref="record" />
+    </xs:sequence>
+    <xs:attribute name="uid" type="xs:string" />
+  </xs:complexType>
+</xs:element>
+<xs:element name="record">
+  <xs:complexType>
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="value" type="xs:string" />
+    <xs:attribute name="tool" type="xs:string" />
+  </xs:complexType>
+</xs:element>
+<xs:element name="elements">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" ref="element"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+<xs:element name="element">
+  <xs:complexType>
+    <xs:attribute name="uid" use="required"/>
+  </xs:complexType>
+</xs:element>
+</xs:schema>
