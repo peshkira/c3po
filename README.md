@@ -1,7 +1,6 @@
-[![Build Status](https://travis-ci.org/peshkira/c3po.png)](https://travis-ci.org/peshkira/c3po)
-
 C3PO
 ===================================================
+[![Build Status](https://travis-ci.org/peshkira/c3po.png?branch=master)](https://travis-ci.org/peshkira/c3po)
 
 Clever, Crafty, Content Profiling of Objects (c3po) is a software tool prototype, which uses FITS generated data of a digital collection as input
 and generates a profile of the content set in an automatic fashion. It is designed in a way so that different meta data formats originating from
