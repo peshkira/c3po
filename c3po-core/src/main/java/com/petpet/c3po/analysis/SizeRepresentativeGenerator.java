@@ -1,7 +1,10 @@
 package com.petpet.c3po.analysis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +36,7 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
   @Override
   public List<String> execute(int limit) {
     LOG.info("Applying {} algorithm for representatice selection", this.getType());
-    final List<String> result = new ArrayList<String>();
+    final Set<String> result = new HashSet<String>();
     final BasicDBObject query = DataHelper.getFilterQuery(this.getFilter());
     LOG.debug("Query: " + query.toString());
     long count = pl.count(Constants.TBL_ELEMENTS, query);
@@ -57,12 +60,12 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
       double low = Math.floor((avg - sd / 10));
       double high = Math.ceil((avg + sd / 10));
 
-      // System.out.println("min " + min);
-      // System.out.println("max " + max);
-      // System.out.println("avg " + avg);
-      // System.out.println("sd " + sd);
-      // System.out.println("low " + low);
-      // System.out.println("high " + high);
+//      System.out.println("min " + min);
+//      System.out.println("max " + max);
+//      System.out.println("avg " + avg);
+//      System.out.println("sd " + sd);
+//      System.out.println("low " + low);
+//      System.out.println("high " + high);
 
       final BasicDBObject minQuery = new BasicDBObject(query).append("metadata.size.value", min);
       final BasicDBObject maxQuery = new BasicDBObject(query).append("metadata.size.value", max);
@@ -70,21 +73,21 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
       and.add(new BasicDBObject("metadata.size.value", new BasicDBObject("$lte", high)));
       and.add(new BasicDBObject("metadata.size.value", new BasicDBObject("$gte", low)));
       final BasicDBObject avgQuery = new BasicDBObject(query).append("$and", and);
-
+      
       final DBCursor minCursor = this.pl.find(Constants.TBL_ELEMENTS, minQuery);
       final DBCursor maxCursor = this.pl.find(Constants.TBL_ELEMENTS, maxQuery);
       final DBCursor avgCursor = this.pl.find(Constants.TBL_ELEMENTS, avgQuery);
 
-      if (minCursor.count() > 0) {
+      if (minCursor.count() > 0 && result.size() < limit) {
         result.add(DataHelper.parseElement(minCursor.next(), this.pl).getUid());
       }
 
-      if (maxCursor.count() > 0) {
+      if (maxCursor.count() > 0 && result.size() < limit) {
         result.add(DataHelper.parseElement(maxCursor.next(), this.pl).getUid());
       }
 
       if (avgCursor.count() >= (limit - 2)) {
-        for (int i = 0; i < limit - 2; i++) {
+        while (avgCursor.hasNext() && result.size() < limit) {
           result.add(DataHelper.parseElement(avgCursor.next(), this.pl).getUid());
         }
       } else {
@@ -94,10 +97,9 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
       }
 
     }
-
-    return result;
+    return Arrays.asList(result.toArray(new String[0]));
   }
-  
+
   public String getType() {
     return "size'o'matic 3000";
   }
