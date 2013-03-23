@@ -24,7 +24,7 @@ public class C3PO {
 
   private static final Logger LOG = LoggerFactory.getLogger(C3PO.class);
 
-  public static final String VERSION = "0.2.0";
+  public static final String VERSION = "0.3.0";
 
   private Options getOptions() {
 

@@ -15,7 +15,7 @@ public final class CommandConstants {
   public static final String HELP_OPTION = "help";
   public static final String VERSION_OPTION = "version";
 
-  public static final String GATHER_DIR_ARGUMENT = "fits dir";
+  public static final String GATHER_DIR_ARGUMENT = "metadata directory";
   public static final String GATHER_INPUT_TYPE_ARGUMENT = "input type";
   public static final String PROFILE_FILEPATH_ARGUMENT = "output file directory";
   public static final String EXPORT_OUTPUT_PATH = "output file";
@@ -35,7 +35,7 @@ public final class CommandConstants {
 
   public static final String EXPORT_MIME_DESCRIPTION = "All elements in the matrix will have the corresponding mimetype";
 
-  public static final String GATHER_INPUT_TYPE_DESCRIPTION = "Use one of 'FITS' or 'TIKA', to select the type of the input files.";
+  public static final String GATHER_INPUT_TYPE_DESCRIPTION = "Optional parameter to define the meta data type. Use one of 'FITS' or 'TIKA', to select the type of the input files. Default is FITS";
 
   
   

@@ -23,9 +23,9 @@ public final class Constants {
   /**
    * The version of the core module.
    */
-  public static final String CORE_VERSION = "0.2.0";
+  public static final String CORE_VERSION = "0.3.0";
 
-  public static final String API_VERSION = "0.2.0";
+  public static final String API_VERSION = "0.3.0";
 
   /**
    * The elements collection in the document store.
