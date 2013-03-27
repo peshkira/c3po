@@ -15,14 +15,14 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.ActionLog;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.Property.PropertyType;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.ActionLog;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Property.PropertyType;
-import com.petpet.c3po.datamodel.Source;
 
 public final class DataHelper {
 

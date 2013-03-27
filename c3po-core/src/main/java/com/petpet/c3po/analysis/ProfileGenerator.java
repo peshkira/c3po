@@ -25,12 +25,12 @@ import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.analysis.mapreduce.HistogramJob;
 import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Property.PropertyType;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.MetadataRecord.Status;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Property.PropertyType;
 import com.petpet.c3po.utils.DataHelper;
 
 public class ProfileGenerator {
@@ -201,7 +201,7 @@ public class ProfileGenerator {
     DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, new BasicDBObject("uid", uid));
     assert cursor.count() == 1;
 
-    com.petpet.c3po.datamodel.Element element = DataHelper.parseElement(cursor.next(), this.persistence);
+    com.petpet.c3po.api.model.Element element = DataHelper.parseElement(cursor.next(), this.persistence);
 
     Element sample = samples.addElement("sample").addAttribute("uid", uid);
     for (MetadataRecord mr : element.getMetadata()) {

@@ -9,8 +9,12 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.mongodb.BasicDBObject;
-import com.petpet.c3po.datamodel.MetadataRecord.Status;
-import com.petpet.c3po.datamodel.Property.PropertyType;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.Property.PropertyType;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 
 public class ElementTest {
 

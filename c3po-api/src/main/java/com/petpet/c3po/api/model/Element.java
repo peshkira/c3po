@@ -1,4 +1,4 @@
-package com.petpet.c3po.datamodel;
+package com.petpet.c3po.api.model;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -12,9 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
+import com.petpet.c3po.api.model.Property.PropertyType;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.MetadataRecord.Status;
-import com.petpet.c3po.datamodel.Property.PropertyType;
 
 /**
  * A domain object class that encapsulates an element document. It consists of a
@@ -24,7 +25,7 @@ import com.petpet.c3po.datamodel.Property.PropertyType;
  * @author Petar Petrov <me@petarpetrov.org>
  */
 
-public class Element {
+public class Element implements Model {
 
   /**
    * Default logger.

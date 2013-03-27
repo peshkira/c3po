@@ -14,10 +14,10 @@ import org.xml.sax.SAXException;
 
 import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.adaptor.rules.PostProcessingRule;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.DigitalObjectStream;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.DigitalObjectStream;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.MetadataRecord;
 
 public class FITSAdaptor extends AbstractAdaptor {
 

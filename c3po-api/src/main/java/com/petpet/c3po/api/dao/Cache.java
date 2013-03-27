@@ -1,7 +1,7 @@
 package com.petpet.c3po.api.dao;
 
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 
 /**
  * A simple cache that allows easy retrieval of common objects as properties and

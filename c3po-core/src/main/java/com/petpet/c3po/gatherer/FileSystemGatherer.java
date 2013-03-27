@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.MetaDataGatherer;
+import com.petpet.c3po.api.model.helper.DigitalObjectStream;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.DigitalObjectStream;
 
 public class FileSystemGatherer implements MetaDataGatherer {
 

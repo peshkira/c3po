@@ -1,6 +1,7 @@
 package com.petpet.c3po.dao;
 
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,12 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.Model;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 public class DefaultPersistenceLayer implements PersistenceLayer {
 
@@ -40,13 +46,15 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
     this.close();
 
     try {
-      this.mongo = new Mongo((String) config.get(Constants.CNF_DB_HOST), Integer.parseInt((String) config.get(Constants.CBF_DB_PORT)));
+      this.mongo = new Mongo((String) config.get(Constants.CNF_DB_HOST), Integer.parseInt((String) config
+          .get(Constants.CBF_DB_PORT)));
       this.db = this.mongo.getDB((String) config.get(Constants.CNF_DB_NAME));
-      
-      this.db.getCollection(Constants.TBL_ELEMENTS).ensureIndex(new BasicDBObject("uid", 1), new BasicDBObject("unique", true));
+
+      this.db.getCollection(Constants.TBL_ELEMENTS).ensureIndex(new BasicDBObject("uid", 1),
+          new BasicDBObject("unique", true));
       this.db.getCollection(Constants.TBL_PROEPRTIES).ensureIndex("_id");
       this.db.getCollection(Constants.TBL_PROEPRTIES).ensureIndex("key");
-      
+
       this.connected = true;
 
     } catch (NumberFormatException e) {
@@ -103,12 +111,12 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   public DBCursor find(String collection, DBObject ref, DBObject keys) {
     return this.db.getCollection(collection).find(ref, keys);
   }
-  
+
   @Override
   public List distinct(String collection, String key) {
     return this.db.getCollection(collection).distinct(key);
   }
-  
+
   public List distinct(String collection, String key, DBObject query) {
     return this.db.getCollection(collection).distinct(key, query);
   }
@@ -122,14 +130,76 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   public long count(String collection) {
     return this.db.getCollection(collection).getCount();
   }
-  
+
   @Override
   public long count(String collection, DBObject query) {
     return this.db.getCollection(collection).count(query);
   }
-  
+
   public MapReduceOutput mapreduce(String collection, MapReduceCommand cmd) {
     return this.db.getCollection(collection).mapReduce(cmd);
+  }
+
+  @Override
+  public void establishConnection(Map<Object, Object> config) throws C3POPersistenceException {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public <T extends Model> Iterator<T> find(Class<T> clazz, Filter filter) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public <T extends Model> void insert(T object) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public <T extends Model> void update(T object) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public <T extends Model> void remove(T object) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public <T extends Model> void remove(Class<T> clazz, Filter filter) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public <T extends Model> long count(Class<T> clazz, Filter filter) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public <T extends Model> List<String> distinct(Class<T> clazz, Property p, Filter filter) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public <T extends Model> NumericStatistics getNumericStatistics(Class<T> clazz, Property p, Filter filter)
+      throws UnsupportedOperationException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
+      throws UnsupportedOperationException {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

@@ -1,4 +1,4 @@
-package com.petpet.c3po.datamodel;
+package com.petpet.c3po.api.model.helper;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -13,22 +13,26 @@ import com.mongodb.DBObject;
  */
 public class Filter {
   
+  @Deprecated
   private String descriminator;
 
   /**
    * The collection that is filtered.
    */
+  @Deprecated
   private String collection;
 
   /**
    * The property that is filtered by this filter (e.g. mimetype).
    */
+  @Deprecated
   private String property;
 
   /**
    * The value of the property by which the filter is partitioning (e.g.
    * application/pdf).
    */
+  @Deprecated
   private String value;
 
   
@@ -43,44 +47,54 @@ public class Filter {
    * @param value
    *          the value of the property to apply for this filter.
    */
+  @Deprecated
   public Filter(String collection, String property, String value) {
     this.collection = collection;
     this.property = property;
     this.value = value;
   }
 
+  @Deprecated
   public String getDescriminator() {
     return descriminator;
   }
 
+  @Deprecated
   public void setDescriminator(String id) {
     this.descriminator = id;
   }
 
+  @Deprecated
   public String getCollection() {
     return collection;
   }
 
+  @Deprecated
   public void setCollection(String collection) {
     this.collection = collection;
   }
-
+  
+  @Deprecated
   public String getProperty() {
     return property;
   }
 
+  @Deprecated
   public void setProperty(String property) {
     this.property = property;
   }
 
+  @Deprecated
   public String getValue() {
     return value;
   }
 
+  @Deprecated
   public void setValue(String value) {
     this.value = value;
   }
 
+  @Deprecated
   public DBObject getDocument() {
     final BasicDBObject filter = new BasicDBObject();
     filter.put("descriminator", this.descriminator);

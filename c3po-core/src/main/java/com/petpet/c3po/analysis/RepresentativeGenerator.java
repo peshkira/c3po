@@ -3,7 +3,7 @@ package com.petpet.c3po.analysis;
 import java.util.List;
 import java.util.Map;
 
-import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.api.model.helper.Filter;
 
 public abstract class RepresentativeGenerator {
 

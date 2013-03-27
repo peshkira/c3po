@@ -11,9 +11,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Property.PropertyType;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Property.PropertyType;
 
 public class HistogramJob extends MapReduceJob {
 

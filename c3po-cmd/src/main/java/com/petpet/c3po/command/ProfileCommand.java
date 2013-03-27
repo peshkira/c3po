@@ -12,7 +12,7 @@ import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.utils.Configurator;
 
 public class ProfileCommand implements Command {

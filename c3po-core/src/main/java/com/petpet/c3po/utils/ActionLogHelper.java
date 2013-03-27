@@ -3,8 +3,8 @@ package com.petpet.c3po.utils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.ActionLog;
 
 public class ActionLogHelper {
 

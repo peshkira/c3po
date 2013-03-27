@@ -12,6 +12,7 @@ import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.controller.Controller;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
+import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 public class GatherCommand implements Command {
 
@@ -51,7 +52,11 @@ public class GatherCommand implements Command {
        LOG.error(e.getMessage());
     }
 
-    this.pLayer.close();
+    try {
+      this.pLayer.close();
+    } catch (C3POPersistenceException e) {
+      e.printStackTrace();
+    }
     long end = System.currentTimeMillis();
     this.time = end - start;
   }

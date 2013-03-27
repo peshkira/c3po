@@ -1,10 +1,10 @@
-package com.petpet.c3po.datamodel;
+package com.petpet.c3po.api.model;
 
 import java.util.Date;
 
 import com.mongodb.BasicDBObject;
 
-public class ActionLog {
+public class ActionLog implements Model {
   
   public static final String UPDATED_ACTION = "updated";
   

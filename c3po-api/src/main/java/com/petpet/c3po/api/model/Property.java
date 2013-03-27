@@ -1,4 +1,4 @@
-package com.petpet.c3po.datamodel;
+package com.petpet.c3po.api.model;
 
 import com.mongodb.BasicDBObject;
 
@@ -8,7 +8,7 @@ import com.mongodb.BasicDBObject;
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
-public class Property {
+public class Property implements Model {
 
   /**
    * An enumeration of the property types.

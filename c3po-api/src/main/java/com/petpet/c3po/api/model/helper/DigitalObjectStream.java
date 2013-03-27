@@ -1,4 +1,4 @@
-package com.petpet.c3po.datamodel;
+package com.petpet.c3po.api.model.helper;
 
 import java.io.InputStream;
 

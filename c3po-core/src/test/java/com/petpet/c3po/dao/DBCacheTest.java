@@ -13,8 +13,8 @@ import org.mockito.Mockito;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.utils.DataHelper;
 
 public class DBCacheTest {
