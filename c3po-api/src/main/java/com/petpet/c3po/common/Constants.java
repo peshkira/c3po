@@ -57,6 +57,8 @@ public final class Constants {
    */
   @Deprecated
   public static final String TBL_ACTIONLOGS = "actionlogs";
+  
+  public static final String CNF_PERSISTENCE = "c3po.persistence";
 
   /**
    * A c3po configuration for the collection on which to operate.

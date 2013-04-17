@@ -17,12 +17,35 @@ import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 /**
  * The persistence layer interface offers some common methods for interacting
- * with the underlying database
+ * with the underlying database. All implementing classes require a default
+ * constructor.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
 public interface PersistenceLayer {
+
+  /**
+   * Clears the current cache of the application.
+   */
+  void clearCache();
+
+  /**
+   * This method will be called once before the applications ends running.
+   */
+  void close() throws C3POPersistenceException;
+
+  /**
+   * Counts the number of objects of the given type that match the filter. If
+   * the filter is null, the count of all objects of that type is retrieved.
+   * 
+   * @param clazz
+   *          the type of objects
+   * @param filter
+   *          the filter.
+   * @return the number of objects corresponding to that type and filter.
+   */
+  <T extends Model> long count(Class<T> clazz, Filter filter);
 
   /**
    * This method will be called upon initialisation of the application. The map
@@ -32,31 +55,7 @@ public interface PersistenceLayer {
    * @param config
    *          the configuration
    */
-  void establishConnection(Map<Object, Object> config) throws C3POPersistenceException;
-
-  /**
-   * This method will be called once before the applications ends running.
-   */
-  void close() throws C3POPersistenceException;
-
-  /**
-   * Whether or not there is an established connection to the database.
-   * 
-   * @return true if there is a connection, false otherwise.
-   */
-  boolean isConnected();
-
-  /**
-   * Gets a cache object.
-   * 
-   * @return the cache of the application.
-   */
-  Cache getCache();
-
-  /**
-   * Clears the current cache of the application.
-   */
-  void clearCache();
+  void establishConnection(Map<String, String> config) throws C3POPersistenceException;
 
   /**
    * Finds objects corresponding to the supplied filter and type. The type has
@@ -74,53 +73,6 @@ public interface PersistenceLayer {
   <T extends Model> Iterator<T> find(Class<T> clazz, Filter filter);
 
   /**
-   * Inserts the given object to the underlying data store.
-   * 
-   * @param object
-   *          the object to store.
-   */
-  <T extends Model> void insert(T object);
-
-  /**
-   * Inserts or updates the given object to the underlying data store.
-   * 
-   * @param object
-   *          the object to update.
-   */
-  <T extends Model> void update(T object);
-
-  /**
-   * Removes the given object from the underlying data store.
-   * 
-   * @param object
-   *          the object to remove.
-   */
-  <T extends Model> void remove(T object);
-
-  /**
-   * Removes the objects of the given type that match the filter from the
-   * underlying data store. If the filter is null, then all objects are removed.
-   * 
-   * @param clazz
-   *          the type of object to remove
-   * @param filter
-   *          the filter to match. Can be null.
-   */
-  <T extends Model> void remove(Class<T> clazz, Filter filter);
-
-  /**
-   * Counts the number of objects of the given type that match the filter. If
-   * the filter is null, the count of all objects of that type is retrieved.
-   * 
-   * @param clazz
-   *          the type of objects
-   * @param filter
-   *          the filter.
-   * @return the number of objects corresponding to that type and filter.
-   */
-  <T extends Model> long count(Class<T> clazz, Filter filter);
-
-  /**
    * Returns the distinct values for the given property (in string form). If the
    * passed filter is not null, then it is applied on the collection before
    * 
@@ -136,24 +88,11 @@ public interface PersistenceLayer {
   <T extends Model> List<String> distinct(Class<T> clazz, Property p, Filter filter);
 
   /**
-   * Returns a property value histogram for the given property and type and
-   * respecting the given filter.
+   * Gets a cache object.
    * 
-   * @param clazz
-   *          the type of the objects to look at.
-   * @param p
-   *          the property for which the value histogram will be created
-   * @param filter
-   *          the filter that has to be applied before the operation is
-   *          conducted
-   * @return a map with the distinct values as keys (strings) and their
-   *         occurrences as map-values (integer)
-   * 
-   * @throws UnsupportedOperationException
-   *           if the current persistence layer cannot create such a histogram.
+   * @return the cache of the application.
    */
-  <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
-      throws UnsupportedOperationException;
+  Cache getCache();
 
   /**
    * Returns statistics for the given numeric property. The values of the
@@ -177,6 +116,76 @@ public interface PersistenceLayer {
   <T extends Model> NumericStatistics getNumericStatistics(Class<T> clazz, Property p, Filter filter)
       throws UnsupportedOperationException, IllegalArgumentException;
 
+  /**
+   * Returns a property value histogram for the given property and type and
+   * respecting the given filter.
+   * 
+   * @param clazz
+   *          the type of the objects to look at.
+   * @param p
+   *          the property for which the value histogram will be created
+   * @param filter
+   *          the filter that has to be applied before the operation is
+   *          conducted
+   * @return a map with the distinct values as keys (strings) and their
+   *         occurrences as map-values (integer)
+   * 
+   * @throws UnsupportedOperationException
+   *           if the current persistence layer cannot create such a histogram.
+   */
+  <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
+      throws UnsupportedOperationException;
+
+  /**
+   * Inserts the given object to the underlying data store.
+   * 
+   * @param object
+   *          the object to store.
+   */
+  <T extends Model> void insert(T object);
+
+  /**
+   * Whether or not there is an established connection to the database.
+   * 
+   * @return true if there is a connection, false otherwise.
+   */
+  boolean isConnected();
+
+  /**
+   * Removes the objects of the given type that match the filter from the
+   * underlying data store. If the filter is null, then all objects are removed.
+   * 
+   * @param clazz
+   *          the type of object to remove
+   * @param filter
+   *          the filter to match. Can be null.
+   */
+  <T extends Model> void remove(Class<T> clazz, Filter filter);
+
+  /**
+   * Removes the given object from the underlying data store.
+   * 
+   * @param object
+   *          the object to remove.
+   */
+  <T extends Model> void remove(T object);
+
+  /**
+   * Sets the cache to the passed cache.
+   * 
+   * @param c
+   *          the cache to use.
+   */
+  void setCache(Cache c);
+
+  /**
+   * Inserts or updates the given object to the underlying data store.
+   * 
+   * @param object
+   *          the object to update.
+   */
+  <T extends Model> void update(T object);
+
   /*
    * DEPRECATED METHODS Will be removed after the changes are done...
    */
@@ -184,16 +193,10 @@ public interface PersistenceLayer {
   DB connect(Map<Object, Object> config);
 
   @Deprecated
-  DB getDB();
+  long count(String collection);
 
   @Deprecated
-  DBCursor findAll(String collection);
-
-  @Deprecated
-  DBCursor find(String collection, DBObject ref);
-
-  @Deprecated
-  DBCursor find(String collection, DBObject ref, DBObject keys);
+  long count(String collection, DBObject query);
 
   @Deprecated
   List distinct(String collection, String key);
@@ -202,13 +205,19 @@ public interface PersistenceLayer {
   List distinct(String collection, String key, DBObject query);
 
   @Deprecated
+  DBCursor find(String collection, DBObject ref);
+
+  @Deprecated
+  DBCursor find(String collection, DBObject ref, DBObject keys);
+
+  @Deprecated
+  DBCursor findAll(String collection);
+
+  @Deprecated
+  DB getDB();
+
+  @Deprecated
   void insert(String collection, DBObject data);
-
-  @Deprecated
-  long count(String collection);
-
-  @Deprecated
-  long count(String collection, DBObject query);
 
   @Deprecated
   MapReduceOutput mapreduce(String collection, MapReduceCommand cmd);
