@@ -19,9 +19,9 @@ import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
-import com.petpet.c3po.api.model.Property.PropertyType;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
 
 public final class DataHelper {

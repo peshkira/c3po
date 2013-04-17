@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
-import com.petpet.c3po.api.model.Property.PropertyType;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
 
 /**
@@ -35,6 +35,7 @@ public class Element implements Model {
   /**
    * Some date patterns used for date parsing.
    */
+  @Deprecated
   private static final String[] PATTERNS = { "yyyy:MM:dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "dd MMM yyyy HH:mm",
       "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
       "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss", "yyyy-MM-dd'T'HH:mm:ss" };
@@ -351,6 +352,7 @@ public class Element implements Model {
    * 
    * @return the document of this element.
    */
+  @Deprecated
   public BasicDBObject getDocument() {
     final BasicDBObject element = new BasicDBObject();
     element.put("name", this.getName());
