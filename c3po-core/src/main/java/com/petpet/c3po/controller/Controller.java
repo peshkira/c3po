@@ -20,7 +20,7 @@ import com.petpet.c3po.adaptor.rules.ProcessingRule;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.ActionLog;
-import com.petpet.c3po.api.model.helper.DigitalObjectStream;
+import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.FileSystemGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
@@ -128,9 +128,9 @@ public class Controller {
     return this.persistence;
   }
 
-  public synchronized DigitalObjectStream getNext() {
-    List<DigitalObjectStream> next = this.gatherer.getNext(1);
-    DigitalObjectStream result = null;
+  public synchronized MetadataStream getNext() {
+    List<MetadataStream> next = this.gatherer.getNext(1);
+    MetadataStream result = null;
 
     if (!next.isEmpty()) {
       result = next.get(0);

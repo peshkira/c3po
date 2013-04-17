@@ -23,33 +23,39 @@ public final class Constants {
   /**
    * The version of the core module.
    */
+  @Deprecated
   public static final String CORE_VERSION = "0.3.0";
 
-  public static final String API_VERSION = "0.3.0";
+  public static final String API_VERSION = "0.4.0-SNAPSHOT";
 
   /**
    * The elements collection in the document store.
    */
+  @Deprecated
   public static final String TBL_ELEMENTS = "elements";
 
   /**
    * The properties collection in the document store.
    */
+  @Deprecated
   public static final String TBL_PROEPRTIES = "properties";
 
   /**
    * The source collection in the document store.
    */
+  @Deprecated
   public static final String TBL_SOURCES = "sources";
 
   /**
    * The filters stored in the db.
    */
+  @Deprecated
   public static final String TBL_FILTERS = "filters";
 
   /**
    * The actions done on a collection basis in the db.
    */
+  @Deprecated
   public static final String TBL_ACTIONLOGS = "actionlogs";
 
   /**

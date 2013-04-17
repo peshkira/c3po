@@ -3,7 +3,7 @@ package com.petpet.c3po.api;
 import java.util.List;
 import java.util.Map;
 
-import com.petpet.c3po.api.model.helper.DigitalObjectStream;
+import com.petpet.c3po.api.model.helper.MetadataStream;
 
 /**
  * An interface for a meta data gatherer. The implementing class could be a
@@ -44,6 +44,6 @@ public interface MetaDataGatherer {
    *          the desired number of records.
    * @return
    */
-  List<DigitalObjectStream> getNext(int count);
+  List<MetadataStream> getNext(int count);
 
 }

@@ -1,25 +1,74 @@
 package com.petpet.c3po.api.model.helper;
 
+/**
+ * A simple object that encapsulates the results of some simple statistical
+ * calculations over the values of a numeric property.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class NumericStatistics {
 
+  /**
+   * The count of objects that have this property.
+   */
   private long count;
-  
+
+  /**
+   * The sum of all values for the property that was calculated.
+   */
   private double sum;
-  
+
+  /**
+   * The smallest value.
+   */
   private double min;
-  
+
+  /**
+   * The largest value.
+   */
   private double max;
-  
+
+  /**
+   * The average of all values.
+   */
   private double average;
-  
+
+  /**
+   * The standard deviation of all values.
+   */
   private double standardDeviation;
-  
+
+  /**
+   * The variance of all values.
+   */
   private double variance;
-  
+
+  /**
+   * A default empty constructor.
+   */
   public NumericStatistics() {
-    
+
   }
-  
+
+  /**
+   * Sets the passed values correspondigly.
+   * 
+   * @param c
+   *          the count
+   * @param s
+   *          the sum
+   * @param m
+   *          the smallest value
+   * @param mx
+   *          the largest value
+   * @param a
+   *          the average
+   * @param sd
+   *          the standard deviation.
+   * @param v
+   *          the variance.
+   */
   public NumericStatistics(long c, double s, double m, double mx, double a, double sd, double v) {
     count = c;
     sum = s;

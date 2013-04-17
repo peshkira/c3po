@@ -4,10 +4,23 @@ import java.util.Date;
 
 import com.mongodb.BasicDBObject;
 
+/**
+ * A basic model class that stores the information of the last action done on a
+ * collection and the date that the action was executed. It is used to retrieve
+ * information about the last action over a collection in order to know, whether
+ * or not additional actions are required.
+ * 
+ * For example, if a collections is marked as updated, then no cached
+ * results/profiles for this collection can be reused and they have to be
+ * regenerated.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class ActionLog implements Model {
-  
+
   public static final String UPDATED_ACTION = "updated";
-  
+
   public static final String PROFILE_ACTION = "profile";
 
   public static final String ANALYSIS_ACTION = "analysis";

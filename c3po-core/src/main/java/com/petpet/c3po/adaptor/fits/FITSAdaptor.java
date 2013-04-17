@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.adaptor.rules.PostProcessingRule;
 import com.petpet.c3po.api.model.Element;
-import com.petpet.c3po.api.model.helper.DigitalObjectStream;
+import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.common.Constants;
 
@@ -23,7 +23,7 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   private static final Logger LOG = LoggerFactory.getLogger(FITSAdaptor.class);
 
-  private DigitalObjectStream metadata;
+  private MetadataStream metadata;
 
   private Digester digester;
 
@@ -207,7 +207,7 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   @Override
   public void run() {
-    DigitalObjectStream next = this.getController().getNext();
+    MetadataStream next = this.getController().getNext();
 
     while (next != null) {
       try {
