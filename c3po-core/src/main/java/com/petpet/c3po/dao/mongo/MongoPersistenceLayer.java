@@ -27,8 +27,10 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
+import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
+//TODO cache last filter???
 public class MongoPersistenceLayer implements PersistenceLayer {
 
   /**
@@ -71,11 +73,21 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    */
   private static final String TBL_ACTIONLOGS = "actionlogs";
 
+  /**
+   * A constant used for the last filter object that might be cached.
+   */
+  private static final String LAST_FILTER = "constant.last_filter";
+
+  /**
+   * A constant used for the last filter query that might be cached.
+   */
+  private static final String LAST_FILTER_QUERY = "constant.last_filter.query";
+
   private Mongo mongo;
 
   private DB db;
 
-  private Cache dBCache;
+  private Cache dbCache;
 
   private boolean connected;
 
@@ -85,12 +97,16 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   private Map<String, DBCollection> collections;
 
+  private MongoFilterSerializer filterSerializer;
+
   public MongoPersistenceLayer() {
     this.deserializers = new HashMap<String, ModelDeserializer>();
     this.deserializers.put(Element.class.getName(), new ElementDeserialzer());
 
     this.serializers = new HashMap<String, ModelSerializer>();
     this.serializers.put(Element.class.getName(), new ElementSerializer());
+
+    this.filterSerializer = new MongoFilterSerializer();
 
     this.collections = new HashMap<String, DBCollection>();
 
@@ -156,25 +172,25 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   @Override
   public Cache getCache() {
-    return this.dBCache;
+    return this.dbCache;
   }
 
   @Override
   public void setCache(Cache c) {
-    this.dBCache = c;
+    this.dbCache = c;
 
   }
 
   @Override
   public void clearCache() {
-    this.dBCache.clear();
+    this.dbCache.clear();
 
   }
 
   @Override
   public <T extends Model> Iterator<T> find(Class<T> clazz, Filter filter) {
 
-    // TODO translate filter to a DBQuery...
+    DBObject query = this.getCachedFilter(filter);
 
     DBCollection dbCollection = this.getCollection(clazz);
     ModelDeserializer modelDeserializer = this.getDeserializer(clazz);
@@ -184,22 +200,24 @@ public class MongoPersistenceLayer implements PersistenceLayer {
       return new MongoIterator<T>(modelDeserializer, null);
     }
 
-    DBCursor cursor = dbCollection.find();
+    DBCursor cursor = dbCollection.find(query);
 
     return new MongoIterator<T>(modelDeserializer, cursor);
   }
 
   @Override
   public <T extends Model> void insert(T object) {
+
     DBCollection dbCollection = this.getCollection(object.getClass());
     ModelSerializer serializer = this.getSerializer(object.getClass());
 
     dbCollection.insert(serializer.serialize(object));
+
   }
 
   @Override
   public <T extends Model> void update(T object) {
-    // TODO Auto-generated method stub
+    // TODO update object
     DBCollection dbCollection = this.getCollection(object.getClass());
     // dbCollection.update(q, o, true, false);
 
@@ -217,27 +235,29 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   @Override
   public <T extends Model> void remove(Class<T> clazz, Filter filter) {
 
+    DBObject query = this.getCachedFilter(filter);
     DBCollection dbCollection = this.getCollection(clazz);
-
-    // TODO convert filter query.
-    // dbCollection.findAndRemove(query);
+    dbCollection.findAndRemove(query);
 
   }
 
   @Override
   public <T extends Model> long count(Class<T> clazz, Filter filter) {
-    DBCollection dbCollection = this.getCollection(clazz);
 
-    // TODO convert filter to query...
-    return dbCollection.count();
+    DBObject query = this.getCachedFilter(filter);
+    DBCollection dbCollection = this.getCollection(clazz);
+    return dbCollection.count(query);
+
   }
 
   @Override
   public <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter) {
+
+    DBObject query = this.getCachedFilter(filter);
     DBCollection dbCollection = this.getCollection(clazz);
 
-    // TODO convert filter to query...
-    return dbCollection.distinct(f);
+    return dbCollection.distinct(f, query);
+
   }
 
   @Override
@@ -264,6 +284,33 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   private <T extends Model> DBCollection getCollection(Class<T> clazz) {
     return this.collections.get(clazz.getName());
+  }
+
+  /**
+   * Checks if the {@link DBCache} has a filter that equals the given filter. If
+   * yes, then the object that is stored under the last filter query key within
+   * the cache is returned. If the last filter is null, or does not equal, then
+   * the cache is update and the correct filter is returned.
+   * 
+   * 
+   * @param f the filter to check.
+   * @return the cached filter or the updated version.
+   * @see MongoFilterSerializer;
+   */
+  private DBObject getCachedFilter(Filter f) {
+    Filter filter = (Filter) this.dbCache.getObject(LAST_FILTER);
+    DBObject result = null;
+
+    if (filter != null && filter.equals(f)) {
+      result = (DBObject) this.dbCache.getObject(LAST_FILTER_QUERY);
+    } else {
+      result = this.filterSerializer.serialize(f);
+      this.dbCache.put(LAST_FILTER, f);
+      this.dbCache.put(LAST_FILTER_QUERY, result);
+    }
+
+    return result;
+
   }
 
   // -- TO BE REMOVED IN VERSION 0.4.0

@@ -1,17 +1,17 @@
 package com.petpet.c3po.dao;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
-import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.DataHelper;
 
 public class DBCache implements Cache {
@@ -20,11 +20,14 @@ public class DBCache implements Cache {
 
   private Map<String, Source> sourceCache;
 
+  private Map<Object, Object> misc;
+
   private PersistenceLayer persistence;
 
   public DBCache() {
     this.propertyCache = Collections.synchronizedMap(new HashMap<String, Property>());
     this.sourceCache = Collections.synchronizedMap(new HashMap<String, Source>());
+    this.misc = Collections.synchronizedMap(new HashMap<Object, Object>());
   }
 
   public void setPersistence(PersistenceLayer persistence) {
@@ -48,16 +51,19 @@ public class DBCache implements Cache {
     Property property = this.propertyCache.get(key);
 
     if (property == null) {
-      DBCursor result = this.findProperty(key);
+      Iterator<Property> result = this.findProperty(key);
 
-      if (result.count() == 0) {
-        property = this.createProperty(key);
+      if (result.hasNext()) {
+        property = result.next();
+        this.propertyCache.put(key, property);
 
-      } else if (result.count() == 1) {
-        property = this.extractProperty(result.next());
+        if (result.hasNext()) {
+          throw new RuntimeException("More than one properties found for key: " + key);
+        }
 
       } else {
-        throw new RuntimeException("More than one properties found for key: " + key);
+        property = this.createProperty(key);
+
       }
     }
 
@@ -69,16 +75,19 @@ public class DBCache implements Cache {
     Source source = this.sourceCache.get(name + ":" + version);
 
     if (source == null) {
-      DBCursor result = this.findSource(name, version);
+      Iterator<Source> result = this.findSource(name, version);
 
-      if (result.count() == 0) {
-        source = this.createSource(name, version);
+      if (result.hasNext()) {
+        source = result.next();
+        this.sourceCache.put(name + ":" + version, source);
 
-      } else if (result.count() == 1) {
-        source = this.extractSource(result.next());
+        if (result.hasNext()) {
+          throw new RuntimeException("More than one sources found for name: " + name + " and version: " + version);
+        }
 
       } else {
-        throw new RuntimeException("More than one sources found for name: " + name + " and version: " + version);
+        source = this.createSource(name, version);
+
       }
     }
 
@@ -86,81 +95,55 @@ public class DBCache implements Cache {
   }
 
   @Override
+  public Object getObject(Object key) {
+    return this.misc.get(key);
+  }
+
+  @Override
+  public void put(Object key, Object value) {
+    this.misc.put(key, value);
+  }
+
+  @Override
   public synchronized void clear() {
     this.propertyCache.clear();
     this.sourceCache.clear();
+    this.misc.clear();
   }
 
-  private DBCursor findSource(String name, String version) {
-    BasicDBObject query = new BasicDBObject();
-    query.put("name", name);
-    query.put("version", version);
+  private Iterator<Source> findSource(String name, String version) {
 
-    return this.persistence.find(Constants.TBL_SOURCES, query);
+    FilterCondition fc1 = new FilterCondition("name", name);
+    FilterCondition fc2 = new FilterCondition("version", version);
+    Filter f = new Filter(Arrays.asList(fc1, fc2));
+
+    return this.persistence.find(Source.class, f);
+
   }
 
-  private DBCursor findProperty(String key) {
-    BasicDBObject query = new BasicDBObject();
-    query.put("key", key);
+  private Iterator<Property> findProperty(String key) {
 
-    return this.persistence.find(Constants.TBL_PROEPRTIES, query);
-  }
+    FilterCondition fc = new FilterCondition("key", key);
+    Filter f = new Filter(fc);
 
-  private Property extractProperty(DBObject obj) {
-    Property result = null;
+    return this.persistence.find(Property.class, f);
 
-    if (obj != null) {
-      String id = (String) obj.get("_id");
-      String key = (String) obj.get("key");
-      String name = (String) obj.get("name");
-      String desc = (String) obj.get("description");
-      String type = (String) obj.get("type");
-
-      result = new Property();
-      result.setId(id);
-      result.setKey(key);
-      result.setName(name);
-      result.setDescription(desc);
-      result.setType(type);
-
-      this.propertyCache.put(key, result);
-    }
-
-    return result;
-  }
-
-  private Source extractSource(DBObject obj) {
-    Source result = null;
-
-    if (obj != null) {
-      String id = (String) obj.get("_id");
-      String name = (String) obj.get("name");
-      String version = (String) obj.get("version");
-
-      result = new Source();
-      result.setId(id);
-      result.setName(name);
-      result.setVersion(version);
-
-      this.sourceCache.put(name + ":" + version, result);
-    }
-
-    return result;
   }
 
   private Source createSource(String name, String version) {
     Source s = new Source(name, version);
-    this.persistence.insert(Constants.TBL_SOURCES, s.getDocument());
+
+    this.persistence.insert(s);
     this.sourceCache.put(name + ":" + version, s);
 
     return s;
   }
 
   private Property createProperty(String key) {
-    Property p = new Property(key, key);
+    Property p = new Property(key);
     p.setType(DataHelper.getPropertyType(key));
 
-    this.persistence.insert(Constants.TBL_PROEPRTIES, p.getDocument());
+    this.persistence.insert(p);
     this.propertyCache.put(key, p);
 
     return p;

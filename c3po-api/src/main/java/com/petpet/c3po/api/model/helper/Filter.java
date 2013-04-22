@@ -72,6 +72,17 @@ public class Filter {
   }
 
   /**
+   * Creates a new filter and adds the given conditions to the filter.
+   * 
+   * @param fc
+   *          the condition to add.
+   */
+  public Filter(FilterCondition fc) {
+    this();
+    this.conditions.add(fc);
+  }
+
+  /**
    * Creates a new filter and sets the {@link FilterCondition}s to the passed
    * list.
    * 
@@ -103,6 +114,31 @@ public class Filter {
 
     if (fc != null && !conditions.contains(fc))
       conditions.add(fc);
+  }
+  
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((conditions == null) ? 0 : conditions.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Filter other = (Filter) obj;
+    if (conditions == null) {
+      if (other.conditions != null)
+        return false;
+    } else if (!conditions.equals(other.conditions))
+      return false;
+    return true;
   }
 
   /**
