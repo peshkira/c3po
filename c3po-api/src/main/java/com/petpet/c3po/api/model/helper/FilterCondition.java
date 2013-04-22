@@ -1,9 +1,8 @@
 package com.petpet.c3po.api.model.helper;
 
-import com.petpet.c3po.api.model.Property;
 
 /**
- * Encapsulates a single filter condition of a filter. Example: Property is the
+ * Encapsulates a single filter condition of a filter. Example: Field is the
  * mimetype property and value is a string "application/pdf", then this
  * condition means that mimetype has to be application/pdf.
  * 
@@ -15,7 +14,7 @@ public class FilterCondition {
   /**
    * The property of this condition.
    */
-  private Property property;
+  private String field;
 
   /**
    * The value of this condition.
@@ -32,22 +31,22 @@ public class FilterCondition {
   /**
    * Sets the fields of this object.
    * 
-   * @param p
-   *          the property
+   * @param f
+   *          the field
    * @param v
    *          the value for the property condition.
    */
-  public FilterCondition(Property p, Object v) {
-    property = p;
+  public FilterCondition(String f, Object v) {
+    field = f;
     value = v;
   }
 
-  public Property getProperty() {
-    return property;
+  public String getField() {
+    return field;
   }
 
-  public void setProperty(Property property) {
-    this.property = property;
+  public void setProperty(String f) {
+    this.field = f;
   }
 
   public Object getValue() {
@@ -62,7 +61,7 @@ public class FilterCondition {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((property == null) ? 0 : property.hashCode());
+    result = prime * result + ((field == null) ? 0 : field.hashCode());
     result = prime * result + ((value == null) ? 0 : value.hashCode());
     return result;
   }
@@ -76,10 +75,10 @@ public class FilterCondition {
     if (getClass() != obj.getClass())
       return false;
     FilterCondition other = (FilterCondition) obj;
-    if (property == null) {
-      if (other.property != null)
+    if (field == null) {
+      if (other.field != null)
         return false;
-    } else if (!property.equals(other.property))
+    } else if (!field.equals(other.field))
       return false;
     if (value == null) {
       if (other.value != null)
