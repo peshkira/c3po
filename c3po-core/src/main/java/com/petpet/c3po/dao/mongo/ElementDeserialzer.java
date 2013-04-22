@@ -12,13 +12,20 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.common.Constants;
 
 public class ElementDeserialzer implements ModelDeserializer {
+  
+  //TODO get rid of this reference to the p layer!!!
+  private PersistenceLayer pl;
+
+  public ElementDeserialzer(PersistenceLayer p) {
+    this.pl = p;
+  }
 
   // TODO implement properly!!!
   @Override
   public Element deserialize(Object object) {
     DBObject dbObject = (DBObject) object;
 
-    return this.parseElement(dbObject, null);
+    return this.parseElement(dbObject, this.pl);
 
   }
 

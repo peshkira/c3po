@@ -79,6 +79,7 @@ public class Source implements Model {
    * 
    * @return the source document.
    */
+  @Deprecated
   public BasicDBObject getDocument() {
     final BasicDBObject source = new BasicDBObject();
 

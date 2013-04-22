@@ -17,7 +17,7 @@ public class ElementSerializer implements ModelSerializer {
 
     BasicDBObject document = null;
 
-    if (object instanceof Element) {
+    if (object != null && object instanceof Element) {
       Element element = (Element) object;
 
       document = new BasicDBObject();

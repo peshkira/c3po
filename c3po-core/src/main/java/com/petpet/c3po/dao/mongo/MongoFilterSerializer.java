@@ -1,6 +1,8 @@
 package com.petpet.c3po.dao.mongo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +21,8 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
  * 
  */
 public class MongoFilterSerializer {
+
+  private static final String[] EXCLUDE = { "collection" };
 
   /**
    * Serializes the given filter according to the strategy proposed here:
@@ -92,6 +96,10 @@ public class MongoFilterSerializer {
   private String prepareProperty(String f) {
     // TODO check if there is an exception to the property name
     // otherwise, wrap in metadata.[property].value
+
+    if (Arrays.asList(EXCLUDE).contains(f)) {
+      return f;
+    }
 
     return "metadata." + f + ".value";
   }

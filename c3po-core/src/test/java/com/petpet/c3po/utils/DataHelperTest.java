@@ -2,6 +2,7 @@ package com.petpet.c3po.utils;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -15,10 +16,13 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
-import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.dao.mongo.ElementDeserialzer;
+import com.petpet.c3po.dao.mongo.ElementSerializer;
 
 public class DataHelperTest {
 
@@ -37,23 +41,21 @@ public class DataHelperTest {
     mr.setSources(Arrays.asList(source.getId(), source2.getId()));
     e.setMetadata(Arrays.asList(mr));
     
+    p.insert(e);
+    
+    Iterator<Element> iter = p.find(Element.class, new Filter(new FilterCondition("collection", "test_collection")));
+    //  get first
+    Element elmnt = iter.next();
+    Assert.assertFalse(iter.hasNext());
 
-    p.insert(Constants.TBL_ELEMENTS, e.getDocument());
     
-    BasicDBObject ref = new BasicDBObject("collection", "test_collection");
-    DBCursor obj = p.find(Constants.TBL_ELEMENTS, ref);
-    DBObject next = obj.next();
-    Assert.assertEquals(1, obj.count());
-
-    p.getDB().getCollection(Constants.TBL_ELEMENTS).remove(ref);
-    
-    Element parsed = DataHelper.parseElement(next, p);
-    
-    Assert.assertEquals(e.getCollection(), parsed.getCollection());
+    Assert.assertEquals(e.getCollection(), elmnt.getCollection());
     Assert.assertEquals(1, e.getMetadata().size());
     
-    Assert.assertEquals(e.getMetadata().get(0).getProperty().getKey(), parsed.getMetadata().get(0).getProperty().getKey());
-    Assert.assertEquals(source.getName()+" " +source.getVersion(), parsed.getMetadata().get(0).getSources().get(0));
+    Assert.assertEquals(e.getMetadata().get(0).getProperty().getKey(), elmnt.getMetadata().get(0).getProperty().getKey());
+    Assert.assertEquals(source.getName()+" " +source.getVersion(), elmnt.getMetadata().get(0).getSources().get(0));
+
+    p.remove(elmnt);
   }
   
   @Test
@@ -65,15 +67,15 @@ public class DataHelperTest {
     String key2 = "pkey2";
     Element e = new Element(collection, uid, name);
 
-    Property p1 = new Property(key1, key1);
-    Property p2 = new Property(key2, key2);
+    Property p1 = new Property(key1);
+    Property p2 = new Property(key2);
 
     MetadataRecord r1 = new MetadataRecord(p1, "42");
     MetadataRecord r2 = new MetadataRecord(p2, "21");
 
     e.setMetadata(Arrays.asList(r1, r2));
 
-    BasicDBObject document = e.getDocument();
+    DBObject document = new ElementSerializer().serialize(e);
 
     Assert.assertEquals(uid, document.get("uid"));
     Assert.assertEquals(name, document.get("name"));
@@ -94,10 +96,9 @@ public class DataHelperTest {
     String uid = "testuid";
     String name = "testname";
     String key1 = "pkey1";
-    String key2 = "pkey2";
     Element e = new Element(collection, uid, name);
 
-    Property p1 = new Property(key1, key1);
+    Property p1 = new Property(key1);
     Source s1 = new Source("tool", "v0.1");
     Source s2 = new Source("tool", "v0.2");
 
@@ -110,7 +111,7 @@ public class DataHelperTest {
 
     e.setMetadata(Arrays.asList(r1, r2));
 
-    BasicDBObject document = e.getDocument();
+    DBObject document = new ElementSerializer().serialize(e);
 
     Assert.assertEquals(uid, document.get("uid"));
     Assert.assertEquals(name, document.get("name"));

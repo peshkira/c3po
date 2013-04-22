@@ -30,7 +30,6 @@ import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
-//TODO cache last filter???
 public class MongoPersistenceLayer implements PersistenceLayer {
 
   /**
@@ -101,11 +100,15 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   public MongoPersistenceLayer() {
     this.deserializers = new HashMap<String, ModelDeserializer>();
-    this.deserializers.put(Element.class.getName(), new ElementDeserialzer());
+    this.deserializers.put(Element.class.getName(), new ElementDeserialzer(this));
+    this.deserializers.put(Property.class.getName(), new PropertyDeserialzer());
+    this.deserializers.put(Source.class.getName(), new SourceDeserializer());
 
     this.serializers = new HashMap<String, ModelSerializer>();
     this.serializers.put(Element.class.getName(), new ElementSerializer());
-
+    this.serializers.put(Property.class.getName(), new PropertySerializer());
+    this.serializers.put(Source.class.getName(), new SourceSerializer());
+    
     this.filterSerializer = new MongoFilterSerializer();
 
     this.collections = new HashMap<String, DBCollection>();

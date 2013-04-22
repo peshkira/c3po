@@ -16,7 +16,7 @@ public class MongoIterator<E extends Model> implements Iterator<E> {
     if (cursor != null)
       this.iter = cursor.iterator();
 
-    if (this.deserializer == null) {
+    if (deserializer == null) {
       throw new IllegalArgumentException("Deserializer cannot be null");
     }
     

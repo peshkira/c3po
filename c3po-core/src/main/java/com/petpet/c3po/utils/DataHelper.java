@@ -62,6 +62,7 @@ public final class DataHelper {
    *          the object to parse.
    * @return the Element.
    */
+  @Deprecated
   public static Element parseElement(final DBObject obj, final PersistenceLayer pl) {
     String coll = (String) obj.get("collection");
     String uid = (String) obj.get("uid");
