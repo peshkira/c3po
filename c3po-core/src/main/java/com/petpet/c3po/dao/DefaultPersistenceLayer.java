@@ -19,14 +19,33 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
+import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
+/**
+ * This default persistence layer just wraps a real implementation and is used
+ * by the {@link Configurator} if no persistence is specified. Currently Mongo
+ * is the default backend, as it is the only implementation.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class DefaultPersistenceLayer implements PersistenceLayer {
 
+  /**
+   * A default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(DefaultPersistenceLayer.class);
 
+  /**
+   * The wrapped persistence layer of this class.
+   */
   private PersistenceLayer persistence;
 
+  /**
+   * The default constructor initialised the default persistence layer.
+   * Currently with the MongoDB implementation.
+   */
   public DefaultPersistenceLayer() {
     persistence = new MongoPersistenceLayer();
   }
@@ -72,8 +91,8 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> List<String> distinct(Class<T> clazz, Property p, Filter filter) {
-    return this.persistence.distinct(clazz, p, filter);
+  public <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter) {
+    return this.persistence.distinct(clazz, f, filter);
   }
 
   @Override

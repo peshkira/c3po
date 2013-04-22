@@ -99,21 +99,6 @@ public final class Constants {
   public static final String CNF_THREAD_COUNT = "c3po.thread.count";
 
   /**
-   * The hostname of the server where the db is running.
-   */
-  public static final String CNF_DB_HOST = "db.host";
-
-  /**
-   * The port of the server where the db is listening to.
-   */
-  public static final String CBF_DB_PORT = "db.port";
-
-  /**
-   * The database name.
-   */
-  public static final String CNF_DB_NAME = "db.name";
-
-  /**
    * A javascript Map function for building a histogram of a specific property.
    * All occurrences of that property are used (if they do not have conflcited
    * values). Note that there is a '{}' wildcard that has to be replaced with

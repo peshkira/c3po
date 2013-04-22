@@ -52,7 +52,7 @@ public class TestPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> List<String> distinct(Class<T> clazz, Property p, Filter filter) {
+  public <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter) {
     LOG.debug("distinct()");
     return null;
   }

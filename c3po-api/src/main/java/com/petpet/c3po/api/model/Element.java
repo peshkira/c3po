@@ -1,20 +1,12 @@
 package com.petpet.c3po.api.model;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
-import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
 
 /**
@@ -27,19 +19,6 @@ import com.petpet.c3po.common.Constants;
 
 public class Element implements Model {
 
-  /**
-   * Default logger.
-   */
-  private static final Logger LOG = LoggerFactory.getLogger(Element.class);
-
-  /**
-   * Some date patterns used for date parsing.
-   */
-  @Deprecated
-  private static final String[] PATTERNS = { "yyyy:MM:dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "dd MMM yyyy HH:mm",
-      "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
-      "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss", "yyyy-MM-dd'T'HH:mm:ss" };
-  
   private String id;
 
   /**
@@ -187,164 +166,6 @@ public class Element implements Model {
     }
   }
 
-  /**
-   * Tries to infer the type of the value based on the property type and
-   * converts the value. Otherwise it leaves the string representation. This is
-   * valuable as the underlying persistence layer can store the native type
-   * instead of strings which makes some aggregation functions easier.
-   * 
-   * @param t
-   *          the type of the property @see {@link PropertyType}
-   * @param value
-   *          the value to convert
-   * @return an object with the specific type, or the original value. If the
-   *         passed value was null, an empty string is returned.
-   */
-  public Object getTypedValue(String t, String value) {
-
-    if (value == null) {
-      return "";
-    }
-
-    PropertyType type = PropertyType.valueOf(t);
-    Object result = null;
-    switch (type) {
-      case STRING:
-        result = value;
-        break;
-      case BOOL:
-        result = this.getBooleanValue(value);
-        break;
-      case INTEGER:
-        result = this.getIntegerValue(value);
-        break;
-      case FLOAT:
-        result = this.getDoubleValue(value);
-        break;
-      case DATE:
-        result = this.getDateValue(value);
-        break;
-      case ARRAY:
-        break;
-    }
-
-    return (result == null) ? value : result;
-
-  }
-
-  /**
-   * Tries to convert to a date object. First the method tries to match the
-   * value based on some predefined patterns. If no pattern matches the the
-   * method checks if the value is a long. If nothing succeeds then null is
-   * returned.
-   * 
-   * @param value
-   *          the value to convert
-   * @return a date if successful, null otherwise.
-   */
-  private Date getDateValue(String value) {
-    LOG.trace("parsing value {} as date", value);
-
-    final SimpleDateFormat fmt = new SimpleDateFormat();
-
-    Date result = null;
-    for (String p : PATTERNS) {
-
-      fmt.applyPattern(p);
-      result = this.parseDate(fmt, value);
-
-      if (result != null) {
-        break;
-      }
-    }
-
-    if (result == null) {
-      LOG.debug("No pattern matching for value {}, try to parse as long", value);
-    }
-
-    try {
-
-      if (value.length() != 14) {
-        LOG.trace("value is not 14 characters long, probably a long representation");
-        result = new Date(Long.valueOf(value));
-      }
-
-    } catch (NumberFormatException e) {
-      LOG.trace("date is not in long representation, trying pattern matching: {}", e.getMessage());
-    }
-
-    return result;
-  }
-
-  /**
-   * Gets a double out of the passed value.
-   * 
-   * @param value
-   *          the value to convert
-   * @return null if not a floating point string.
-   */
-  private Double getDoubleValue(String value) {
-    try {
-      return Double.parseDouble(value);
-    } catch (NumberFormatException e) {
-      LOG.warn("Value {} is not an float", value);
-      return null;
-    }
-  }
-
-  /**
-   * Converts to integer.
-   * 
-   * @param value
-   *          the value to convert.
-   * @return the integer object or null if not a numeric value.
-   */
-  private Long getIntegerValue(String value) {
-    try {
-      return Long.parseLong(value);
-    } catch (NumberFormatException e) {
-      LOG.warn("Value {} is not an integer", value);
-      return null;
-    }
-  }
-
-  /**
-   * A boolean representation of the passed string. If the string equals one of
-   * 'yes', 'true' or 'no', 'false' then the value is converted to the
-   * corresponding boolean. Otherwise null is returned
-   * 
-   * @param value
-   *          the value to convert
-   * @return the boolean representation of the value, or null if not a boolean.
-   */
-  private Boolean getBooleanValue(String value) {
-    if (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) {
-      return new Boolean(true);
-    } else if (value.equalsIgnoreCase("no") || value.equalsIgnoreCase("false")) {
-      return new Boolean(false);
-    } else {
-      LOG.warn("Value {} is not a boolean", value);
-      return null;
-    }
-  }
-
-  /**
-   * Parses a date with the given dateformat.
-   * 
-   * @param fmt
-   *          the dateformat object to parse the date with.
-   * @param d
-   *          the string to parse.
-   * @return the date or null if parsing was not successful.
-   */
-  private Date parseDate(DateFormat fmt, String d) {
-    try {
-      return fmt.parse(d);
-    } catch (ParseException e) {
-      LOG.trace("date could not be parsed: {}", e.getMessage());
-      return null;
-    }
-  }
 
   /**
    * Gets the BSON Object representation that is stored within the mongo
@@ -354,57 +175,7 @@ public class Element implements Model {
    */
   @Deprecated
   public BasicDBObject getDocument() {
-    final BasicDBObject element = new BasicDBObject();
-    element.put("name", this.getName());
-    element.put("uid", this.getUid());
-    element.put("collection", this.getCollection());
-
-    final BasicDBObject meta = new BasicDBObject();
-    for (MetadataRecord r : this.getMetadata()) {
-      final BasicDBObject key = new BasicDBObject();
-
-      key.put("status", r.getStatus());
-
-      if (r.getStatus().equals(Status.CONFLICT.name())) {
-        BasicDBObject conflicting;
-        List<Object> values;
-        List<Object> sources;
-        if (meta.containsField(r.getProperty().getId())) {
-          conflicting = (BasicDBObject) meta.get(r.getProperty().getId());
-          values = (List<Object>) conflicting.get("values");
-          if(values == null) {
-            values = new ArrayList<Object>();
-            values.add(conflicting.get("value"));
-          }
-          sources = (List<Object>) conflicting.get("sources");
-          values.add(this.getTypedValue(r.getProperty().getType(), r.getValue()));
-          sources.add(r.getSources().get(0));
-
-        } else {
-          conflicting = new BasicDBObject();
-          values = new ArrayList<Object>();
-          sources = new ArrayList<Object>();
-
-          values.add(this.getTypedValue(r.getProperty().getType(), r.getValue()));
-          sources.add(r.getSources().get(0));
-        }
-
-        conflicting.put("values", values);
-        conflicting.put("sources", sources);
-        conflicting.put("status", r.getStatus());
-        meta.put(r.getProperty().getId(), conflicting);
-
-      } else {
-        key.put("value", this.getTypedValue(r.getProperty().getType(), r.getValue()));
-        key.put("sources", r.getSources());
-        meta.put(r.getProperty().getId(), key);
-      }
-
-    }
-
-    element.put("metadata", meta);
-
-    return element;
+    return null;
   }
 
 }

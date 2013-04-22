@@ -78,14 +78,14 @@ public interface PersistenceLayer {
    * 
    * @param clazz
    *          the type of the objects to look at.
-   * @param p
-   *          the property for which the distinct values have to be applied
+   * @param f
+   *          the field for which the distinct values have to be applied
    * @param filter
    *          the filter that has to be applied on the data before the distinct
    *          operation is executed
    * @return the distinct values for a given property
    */
-  <T extends Model> List<String> distinct(Class<T> clazz, Property p, Filter filter);
+  <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter);
 
   /**
    * Gets a cache object.
