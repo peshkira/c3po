@@ -66,6 +66,7 @@ public class ActionLog implements Model {
     this.date = date;
   }
 
+  @Deprecated
   public BasicDBObject getDocument() {
     final BasicDBObject log = new BasicDBObject();
     log.put("collection", this.collection);

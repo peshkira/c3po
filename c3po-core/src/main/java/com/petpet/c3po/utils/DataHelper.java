@@ -137,6 +137,7 @@ public final class DataHelper {
     return f;
   }
 
+  @Deprecated
   public static ActionLog parseActionLog(DBObject object) {
     String c = (String) object.get("collection");
     String a = (String) object.get("action");
