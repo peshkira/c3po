@@ -21,8 +21,8 @@ import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 public class TestPersistenceLayer implements PersistenceLayer {
-  
-  private static final Logger LOG = LoggerFactory.getLogger(TestPersistenceLayer.class); 
+
+  private static final Logger LOG = LoggerFactory.getLogger(TestPersistenceLayer.class);
 
   @Override
   public void clearCache() {
@@ -64,9 +64,9 @@ public class TestPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> NumericStatistics getNumericStatistics(Class<T> clazz, Property p, Filter filter)
-      throws UnsupportedOperationException, IllegalArgumentException {
-   
+  public NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException,
+      IllegalArgumentException {
+
     LOG.debug("getNumericStatistics()");
     return null;
   }
@@ -76,7 +76,7 @@ public class TestPersistenceLayer implements PersistenceLayer {
       throws UnsupportedOperationException {
 
     LOG.debug("getValueHistogram()");
-    
+
     return null;
   }
 

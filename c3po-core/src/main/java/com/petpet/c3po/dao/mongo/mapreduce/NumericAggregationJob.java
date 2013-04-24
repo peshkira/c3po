@@ -1,4 +1,4 @@
-package com.petpet.c3po.analysis.mapreduce;
+package com.petpet.c3po.dao.mongo.mapreduce;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +9,7 @@ import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.common.Constants;
 
+@Deprecated
 public class NumericAggregationJob extends MapReduceJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(NumericAggregationJob.class);

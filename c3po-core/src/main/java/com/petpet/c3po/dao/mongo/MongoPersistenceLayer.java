@@ -1,5 +1,7 @@
 package com.petpet.c3po.dao.mongo;
 
+import static com.mongodb.MapReduceCommand.OutputType.MERGE;
+
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -27,6 +29,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
@@ -73,6 +76,12 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   private static final String TBL_ACTIONLOGS = "actionlogs";
 
   /**
+   * An internally managed table for numeric statistics. This table is managed
+   * by this concrete implementation and is just for optimization purposes.
+   */
+  private static final String TBL_NUMERIC_STATISTICS = "numeric_statistics";
+
+  /**
    * A constant used for the last filter object that might be cached.
    */
   private static final String LAST_FILTER = "constant.last_filter";
@@ -81,6 +90,26 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * A constant used for the last filter query that might be cached.
    */
   private static final String LAST_FILTER_QUERY = "constant.last_filter.query";
+
+  /**
+   * A javascript Map function for calculating the min, max, sum, avg, sd and
+   * var of a numeric property. Note that there is a wildcard @1 and wildcard @2
+   * 
+   * @1 = the id under which the results will be output. <br>
+   * @2 = the key of the desired numeric property prior to usage.
+   */
+  public static final String AGGREGATE_MAP = "function map() {emit(@1,{sum: this.metadata['@2'].value, min: this.metadata['@2'].value,max: this.metadata['@2'].value,count:1,diff: 0,});}";
+
+  /**
+   * The reduce of the aggregation functions.
+   */
+  public static final String AGGREGATE_REDUCE = "function reduce(key, values) {var a = values[0];for (var i=1; i < values.length; i++){var b = values[i];var delta = a.sum/a.count - b.sum/b.count;var weight = (a.count * b.count)/(a.count + b.count);a.diff += b.diff + delta*delta*weight;a.sum += b.sum;a.count += b.count;a.min = Math.min(a.min, b.min);a.max = Math.max(a.max, b.max);}return a;}";
+
+  /**
+   * A finalize function for the aggregation map reduce job, to calculate the
+   * average, standard deviation and variance.
+   */
+  public static final String AGGREGATE_FINALIZE = "function finalize(key, value){ value.avg = value.sum / value.count;value.variance = value.diff / value.count;value.stddev = Math.sqrt(value.variance);return value;}";
 
   private Mongo mongo;
 
@@ -103,12 +132,14 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     this.deserializers.put(Element.class.getName(), new ElementDeserialzer(this));
     this.deserializers.put(Property.class.getName(), new PropertyDeserialzer());
     this.deserializers.put(Source.class.getName(), new SourceDeserializer());
+    this.deserializers.put(ActionLog.class.getName(), new ActionLogDeserializer());
 
     this.serializers = new HashMap<String, ModelSerializer>();
     this.serializers.put(Element.class.getName(), new ElementSerializer());
     this.serializers.put(Property.class.getName(), new PropertySerializer());
     this.serializers.put(Source.class.getName(), new SourceSerializer());
-    
+    this.serializers.put(ActionLog.class.getName(), new ActionLogSerializer());
+
     this.filterSerializer = new MongoFilterSerializer();
 
     this.collections = new HashMap<String, DBCollection>();
@@ -184,10 +215,20 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * {@inheritDoc}
+   * 
+   * Clears the {@link DBCache} and removes all numeric statistics that are
+   * persisted by this provider.
+   */
   @Override
   public void clearCache() {
-    this.dbCache.clear();
+    synchronized (TBL_NUMERIC_STATISTICS) {
 
+      this.dbCache.clear();
+      this.db.getCollection(TBL_NUMERIC_STATISTICS).remove(new BasicDBObject());
+
+    }
   }
 
   @Override
@@ -266,15 +307,93 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   @Override
   public <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
       throws UnsupportedOperationException {
-    // TODO Auto-generated method stub
+
     return null;
   }
 
   @Override
-  public <T extends Model> NumericStatistics getNumericStatistics(Class<T> clazz, Property p, Filter filter)
-      throws UnsupportedOperationException, IllegalArgumentException {
-    // TODO Auto-generated method stub
-    return null;
+  public NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException,
+      IllegalArgumentException {
+
+    if (p == null) {
+      throw new IllegalArgumentException("No property provider. Cannot aggregate");
+    }
+
+    if (!p.getType().equals(PropertyType.INTEGER.name()) && !p.getType().equals(PropertyType.FLOAT.name())) {
+      throw new IllegalArgumentException("Cannot aggregate a non numeric property: " + p.getKey());
+    }
+
+    filter = (filter == null) ? new Filter() : filter;
+
+    DBCollection statsCollection = this.db.getCollection(TBL_NUMERIC_STATISTICS);
+    int key = getCachedResultId(p.getKey(), filter);
+    DBCursor cursor = statsCollection.find(new BasicDBObject("_id", key));
+
+    NumericStatistics result = null;
+    if (cursor.count() == 0) {
+
+      DBObject object = this.numericMapReduce(p.getKey(), filter);
+      result = this.parseNumericStatistics(object);
+
+    } else {
+
+      DBObject next = (DBObject) cursor.next().get("value");
+      result = this.parseNumericStatistics(next);
+
+    }
+
+    return result;
+  }
+
+  private DBObject numericMapReduce(String property, Filter filter) {
+    int key = getCachedResultId(property, filter);
+
+    DBCollection elmnts = getCollection(Element.class);
+    DBObject query = this.getCachedFilter(filter);
+    query.put("metadata." + property, new BasicDBObject("$exists", true));
+
+    String map = AGGREGATE_MAP.replaceAll("@1", key + "").replaceAll("@2", property);
+    MapReduceCommand cmd = new MapReduceCommand(elmnts, map, AGGREGATE_REDUCE, TBL_NUMERIC_STATISTICS, MERGE, query);
+    cmd.setFinalize(AGGREGATE_FINALIZE);
+
+    elmnts.mapReduce(cmd);
+
+    DBCollection statsCollection = this.db.getCollection(TBL_NUMERIC_STATISTICS);
+    DBCursor cursor = statsCollection.find(new BasicDBObject("_id", key));
+
+    if (cursor.count() == 0) {
+      return null;
+    }
+
+    return (DBObject) cursor.next().get("value");
+  }
+
+  private int getCachedResultId(String property, Filter filter) {
+    return (property + filter.hashCode()).hashCode();
+  }
+
+  private NumericStatistics parseNumericStatistics(DBObject object) {
+    NumericStatistics result = null;
+
+    if (object == null) {
+      result = new NumericStatistics();
+      
+    } else {
+
+      BasicDBObject obj = (BasicDBObject) object;
+
+      long count = obj.getLong("count");
+      double sum = obj.getDouble("sum");
+      double min = obj.getDouble("min");
+      double max = obj.getDouble("max");
+      double avg = obj.getDouble("avg");
+      double std = obj.getDouble("stddev");
+      double var = obj.getDouble("variance");
+
+      result = new NumericStatistics(count, sum, min, max, avg, std, var);
+    }
+
+    return result;
   }
 
   private <T extends Model> ModelSerializer getSerializer(Class<T> clazz) {
@@ -296,7 +415,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * the cache is update and the correct filter is returned.
    * 
    * 
-   * @param f the filter to check.
+   * @param f
+   *          the filter to check.
    * @return the cached filter or the updated version.
    * @see MongoFilterSerializer;
    */

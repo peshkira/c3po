@@ -54,6 +54,15 @@ public final class DataHelper {
   public static String getPropertyType(String key) {
     return TYPES.getProperty(key, "STRING");
   }
+  
+  public static String removeTrailingZero(final String str) {
+    if (str != null && str.endsWith(".0")) {
+      return str.substring(0, str.length() - 2);
+    }
+
+    return str;
+  }
+
 
   /**
    * Parses the element from a db object returned by the db.
@@ -378,7 +387,6 @@ public final class DataHelper {
       return null;
     }
   }
-
 
   private DataHelper() {
 

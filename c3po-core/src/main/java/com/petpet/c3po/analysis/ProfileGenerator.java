@@ -22,8 +22,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.HistogramJob;
-import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
@@ -31,6 +29,8 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.dao.mongo.mapreduce.HistogramJob;
+import com.petpet.c3po.dao.mongo.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.utils.DataHelper;
 
 public class ProfileGenerator {

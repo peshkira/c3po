@@ -1,4 +1,4 @@
-package com.petpet.c3po.analysis.mapreduce;
+package com.petpet.c3po.dao.mongo.mapreduce;
 
 import java.util.ArrayList;
 import java.util.HashMap;

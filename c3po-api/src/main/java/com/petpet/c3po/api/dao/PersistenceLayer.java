@@ -26,7 +26,9 @@ import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 public interface PersistenceLayer {
 
   /**
-   * Clears the current cache of the application.
+   * Clears the current cache of the application. This includes the
+   * {@link Cache}, but also any other cached information that the backend
+   * provider might have stored (e.g. cached statistics and aggregations).
    */
   void clearCache();
 
@@ -95,12 +97,14 @@ public interface PersistenceLayer {
   Cache getCache();
 
   /**
-   * Returns statistics for the given numeric property. The values of the
-   * property have to have a numeric data type as the computation might/will
-   * involve mathematical calculations.
+   * Returns statistics for the given numeric property for all elements
+   * according to the given filter. The values of the property have to have a
+   * numeric data type as the computation might/will involve mathematical
+   * calculations.
    * 
-   * @param clazz
-   *          the type of objects to look at
+   * As this method is a higher-level query it can only support numeric
+   * properties and the Element.class
+   * 
    * @param p
    *          the property for which the statistcs will be created.
    * @param filter
@@ -113,8 +117,8 @@ public interface PersistenceLayer {
    *           if the arguments are not appropriate, e.g. if the datatype of the
    *           property is not of a numeric type.
    */
-  <T extends Model> NumericStatistics getNumericStatistics(Class<T> clazz, Property p, Filter filter)
-      throws UnsupportedOperationException, IllegalArgumentException;
+  NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException,
+      IllegalArgumentException;
 
   /**
    * Returns a property value histogram for the given property and type and

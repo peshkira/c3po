@@ -30,9 +30,20 @@ public class ActionLogHelper {
     if (i.hasNext()) {
       result = i.next();
 
-      if (i.hasNext())
+      if (i.hasNext()) {
         this.persistence.remove(ActionLog.class, new Filter(new FilterCondition("collection", collection)));
-      throw new RuntimeException("More than one action logs foudn for this collection");
+        throw new RuntimeException("More than one action logs found for this collection");
+      }
+    }
+
+    return result;
+  }
+
+  public boolean isLastActionUpdated(String collection) {
+    ActionLog lastAction = this.getLastAction(collection);
+    boolean result = false;
+    if (lastAction == null || lastAction.getAction().equals(ActionLog.UPDATED_ACTION)) {
+      result = true;
     }
 
     return result;

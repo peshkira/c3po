@@ -138,6 +138,7 @@ public final class Constants {
    * var of a numeric property. Note that there is a wildcard {1} that has to be
    * replaced with the id of the desired numeric property prior to usage.
    */
+  @Deprecated
   public static final String AGGREGATE_MAP = "function map() {emit(1,{sum: this.metadata['{1}'].value, min: this.metadata['{1}'].value,max: this.metadata['{1}'].value,count:1,diff: 0,});}";
 
   /**
@@ -152,12 +153,14 @@ public final class Constants {
   /**
    * The reduce of the aggregation functions.
    */
+  @Deprecated
   public static final String AGGREGATE_REDUCE = "function reduce(key, values) {var a = values[0];for (var i=1; i < values.length; i++){var b = values[i];var delta = a.sum/a.count - b.sum/b.count;var weight = (a.count * b.count)/(a.count + b.count);a.diff += b.diff + delta*delta*weight;a.sum += b.sum;a.count += b.count;a.min = Math.min(a.min, b.min);a.max = Math.max(a.max, b.max);}return a;}";
 
   /**
    * A finalize function for the aggregation map reduce job, to calculate the
    * average, standard deviation and variance.
    */
+  @Deprecated
   public static final String AGGREGATE_FINALIZE = "function finalize(key, value){ value.avg = value.sum / value.count;value.variance = value.diff / value.count;value.stddev = Math.sqrt(value.variance);return value;}";
   
   

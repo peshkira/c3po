@@ -101,10 +101,9 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> NumericStatistics getNumericStatistics(Class<T> clazz, Property p, Filter filter)
-      throws UnsupportedOperationException {
+  public NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException {
 
-    return this.persistence.getNumericStatistics(clazz, p, filter);
+    return this.persistence.getNumericStatistics(p, filter);
   }
 
   @Override
