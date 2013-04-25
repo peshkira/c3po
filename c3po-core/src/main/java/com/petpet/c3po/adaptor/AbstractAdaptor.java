@@ -91,15 +91,15 @@ public abstract class AbstractAdaptor implements Runnable {
   
   protected List<PostProcessingRule> getPostProcessingRules() {
     List<ProcessingRule> all = this.getRules();
-    List<PostProcessingRule> prerules = new ArrayList<PostProcessingRule>();
+    List<PostProcessingRule> postrules = new ArrayList<PostProcessingRule>();
 
     for (ProcessingRule rule : all) {
       if (rule instanceof PostProcessingRule) {
-        prerules.add((PostProcessingRule) rule);
+    	postrules.add((PostProcessingRule) rule);
       }
     }
 
-    return prerules;
+    return postrules;
   }
 
   public void setRules(List<ProcessingRule> rules) {
