@@ -25,10 +25,19 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   private DigitalObjectStream metadata;
 
-  private Digester digester;
+  private final Digester digester;
 
+  /**
+   * Flag taken from configuration
+   * 
+   * @see com.petpet.c3po.common.Constants#CNF_INFER_DATE
+   */
   private boolean inferDate = false;
 
+  /**
+   * The collection to which the processed elements will belong to. Taken from
+   * the current configuration.
+   */
   private String collection;
 
   public FITSAdaptor() {
@@ -196,7 +205,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       }
 
     }
-    
+
     List<PostProcessingRule> postProcessingRules = this.getPostProcessingRules();
     for (PostProcessingRule rule : postProcessingRules) {
       element = rule.process(element);
@@ -215,17 +224,17 @@ public class FITSAdaptor extends AbstractAdaptor {
 
         final Element element = this.getElement();
         if (element != null) {
-          
+
           this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
 
         } else {
-          LOG.warn("No element could be extracted for file {}", metadata.getFileName());
+          LOG.warn("No element could be extracted for file {}", this.metadata.getFileName());
           // potentially move file to some place for further investigation.
         }
 
       } catch (Exception e) {
         // save thread from dying due to processing error...
-        LOG.warn("An exception occurred for file '{}': {}", metadata.getFileName(), e.getMessage());
+        LOG.warn("An exception occurred for file '{}': {}", this.metadata.getFileName(), e.getMessage());
       }
 
       next = this.getController().getNext();
