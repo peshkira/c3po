@@ -20,7 +20,7 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.api.model.helper.PropertyType;
-import com.petpet.c3po.dao.mongo.ElementSerializer;
+import com.petpet.c3po.dao.mongo.MongoElementSerializer;
 
 public class DataHelperTest {
 
@@ -73,7 +73,7 @@ public class DataHelperTest {
 
     e.setMetadata(Arrays.asList(r1, r2));
 
-    DBObject document = new ElementSerializer().serialize(e);
+    DBObject document = new MongoElementSerializer().serialize(e);
 
     Assert.assertEquals(uid, document.get("uid"));
     Assert.assertEquals(name, document.get("name"));
@@ -109,7 +109,7 @@ public class DataHelperTest {
 
     e.setMetadata(Arrays.asList(r1, r2));
 
-    DBObject document = new ElementSerializer().serialize(e);
+    DBObject document = new MongoElementSerializer().serialize(e);
 
     Assert.assertEquals(uid, document.get("uid"));
     Assert.assertEquals(name, document.get("name"));

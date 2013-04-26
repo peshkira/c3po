@@ -3,11 +3,17 @@ package com.petpet.c3po.dao.mongo;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.model.Source;
 
-public class SourceDeserializer implements ModelDeserializer {
+public class MongoSourceDeserializer implements MongoModelDeserializer {
 
-  // TODO do null checks
+  /**
+   * Deserializes a {@link DBObject} into a {@link Source} object.
+   */
   @Override
   public Object deserialize(Object object) {
+
+    if (object == null || !(object instanceof DBObject)) {
+      return null;
+    }
     DBObject dbObject = (DBObject) object;
 
     String id = (String) dbObject.get("_id");

@@ -4,8 +4,19 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.model.ActionLog;
 
-public class ActionLogSerializer implements ModelSerializer {
+/**
+ * Serializes an {@link ActionLog} object to a mongo {@link DBObject}.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
+public class MongoActionLogSerializer implements MongoModelSerializer {
 
+  /**
+   * Maps the given {@link ActionLog} to a mongo document. Note that if the
+   * given object is null or not of type {@link ActionLog}, then null is
+   * returned.
+   */
   @Override
   public DBObject serialize(Object object) {
     BasicDBObject log = null;

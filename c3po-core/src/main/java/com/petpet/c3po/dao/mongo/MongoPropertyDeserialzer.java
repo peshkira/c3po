@@ -3,17 +3,34 @@ package com.petpet.c3po.dao.mongo;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.model.Property;
 
-public class PropertyDeserialzer implements ModelDeserializer {
+/**
+ * Deserializes the mongo DBObject into a Property object.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
+public class MongoPropertyDeserialzer implements MongoModelDeserializer {
 
-  //TODO do proper null checks
-  // return empty property?
+  /**
+   * Deserializes the given {@link DBObject} into a property.
+   */
   @Override
   public Property deserialize(Object object) {
+    if (object == null || !(object instanceof DBObject)) {
+      return null;
+    }
+
     DBObject dbObject = (DBObject) object;
-    
+
     return this.parseProperty(dbObject);
   }
 
+  /**
+   * Parses the property.
+   * 
+   * @param obj
+   * @return
+   */
   private Property parseProperty(DBObject obj) {
     Property result = null;
     if (obj != null) {
@@ -23,8 +40,8 @@ public class PropertyDeserialzer implements ModelDeserializer {
       result = new Property(key);
       result.setType(type);
     }
-    
+
     return result;
   }
-  
+
 }

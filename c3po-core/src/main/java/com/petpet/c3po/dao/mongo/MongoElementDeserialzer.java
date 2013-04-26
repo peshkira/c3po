@@ -1,6 +1,7 @@
 package com.petpet.c3po.dao.mongo;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.mongodb.BasicDBObject;
@@ -8,24 +9,41 @@ import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.petpet.c3po.common.Constants;
 
-public class ElementDeserialzer implements ModelDeserializer {
-  
-  //TODO get rid of this reference to the p layer!!!
-  private PersistenceLayer pl;
+/**
+ * Deserializes {@link DBObject}s into {@link Element} objects.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
+public class MongoElementDeserialzer implements MongoModelDeserializer {
 
-  public ElementDeserialzer(PersistenceLayer p) {
-    this.pl = p;
+  /**
+   * Needs a reference to the persistence layer in order to obtain the sources
+   * for each meta data record.
+   */
+  private PersistenceLayer persistence;
+
+  public MongoElementDeserialzer(PersistenceLayer p) {
+    this.persistence = p;
   }
 
-  // TODO implement properly!!!
+  /**
+   * Deserializes {@link DBObject}s to elements.
+   */
   @Override
   public Element deserialize(Object object) {
+    if (object == null || !(object instanceof DBObject)) {
+      return null;
+    }
+
     DBObject dbObject = (DBObject) object;
 
-    return this.parseElement(dbObject, this.pl);
+    return this.parseElement(dbObject);
 
   }
 
@@ -36,7 +54,7 @@ public class ElementDeserialzer implements ModelDeserializer {
    *          the object to parse.
    * @return the Element.
    */
-  private Element parseElement(final DBObject obj, final PersistenceLayer pl) {
+  private Element parseElement(final DBObject obj) {
     String coll = (String) obj.get("collection");
     String uid = (String) obj.get("uid");
     String name = (String) obj.get("name");
@@ -49,7 +67,7 @@ public class ElementDeserialzer implements ModelDeserializer {
     for (String key : meta.keySet()) {
       MetadataRecord rec = new MetadataRecord();
       DBObject prop = (DBObject) meta.get(key);
-      Property p = pl.getCache().getProperty(key);
+      Property p = this.persistence.getCache().getProperty(key);
       rec.setProperty(p);
       rec.setStatus(prop.get("status").toString());
 
@@ -72,9 +90,11 @@ public class ElementDeserialzer implements ModelDeserializer {
       if (src != null) {
         List<String> sources = new ArrayList<String>();
         for (String s : src) {
-          DBObject next = pl.find(Constants.TBL_SOURCES, new BasicDBObject("_id", s), new BasicDBObject()).next();
-          String source = (String) next.get("name") + " " + next.get("version");
-          sources.add(source);
+          Iterator<Source> iter = this.persistence.find(Source.class, new Filter(new FilterCondition("_id", s)));
+          if (iter.hasNext()) {
+            Source source = iter.next();
+            sources.add(source.getName() + " " + source.getVersion());
+          }
         }
         rec.setSources(sources);
       }

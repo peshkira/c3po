@@ -22,7 +22,7 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 public class MongoFilterSerializer {
 
   // TODO fix this. Pass the class and decide
-  private static final String[] EXCLUDE = { "collection", "uid" };
+  private static final String[] EXCLUDE = { "_id", "uid", "collection" };
 
   /**
    * Serializes the given filter according to the strategy proposed here:

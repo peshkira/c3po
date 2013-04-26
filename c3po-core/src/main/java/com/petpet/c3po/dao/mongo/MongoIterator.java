@@ -10,9 +10,9 @@ import com.petpet.c3po.api.model.Model;
 public class MongoIterator<E extends Model> implements Iterator<E> {
 
   private Iterator<DBObject> iter;
-  private ModelDeserializer deserializer;
+  private MongoModelDeserializer deserializer;
 
-  public MongoIterator(ModelDeserializer deserializer, DBCursor cursor) {
+  public MongoIterator(MongoModelDeserializer deserializer, DBCursor cursor) {
     if (cursor != null)
       this.iter = cursor.iterator();
 

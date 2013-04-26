@@ -4,8 +4,19 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.model.Source;
 
-public class SourceSerializer implements ModelSerializer {
+/**
+ * Serializes {@link Source} objects to a Mongo {@link DBObject}.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
+public class MongoSourceSerializer implements MongoModelSerializer {
 
+  /**
+   * Maps the given {@link Source} object to a mongo {@link DBObject}. Note that
+   * if the given object is null or not of type {@link Source} then null is
+   * returned.
+   */
   @Override
   public DBObject serialize(Object object) {
     BasicDBObject source = null;
@@ -18,7 +29,7 @@ public class SourceSerializer implements ModelSerializer {
       source.put("name", s.getName());
       source.put("version", s.getVersion());
     }
-    
+
     return source;
   }
 

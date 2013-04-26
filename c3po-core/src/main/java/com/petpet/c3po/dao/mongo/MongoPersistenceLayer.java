@@ -164,9 +164,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   private boolean connected;
 
-  private Map<String, ModelDeserializer> deserializers;
+  private Map<String, MongoModelDeserializer> deserializers;
 
-  private Map<String, ModelSerializer> serializers;
+  private Map<String, MongoModelSerializer> serializers;
 
   private Map<String, DBCollection> collections;
 
@@ -177,17 +177,17 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * deserializers.
    */
   public MongoPersistenceLayer() {
-    this.deserializers = new HashMap<String, ModelDeserializer>();
-    this.deserializers.put(Element.class.getName(), new ElementDeserialzer(this));
-    this.deserializers.put(Property.class.getName(), new PropertyDeserialzer());
-    this.deserializers.put(Source.class.getName(), new SourceDeserializer());
-    this.deserializers.put(ActionLog.class.getName(), new ActionLogDeserializer());
+    this.deserializers = new HashMap<String, MongoModelDeserializer>();
+    this.deserializers.put(Element.class.getName(), new MongoElementDeserialzer(this));
+    this.deserializers.put(Property.class.getName(), new MongoPropertyDeserialzer());
+    this.deserializers.put(Source.class.getName(), new MongoSourceDeserializer());
+    this.deserializers.put(ActionLog.class.getName(), new MongoActionLogDeserializer());
 
-    this.serializers = new HashMap<String, ModelSerializer>();
-    this.serializers.put(Element.class.getName(), new ElementSerializer());
-    this.serializers.put(Property.class.getName(), new PropertySerializer());
-    this.serializers.put(Source.class.getName(), new SourceSerializer());
-    this.serializers.put(ActionLog.class.getName(), new ActionLogSerializer());
+    this.serializers = new HashMap<String, MongoModelSerializer>();
+    this.serializers.put(Element.class.getName(), new MongoElementSerializer());
+    this.serializers.put(Property.class.getName(), new MongoPropertySerializer());
+    this.serializers.put(Source.class.getName(), new MongoSourceSerializer());
+    this.serializers.put(ActionLog.class.getName(), new MongoActionLogSerializer());
 
     this.filterSerializer = new MongoFilterSerializer();
 
@@ -327,7 +327,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBObject query = this.getCachedFilter(filter);
 
     DBCollection dbCollection = this.getCollection(clazz);
-    ModelDeserializer modelDeserializer = this.getDeserializer(clazz);
+    MongoModelDeserializer modelDeserializer = this.getDeserializer(clazz);
 
     if (dbCollection == null) {
       LOG.warn("No collection found for clazz [{}]", clazz.getName());
@@ -346,7 +346,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   public <T extends Model> void insert(T object) {
 
     DBCollection dbCollection = this.getCollection(object.getClass());
-    ModelSerializer serializer = this.getSerializer(object.getClass());
+    MongoModelSerializer serializer = this.getSerializer(object.getClass());
 
     dbCollection.insert(serializer.serialize(object));
 
@@ -379,7 +379,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     }
 
     DBCollection dbCollection = this.getCollection(object.getClass());
-    ModelSerializer serializer = this.getSerializer(object.getClass());
+    MongoModelSerializer serializer = this.getSerializer(object.getClass());
     DBObject objectToUpdate = serializer.serialize(object);
     dbCollection.update(filter, objectToUpdate, true, true);
 
@@ -391,7 +391,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   @Override
   public <T extends Model> void remove(T object) {
     DBCollection dbCollection = this.getCollection(object.getClass());
-    ModelSerializer serializer = this.getSerializer(object.getClass());
+    MongoModelSerializer serializer = this.getSerializer(object.getClass());
 
     dbCollection.remove(serializer.serialize(object));
 
@@ -678,7 +678,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the class that we want to serialize.
    * @return the serializer.
    */
-  private <T extends Model> ModelSerializer getSerializer(Class<T> clazz) {
+  private <T extends Model> MongoModelSerializer getSerializer(Class<T> clazz) {
     return this.serializers.get(clazz.getName());
   }
 
@@ -689,7 +689,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the class that we want to deserialize.
    * @return the deserializer.
    */
-  private <T extends Model> ModelDeserializer getDeserializer(Class<T> clazz) {
+  private <T extends Model> MongoModelDeserializer getDeserializer(Class<T> clazz) {
     return this.deserializers.get(clazz.getName());
   }
 

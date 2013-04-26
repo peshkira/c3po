@@ -10,8 +10,21 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.utils.DataHelper;
 
-public class ElementSerializer implements ModelSerializer {
+/**
+ * Serializes {@link Element}s into {@link DBObject}s.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
+public class MongoElementSerializer implements MongoModelSerializer {
 
+  /**
+   * Maps the given element object to a mongo NoSQL schema, where every element
+   * is represented as a single document wrapping all its meta data records.
+   * 
+   * Note that if the passed object is null not of type {@link Element} null is
+   * returned.
+   */
   @Override
   public DBObject serialize(Object object) {
 
