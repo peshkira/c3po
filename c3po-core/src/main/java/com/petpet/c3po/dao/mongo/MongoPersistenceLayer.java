@@ -1,6 +1,7 @@
 package com.petpet.c3po.dao.mongo;
 
 import static com.mongodb.MapReduceCommand.OutputType.MERGE;
+import static com.mongodb.MapReduceCommand.OutputType.INLINE;
 
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand;
+import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
@@ -30,7 +32,9 @@ import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.dao.DBCache;
+import com.petpet.c3po.utils.DataHelper;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 public class MongoPersistenceLayer implements PersistenceLayer {
@@ -82,6 +86,13 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   private static final String TBL_NUMERIC_STATISTICS = "numeric_statistics";
 
   /**
+   * An internally managed table for element property value histograms. This
+   * table is managed by this concrete implementation and is just for
+   * optimization purposes.
+   */
+  private static final String TBL_HISTOGRAMS = "histograms";
+
+  /**
    * A constant used for the last filter object that might be cached.
    */
   private static final String LAST_FILTER = "constant.last_filter";
@@ -98,7 +109,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * @1 = the id under which the results will be output. <br>
    * @2 = the key of the desired numeric property prior to usage.
    */
-  public static final String AGGREGATE_MAP = "function map() {emit(@1,{sum: this.metadata['@2'].value, min: this.metadata['@2'].value,max: this.metadata['@2'].value,count:1,diff: 0,});}";
+  public static final String AGGREGATE_MAP = "function map() {if (this.metadata['@2'] != null) {emit(@1,{sum: this.metadata['@2'].value, min: this.metadata['@2'].value,max:this.metadata['@2'].value,count:1,diff: 0,});}}";
 
   /**
    * The reduce of the aggregation functions.
@@ -110,6 +121,41 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * average, standard deviation and variance.
    */
   public static final String AGGREGATE_FINALIZE = "function finalize(key, value){ value.avg = value.sum / value.count;value.variance = value.diff / value.count;value.stddev = Math.sqrt(value.variance);return value;}";
+
+  /**
+   * A javascript Map function for building a histogram of a specific property.
+   * All occurrences of that property are used (if they do not have conflcited
+   * values). Note that there is a '@1' wildcard that has to be replaced with
+   * the id of the desired property, prior to usage.
+   */
+  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {emit(this.metadata['@1'].value, 1);}else{emit('Conflicted', 1);}} else {emit('Unknown', 1);}}";
+
+  /**
+   * A javascript Map function for building a histogram over a specific date
+   * property. All occurrences of that property are used. If they are conflicted
+   * then they are aggregated under one key 'Conflcited'. If the property is
+   * missing, then the values are aggregated under the key 'Unknown'. Otherwise
+   * the year is used as the key. Note that there is a '@1' wildcard that has to
+   * be replaced with the id of the desired property, prior to usage.
+   */
+  public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['created'] != null && this.metadata['created'].value != undefined) {if (this.metadata['created'].status !== 'CONFLICT') {var date = new Date(this.metadata['created'].value);emit(date.getFullYear(), 1);}else{emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
+
+  /**
+   * A javascript Map function for building a histogram with fixed bin size. It
+   * takes two wild cards as parameters - The @1 is the numeric property and the @2
+   * is the bin size. The result contains the bins, where the id is from 0 to n
+   * and the value is the number of occurrences. Note that each bin has a fixed
+   * size so the label can be easily calculated. For example the id 0 marks the
+   * number of elements where the numeric property was between 0 and the width,
+   * the id 1 marks the number of elements where the numeric property was
+   * between the width and 2*width and so on.
+   */
+  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['@1'].value / @2);emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
+
+  /**
+   * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
+   */
+  public static final String HISTOGRAM_REDUCE = "function reduce(key, values) {var res = 0;values.forEach(function (v) {res += v;});return res;}";
 
   private Mongo mongo;
 
@@ -305,10 +351,78 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
+  public <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
       throws UnsupportedOperationException {
 
-    return null;
+    Map<String, Long> histogram = new HashMap<String, Long>();
+
+    filter = (filter == null) ? new Filter() : filter;
+
+    DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
+    int key = getCachedResultId(p.getKey(), filter);
+    System.out.println(key);
+    DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
+
+    if (cursor.count() == 0) {
+      // no cached results for this histogram
+      DBObject object = this.histogramMapReduce(key, p, filter);
+      histogram = this.parseHistogramResults(object);
+
+    } else {
+      // process
+      DBObject object = (DBObject) cursor.next().get("results");
+      histogram = this.parseHistogramResults(object);
+    }
+
+    return histogram;
+  }
+
+  private DBObject histogramMapReduce(int key, Property p, Filter filter) {
+    String map = "";
+
+    DBObject query = this.getCachedFilter(filter);
+
+    if (p.getType().equals(PropertyType.DATE.toString())) {
+      map = DATE_HISTOGRAM_MAP.replace("@1", p.getKey());
+
+    } else if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
+      // TODO adjust bin width, (pass it via the filter may be?)
+
+      // String width = this.getConfig().get("bin_width");
+      //
+      // if (width == null) {
+      // String val = (String) this.getFilterquery().get("metadata." +
+      // this.property + ".value");
+      // width = inferBinWidth(val) + "";
+      // }
+
+      map = NUMERIC_HISTOGRAM_MAP.replace("@1", p.getKey()).replace("@2", "10");
+
+    } else {
+      map = HISTOGRAM_MAP.replace("@1", p.getId());
+    }
+
+    LOG.debug("Executing histogram map reduce job with following map:\n{}", map);
+    LOG.debug("filter query is:\n{}", query);
+    DBCollection elmnts = getCollection(Element.class);
+    MapReduceCommand cmd = new MapReduceCommand(elmnts, map, HISTOGRAM_REDUCE, null, INLINE, query);
+
+    MapReduceOutput output = elmnts.mapReduce(cmd);
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+
+    DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
+    BasicDBObject old = new BasicDBObject("_id", key);
+    BasicDBObject res = new BasicDBObject(old.toMap());
+    res.put("results", results);
+    histCollection.update(old, res, true, false);
+
+    DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
+
+    if (cursor.count() == 0) {
+      return null;
+    }
+
+    return (DBObject) cursor.next().get("results");
   }
 
   @Override
@@ -350,6 +464,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     DBCollection elmnts = getCollection(Element.class);
     DBObject query = this.getCachedFilter(filter);
+    // TODO add this check in the map function...
     query.put("metadata." + property, new BasicDBObject("$exists", true));
 
     String map = AGGREGATE_MAP.replaceAll("@1", key + "").replaceAll("@2", property);
@@ -372,12 +487,27 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return (property + filter.hashCode()).hashCode();
   }
 
+  private Map<String, Long> parseHistogramResults(DBObject object) {
+    Map<String, Long> histogram = new HashMap<String, Long>();
+
+    if (object == null) {
+      return histogram;
+    }
+
+    List<BasicDBObject> results = (List<BasicDBObject>) object;
+    for (final BasicDBObject dbo : results) {
+      histogram.put(DataHelper.removeTrailingZero(dbo.getString("_id")), dbo.getLong("value"));
+    }
+
+    return histogram;
+  }
+
   private NumericStatistics parseNumericStatistics(DBObject object) {
     NumericStatistics result = null;
 
     if (object == null) {
       result = new NumericStatistics();
-      
+
     } else {
 
       BasicDBObject obj = (BasicDBObject) object;

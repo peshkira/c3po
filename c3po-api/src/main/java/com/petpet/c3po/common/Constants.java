@@ -104,6 +104,7 @@ public final class Constants {
    * values). Note that there is a '{}' wildcard that has to be replaced with
    * the id of the desired property, prior to usage.
    */
+  @Deprecated
   public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);}else{emit('Conflicted', 1);}} else {emit('Unknown', 1);}}";
 
   /**
@@ -114,6 +115,7 @@ public final class Constants {
    * the year is used as the key. Note that there is a '{}' wildcard that has to
    * be replaced with the id of the desired property, prior to usage.
    */
+  @Deprecated
   public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value.getFullYear(), 1);}else{emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
 
   /**
@@ -126,11 +128,13 @@ public final class Constants {
    * the width, the id 1 marks the number of elements where the numeric property
    * was between the width and 2*width and so on.
    */
+  @Deprecated
   public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['{1}'] != null) {if (this.metadata['{1}'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['{1}'].value / {2});emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
    */
+  @Deprecated
   public static final String HISTOGRAM_REDUCE = "function reduce(key, values) {var res = 0;values.forEach(function (v) {res += v;});return res;}";
 
   /**

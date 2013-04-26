@@ -124,20 +124,22 @@ public interface PersistenceLayer {
    * Returns a property value histogram for the given property and type and
    * respecting the given filter.
    * 
-   * @param clazz
-   *          the type of the objects to look at.
+   * As this method is a higher-level query it should only support the Element
+   * class.
+   * 
    * @param p
-   *          the property for which the value histogram will be created
+   *          the property for which the value histogram will be created in the
+   *          corresponding model object
    * @param filter
    *          the filter that has to be applied before the operation is
    *          conducted
    * @return a map with the distinct values as keys (strings) and their
-   *         occurrences as map-values (integer)
+   *         occurrences as map-values (long)
    * 
    * @throws UnsupportedOperationException
    *           if the current persistence layer cannot create such a histogram.
    */
-  <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
+  <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
       throws UnsupportedOperationException;
 
   /**

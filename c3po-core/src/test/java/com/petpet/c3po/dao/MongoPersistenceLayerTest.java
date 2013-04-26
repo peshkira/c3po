@@ -1,6 +1,7 @@
 package com.petpet.c3po.dao;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,8 +33,24 @@ public class MongoPersistenceLayerTest {
   public void shouldTestNumericAggregation() throws Exception {
     Configurator.getDefaultConfigurator().configure();
     PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-    Property property = persistence.getCache().getProperty("size");
+    Property property = persistence.getCache().getProperty("pagecount");
     NumericStatistics numericStatistics = persistence.getNumericStatistics(property, new Filter(new FilterCondition("collection", "govdocs")));
+    System.out.println(numericStatistics.getCount());
+  }
+  
+  //@Test
+  public void shouldTestHistogramGeneration() throws Exception {
+    Configurator.getDefaultConfigurator().configure();
+    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+    Property mimetype = persistence.getCache().getProperty("created");
+    long start = System.currentTimeMillis();
+    Map<String, Long> mimetypeHistogram = persistence.getValueHistogramFor(mimetype, null);
+    long end = System.currentTimeMillis();
     
+    for (String val : mimetypeHistogram.keySet()) {
+      System.out.println(val + ": " + mimetypeHistogram.get(val));
+    }
+    
+    System.out.println("Time: " + (end - start));
   }
 }

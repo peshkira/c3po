@@ -21,6 +21,7 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
  */
 public class MongoFilterSerializer {
 
+  // TODO fix this. Pass the class and decide
   private static final String[] EXCLUDE = { "collection" };
 
   /**
@@ -45,7 +46,7 @@ public class MongoFilterSerializer {
         if (distinctFields.get(field) == 1) {
 
           Object val = this.getValueForField(conditions, field);
-          and.add(new BasicDBObject(this.prepareProperty(field), val));
+          and.add(new BasicDBObject(this.mapFieldTopProperty(field), val));
 
         } else {
 
@@ -55,12 +56,33 @@ public class MongoFilterSerializer {
         }
 
       }
-
-      result.put("$and", and);
+      
+      if (and.size() > 0) {
+        result.put("$and", and);
+      }
 
     }
 
     return result;
+  }
+
+  /**
+   * Wraps the field within a metadata.[field].value if necessary, so that it
+   * corresponds to the current element structure.
+   * 
+   * @param f
+   *          the field to wrap
+   * @return the wrapped field.
+   */
+  public String mapFieldTopProperty(String f) {
+    // TODO check if there is an exception to the property name
+    // otherwise, wrap in metadata.[property].value
+
+    if (Arrays.asList(EXCLUDE).contains(f)) {
+      return f;
+    }
+
+    return "metadata." + f + ".value";
   }
 
   /**
@@ -78,29 +100,11 @@ public class MongoFilterSerializer {
 
     for (FilterCondition fc : conditions) {
       if (field.equals(fc.getField())) {
-        or.add(new BasicDBObject(this.prepareProperty(field), fc.getValue()));
+        or.add(new BasicDBObject(this.mapFieldTopProperty(field), fc.getValue()));
       }
     }
 
     return new BasicDBObject("$or", or);
-  }
-
-  /**
-   * Wraps the field within a metadata.[field].value.
-   * 
-   * @param f
-   *          the field to wrap
-   * @return the wrapped field.
-   */
-  private String prepareProperty(String f) {
-    // TODO check if there is an exception to the property name
-    // otherwise, wrap in metadata.[property].value
-
-    if (Arrays.asList(EXCLUDE).contains(f)) {
-      return f;
-    }
-
-    return "metadata." + f + ".value";
   }
 
   /**

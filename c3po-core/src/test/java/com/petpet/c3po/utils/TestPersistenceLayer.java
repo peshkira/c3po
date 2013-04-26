@@ -72,7 +72,7 @@ public class TestPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
+  public <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
       throws UnsupportedOperationException {
 
     LOG.debug("getValueHistogram()");

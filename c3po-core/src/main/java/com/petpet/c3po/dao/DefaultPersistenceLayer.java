@@ -107,10 +107,10 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> Map<String, Integer> getValueHistogramFor(Class<T> clazz, Property p, Filter filter)
+  public <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
       throws UnsupportedOperationException {
 
-    return this.persistence.getValueHistogramFor(clazz, p, filter);
+    return this.persistence.getValueHistogramFor(p, filter);
   }
 
   @Override
