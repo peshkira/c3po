@@ -10,7 +10,6 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
@@ -21,7 +20,6 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.api.model.helper.PropertyType;
-import com.petpet.c3po.dao.mongo.ElementDeserialzer;
 import com.petpet.c3po.dao.mongo.ElementSerializer;
 
 public class DataHelperTest {

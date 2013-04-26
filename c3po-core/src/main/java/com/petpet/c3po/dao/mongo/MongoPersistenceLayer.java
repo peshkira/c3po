@@ -192,7 +192,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     this.filterSerializer = new MongoFilterSerializer();
 
     this.collections = new HashMap<String, DBCollection>();
-
+    
   }
 
   /**
@@ -236,6 +236,12 @@ public class MongoPersistenceLayer implements PersistenceLayer {
       this.collections.put(Element.class.getName(), this.db.getCollection(TBL_ELEMENTS));
       this.collections.put(Property.class.getName(), this.db.getCollection(TBL_PROEPRTIES));
       this.collections.put(ActionLog.class.getName(), this.db.getCollection(TBL_ACTIONLOGS));
+      
+      if (this.dbCache == null) {
+        DBCache cache = new DBCache();
+        cache.setPersistence(this);
+        this.dbCache = cache;
+      }
 
       this.connected = true;
 
@@ -293,7 +299,6 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   @Override
   public void setCache(Cache c) {
     this.dbCache = c;
-
   }
 
   /**
@@ -400,7 +405,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     DBObject query = this.getCachedFilter(filter);
     DBCollection dbCollection = this.getCollection(clazz);
-    dbCollection.findAndRemove(query);
+    dbCollection.remove(query);
 
   }
 

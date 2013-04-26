@@ -1,7 +1,5 @@
 package com.petpet.c3po.dao;
 
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 
 import junit.framework.Assert;
@@ -15,6 +13,13 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.dao.mongo.MongoFilterSerializer;
 
+/**
+ * Tests whether the {@link MongoFilterSerializer} follows the proposed
+ * convention in {@link Filter}.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class MongoFilterSerializerTest {
 
   MongoFilterSerializer ser;
@@ -72,7 +77,7 @@ public class MongoFilterSerializerTest {
     String expr = "{ \"$and\" : [ { \"$or\" : [ { \"metadata.mimetype.value\" : \"applciation/pdf\"} , { \"metadata.mimetype.value\" : \"text/html\"} , { \"metadata.mimetype.value\" : \"text/xml\"}]}]}";
     Assert.assertEquals(expr, val);
   }
-  
+
   @Test
   public void shouldTestMongoAndOrFilterSerialization() throws Exception {
     Filter f = Mockito.mock(Filter.class);
@@ -99,7 +104,7 @@ public class MongoFilterSerializerTest {
 
     Mockito.when(fc4.getField()).thenReturn(property2);
     Mockito.when(fc4.getValue()).thenReturn(value4);
-    
+
     Mockito.when(f.getConditions()).thenReturn(Arrays.asList(fc1, fc2, fc3, fc4));
 
     DBObject filter = ser.serialize(f);

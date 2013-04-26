@@ -11,16 +11,20 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.mongodb.DBCursor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.utils.DataHelper;
 
+/**
+ * Tests the {@link DBCache} class.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class DBCacheTest {
 
   private DBCache cache;
@@ -102,6 +106,25 @@ public class DBCacheTest {
     this.cache.getSource("test", "v0.1");
 
     Assert.fail("This code should not have been reached, failing test");
+  }
+
+  @Test
+  public void shouldTestCacheClear() throws Exception {
+    this.cache.clear();
+
+    String key = "test";
+    Object test = this.cache.getObject(key);
+    Assert.assertNull(test);
+
+    this.cache.put(key, new Object());
+
+    test = this.cache.getObject(key);
+    Assert.assertNotNull(test);
+
+    this.cache.clear();
+
+    test = this.cache.getObject(key);
+    Assert.assertNull(test);
   }
 
 }

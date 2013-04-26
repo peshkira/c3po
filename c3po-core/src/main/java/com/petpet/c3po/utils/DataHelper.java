@@ -121,6 +121,7 @@ public final class DataHelper {
     return e;
   }
 
+  @Deprecated
   public static Source parseSource(DBObject object) {
     String id = (String) object.get("_id");
     String name = (String) object.get("name");
@@ -134,6 +135,7 @@ public final class DataHelper {
     return s;
   }
 
+  @Deprecated
   public static Filter parseFilter(DBObject object) {
     String d = (String) object.get("descriminator");
     String c = (String) object.get("collection");
@@ -155,6 +157,7 @@ public final class DataHelper {
     return new ActionLog(c, a, d);
   }
 
+  @Deprecated
   public static BasicDBObject getFilterQuery(Filter filter) {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
