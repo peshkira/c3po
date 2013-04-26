@@ -29,7 +29,7 @@ public class MongoPersistenceLayerTest {
     
   }
   
-  //@Test
+  @Test
   public void shouldTestNumericAggregation() throws Exception {
     Configurator.getDefaultConfigurator().configure();
     PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();

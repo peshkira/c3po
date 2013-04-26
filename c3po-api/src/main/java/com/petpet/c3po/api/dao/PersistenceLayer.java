@@ -185,12 +185,17 @@ public interface PersistenceLayer {
   void setCache(Cache c);
 
   /**
-   * Inserts or updates the given object to the underlying data store.
+   * Inserts or updates the given object to the underlying data store. Note that
+   * if the filter is null the backend provider might not be able to infer which
+   * object should be updated. Make sure the filter uniquely identifies all
+   * objects that have to be updated with the passed one.
    * 
    * @param object
    *          the object to update.
+   * @param f
+   *          the filter that uniquely identifies the object.
    */
-  <T extends Model> void update(T object);
+  <T extends Model> void update(T object, Filter f);
 
   /*
    * DEPRECATED METHODS Will be removed after the changes are done...

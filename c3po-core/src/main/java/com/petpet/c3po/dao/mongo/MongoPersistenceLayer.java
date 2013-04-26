@@ -1,7 +1,7 @@
 package com.petpet.c3po.dao.mongo;
 
-import static com.mongodb.MapReduceCommand.OutputType.MERGE;
 import static com.mongodb.MapReduceCommand.OutputType.INLINE;
+import static com.mongodb.MapReduceCommand.OutputType.MERGE;
 
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -18,7 +18,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MapReduceCommand;
-import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
@@ -173,6 +172,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   private MongoFilterSerializer filterSerializer;
 
+  /**
+   * The constructor initializes all needed objects, such as the serializers and
+   * deserializers.
+   */
   public MongoPersistenceLayer() {
     this.deserializers = new HashMap<String, ModelDeserializer>();
     this.deserializers.put(Element.class.getName(), new ElementDeserialzer(this));
@@ -192,9 +195,27 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * Establishes the connection to mongo database. This method relies on the
+   * following configs being passed as arguments: <br>
+   * db.name <br>
+   * db.host <br>
+   * db.port <br>
+   * 
+   * Once the connection is open, the method will ensure that the mongo
+   * collections and indexes are created.
+   * 
+   * @throws C3POPersistenceException
+   *           if something goes wrong. Make sure to check the cause of the
+   *           exception.
+   */
   @Override
   public void establishConnection(Map<String, String> config) throws C3POPersistenceException {
     this.close();
+
+    if (config == null || config.keySet().isEmpty()) {
+      throw new C3POPersistenceException("Cannot establish connection. No configuration provided");
+    }
 
     try {
       String name = config.get(CNF_DB_NAME);
@@ -205,10 +226,11 @@ public class MongoPersistenceLayer implements PersistenceLayer {
       this.db = this.mongo.getDB(name);
 
       DBObject uid = new BasicDBObject("uid", 1);
+      DBObject key = new BasicDBObject("key", 1);
       DBObject unique = new BasicDBObject("unique", true);
 
       this.db.getCollection(TBL_ELEMENTS).ensureIndex(uid, unique);
-      this.db.getCollection(TBL_PROEPRTIES).ensureIndex("key");
+      this.db.getCollection(TBL_PROEPRTIES).ensureIndex(key, unique);
 
       this.collections.put(Source.class.getName(), this.db.getCollection(TBL_SOURCES));
       this.collections.put(Element.class.getName(), this.db.getCollection(TBL_ELEMENTS));
@@ -236,6 +258,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * If the connection is open, then this method closes it. Otherwise, nothing
+   * happens.
+   */
   @Override
   public void close() throws C3POPersistenceException {
     if (this.isConnected() && this.mongo != null) {
@@ -245,16 +271,25 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     }
   }
 
+  /**
+   * Whether or not the persistence layer is connected.
+   */
   @Override
   public boolean isConnected() {
     return this.connected;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Cache getCache() {
     return this.dbCache;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void setCache(Cache c) {
     this.dbCache = c;
@@ -262,21 +297,25 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   }
 
   /**
-   * {@inheritDoc}
-   * 
-   * Clears the {@link DBCache} and removes all numeric statistics that are
-   * persisted by this provider.
+   * Clears the {@link DBCache} and removes all internally managed mongo
+   * collection that store cached results.
    */
   @Override
   public void clearCache() {
     synchronized (TBL_NUMERIC_STATISTICS) {
 
       this.dbCache.clear();
-      this.db.getCollection(TBL_NUMERIC_STATISTICS).remove(new BasicDBObject());
+
+      BasicDBObject all = new BasicDBObject();
+      this.db.getCollection(TBL_NUMERIC_STATISTICS).remove(all);
+      this.db.getCollection(TBL_HISTOGRAMS).remove(all);
 
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <T extends Model> Iterator<T> find(Class<T> clazz, Filter filter) {
 
@@ -295,6 +334,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return new MongoIterator<T>(modelDeserializer, cursor);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <T extends Model> void insert(T object) {
 
@@ -305,14 +347,42 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * Inserts or updates all objects that correspond to the given filter. Note,
+   * however, that if the object or the passed filter is null, nothing will
+   * happen.
+   * 
+   * @param object
+   *          the object to update.
+   * @param filter
+   *          the filter to apply in order to select the objects that will be
+   *          updated.
+   */
   @Override
-  public <T extends Model> void update(T object) {
-    // TODO update object
+  public <T extends Model> void update(T object, Filter f) {
+
+    DBObject filter = this.getCachedFilter(f);
+
+    if (filter.keySet().isEmpty()) {
+      LOG.warn("Cannot update an object without a filter");
+      return;
+    }
+
+    if (object == null) {
+      LOG.warn("Cannot update a null object");
+      return;
+    }
+
     DBCollection dbCollection = this.getCollection(object.getClass());
-    // dbCollection.update(q, o, true, false);
+    ModelSerializer serializer = this.getSerializer(object.getClass());
+    DBObject objectToUpdate = serializer.serialize(object);
+    dbCollection.update(filter, objectToUpdate, true, true);
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <T extends Model> void remove(T object) {
     DBCollection dbCollection = this.getCollection(object.getClass());
@@ -322,6 +392,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <T extends Model> void remove(Class<T> clazz, Filter filter) {
 
@@ -331,6 +404,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <T extends Model> long count(Class<T> clazz, Filter filter) {
 
@@ -340,6 +416,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter) {
 
@@ -350,6 +429,13 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
   }
 
+  /**
+   * Gets a value histogram for the given property and the given filter. This
+   * method works only over the elements mongo collection. Note that it does
+   * some internal caching and relies upon the fact that the
+   * {@link PersistenceLayer#clearCache()} method will be called every time new
+   * elements are added.
+   */
   @Override
   public <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
       throws UnsupportedOperationException {
@@ -377,54 +463,17 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return histogram;
   }
 
-  private DBObject histogramMapReduce(int key, Property p, Filter filter) {
-    String map = "";
-
-    DBObject query = this.getCachedFilter(filter);
-
-    if (p.getType().equals(PropertyType.DATE.toString())) {
-      map = DATE_HISTOGRAM_MAP.replace("@1", p.getKey());
-
-    } else if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
-      // TODO adjust bin width, (pass it via the filter may be?)
-
-      // String width = this.getConfig().get("bin_width");
-      //
-      // if (width == null) {
-      // String val = (String) this.getFilterquery().get("metadata." +
-      // this.property + ".value");
-      // width = inferBinWidth(val) + "";
-      // }
-
-      map = NUMERIC_HISTOGRAM_MAP.replace("@1", p.getKey()).replace("@2", "10");
-
-    } else {
-      map = HISTOGRAM_MAP.replace("@1", p.getId());
-    }
-
-    LOG.debug("Executing histogram map reduce job with following map:\n{}", map);
-    LOG.debug("filter query is:\n{}", query);
-    DBCollection elmnts = getCollection(Element.class);
-    MapReduceCommand cmd = new MapReduceCommand(elmnts, map, HISTOGRAM_REDUCE, null, INLINE, query);
-
-    MapReduceOutput output = elmnts.mapReduce(cmd);
-    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
-
-    DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
-    BasicDBObject old = new BasicDBObject("_id", key);
-    BasicDBObject res = new BasicDBObject(old.toMap());
-    res.put("results", results);
-    histCollection.update(old, res, true, false);
-
-    DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
-
-    if (cursor.count() == 0) {
-      return null;
-    }
-
-    return (DBObject) cursor.next().get("results");
-  }
-
+  /**
+   * Gets the numeric statistics for the given property and the given filter.
+   * This method works only over the elements mongo collection. Note that it
+   * does some internal caching and relies upon the fact that the
+   * {@link PersistenceLayer#clearCache()} method will be called every time new
+   * elements are added. Also note that the property has to be numeric and that
+   * it cannot be null.
+   * 
+   * @throws IllegalArgumentException
+   *           if the property is null or not numeric.
+   */
   @Override
   public NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException,
       IllegalArgumentException {
@@ -459,13 +508,78 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return result;
   }
 
+  /**
+   * This method obtains the histogram for the given property and filter by
+   * executing a map reduce job. It stores the results to an internally managed
+   * table under the given key.
+   * 
+   * @param key
+   *          the key under which to store the results within the cached table.
+   * @param p
+   *          the property that will be map reduced
+   * @param filter
+   *          the filter to apply
+   * @return a {@link DBObject} containing the results.
+   */
+  private DBObject histogramMapReduce(int key, Property p, Filter filter) {
+    String map = "";
+
+    DBObject query = this.getCachedFilter(filter);
+
+    if (p.getType().equals(PropertyType.DATE.toString())) {
+
+      map = DATE_HISTOGRAM_MAP.replace("@1", p.getKey());
+
+    } else if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
+
+      // TODO allow possibility for options in order to specify the bin width
+      // and potentially other options.
+      // hard coded bin width: 10
+      map = NUMERIC_HISTOGRAM_MAP.replace("@1", p.getKey()).replace("@2", "10");
+
+    } else {
+
+      map = HISTOGRAM_MAP.replace("@1", p.getId());
+    }
+
+    LOG.debug("Executing histogram map reduce job with following map:\n{}", map);
+    LOG.debug("filter query is:\n{}", query);
+    DBCollection elmnts = getCollection(Element.class);
+    MapReduceCommand cmd = new MapReduceCommand(elmnts, map, HISTOGRAM_REDUCE, null, INLINE, query);
+
+    MapReduceOutput output = elmnts.mapReduce(cmd);
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+
+    DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
+    BasicDBObject old = new BasicDBObject("_id", key);
+    BasicDBObject res = new BasicDBObject(old.toMap());
+    res.put("results", results);
+    histCollection.update(old, res, true, false);
+
+    DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
+
+    if (cursor.count() == 0) {
+      return null;
+    }
+
+    return (DBObject) cursor.next().get("results");
+  }
+
+  /**
+   * Executes a map reduce job in order to calculate the statistics for the
+   * given property.
+   * 
+   * @param property
+   *          the property (has to be numeric)
+   * @param filter
+   *          the filter to apply
+   * @return a {@link DBObject} with the results.
+   */
   private DBObject numericMapReduce(String property, Filter filter) {
     int key = getCachedResultId(property, filter);
 
     DBCollection elmnts = getCollection(Element.class);
     DBObject query = this.getCachedFilter(filter);
-    // TODO add this check in the map function...
-    query.put("metadata." + property, new BasicDBObject("$exists", true));
 
     String map = AGGREGATE_MAP.replaceAll("@1", key + "").replaceAll("@2", property);
     MapReduceCommand cmd = new MapReduceCommand(elmnts, map, AGGREGATE_REDUCE, TBL_NUMERIC_STATISTICS, MERGE, query);
@@ -483,10 +597,29 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return (DBObject) cursor.next().get("value");
   }
 
+  /**
+   * Generates a key out of the property and filter that is used to uniquely
+   * identify cached results.
+   * 
+   * @param property
+   *          the property of for which an operation was executed.
+   * @param filter
+   *          the filter that was used.
+   * @return the generated key.
+   */
   private int getCachedResultId(String property, Filter filter) {
     return (property + filter.hashCode()).hashCode();
   }
 
+  /**
+   * Parses the histogram results out of a {@link DBObject}. This method assumes
+   * that the passed db object contains a list of {@link DBObject}s with every
+   * result. (As it is outputted by the map reduce job).
+   * 
+   * @param object
+   *          the object to parse.
+   * @return the histogram map.
+   */
   private Map<String, Long> parseHistogramResults(DBObject object) {
     Map<String, Long> histogram = new HashMap<String, Long>();
 
@@ -502,6 +635,13 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return histogram;
   }
 
+  /**
+   * Parses the numeric statistics out of given {@link DBObject}.
+   * 
+   * @param object
+   *          the object to parse.
+   * @return a {@link NumericStatistics} object that wraps the results.
+   */
   private NumericStatistics parseNumericStatistics(DBObject object) {
     NumericStatistics result = null;
 
@@ -526,14 +666,35 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return result;
   }
 
+  /**
+   * Gets the correct serializer for that class.
+   * 
+   * @param clazz
+   *          the class that we want to serialize.
+   * @return the serializer.
+   */
   private <T extends Model> ModelSerializer getSerializer(Class<T> clazz) {
     return this.serializers.get(clazz.getName());
   }
 
+  /**
+   * Gets the correct deserializer for the given class.
+   * 
+   * @param clazz
+   *          the class that we want to deserialize.
+   * @return the deserializer.
+   */
   private <T extends Model> ModelDeserializer getDeserializer(Class<T> clazz) {
     return this.deserializers.get(clazz.getName());
   }
 
+  /**
+   * Gets the correct mongo {@link DBCollection} for the given class.
+   * 
+   * @param clazz
+   *          the class we want to store.
+   * @return the {@link DBCollection}.
+   */
   private <T extends Model> DBCollection getCollection(Class<T> clazz) {
     return this.collections.get(clazz.getName());
   }

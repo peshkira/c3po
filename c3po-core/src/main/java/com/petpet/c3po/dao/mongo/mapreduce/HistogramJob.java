@@ -15,6 +15,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
 
+@Deprecated
 public class HistogramJob extends MapReduceJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(HistogramJob.class);

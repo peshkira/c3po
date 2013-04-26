@@ -110,7 +110,7 @@ public class TestPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> void update(T object) {
+  public <T extends Model> void update(T object, Filter f) {
     LOG.debug("update()");
   }
 

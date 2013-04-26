@@ -138,8 +138,8 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   }
 
   @Override
-  public <T extends Model> void update(T object) {
-    this.persistence.update(object);
+  public <T extends Model> void update(T object, Filter f) {
+    this.persistence.update(object, f);
   }
 
   // --- DEPRECATED METHODS REMOVE THEM
