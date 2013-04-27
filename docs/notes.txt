@@ -51,3 +51,17 @@ Idee:
 		
 	Dadurch ließen sich auf Auswertungen über die Nützlichkeit der Rules machen und man könnte sie rückgängig machen
 		oder stichprobenweise kontrollieren.
+		
+Bzgl. der Regeln:
+	Oft ist es einfach so, dass die unterschiedlichen tools (file utility, Jhove, exiftools, usw) die format/mimetypes einfach anders benennen, z.B.
+	html:
+		* format : Hypertext Markup Language [Jhove 1.5], Extensible Hypertext Markup Language [Droid 3.0]
+		* mimetype : text/html [Jhove 1.5], application/xhtml+xml [Droid 3.0]
+		
+	Hier könnte man einfache matching rules einbauen (was heißt wie in welchem tool, evtl mit regex)
+		
+	oder schlicht und einfach anders erkennen, z.B.
+		* format : Plain text [Jhove 1.5], Comma Separated Values [Droid 3.0],
+		* mimetype : text/plain [Jhove 1.5], text/csv [Droid 3.0],
+		
+	Hier müsste man definieren, was Vorrang hat; in diesem Fall Droid, da es tatsächlich eine csv Datei ist

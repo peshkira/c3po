@@ -2,6 +2,7 @@
 %\documentclass[a4paper,10pt]{scrartcl}
 
 \usepackage[utf8]{inputenc}
+\usepackage{hyperref}
 
 \title{Conflict Reduction by Rulebased Postprocessing in C3PO}
 \author{Lukas Rötzer, Peter Schmidt}
@@ -18,5 +19,33 @@
 
 \begin{document}
 \maketitle
+\clearpage
+
+\section{Introduction}
+
+The goal is to develop and apply post-processing methods and tools to FITS characterisation files within c3po to reduce the problem of "conflicting values" and significantly improve data quality. 
+
+C3PO already has a way to add Post-Processing rules. There is an interface called com.petpet.c3po.adaptor.rules.PostProcessingRule.java in the c3po-core module, which can be implemented and added in com.petpet.c3po.controller.Controller.java. The rules are executed during the import of the FITS characterisation files and are applied after they are parsed.
+
+The FITS adapter uses an Apache Commons Digester to parse the XML files and to trigger specific events based on rules\footnote{\url{http://commons.apache.org/proper/commons-digester/guide/core.html\#doc.Rules}}.
+
+The \emph{getElements} method pushes a \emph{DigesterContext} on to the Digester-Stack and handles the metadata, which is basically the XML-Stream.
+The adaptor rules are used to parse the parameters and the data from the XML file in java objects and properties of the digester context.
+
+Afterwards, when the DigesterContext is completely built from the XML file, the \emph{postprocessing} are executed:
+\begin{itemize}
+\item the metadata is set
+\item the collection of the db is set
+\item if desired, date values can be obtained
+\item at last, the postprocessing rules are called
+\end{itemize}
+
+\section{Problem Description}
+
+FITS, by its design, uses some different tools to analyse the given data. The problem with this approach is, that some tools return different values for specific files.
+
+For example, when a HTML file is evaluated, \emph{JHove} returns "Hypertext Markup Language" as format string, whereas \emph{Droid} returns "Extensible Hypertext Markup Language". This results in a conflicted state.
+
+\section{Approach}
 
 \end{document}
