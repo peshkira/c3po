@@ -38,9 +38,7 @@ public class FITSAdaptor extends AbstractAdaptor {
   }
 
   @Override
-  public void configure(Map<String, Object> config) {
-    this.setConfig(config);
-
+  public void configure() {
     this.inferDate = this.getBooleanConfig(Constants.CNF_INFER_DATE, false);
     this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
   }
@@ -155,8 +153,7 @@ public class FITSAdaptor extends AbstractAdaptor {
     }
 
     try {
-      DigesterContext context = new DigesterContext(this.getController().getPersistence().getCache(),
-          this.getPreProcessingRules());
+      DigesterContext context = new DigesterContext(this.getCache(), this.getPreProcessingRules());
       this.digester.push(context);
       context = (DigesterContext) this.digester.parse(this.metadata.getData());
       final Element element = this.postProcess(context);
@@ -164,14 +161,14 @@ public class FITSAdaptor extends AbstractAdaptor {
       return element;
 
     } catch (IOException e) {
-      LOG.error("An exception occurred while processing {}: {}", this.metadata, e.getMessage());
+      LOG.error("An exception occurred while processing {}: {}", this.metadata.getFileName(), e.getMessage());
     } catch (SAXException e) {
-      LOG.error("An exception occurred while parsing {}: {}", this.metadata, e.getMessage());
+      LOG.error("An exception occurred while parsing {}: {}", this.metadata.getFileName(), e.getMessage());
     } finally {
       try {
         this.metadata.getData().close();
       } catch (IOException ioe) {
-        LOG.error("An exception occurred while closing {}: {}", this.metadata, ioe.getMessage());
+        LOG.error("An exception occurred while closing {}: {}", this.metadata.getFileName(), ioe.getMessage());
       }
     }
 
@@ -187,7 +184,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       element.setCollection(this.collection);
 
       if (this.inferDate) {
-        element.extractCreatedMetadataRecord(this.getController().getPersistence().getCache().getProperty("created"));
+        element.extractCreatedMetadataRecord(this.getCache().getProperty("created"));
       }
 
       // if for some reason there was no uid, set a random one.
@@ -196,7 +193,7 @@ public class FITSAdaptor extends AbstractAdaptor {
       }
 
     }
-    
+
     List<PostProcessingRule> postProcessingRules = this.getPostProcessingRules();
     for (PostProcessingRule rule : postProcessingRules) {
       element = rule.process(element);
@@ -206,29 +203,14 @@ public class FITSAdaptor extends AbstractAdaptor {
   }
 
   @Override
-  public void run() {
-    MetadataStream next = this.getController().getNext();
-
-    while (next != null) {
-      try {
-        this.metadata = next;
-
-        final Element element = this.getElement();
-        if (element != null) {
-          
-          this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
-
-        } else {
-          LOG.warn("No element could be extracted for file {}", metadata.getFileName());
-          // potentially move file to some place for further investigation.
-        }
-
-      } catch (Exception e) {
-        // save thread from dying due to processing error...
-        LOG.warn("An exception occurred for file '{}': {}", metadata.getFileName(), e.getMessage());
-      }
-
-      next = this.getController().getNext();
-    }
+  public Element parseElement(MetadataStream ms) {
+    this.metadata = ms;
+    return this.getElement();
   }
+
+  @Override
+  public String getAdaptorPrefix() {
+    return "fits";
+  }
+
 }

@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 
 import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.MetadataStream;
 
 public class PostProcessingPriority {
 
@@ -82,19 +83,19 @@ public class PostProcessingPriority {
   private class TestAdaptor extends AbstractAdaptor {
 
     @Override
-    public void run() {
+    public Element parseElement(MetadataStream ms) {
+      return null;
     }
 
     @Override
-    public void configure(Map<String, Object> config) {
+    public String getAdaptorPrefix() {
+      return null;
     }
 
-    public List<ProcessingRule> getRules() {
-      return super.getRules();
-    }
+    @Override
+    public void configure() {
+      // TODO Auto-generated method stub
 
-    public List<PreProcessingRule> getPreProcessingRules() {
-      return super.getPreProcessingRules();
     }
 
   }

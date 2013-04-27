@@ -19,7 +19,7 @@ public class FileSystemGatherer implements MetaDataGatherer {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileSystemGatherer.class);
 
-  private Map<String, Object> config;
+  private Map<String, String> config;
 
   private List<String> files;
 
@@ -29,12 +29,12 @@ public class FileSystemGatherer implements MetaDataGatherer {
 
   private int pointer;
 
-  public FileSystemGatherer(Map<String, Object> config) {
+  public FileSystemGatherer(Map<String, String> config) {
     this.config = config;
     this.init();
   }
 
-  public void setConfig(Map<String, Object> config) {
+  public void setConfig(Map<String, String> config) {
     this.config = config;
 
   }
@@ -78,7 +78,7 @@ public class FileSystemGatherer implements MetaDataGatherer {
     this.count = -1;
     this.remaining = -1;
     String path = (String) this.config.get(Constants.CNF_COLLECTION_LOCATION);
-    boolean recursive = (Boolean) this.config.get(Constants.CNF_RECURSIVE);
+    boolean recursive = Boolean.valueOf(this.config.get(Constants.CNF_RECURSIVE));
 
     if (path == null) {
       LOG.error("No path config provided");
@@ -133,5 +133,16 @@ public class FileSystemGatherer implements MetaDataGatherer {
       return accept;
     }
 
+  }
+
+  @Override
+  public MetadataStream getNext() {
+    throw new UnsupportedOperationException("Operation not supported");
+  }
+
+  @Override
+  public boolean hasNext() {
+    // TODO Auto-generated method stub
+    return false;
   }
 }

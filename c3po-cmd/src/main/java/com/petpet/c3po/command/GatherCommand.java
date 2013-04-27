@@ -37,13 +37,13 @@ public class GatherCommand implements Command {
     configurator.configure();
     this.pLayer = configurator.getPersistence();
 
-    final Map<String, Object> conf = new HashMap<String, Object>();
+    final Map<String, String> conf = new HashMap<String, String>();
     conf.put(Constants.CNF_COLLECTION_NAME, getCollectionName());
     conf.put(Constants.CNF_COLLECTION_LOCATION, this.getMetaDataPath());
     conf.put(Constants.CNF_INPUT_TYPE, this.getAdaptorType());
-    conf.put(Constants.CNF_RECURSIVE, this.isRecursive());
-    conf.put(Constants.CNF_THREAD_COUNT, configurator.getIntProperty(Constants.CNF_THREAD_COUNT));
-    conf.put(Constants.CNF_INFER_DATE, configurator.getBooleanProperty(Constants.CNF_INFER_DATE));
+    conf.put(Constants.CNF_RECURSIVE, this.isRecursive() + "");
+    conf.put(Constants.CNF_THREAD_COUNT, configurator.getStringProperty(Constants.CNF_THREAD_COUNT));
+    conf.put(Constants.CNF_INFER_DATE, configurator.getStringProperty(Constants.CNF_INFER_DATE));
 
     final Controller ctrl = new Controller(this.pLayer);
     try {

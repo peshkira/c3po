@@ -28,31 +28,6 @@ public class TIKAAdaptor extends AbstractAdaptor {
 
   }
 
-  @Override
-  public void run() {
-    MetadataStream object = this.getController().getNext();
-
-    while (object != null) {
-      LOG.debug("Parsing file: {}", object.getFileName());
-      try {
-        Map<String, String> metadata = TIKAResultParser.getKeyValueMap(object.getData());
-        Element element = this.createElement(metadata);
-
-        if (element != null) {
-          this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
-          LOG.debug("Storing element: {}", element.getUid());
-        } else {
-          LOG.error("Could not parse element from {}", object.getFileName());
-        }
-
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-
-      object = this.getController().getNext();
-    }
-  }
-
   private Element createElement(Map<String, String> metadata) {
 
     String name = metadata.remove("resourceName");
@@ -68,7 +43,7 @@ public class TIKAAdaptor extends AbstractAdaptor {
       String value = metadata.get(key);
       key = key.replace('.', '_');
       key = TIKAHelper.getPropertyKeyByTikaName(key);
-      
+
       if (key != null) {
         Property prop = cache.getProperty(key);
         MetadataRecord record = new MetadataRecord(prop, value);
@@ -85,9 +60,26 @@ public class TIKAAdaptor extends AbstractAdaptor {
   }
 
   @Override
-  public void configure(Map<String, Object> config) {
-    this.setConfig(config);
+  public void configure() {
     this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
+  }
+
+  // TODO implement properly.
+  @Override
+  public Element parseElement(MetadataStream ms) {
+    try {
+      Map<String, String> metadata = TIKAResultParser.getKeyValueMap(ms.getData());
+      Element element = this.createElement(metadata);
+      return element;
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  @Override
+  public String getAdaptorPrefix() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.petpet.c3po.adaptor.rules.PreProcessingRule;
 import com.petpet.c3po.api.dao.Cache;
+import com.petpet.c3po.api.dao.ReadOnlyCache;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
@@ -13,7 +14,7 @@ import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 
 public class DigesterContext {
 
-  private Cache cache;
+  private ReadOnlyCache cache;
 
   private Element element;
 
@@ -23,7 +24,7 @@ public class DigesterContext {
 
   private List<PreProcessingRule> rules;
 
-  public DigesterContext(Cache cache, List<PreProcessingRule> rules) {
+  public DigesterContext(ReadOnlyCache cache, List<PreProcessingRule> rules) {
     this.cache = cache;
     this.values = new ArrayList<MetadataRecord>();
     this.formatSources = new ArrayList<String>();

@@ -19,13 +19,14 @@ public interface MetaDataGatherer {
    * 
    * @param config
    */
-  void setConfig(Map<String, Object> config);
+  void setConfig(Map<String, String> config);
 
   /**
    * The overall count of the meta data records or -1 if unknown.
    * 
    * @return the count of the records.
    */
+  @Deprecated
   long getCount();
 
   /**
@@ -33,6 +34,7 @@ public interface MetaDataGatherer {
    * 
    * @return the count of the remaining records.
    */
+  @Deprecated
   long getRemaining();
 
   /**
@@ -45,5 +47,19 @@ public interface MetaDataGatherer {
    * @return
    */
   List<MetadataStream> getNext(int count);
+
+  /**
+   * Gets the next {@link MetadataStream} object.
+   * 
+   * @return
+   */
+  MetadataStream getNext();
+
+  /**
+   * Whether or not the gatherer has a next element at the moment of the call.
+   * 
+   * @return
+   */
+  boolean hasNext();
 
 }
