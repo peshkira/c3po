@@ -192,7 +192,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     this.filterSerializer = new MongoFilterSerializer();
 
     this.collections = new HashMap<String, DBCollection>();
-    
+
   }
 
   /**
@@ -236,7 +236,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
       this.collections.put(Element.class.getName(), this.db.getCollection(TBL_ELEMENTS));
       this.collections.put(Property.class.getName(), this.db.getCollection(TBL_PROEPRTIES));
       this.collections.put(ActionLog.class.getName(), this.db.getCollection(TBL_ACTIONLOGS));
-      
+
       if (this.dbCache == null) {
         DBCache cache = new DBCache();
         cache.setPersistence(this);
@@ -355,7 +355,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   /**
    * Inserts or updates all objects that correspond to the given filter. Note,
    * however, that if the object or the passed filter is null, nothing will
-   * happen.
+   * happen. Note, also that the updated document is not replaced but $set is
+   * used on the changed fields. This implies that the caller has to make sure,
+   * the passed object has only the fields that will be updated. All other
+   * fields should be null or empty.
    * 
    * @param object
    *          the object to update.
@@ -381,7 +384,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBCollection dbCollection = this.getCollection(object.getClass());
     MongoModelSerializer serializer = this.getSerializer(object.getClass());
     DBObject objectToUpdate = serializer.serialize(object);
-    dbCollection.update(filter, objectToUpdate, true, true);
+    BasicDBObject set = new BasicDBObject("$set", objectToUpdate);
+    dbCollection.update(filter, set, true, true);
 
   }
 

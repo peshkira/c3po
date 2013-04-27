@@ -25,9 +25,18 @@ public class MongoActionLogSerializer implements MongoModelSerializer {
       ActionLog l = (ActionLog) object;
 
       log = new BasicDBObject();
-      log.put("collection", l.getCollection());
-      log.put("action", l.getAction());
-      log.put("date", l.getDate());
+
+      if (l.getCollection() != null && !l.getCollection().equals("")) {
+        log.put("collection", l.getCollection());
+      }
+
+      if (l.getAction() != null && !l.getAction().equals("")) {
+        log.put("action", l.getAction());
+      }
+
+      if (l.getDate() != null && !l.getDate().equals("")) {
+        log.put("date", l.getDate());
+      }
 
     }
 

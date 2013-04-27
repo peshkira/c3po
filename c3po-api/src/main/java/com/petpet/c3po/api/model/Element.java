@@ -51,6 +51,7 @@ public class Element implements Model {
   public Element(String uid, String name) {
     this.uid = uid;
     this.name = name;
+    this.metadata = new ArrayList<MetadataRecord>();
   }
 
   /**

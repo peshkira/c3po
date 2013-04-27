@@ -25,9 +25,17 @@ public class MongoPropertySerializer implements MongoModelSerializer {
       Property p = (Property) object;
 
       property = new BasicDBObject();
-      property.put("_id", p.getId());
-      property.put("key", p.getKey());
-      property.put("type", p.getType());
+      if (p.getId() != null && !p.getId().equals("")) {
+        property.put("_id", p.getId());
+      }
+
+      if (p.getKey() != null && !p.getKey().equals("")) {
+        property.put("key", p.getKey());
+      }
+      
+      if (p.getType() != null && !p.getType().equals("")) {
+        property.put("type", p.getType());
+      }
 
     }
     return property;

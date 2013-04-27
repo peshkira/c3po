@@ -41,7 +41,7 @@ public class MongoPersistenceLayerTest {
     Map<String, String> config = new HashMap<String, String>();
     config.put("db.host", "localhost");
     config.put("db.port", "27017");
-    config.put("db.name", "mongo_test");
+    config.put("db.name", "c3po_test_db");
 
     DataHelper.init();
 
@@ -85,68 +85,123 @@ public class MongoPersistenceLayerTest {
       Assert.assertTrue(Arrays.asList("test1", "test2", "test3").contains(element.getUid()));
     }
   }
-  
+
   @Test
   public void shouldTestFindOne() throws Exception {
     if (this.pLayer.isConnected()) {
-      
+
       this.insertTestData();
-      
+
       Iterator<Element> find = pLayer.find(Element.class, new Filter(new FilterCondition("uid", "test1")));
-      
+
       Assert.assertTrue(find.hasNext());
-      
+
       Element next = find.next();
       Assert.assertEquals("test1", next.getUid());
-      
+
       Assert.assertFalse(find.hasNext());
     }
   }
-  
+
   @Test
   public void shouldTestRemoveAll() throws Exception {
     if (this.pLayer.isConnected()) {
       this.insertTestData();
-      
+
       pLayer.remove(Element.class, null);
       Iterator<Element> find = pLayer.find(Element.class, null);
-      
+
       Assert.assertFalse(find.hasNext());
     }
   }
-  
+
   @Test
   public void shouldTestRemoveOne() throws Exception {
     if (this.pLayer.isConnected()) {
       this.insertTestData();
-      
+
       Iterator<Element> find = pLayer.find(Element.class, null);
       Element next = find.next();
-      
+
       this.pLayer.remove(next);
-      
+
       find = pLayer.find(Element.class, null);
-      
+
       List<Element> elements = new ArrayList<Element>();
       while (find.hasNext()) {
         elements.add(find.next());
       }
-      
+
       Assert.assertEquals(2, elements.size());
+    }
+  }
+
+  @Test
+  public void shouldTestInsert() throws Exception {
+    if (this.pLayer.isConnected()) {
+
+      Iterator<Element> iter = pLayer.find(Element.class, null);
+      assertFalse(iter.hasNext());
+
+      this.insertTestData();
+
+      iter = pLayer.find(Element.class, null);
+      assertTrue(iter.hasNext());
+    }
+  }
+
+  @Test
+  public void shouldTestUpdate() throws Exception {
+    if (this.pLayer.isConnected()) {
+      this.insertTestData();
+
+      Filter element1 = new Filter(new FilterCondition("uid", "test1"));
+      Iterator<Element> iter = this.pLayer.find(Element.class, element1);
+      Assert.assertTrue(iter.hasNext());
+
+      Element e = iter.next();
+      Assert.assertEquals("Some name 1", e.getName());
+      String updated = "Updated Name";
+      
+      e.setName(updated);
+      
+      this.pLayer.update(e, element1);
+      
+      iter = this.pLayer.find(Element.class, element1);
+      Assert.assertTrue(iter.hasNext());
+      e = iter.next();
+      
+      Assert.assertEquals(updated, e.getName());
     }
   }
   
   @Test
-  public void shouldTestInsert() throws Exception {
+  public void shouldTestUpdateAll() throws Exception {
     if (this.pLayer.isConnected()) {
-      
-      Iterator<Element> iter = pLayer.find(Element.class, null);
-      assertFalse(iter.hasNext());
-      
       this.insertTestData();
+
+      Filter filter = new Filter(new FilterCondition("collection", "test"));
+      List<Element> elements = new ArrayList<Element>();
+      Iterator<Element> iter = this.pLayer.find(Element.class, filter);
       
-      iter = pLayer.find(Element.class, null);
-      assertTrue(iter.hasNext());
+      while (iter.hasNext()) {
+        elements.add(iter.next());
+      }
+
+      Assert.assertEquals(3, elements.size());
+
+      Element upadtedElement = new Element("changed", "", "");
+      
+      this.pLayer.update(upadtedElement, filter);
+      
+      iter = this.pLayer.find(Element.class, filter);
+      
+      while (iter.hasNext()) {
+        Element e = iter.next();
+        Assert.assertEquals("changed", e.getCollection());
+        Assert.assertTrue(Arrays.asList("test1", "test2", "test3").contains(e.getUid()));
+      }
+      
     }
   }
 

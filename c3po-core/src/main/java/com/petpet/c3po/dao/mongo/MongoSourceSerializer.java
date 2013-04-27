@@ -25,9 +25,17 @@ public class MongoSourceSerializer implements MongoModelSerializer {
       Source s = (Source) object;
       source = new BasicDBObject();
 
-      source.put("_id", s.getId());
-      source.put("name", s.getName());
-      source.put("version", s.getVersion());
+      if (s.getId() != null && !s.getId().equals("")) {
+        source.put("_id", s.getId());
+      }
+
+      if (s.getName() != null && !s.getName().equals("")) {
+        source.put("name", s.getName());
+      }
+
+      if (s.getVersion() != null && !s.getVersion().equals("")) {
+        source.put("version", s.getVersion());
+      }
     }
 
     return source;

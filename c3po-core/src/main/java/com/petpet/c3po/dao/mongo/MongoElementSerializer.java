@@ -34,9 +34,17 @@ public class MongoElementSerializer implements MongoModelSerializer {
       Element element = (Element) object;
 
       document = new BasicDBObject();
-      document.put("name", element.getName());
-      document.put("uid", element.getUid());
-      document.put("collection", element.getCollection());
+      if (element.getName() != null && !element.getName().equals("")) {
+        document.put("name", element.getName());
+      }
+    
+      if (element.getUid() != null && !element.getUid().equals("")) {
+        document.put("uid", element.getUid());
+      }
+      
+      if (element.getCollection() != null && !element.getCollection().equals("")) {
+        document.put("collection", element.getCollection());
+      }
 
       BasicDBObject meta = new BasicDBObject();
       for (MetadataRecord r : element.getMetadata()) {
@@ -81,7 +89,9 @@ public class MongoElementSerializer implements MongoModelSerializer {
 
       }
 
-      document.put("metadata", meta);
+      if (!meta.keySet().isEmpty()) {
+        document.put("metadata", meta);
+      }
 
     }
 

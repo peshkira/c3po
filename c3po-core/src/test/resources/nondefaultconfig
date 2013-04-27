@@ -1,6 +1,5 @@
 #APP Properties
 c3po.thread.count = 42
-c3po.persistence=com.petpet.c3po.utils.TestPersistenceLayer
 
 #DB Default Properties
 db.host=localhost
