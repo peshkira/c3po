@@ -13,9 +13,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.datamodel.Property;
 import com.petpet.c3po.utils.DataHelper;
 
 public class CSVGenerator {

@@ -1,7 +1,7 @@
 package com.petpet.c3po.api.dao;
 
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 
 /**
  * A simple cache that allows easy retrieval of common objects as properties and
@@ -35,6 +35,26 @@ public interface Cache {
    * @return
    */
   Source getSource(String name, String version);
+
+  /**
+   * Any other non-persistence layer object that can be cached.
+   * 
+   * @param key
+   *          the key for the cache.
+   * @return the object that was cached in memory.
+   */
+  Object getObject(Object key);
+
+  /**
+   * Puts the given value to the given key. This object does not have to be
+   * stored to the persistence layer.
+   * 
+   * @param key
+   *          the key of the object
+   * @param value
+   *          the value to cache.
+   */
+  void put(Object key, Object value);
 
   /**
    * Clears the cache.

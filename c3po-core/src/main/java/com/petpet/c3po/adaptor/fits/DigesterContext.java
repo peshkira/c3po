@@ -5,11 +5,11 @@ import java.util.List;
 
 import com.petpet.c3po.adaptor.rules.PreProcessingRule;
 import com.petpet.c3po.api.dao.Cache;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.MetadataRecord.Status;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 
 public class DigesterContext {
 

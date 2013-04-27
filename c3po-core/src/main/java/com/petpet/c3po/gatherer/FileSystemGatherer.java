@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.MetaDataGatherer;
+import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.DigitalObjectStream;
 
 public class FileSystemGatherer implements MetaDataGatherer {
 
@@ -48,8 +48,8 @@ public class FileSystemGatherer implements MetaDataGatherer {
     return this.remaining;
   }
 
-  public List<DigitalObjectStream> getNext(int nr) {
-    List<DigitalObjectStream> next = new ArrayList<DigitalObjectStream>();
+  public List<MetadataStream> getNext(int nr) {
+    List<MetadataStream> next = new ArrayList<MetadataStream>();
 
     if (nr <= 0) {
       return next;
@@ -61,7 +61,7 @@ public class FileSystemGatherer implements MetaDataGatherer {
         this.remaining--;
 
         String fileName = this.files.get(pointer++);
-        DigitalObjectStream dos = new DigitalObjectStream(fileName, new FileInputStream(fileName));
+        MetadataStream dos = new MetadataStream(fileName, new FileInputStream(fileName));
         next.add(dos);
 
       } catch (FileNotFoundException e) {

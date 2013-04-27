@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.TestConfigGenerator;
 

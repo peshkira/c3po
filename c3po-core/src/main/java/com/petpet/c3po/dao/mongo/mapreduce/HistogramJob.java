@@ -1,4 +1,4 @@
-package com.petpet.c3po.analysis.mapreduce;
+package com.petpet.c3po.dao.mongo.mapreduce;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,10 +11,11 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Property.PropertyType;
 
+@Deprecated
 public class HistogramJob extends MapReduceJob {
 
   private static final Logger LOG = LoggerFactory.getLogger(HistogramJob.class);

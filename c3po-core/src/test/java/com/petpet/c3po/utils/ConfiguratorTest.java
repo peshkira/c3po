@@ -5,11 +5,15 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.common.Constants;
 
 public class ConfiguratorTest {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(ConfiguratorTest.class);
   
   private TestConfigGenerator helper;
 
@@ -25,42 +29,19 @@ public class ConfiguratorTest {
   }
 
   @Test
-  public void shouldLoadDefaultConfiguration() throws Exception {
-    final Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure();
-    
-    final PersistenceLayer persistence = configurator.getPersistence();
-    Assert.assertTrue(persistence.isConnected());
-    Assert.assertEquals(persistence.getDB().getName(), "c3po");
-    
-    Assert.assertEquals(8, configurator.getIntProperty(Constants.CNF_THREAD_COUNT));
-    
-  }
-  
-  @Test
-  public void shouldTestUserConfig() throws Exception {
-    //first make a backup of a potential real user config
-    //then copy nondefaultconfig to user home
-    // see setup() method 
-    
+  public void shouldLoadConfiguration() throws Exception {
+    LOG.info("Starting test 'shouldLoadConfiguration'");
+
     this.helper.copyTestConfigFile();
-    // then test
-    final Configurator configurator = Configurator.getDefaultConfigurator();
+    
+    Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure();
     
-    final PersistenceLayer persistence = configurator.getPersistence();
+    PersistenceLayer persistence = configurator.getPersistence();
+    
+    Assert.assertNotNull(persistence);
     Assert.assertTrue(persistence.isConnected());
-    Assert.assertEquals(persistence.getDB().getName(), "test");
-    
     Assert.assertEquals(42, configurator.getIntProperty(Constants.CNF_THREAD_COUNT));
-    
-    // then delete userconfig file
-    // then restore the old user config file
-    // see tearDown() method
   }
-
-
   
- 
-
 }

@@ -1,4 +1,4 @@
-package com.petpet.c3po.analysis.mapreduce;
+package com.petpet.c3po.dao.mongo.mapreduce;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +9,8 @@ import com.mongodb.DBCursor;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
+import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.ActionLog;
 import com.petpet.c3po.utils.ActionLogHelper;
 
 public class CollectionPropertiesJob extends MapReduceJob {

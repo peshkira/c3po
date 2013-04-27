@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.petpet.c3po.adaptor.AbstractAdaptor;
-import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.api.model.Element;
 
 public class PostProcessingPriority {
 

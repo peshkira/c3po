@@ -5,7 +5,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.petpet.c3po.datamodel.Property;
+import com.petpet.c3po.api.model.Property;
 
 public class HtmlInfoProcessingRuleTest {
 

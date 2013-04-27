@@ -23,34 +23,42 @@ public final class Constants {
   /**
    * The version of the core module.
    */
+  @Deprecated
   public static final String CORE_VERSION = "0.3.0";
 
-  public static final String API_VERSION = "0.3.0";
+  public static final String API_VERSION = "0.4.0-SNAPSHOT";
 
   /**
    * The elements collection in the document store.
    */
+  @Deprecated
   public static final String TBL_ELEMENTS = "elements";
 
   /**
    * The properties collection in the document store.
    */
+  @Deprecated
   public static final String TBL_PROEPRTIES = "properties";
 
   /**
    * The source collection in the document store.
    */
+  @Deprecated
   public static final String TBL_SOURCES = "sources";
 
   /**
    * The filters stored in the db.
    */
+  @Deprecated
   public static final String TBL_FILTERS = "filters";
 
   /**
    * The actions done on a collection basis in the db.
    */
+  @Deprecated
   public static final String TBL_ACTIONLOGS = "actionlogs";
+  
+  public static final String CNF_PERSISTENCE = "c3po.persistence";
 
   /**
    * A c3po configuration for the collection on which to operate.
@@ -91,26 +99,12 @@ public final class Constants {
   public static final String CNF_THREAD_COUNT = "c3po.thread.count";
 
   /**
-   * The hostname of the server where the db is running.
-   */
-  public static final String CNF_DB_HOST = "db.host";
-
-  /**
-   * The port of the server where the db is listening to.
-   */
-  public static final String CBF_DB_PORT = "db.port";
-
-  /**
-   * The database name.
-   */
-  public static final String CNF_DB_NAME = "db.name";
-
-  /**
    * A javascript Map function for building a histogram of a specific property.
    * All occurrences of that property are used (if they do not have conflcited
    * values). Note that there is a '{}' wildcard that has to be replaced with
    * the id of the desired property, prior to usage.
    */
+  @Deprecated
   public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);}else{emit('Conflicted', 1);}} else {emit('Unknown', 1);}}";
 
   /**
@@ -121,6 +115,7 @@ public final class Constants {
    * the year is used as the key. Note that there is a '{}' wildcard that has to
    * be replaced with the id of the desired property, prior to usage.
    */
+  @Deprecated
   public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value.getFullYear(), 1);}else{emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
 
   /**
@@ -133,11 +128,13 @@ public final class Constants {
    * the width, the id 1 marks the number of elements where the numeric property
    * was between the width and 2*width and so on.
    */
+  @Deprecated
   public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['{1}'] != null) {if (this.metadata['{1}'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['{1}'].value / {2});emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
    */
+  @Deprecated
   public static final String HISTOGRAM_REDUCE = "function reduce(key, values) {var res = 0;values.forEach(function (v) {res += v;});return res;}";
 
   /**
@@ -145,6 +142,7 @@ public final class Constants {
    * var of a numeric property. Note that there is a wildcard {1} that has to be
    * replaced with the id of the desired numeric property prior to usage.
    */
+  @Deprecated
   public static final String AGGREGATE_MAP = "function map() {emit(1,{sum: this.metadata['{1}'].value, min: this.metadata['{1}'].value,max: this.metadata['{1}'].value,count:1,diff: 0,});}";
 
   /**
@@ -159,12 +157,14 @@ public final class Constants {
   /**
    * The reduce of the aggregation functions.
    */
+  @Deprecated
   public static final String AGGREGATE_REDUCE = "function reduce(key, values) {var a = values[0];for (var i=1; i < values.length; i++){var b = values[i];var delta = a.sum/a.count - b.sum/b.count;var weight = (a.count * b.count)/(a.count + b.count);a.diff += b.diff + delta*delta*weight;a.sum += b.sum;a.count += b.count;a.min = Math.min(a.min, b.min);a.max = Math.max(a.max, b.max);}return a;}";
 
   /**
    * A finalize function for the aggregation map reduce job, to calculate the
    * average, standard deviation and variance.
    */
+  @Deprecated
   public static final String AGGREGATE_FINALIZE = "function finalize(key, value){ value.avg = value.sum / value.count;value.variance = value.diff / value.count;value.stddev = Math.sqrt(value.variance);return value;}";
   
   

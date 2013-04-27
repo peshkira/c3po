@@ -1,6 +1,6 @@
 package com.petpet.c3po.adaptor.rules;
 
-import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.api.model.Element;
 
 public interface PostProcessingRule extends ProcessingRule {
 

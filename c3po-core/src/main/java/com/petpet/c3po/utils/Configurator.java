@@ -3,7 +3,10 @@ package com.petpet.c3po.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +14,10 @@ import org.slf4j.LoggerFactory;
 import com.petpet.c3po.adaptor.fits.FITSHelper;
 import com.petpet.c3po.adaptor.tika.TIKAHelper;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.dao.DefaultPersistenceLayer;
+import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 /**
  * Configures the application based on a configuration file.
@@ -35,7 +40,7 @@ public final class Configurator {
   /**
    * The Default persistence layer implementation.
    */
-  private DefaultPersistenceLayer persistence;
+  private PersistenceLayer persistence;
 
   /**
    * A properties object holding the loaded configuration of the application.
@@ -58,20 +63,61 @@ public final class Configurator {
 
   }
 
-  // TODO change docs when everything is implemented.
   /**
    * Configures the application in the following order: <br>
-   * 1. loads the application configuration <br>
-   * 2. initializes the persistence layer <br>
-   * 3. loads the known properties <br>
-   * 4. inits the helper objects.
+   * 1. loads the application configuration file <br>
+   * 2. initializes the persistence layer with respect to the config <br>
+   * 3. inits the helper objects.
    */
   public void configure() {
-    LOG.debug("Configuring application.");
+    LOG.info("Hello, I am c3po, human content profiling relations");
     this.loadApplicationConfiguration();
     this.initPersistenceLayer();
-    this.loadKnownProperties();
     this.initializeHelpers();
+  }
+
+  /**
+   * Retrieves the current persistence layer.
+   * 
+   * @return {@link PersistenceLayer}
+   */
+  public PersistenceLayer getPersistence() {
+    return this.persistence;
+  }
+
+  /**
+   * Gets a String representation for the property key or an empty string if no
+   * property was found.
+   * 
+   * @param key
+   *          the key of the property
+   * @return a string with the value or an empty string if none found.
+   */
+  public String getStringProperty(final String key) {
+    return this.config.getProperty(key, "");
+  }
+
+  /**
+   * Returns an integer value for the specified property key or -1.
+   * 
+   * @param key
+   *          the key of the property.
+   * @return the value or -1.
+   */
+  public int getIntProperty(final String key) {
+    return Integer.parseInt(this.config.getProperty(key, "-1"));
+  }
+
+  /**
+   * Returns a boolean value for the specified property key or false if none was
+   * found.
+   * 
+   * @param key
+   *          the key of the property.
+   * @return the value or false.
+   */
+  public boolean getBooleanProperty(final String key) {
+    return Boolean.valueOf(this.config.getProperty(key, "false"));
   }
 
   /**
@@ -120,56 +166,97 @@ public final class Configurator {
 
   }
 
-  public PersistenceLayer getPersistence() {
-    return this.persistence;
-  }
-
   /**
-   * Gets a String representation for the property key or an empty string if no
-   * property was found.
-   * 
-   * @param key
-   *          the key of the property
-   * @return a string with the value or an empty string if none found.
-   */
-  public String getStringProperty(final String key) {
-    return this.config.getProperty(key, "");
-  }
-
-  /**
-   * Returns an integer value for the specified property key or -1.
-   * 
-   * @param key
-   *          the key of the property.
-   * @return the value or -1.
-   */
-  public int getIntProperty(final String key) {
-    return Integer.parseInt(this.config.getProperty(key, "-1"));
-  }
-
-  /**
-   * Returns a boolean value for the specified property key or false if none was
-   * found.
-   * 
-   * @param key
-   *          the key of the property.
-   * @return the value or false.
-   */
-  public boolean getBooleanProperty(final String key) {
-    return Boolean.valueOf(this.config.getProperty(key, "false"));
-  }
-
-  /**
-   * Initializes an empty cache and the default persistence layer.
+   * Initialises the persistence layer based on the property defined within the
+   * config file. If the config file does not define a persistence class or has
+   * "default" as value, then the default persistence layer class is
+   * initialised. If another class is found, then it is instantiated and set as
+   * the persistence layer. However, if the instantiation fails for some reason,
+   * then the default persistence layer is initialised, which still might be
+   * error prone.
    */
   private void initPersistenceLayer() {
+
+    String persistence = this.getStringProperty(Constants.CNF_PERSISTENCE);
+
+    if (persistence.equals("") || persistence.equals("default")) {
+
+      initDefaultPersistence();
+
+    } else {
+
+      try {
+        Class<PersistenceLayer> persistenceLayerClazz = (Class<PersistenceLayer>) Class.forName(persistence);
+
+        this.persistence = persistenceLayerClazz.newInstance();
+
+        this.initCache();
+
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+        LOG.error("Could not find persistence class '{}' on the classpath! Error: {}", persistence, e.getMessage());
+        LOG.warn("Trying to use the default persistence layer");
+        initDefaultPersistence();
+
+      } catch (InstantiationException e) {
+        LOG.error("Could not instantiate persistence layer class '{}'! Error: {}", persistence, e.getMessage());
+        LOG.warn("Trying to use the default persistence layer");
+        initDefaultPersistence();
+
+      } catch (IllegalAccessException e) {
+        LOG.error("Could not access persistence layer class '{}'! Error: {}", persistence, e.getMessage());
+        LOG.warn("Trying to use the default persistence layer");
+        initDefaultPersistence();
+      }
+
+    }
+
+    try {
+
+      Map<String, String> persistenceConfigs = this.getPersistenceConfigs();
+      this.persistence.establishConnection(persistenceConfigs);
+
+    } catch (C3POPersistenceException e) {
+      LOG.error("Could not establish connection to the data store: {}", e.getMessage());
+    }
+  }
+
+  /**
+   * Inits the default persistence layer and the cache.
+   */
+  private void initDefaultPersistence() {
     this.persistence = new DefaultPersistenceLayer();
 
-    final DBCache c = new DBCache();
+    this.initCache();
+  }
+
+  /**
+   * Inits the cache.
+   */
+  private void initCache() {
+    DBCache c = new DBCache();
     c.setPersistence(this.persistence);
-    
+
     this.persistence.setCache(c);
-    this.persistence.connect(this.config);
+  }
+
+  /**
+   * Takes all properties starting with 'db.' and puts them in a map.
+   * 
+   * @return a map of all properties related to the db.
+   */
+  private Map<String, String> getPersistenceConfigs() {
+    Map<String, String> dbConfig = new HashMap<String, String>();
+
+    Set<Object> keySet = this.config.keySet();
+    for (Object k : keySet) {
+      String key = (String) k;
+      if (key.startsWith("db.")) {
+        dbConfig.put(key, this.getStringProperty(key));
+      }
+    }
+
+    return dbConfig;
   }
 
   /**
@@ -184,21 +271,8 @@ public final class Configurator {
     // initialize any other helpers...
   }
 
-  private void loadKnownProperties() {
-    // TODO
-    // load known properties file
-    // load properties from db
-    // match the properties and update the db if necessary
-
-    // eventually load mapping of properties, e.g. lastModified maps to
-    // lastChanged
-
-  }
-
   /**
    * Static instance holder.
-   * 
-   * @author Petar Petrov <me@petarpetrov.org>
    * 
    */
   private static final class ConfiguratorHolder {

@@ -1,7 +1,9 @@
-package com.petpet.c3po.datamodel;
+package com.petpet.c3po.api.model.helper;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.petpet.c3po.api.model.Property;
 
 /**
  * A single metadata record of an element.

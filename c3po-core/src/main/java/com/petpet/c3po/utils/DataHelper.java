@@ -2,6 +2,9 @@ package com.petpet.c3po.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -15,20 +18,27 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.ActionLog;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.ActionLog;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Property.PropertyType;
-import com.petpet.c3po.datamodel.Source;
 
 public final class DataHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(DataHelper.class);
 
   private static Properties TYPES;
+  
+  /**
+   * Some date patterns used for date parsing.
+   */
+  private static final String[] PATTERNS = { "yyyy:MM:dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "dd MMM yyyy HH:mm",
+      "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
+      "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss", "yyyy-MM-dd'T'HH:mm:ss" };
 
   public static void init() {
     try {
@@ -44,6 +54,15 @@ public final class DataHelper {
   public static String getPropertyType(String key) {
     return TYPES.getProperty(key, "STRING");
   }
+  
+  public static String removeTrailingZero(final String str) {
+    if (str != null && str.endsWith(".0")) {
+      return str.substring(0, str.length() - 2);
+    }
+
+    return str;
+  }
+
 
   /**
    * Parses the element from a db object returned by the db.
@@ -52,6 +71,7 @@ public final class DataHelper {
    *          the object to parse.
    * @return the Element.
    */
+  @Deprecated
   public static Element parseElement(final DBObject obj, final PersistenceLayer pl) {
     String coll = (String) obj.get("collection");
     String uid = (String) obj.get("uid");
@@ -101,6 +121,7 @@ public final class DataHelper {
     return e;
   }
 
+  @Deprecated
   public static Source parseSource(DBObject object) {
     String id = (String) object.get("_id");
     String name = (String) object.get("name");
@@ -114,6 +135,7 @@ public final class DataHelper {
     return s;
   }
 
+  @Deprecated
   public static Filter parseFilter(DBObject object) {
     String d = (String) object.get("descriminator");
     String c = (String) object.get("collection");
@@ -126,6 +148,7 @@ public final class DataHelper {
     return f;
   }
 
+  @Deprecated
   public static ActionLog parseActionLog(DBObject object) {
     String c = (String) object.get("collection");
     String a = (String) object.get("action");
@@ -134,6 +157,7 @@ public final class DataHelper {
     return new ActionLog(c, a, d);
   }
 
+  @Deprecated
   public static BasicDBObject getFilterQuery(Filter filter) {
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
@@ -204,6 +228,167 @@ public final class DataHelper {
     }
 
     return result;
+  }
+  
+  
+  
+  /**
+   * Tries to infer the type of the value based on the property type and
+   * converts the value. Otherwise it leaves the string representation. This is
+   * valuable as the underlying persistence layer can store the native type
+   * instead of strings which makes some aggregation functions easier.
+   * 
+   * @param t
+   *          the type of the property @see {@link PropertyType}
+   * @param value
+   *          the value to convert
+   * @return an object with the specific type, or the original value. If the
+   *         passed value was null, an empty string is returned.
+   */
+  public static Object getTypedValue(String t, String value) {
+
+    if (value == null) {
+      return "";
+    }
+
+    PropertyType type = PropertyType.valueOf(t);
+    Object result = null;
+    switch (type) {
+      case STRING:
+        result = value;
+        break;
+      case BOOL:
+        result = getBooleanValue(value);
+        break;
+      case INTEGER:
+        result = getIntegerValue(value);
+        break;
+      case FLOAT:
+        result = getDoubleValue(value);
+        break;
+      case DATE:
+        result = getDateValue(value);
+        break;
+      case ARRAY:
+        break;
+    }
+
+    return (result == null) ? value : result;
+
+  }
+
+  /**
+   * Tries to convert to a date object. First the method tries to match the
+   * value based on some predefined patterns. If no pattern matches the the
+   * method checks if the value is a long. If nothing succeeds then null is
+   * returned.
+   * 
+   * @param value
+   *          the value to convert
+   * @return a date if successful, null otherwise.
+   */
+  private static Date getDateValue(String value) {
+    LOG.trace("parsing value {} as date", value);
+
+    final SimpleDateFormat fmt = new SimpleDateFormat();
+
+    Date result = null;
+    for (String p : PATTERNS) {
+
+      fmt.applyPattern(p);
+      result = parseDate(fmt, value);
+
+      if (result != null) {
+        break;
+      }
+    }
+
+    if (result == null) {
+      LOG.debug("No pattern matching for value {}, try to parse as long", value);
+    }
+
+    try {
+
+      if (value.length() != 14) {
+        LOG.trace("value is not 14 characters long, probably a long representation");
+        result = new Date(Long.valueOf(value));
+      }
+
+    } catch (NumberFormatException e) {
+      LOG.trace("date is not in long representation, trying pattern matching: {}", e.getMessage());
+    }
+
+    return result;
+  }
+
+  /**
+   * Gets a double out of the passed value.
+   * 
+   * @param value
+   *          the value to convert
+   * @return null if not a floating point string.
+   */
+  private static Double getDoubleValue(String value) {
+    try {
+      return Double.parseDouble(value);
+    } catch (NumberFormatException e) {
+      LOG.warn("Value {} is not an float", value);
+      return null;
+    }
+  }
+
+  /**
+   * Converts to integer.
+   * 
+   * @param value
+   *          the value to convert.
+   * @return the integer object or null if not a numeric value.
+   */
+  private static Long getIntegerValue(String value) {
+    try {
+      return Long.parseLong(value);
+    } catch (NumberFormatException e) {
+      LOG.warn("Value {} is not an integer", value);
+      return null;
+    }
+  }
+
+  /**
+   * A boolean representation of the passed string. If the string equals one of
+   * 'yes', 'true' or 'no', 'false' then the value is converted to the
+   * corresponding boolean. Otherwise null is returned
+   * 
+   * @param value
+   *          the value to convert
+   * @return the boolean representation of the value, or null if not a boolean.
+   */
+  private static Boolean getBooleanValue(String value) {
+    if (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) {
+      return new Boolean(true);
+    } else if (value.equalsIgnoreCase("no") || value.equalsIgnoreCase("false")) {
+      return new Boolean(false);
+    } else {
+      LOG.warn("Value {} is not a boolean", value);
+      return null;
+    }
+  }
+
+  /**
+   * Parses a date with the given dateformat.
+   * 
+   * @param fmt
+   *          the dateformat object to parse the date with.
+   * @param d
+   *          the string to parse.
+   * @return the date or null if parsing was not successful.
+   */
+  private static Date parseDate(DateFormat fmt, String d) {
+    try {
+      return fmt.parse(d);
+    } catch (ParseException e) {
+      LOG.trace("date could not be parsed: {}", e.getMessage());
+      return null;
+    }
   }
 
   private DataHelper() {

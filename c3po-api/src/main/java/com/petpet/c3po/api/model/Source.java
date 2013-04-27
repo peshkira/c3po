@@ -1,4 +1,4 @@
-package com.petpet.c3po.datamodel;
+package com.petpet.c3po.api.model;
 
 import java.util.UUID;
 
@@ -11,7 +11,7 @@ import com.mongodb.BasicDBObject;
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
-public class Source {
+public class Source implements Model {
 
   /**
    * The id of the source.
@@ -79,6 +79,7 @@ public class Source {
    * 
    * @return the source document.
    */
+  @Deprecated
   public BasicDBObject getDocument() {
     final BasicDBObject source = new BasicDBObject();
 

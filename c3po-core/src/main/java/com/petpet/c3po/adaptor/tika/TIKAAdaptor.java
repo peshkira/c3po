@@ -11,12 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.dao.Cache;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.MetadataStream;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.DigitalObjectStream;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Source;
 
 public class TIKAAdaptor extends AbstractAdaptor {
 
@@ -30,7 +30,7 @@ public class TIKAAdaptor extends AbstractAdaptor {
 
   @Override
   public void run() {
-    DigitalObjectStream object = this.getController().getNext();
+    MetadataStream object = this.getController().getNext();
 
     while (object != null) {
       LOG.debug("Parsing file: {}", object.getFileName());
