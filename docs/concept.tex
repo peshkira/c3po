@@ -1,10 +1,38 @@
-\documentclass[a4paper,10pt]{article}
+\documentclass[a4paper,12pt]{article}
 %\documentclass[a4paper,10pt]{scrartcl}
 
 \usepackage[utf8]{inputenc}
-\usepackage{hyperref}
 
-\title{Conflict Reduction by Rulebased Postprocessing in C3PO}
+
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=2cm,rmargin=2cm}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks,
+pdfpagelabels,
+pdfstartview = FitH,
+bookmarksopen = true,
+bookmarksnumbered = true,
+linkcolor = blue,
+plainpages = false,
+hypertexnames = false,
+citecolor = black] {hyperref}
+
+\usepackage{multirow}
+
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+
+\lhead{Conflict Reduction by Rulebased Postprocessing in C3PO}
+%\chead{}
+\rhead{}
+
+\lfoot{Lukas Rötzer, Peter Schmidt}
+\cfoot{}
+\rfoot{\thepage}
+
+\title{Conflict Reduction by Rulebased Postprocessing in C3PO\\ \medskip Concept}
 \author{Lukas Rötzer, Peter Schmidt}
 \date{25.4.2013}
 
@@ -18,21 +46,24 @@
 }
 
 \begin{document}
+
 \maketitle
+\thispagestyle{empty}
+
 \clearpage
 
 \section{Introduction}
 
-The goal is to develop and apply post-processing methods and tools to FITS characterisation files within c3po to reduce the problem of "conflicting values" and significantly improve data quality. 
+The goal is to develop and apply post-processing methods and tools to \emph{FITS}\footnote{\url{https://code.google.com/p/fits/}} characterisation files within c3po to reduce the problem of "conflicting values" and significantly improve data quality. 
 
-C3PO already has a way to add Post-Processing rules. There is an interface called com.petpet.c3po.adaptor.rules.PostProcessingRule.java in the c3po-core module, which can be implemented and added in com.petpet.c3po.controller.Controller.java. The rules are executed during the import of the FITS characterisation files and are applied after they are parsed.
+\emph{C3PO}\footnote{\url{http://ifs.tuwien.ac.at/imp/c3po}} already has a way to add Post-Processing rules. There is an interface called PostProcessingRule.java in the c3po-core module, which can be implemented and added in Controller.java. The rules are executed during the import of the \emph{FITS} characterisation files and are applied after they are parsed.
 
-The FITS adapter uses an Apache Commons Digester to parse the XML files and to trigger specific events based on rules\footnote{\url{http://commons.apache.org/proper/commons-digester/guide/core.html\#doc.Rules}}.
+The \emph{FITS} adapter uses an Apache Commons Digester to parse the XML files and to trigger specific events based on rules\footnote{\url{http://commons.apache.org/proper/commons-digester/guide/core.html\#doc.Rules}}.
 
 The \emph{getElements} method pushes a \emph{DigesterContext} on to the Digester-Stack and handles the metadata, which is basically the XML-Stream.
 The adaptor rules are used to parse the parameters and the data from the XML file in java objects and properties of the digester context.
 
-Afterwards, when the DigesterContext is completely built from the XML file, the \emph{postprocessing} are executed:
+Afterwards, when the DigesterContext is completely built from the XML file, the postprocessing method is executed, where:
 \begin{itemize}
 \item the metadata is set
 \item the collection of the db is set
@@ -42,10 +73,42 @@ Afterwards, when the DigesterContext is completely built from the XML file, the 
 
 \section{Problem Description}
 
-FITS, by its design, uses some different tools to analyse the given data. The problem with this approach is, that some tools return different values for specific files.
+\emph{FITS}, by its design, uses some different tools like \emph{exiftool} or \emph{JHove} to analyse the given data. The problem with this approach is, that these tools sometimes return different values for specific files.
 
-For example, when a HTML file is evaluated, \emph{JHove} returns "Hypertext Markup Language" as format string, whereas \emph{Droid} returns "Extensible Hypertext Markup Language". This results in a conflicted state.
+For example, when a HTML file is evaluated, \emph{JHove} returns "Hypertext Markup Language" as format string, whereas \emph{Droid} returns "Extensible Hypertext Markup Language". This results in a conflicted state and should be resolved properly to make it easier, or even possible, to build a strategy for the digital preservation of a file set.
+
+\clearpage
 
 \section{Approach}
+
+The idea is to implement a framework for generic, configurable rules. A way to specify them could be one or several XML files, which are read during run-time.
+Each rule would, for example, look out for a set of parameters in elements and change or add some values. So, in principle, these are if-then rules to solve conflicting properties.
+
+To ensure the traceability of the rules, and to confirm, that no valuable knowledge is lost, each change in an element should be logged:
+
+\begin{itemize}
+\item Which rules has been applied and in which order were they executed
+\item Which values were changed or added
+\end{itemize}
+
+This information will be stored in the database. An option to revert the changes could also be implemented, but this is most likely out of the scope of this project
+
+Some possibilities, how rules could work, are explained in the following sections.
+
+\subsection{Equalities}
+
+Often different tools, that are used in fits, have just different names for each and the same file format. For example, \emph{Jhove} classifies HTML files as "Hypertext Markup Language", while \emph{Droid} identifies them as "Extensible Hypertext Markup Language".
+
+Here one could implement some easy matching rules, which compare the different values and, if they are found as equal, will be set to the specified format.
+	
+\subsection{Priorities}
+
+Sometimes one tool can make a more concrete propostion about the format or mimetype of a file than others. For example, a CSV file is recognized by \emph{Jhove} as a simple plain text file, where \emph{Droid} rightly identified it as "Comma Separated Values".
+
+An approach could be, to assign priorities to different formats and/or values, where one with a higher priority will be chosen over one with a lower priority. Nevertheless such priorities should be assigned carefully and have to be tested properly.
+
+\subsection{Explicit Values}
+
+If the element is in conflicted state, it could also possible to look for other specific values, that are known to exist just on a specific file type or format. From this value one could derive the right format or mimetype.
 
 \end{document}
