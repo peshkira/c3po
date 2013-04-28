@@ -8,6 +8,8 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -23,12 +25,15 @@ import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.dao.mongo.MongoElementSerializer;
 
 public class DataHelperTest {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(DataHelperTest.class);
 
   @Test
   public void shouldTestElementParsing() throws Exception {
     Configurator.getDefaultConfigurator().configure();
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     
+    if (p.isConnected()) {
     final Property property = p.getCache().getProperty("mimetype");
     Source source = p.getCache().getSource("Jhove", "1.5");
     Source source2 = p.getCache().getSource("ffident", "0.2");
@@ -54,6 +59,9 @@ public class DataHelperTest {
     Assert.assertEquals(source.getName()+" " +source.getVersion(), elmnt.getMetadata().get(0).getSources().get(0));
 
     p.remove(elmnt);
+    } else {
+      LOG.error("No connection to the database established. Skipping test");
+    }
   }
   
   @Test

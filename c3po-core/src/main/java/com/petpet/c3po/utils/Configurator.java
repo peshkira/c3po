@@ -193,7 +193,6 @@ public final class Configurator {
         this.initCache();
 
       } catch (ClassNotFoundException e) {
-        e.printStackTrace();
         LOG.error("Could not find persistence class '{}' on the classpath! Error: {}", persistence, e.getMessage());
         LOG.warn("Trying to use the default persistence layer");
         initDefaultPersistence();
