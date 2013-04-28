@@ -1,5 +1,7 @@
 package com.petpet.c3po.api.adaptor;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -131,24 +133,45 @@ public abstract class AbstractAdaptor implements Runnable {
         // TODO add some other method
         // to check if the gatherer is finished
         // in order to decide when to break the loop
+        MetadataStream stream = null;
+
         synchronized (gatherer) {
           while (!gatherer.hasNext()) {
+
+            if (gatherer.isReady()) {
+              break;
+            }
+
             gatherer.wait();
           }
 
-          MetadataStream stream = this.gatherer.getNext();
-          if (stream != null) {
-            Element element = parseElement(stream);
-            this.submitElement(element);
-          }
+          stream = this.gatherer.getNext();
+        }
 
+        if (stream != null) {
+          System.out.println("Adapting file: " + stream.getFileName());
+          Element element = parseElement(stream);
+          this.submitElement(element);
+          InputStream data = stream.getData();
+          if (data != null) {
+            try {
+              data.close();
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+          }
+        }
+
+        if (gatherer.isReady() && !gatherer.hasNext()) {
+          break;
         }
 
       } catch (InterruptedException e) {
-        // LOG.warn("An error occurred in {}: {}", getName(), e.getMessage());
+        e.printStackTrace();
         break;
       }
     }
+
   }
 
   /**

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.gatherer.FileSystemGatherer;
+import com.petpet.c3po.gatherer.LocalFileGatherer;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
 //TODO generalize the gatherer with the interface.
@@ -33,7 +34,7 @@ public class Controller {
   private PersistenceLayer persistence;
   private ExecutorService adaptorPool;
   private ExecutorService consolidatorPool;
-  private FileSystemGatherer gatherer;
+  private LocalFileGatherer gatherer;
   private final Queue<Element> processingQueue;
   private int counter = 0;
 
@@ -46,14 +47,15 @@ public class Controller {
 
     this.checkConfiguration(config);
 
-    this.gatherer = new FileSystemGatherer(config);
+    this.gatherer = new LocalFileGatherer(config);
 
     int threads = Integer.parseInt(config.get(Constants.CNF_THREAD_COUNT));
     String type = (String) config.get(Constants.CNF_INPUT_TYPE);
     Map<String, String> adaptorcnf = this.getAdaptorConfig(config);
 
-    LOGGER.info("{} files to be processed for collection {}", gatherer.getCount(),
-        config.get(Constants.CNF_COLLECTION_NAME));
+    // LOGGER.info("{} files to be processed for collection {}",
+    // gatherer.getCount(),
+    // config.get(Constants.CNF_COLLECTION_NAME));
 
     this.startJobs(type, threads, adaptorcnf);
 
@@ -103,10 +105,13 @@ public class Controller {
     // LocalFileGatherer gatherer = new LocalFileGatherer();
 
     this.adaptorPool = Executors.newFixedThreadPool(threads);
-    this.consolidatorPool = Executors.newFixedThreadPool(3); // TODO change this
-
-    for (int i = 0; i < threads; i++) {
+    this.consolidatorPool = Executors.newFixedThreadPool(4); // TODO change this
+    
+    List<Consolidator> consolidators = new ArrayList<Consolidator>();
+    
+    for (int i = 0; i < 4; i++) {
       Consolidator c = new Consolidator(processingQueue);
+      consolidators.add(c);
       this.consolidatorPool.submit(c);
     }
     System.out.println("added consolidator workers");
@@ -119,46 +124,62 @@ public class Controller {
 
     for (int i = 0; i < threads; i++) {
       // final AbstractAdaptor f = this.getAdaptor(type);
-      final AbstractAdaptor f = this.getAdaptor("dummy");
+      final AbstractAdaptor a = this.getAdaptor(type);
       // TODO set gatherer.
-      f.setRules(rules);
-      f.setConfig(adaptorcnf);
-      f.configure();
-      f.setQueue(this.processingQueue);
+      a.setCache(persistence.getCache());
+      a.setQueue(processingQueue);
+      a.setGatherer(gatherer);
+      a.setConfig(adaptorcnf);
+      a.setRules(rules);
+      a.configure();
 
-      this.adaptorPool.submit(f);
+      this.adaptorPool.submit(a);
     }
     System.out.println("added adaptor workers");
 
     this.adaptorPool.shutdown();
 
     System.out.println("shutdown adaptor pool");
+    
+    this.gatherer.start();
 
-    // try {
-    // // What happens if the time out occurrs first?
-    // boolean terminated = this.adaptorPool.awaitTermination(Long.MAX_VALUE,
-    // TimeUnit.NANOSECONDS);
-    //
-    // if (terminated) {
-    // LOGGER.info("Gathering process finished successfully");
-    // // String collection = (String)
-    // adaptorcnf.get(Constants.CNF_COLLECTION_ID);
-    // // ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
-    // // new ActionLogHelper(this.persistence).recordAction(log);
-    //
-    // } else {
-    // LOGGER.error("Time out occurred, gathering process was terminated");
-    // }
-    //
-    // } catch (InterruptedException e) {
-    // e.printStackTrace();
-    // }
+    try {
+
+      // kills the pool and all workers after a month;
+      boolean adaptorsTerminated = this.adaptorPool.awaitTermination(2678400, TimeUnit.SECONDS);
+
+      if (adaptorsTerminated) {
+        for (Consolidator c : consolidators) {
+          c.setRunning(false);
+        }
+        
+        System.out.println("Stopped consolidators");
+        
+        synchronized (processingQueue) {
+          this.processingQueue.notifyAll();
+        }
+        
+        this.consolidatorPool.awaitTermination(2678400, TimeUnit.SECONDS);
+        
+        // String collection = (String)
+        // adaptorcnf.get(Constants.CNF_COLLECTION_ID);
+        // ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
+        // new ActionLogHelper(this.persistence).recordAction(log);
+
+      } else {
+        LOGGER.error("Time out occurred, process was terminated");
+      }
+
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   public PersistenceLayer getPersistence() {
     return this.persistence;
   }
 
+  @Deprecated
   public synchronized MetadataStream getNext() {
     List<MetadataStream> next = this.gatherer.getNext(1);
     MetadataStream result = null;

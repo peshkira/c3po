@@ -62,4 +62,11 @@ public interface MetaDataGatherer {
    */
   boolean hasNext();
 
+  /**
+   * Whether or not the gatherer has finished its work.
+   * 
+   * @return
+   */
+  boolean isReady();
+
 }
