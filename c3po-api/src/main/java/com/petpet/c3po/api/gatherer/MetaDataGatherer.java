@@ -1,4 +1,4 @@
-package com.petpet.c3po.api;
+package com.petpet.c3po.api.gatherer;
 
 import java.util.List;
 import java.util.Map;

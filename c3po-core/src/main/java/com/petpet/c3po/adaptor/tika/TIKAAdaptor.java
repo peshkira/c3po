@@ -9,13 +9,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.adaptor.AbstractAdaptor;
-import com.petpet.c3po.api.dao.Cache;
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
+import com.petpet.c3po.api.dao.ReadOnlyCache;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
-import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 
 public class TIKAAdaptor extends AbstractAdaptor {
@@ -36,7 +36,7 @@ public class TIKAAdaptor extends AbstractAdaptor {
     }
 
     Element element = new Element(name, name);
-    Cache cache = this.getController().getPersistence().getCache();
+    ReadOnlyCache cache = this.getCache();
     List<MetadataRecord> records = new ArrayList<MetadataRecord>();
 
     for (String key : metadata.keySet()) {

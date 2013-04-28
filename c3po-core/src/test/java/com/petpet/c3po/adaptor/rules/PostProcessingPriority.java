@@ -9,7 +9,10 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.petpet.c3po.adaptor.AbstractAdaptor;
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
+import com.petpet.c3po.api.adaptor.PostProcessingRule;
+import com.petpet.c3po.api.adaptor.PreProcessingRule;
+import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 

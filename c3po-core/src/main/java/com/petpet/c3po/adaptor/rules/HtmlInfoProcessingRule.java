@@ -10,6 +10,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.api.adaptor.PreProcessingRule;
+
 public class HtmlInfoProcessingRule implements PreProcessingRule {
 
   private static final Logger LOG = LoggerFactory.getLogger(HtmlInfoProcessingRule.class);

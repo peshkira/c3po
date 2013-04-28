@@ -1,5 +1,7 @@
 package com.petpet.c3po.adaptor.rules;
 
+import com.petpet.c3po.api.adaptor.PreProcessingRule;
+
 public class EmptyValueProcessingRule implements PreProcessingRule {
 
   @Override

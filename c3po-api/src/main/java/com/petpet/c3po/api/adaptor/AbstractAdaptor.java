@@ -1,4 +1,4 @@
-package com.petpet.c3po.adaptor;
+package com.petpet.c3po.api.adaptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,16 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import com.petpet.c3po.adaptor.rules.PostProcessingRule;
-import com.petpet.c3po.adaptor.rules.PreProcessingRule;
-import com.petpet.c3po.adaptor.rules.ProcessingRule;
-import com.petpet.c3po.api.MetaDataGatherer;
 import com.petpet.c3po.api.dao.ReadOnlyCache;
+import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataStream;
-import com.petpet.c3po.controller.Controller;
 
 //TODO reorder methods
 //TODO remove deprecated.
@@ -34,9 +30,6 @@ public abstract class AbstractAdaptor implements Runnable {
 
   @Deprecated
   public static final String UNKNOWN_COLLECTION_ID = "unknown";
-
-  @Deprecated
-  private Controller controller;
 
   /**
    * The gatherer that is used to obtain the next meta data stream.
@@ -64,16 +57,6 @@ public abstract class AbstractAdaptor implements Runnable {
    * processing by the application.
    */
   private Queue<Element> elementsQueue;
-
-  @Deprecated
-  protected Controller getController() {
-    return this.controller;
-  }
-
-  @Deprecated
-  public void setController(Controller controller) {
-    this.controller = controller;
-  }
 
   /**
    * The prefix that this adaptor should be associated with. This method will be

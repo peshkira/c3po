@@ -3,7 +3,7 @@ package com.petpet.c3po.adaptor.fits;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.petpet.c3po.adaptor.rules.PreProcessingRule;
+import com.petpet.c3po.api.adaptor.PreProcessingRule;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.ReadOnlyCache;
 import com.petpet.c3po.api.model.Element;

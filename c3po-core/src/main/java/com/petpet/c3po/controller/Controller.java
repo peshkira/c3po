@@ -12,13 +12,13 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
-import com.petpet.c3po.adaptor.rules.ProcessingRule;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
+import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataStream;
@@ -120,7 +120,7 @@ public class Controller {
     for (int i = 0; i < threads; i++) {
       // final AbstractAdaptor f = this.getAdaptor(type);
       final AbstractAdaptor f = this.getAdaptor("dummy");
-      f.setController(this);
+      // TODO set gatherer.
       f.setRules(rules);
       f.setConfig(adaptorcnf);
       f.configure();

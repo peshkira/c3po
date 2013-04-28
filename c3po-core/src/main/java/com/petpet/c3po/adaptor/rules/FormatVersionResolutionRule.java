@@ -2,6 +2,7 @@ package com.petpet.c3po.adaptor.rules;
 
 import java.util.List;
 
+import com.petpet.c3po.api.adaptor.PostProcessingRule;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;

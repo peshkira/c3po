@@ -2,7 +2,6 @@ package com.petpet.c3po.adaptor.fits;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.digester3.Digester;
@@ -12,11 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.petpet.c3po.adaptor.AbstractAdaptor;
-import com.petpet.c3po.adaptor.rules.PostProcessingRule;
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
+import com.petpet.c3po.api.adaptor.PostProcessingRule;
 import com.petpet.c3po.api.model.Element;
-import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 
 public class FITSAdaptor extends AbstractAdaptor {

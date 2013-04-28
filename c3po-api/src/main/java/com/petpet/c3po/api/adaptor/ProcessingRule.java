@@ -1,4 +1,4 @@
-package com.petpet.c3po.adaptor.rules;
+package com.petpet.c3po.api.adaptor;
 
 public interface ProcessingRule {
 
