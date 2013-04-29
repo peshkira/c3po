@@ -78,8 +78,7 @@ public class TIKAAdaptor extends AbstractAdaptor {
 
   @Override
   public String getAdaptorPrefix() {
-    // TODO Auto-generated method stub
-    return null;
+    return "tika";
   }
 
 }

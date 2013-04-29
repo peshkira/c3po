@@ -16,8 +16,6 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 
-//TODO reorder methods
-//TODO remove deprecated.
 /**
  * The abstract adaptor class provides an encapsulation of a meta data adaptor.
  * This class has to be extended by any adaptor that maps any kind of objects
@@ -61,30 +59,34 @@ public abstract class AbstractAdaptor implements Runnable {
   private Queue<Element> elementsQueue;
 
   /**
-   * The prefix that this adaptor should be associated with. This method will be
-   * used in order to determine which configurations should be passed to this
-   * adaptor.
-   * 
-   * @return
-   */
-  public abstract String getAdaptorPrefix();
-
-  /**
    * This method will be called once before the adaptor is started and gives the
    * implementing class a chance to configure itself. The implementor should
-   * make use of the getConfig methods to read the values for the expected
+   * make use of the getConfig() methods to read the values for the expected
    * configuration keys of the adaptor. The internally managed config map will
    * contain all configuration keys starting with the prefix 'c3po.adaptor' and
    * all configuration keys starting with the prefix 'c3po.adaptor.[prefix]',
    * where [prefix] is the value retunerd by
-   * {@link AbstractAdaptor#getAdaptorPrefix()} of this class.
+   * {@link AbstractAdaptor#getAdaptorPrefix()} of this class in lower case.
    * 
    */
   public abstract void configure();
 
   /**
+   * The prefix that this adaptor should be associated with. This method will be
+   * used in order to determine which configurations should be passed to this
+   * adaptor. The return value of this method will be transformed to a lower
+   * case string.
+   * 
+   * @return the prefix of this adaptor.
+   */
+  public abstract String getAdaptorPrefix();
+
+  /**
    * This element is responsible for adapting the input stream in the
-   * {@link MetadataStream#getData()} object to a {@link Element}.
+   * {@link MetadataStream#getData()} object to a {@link Element}. The
+   * implementing class should make use of the {@link PreProcessingRule}s
+   * provided by the {@link AbstractAdaptor#getPreProcessingRules()} method in
+   * cases where the data allows it.
    * 
    * @param ms
    *          the {@link MetadataStream} to adapt.
@@ -93,13 +95,14 @@ public abstract class AbstractAdaptor implements Runnable {
   public abstract Element parseElement(MetadataStream ms);
 
   /**
-   * Sets the cache to the passed {@link ReadOnlyCache} iff it is not null.
+   * Sets the cache to the passed {@link ReadOnlyCache} iff it is not null and
+   * the current cache is not set yet.
    * 
    * @param cache
    *          the cache to set.
    */
   public final void setCache(ReadOnlyCache cache) {
-    if (cache != null) {
+    if (cache != null && this.cache == null) {
       this.cache = cache;
     }
   }
@@ -118,11 +121,53 @@ public abstract class AbstractAdaptor implements Runnable {
   }
 
   /**
+   * Sets the processing rules to the given rules iff they are not null and the
+   * current list is not set yet.
+   * 
+   * @param rules
+   *          the list of processing rules.
+   */
+  public final void setRules(List<ProcessingRule> rules) {
+    if (rules != null && this.rules == null) {
+      this.rules = rules;
+    }
+  }
+
+  /**
+   * Sets the configuration of this adaptor iff the given config is not null and
+   * the current config is not set yet..
+   * 
+   * @param cnf
+   *          the config to set.
+   */
+  public final void setConfig(Map<String, String> cnf) {
+    if (cnf != null && this.config == null) {
+      this.config = cnf;
+    }
+  }
+
+  /**
+   * Sets the elements queue to the given queue, iff it is not null and the
+   * current queue is not set yet. Otherwise a call to this method will do
+   * nothing.
+   * 
+   * @param q
+   *          the queue to use.
+   */
+  public final void setQueue(Queue<Element> q) {
+    if (q != null && this.elementsQueue == null) {
+      this.elementsQueue = q;
+    }
+  }
+
+  /**
    * Starts an infinite loop that runs this thread. The thread checks if the
    * gatherer has a next stream to process. If no, then it sleeps until it is
-   * notified by the gatherer. If ye, then if gets the next stream and calls the
-   * {@link AbstractAdaptor#parseElement(MetadataStream)} method. Then the
-   * element is submitted for further processing.
+   * notified by the gatherer. If yes, then it gets the next stream and calls
+   * the {@link AbstractAdaptor#parseElement(MetadataStream)} method. Once an
+   * element is parsed, then all the post processing rules submitted to this
+   * adaptor are run on the element. Then the element is submitted for further
+   * processing by the next in chain.
    * 
    */
   @Override
@@ -130,9 +175,6 @@ public abstract class AbstractAdaptor implements Runnable {
     while (true) {
       try {
 
-        // TODO add some other method
-        // to check if the gatherer is finished
-        // in order to decide when to break the loop
         MetadataStream stream = null;
 
         synchronized (gatherer) {
@@ -149,9 +191,12 @@ public abstract class AbstractAdaptor implements Runnable {
         }
 
         if (stream != null) {
-          System.out.println("Adapting file: " + stream.getFileName());
           Element element = parseElement(stream);
-          this.submitElement(element);
+
+          postProcessElement(element);
+
+          submitElement(element);
+
           InputStream data = stream.getData();
           if (data != null) {
             try {
@@ -175,42 +220,6 @@ public abstract class AbstractAdaptor implements Runnable {
   }
 
   /**
-   * Sets the processing rules to the given rules iff they are not null.
-   * 
-   * @param rules
-   *          the list of processing rules.
-   */
-  public final void setRules(List<ProcessingRule> rules) {
-    if (rules != null) {
-      this.rules = rules;
-    }
-  }
-
-  /**
-   * Sets the configuration of this adaptor iff the given config is not null.
-   * 
-   * @param config
-   *          the config to set.
-   */
-  public final void setConfig(Map<String, String> config) {
-    if (config != null) {
-      this.config = config;
-    }
-  }
-
-  /**
-   * Sets the elements queue to the given queue, iff it is not null.
-   * 
-   * @param q
-   *          the queue to use.
-   */
-  public final void setQueue(Queue<Element> q) {
-    if (q != null) {
-      this.elementsQueue = q;
-    }
-  }
-
-  /**
    * Gets a read only instance of the application cache. Can be used to obtain
    * {@link Property} and {@link Source} objects.
    * 
@@ -221,73 +230,18 @@ public abstract class AbstractAdaptor implements Runnable {
   }
 
   /**
-   * Gets an unmodifiable list of {@link ProcessingRule} objects. All rules are
-   * sorted by priority, where 0 is lowest and 1000 is highest.
-   * 
-   * @return the list of rules.
-   */
-  public final List<ProcessingRule> getRules() {
-    if (this.rules != null) {
-
-      Collections.sort(this.rules, new Comparator<ProcessingRule>() {
-
-        // sorts from descending
-        @Override
-        public int compare(ProcessingRule r1, ProcessingRule r2) {
-          int first = this.fixPriority(r2.getPriority());
-          int second = this.fixPriority(r1.getPriority());
-          return new Integer(first).compareTo(new Integer(second));
-        }
-
-        private int fixPriority(int prio) {
-          if (prio < 0)
-            return 0;
-
-          if (prio > 1000)
-            return 1000;
-
-          return prio;
-        }
-
-      });
-
-    }
-
-    return Collections.unmodifiableList(rules);
-  }
-
-  /**
    * Gets a unmodifiable list of {@link PreProcessingRule} objects. They are
    * sorted by priority, where 0 is the lowest and 1000 is the highest.
    * 
    * @return the rules.
    */
-  public final List<PreProcessingRule> getPreProcessingRules() {
+  protected final List<PreProcessingRule> getPreProcessingRules() {
     List<ProcessingRule> all = this.getRules();
     List<PreProcessingRule> prerules = new ArrayList<PreProcessingRule>();
 
     for (ProcessingRule rule : all) {
       if (rule instanceof PreProcessingRule) {
         prerules.add((PreProcessingRule) rule);
-      }
-    }
-
-    return Collections.unmodifiableList(prerules);
-  }
-
-  /**
-   * Gets a unmodifiable list of {@link PostProcessingRule} objects. They are
-   * sorted by priority, where 0 is the lowest and 1000 is the highest.
-   * 
-   * @return the rules.
-   */
-  public final List<PostProcessingRule> getPostProcessingRules() {
-    List<ProcessingRule> all = this.getRules();
-    List<PostProcessingRule> prerules = new ArrayList<PostProcessingRule>();
-
-    for (ProcessingRule rule : all) {
-      if (rule instanceof PostProcessingRule) {
-        prerules.add((PostProcessingRule) rule);
       }
     }
 
@@ -388,6 +342,79 @@ public abstract class AbstractAdaptor implements Runnable {
     }
 
     return result;
+  }
+
+  /**
+   * Gets an unmodifiable list of {@link ProcessingRule} objects. All rules are
+   * sorted by priority, where 0 is lowest and 1000 is highest.
+   * 
+   * @return the list of rules.
+   */
+  private final List<ProcessingRule> getRules() {
+    if (this.rules != null) {
+
+      Collections.sort(this.rules, new Comparator<ProcessingRule>() {
+
+        // sorts from descending
+        @Override
+        public int compare(ProcessingRule r1, ProcessingRule r2) {
+          int first = this.fixPriority(r2.getPriority());
+          int second = this.fixPriority(r1.getPriority());
+          return new Integer(first).compareTo(new Integer(second));
+        }
+
+        private int fixPriority(int prio) {
+          if (prio < 0)
+            return 0;
+
+          if (prio > 1000)
+            return 1000;
+
+          return prio;
+        }
+
+      });
+
+    }
+
+    return Collections.unmodifiableList(rules);
+  }
+
+  /**
+   * Gets a unmodifiable list of {@link PostProcessingRule} objects. They are
+   * sorted by descending priority, where 1000 is the highest and 0 is the
+   * lowest.
+   * 
+   * @return the rules.
+   */
+  private final List<PostProcessingRule> getPostProcessingRules() {
+    List<ProcessingRule> all = this.getRules();
+    List<PostProcessingRule> postrules = new ArrayList<PostProcessingRule>();
+
+    for (ProcessingRule rule : all) {
+      if (rule instanceof PostProcessingRule) {
+        postrules.add((PostProcessingRule) rule);
+      }
+    }
+
+    return Collections.unmodifiableList(postrules);
+  }
+
+  /**
+   * Gets all post processing rules and applies them to the given element if it
+   * is not null.
+   * 
+   * @param element
+   *          the element to post process.
+   */
+  private void postProcessElement(Element element) {
+    if (element != null) {
+      List<PostProcessingRule> postProcessingRules = getPostProcessingRules();
+
+      for (PostProcessingRule rule : postProcessingRules) {
+        element = rule.process(element);
+      }
+    }
   }
 
   /**

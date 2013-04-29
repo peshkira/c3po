@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
-import com.petpet.c3po.api.adaptor.PostProcessingRule;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataStream;
@@ -28,8 +27,6 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   private boolean inferDate = false;
 
-  private String collection;
-
   public FITSAdaptor() {
     this.digester = new Digester(); // not thread safe
     this.digester.setRules(new RegexRules(new SimpleRegexMatcher()));
@@ -39,7 +36,6 @@ public class FITSAdaptor extends AbstractAdaptor {
   @Override
   public void configure() {
     this.inferDate = this.getBooleanConfig(Constants.CNF_INFER_DATE, false);
-    this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
   }
 
   private void createParsingRules() {
@@ -180,22 +176,18 @@ public class FITSAdaptor extends AbstractAdaptor {
 
     if (element != null) {
       element.setMetadata(values);
-      element.setCollection(this.collection);
 
+      // TODO remove this from here and make it a post processing rule
       if (this.inferDate) {
         element.extractCreatedMetadataRecord(this.getCache().getProperty("created"));
       }
 
+      // TODO remove this from here and make it a post processing rule.
       // if for some reason there was no uid, set a random one.
       if (element.getUid() == null) {
         element.setUid(UUID.randomUUID().toString());
       }
 
-    }
-
-    List<PostProcessingRule> postProcessingRules = this.getPostProcessingRules();
-    for (PostProcessingRule rule : postProcessingRules) {
-      element = rule.process(element);
     }
 
     return element;

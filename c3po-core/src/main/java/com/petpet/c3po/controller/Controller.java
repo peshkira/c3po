@@ -61,10 +61,6 @@ public class Controller {
 
   }
 
-  public void collect() {
-    this.startJobs(null, 5, null);
-  }
-
   /**
    * Checks the config passed to this controller for required values.
    * 
@@ -106,9 +102,9 @@ public class Controller {
 
     this.adaptorPool = Executors.newFixedThreadPool(threads);
     this.consolidatorPool = Executors.newFixedThreadPool(4); // TODO change this
-    
+
     List<Consolidator> consolidators = new ArrayList<Consolidator>();
-    
+
     for (int i = 0; i < 4; i++) {
       Consolidator c = new Consolidator(processingQueue);
       consolidators.add(c);
@@ -140,7 +136,7 @@ public class Controller {
     this.adaptorPool.shutdown();
 
     System.out.println("shutdown adaptor pool");
-    
+
     this.gatherer.start();
 
     try {
@@ -152,15 +148,15 @@ public class Controller {
         for (Consolidator c : consolidators) {
           c.setRunning(false);
         }
-        
+
         System.out.println("Stopped consolidators");
-        
+
         synchronized (processingQueue) {
           this.processingQueue.notifyAll();
         }
-        
+
         this.consolidatorPool.awaitTermination(2678400, TimeUnit.SECONDS);
-        
+
         // String collection = (String)
         // adaptorcnf.get(Constants.CNF_COLLECTION_ID);
         // ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
@@ -203,6 +199,7 @@ public class Controller {
     rules.add(new HtmlInfoProcessingRule());
     rules.add(new EmptyValueProcessingRule());
     rules.add(new FormatVersionResolutionRule());
+    //TODO add collection name rule
     return rules;
   }
 
