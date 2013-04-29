@@ -50,21 +50,22 @@ citecolor = black] {hyperref}
 \maketitle
 \thispagestyle{empty}
 
+\clearpage
+
 
 
 \section{Introduction}
 
 The goal is to develop and apply post-processing methods and tools to \emph{FITS}\footnote{\url{https://code.google.com/p/fits/}} characterisation files within \emph{C3PO}\footnote{\url{http://ifs.tuwien.ac.at/imp/c3po}} to reduce the problem of "conflicting values" and significantly improve data quality. 
 
-The problem of conflicting values arises from the fact, that FITS uses several independent tool to gather information about the inspected files. This is necessary, because different tools retrieve information of different quality on the vast amount of file types and formats. The downside of this is the fact, that the tools sometimes don't agree on the value of metadata properties. Reasons for this disagreement are various and range from different wording (``Portable Document Format'' vs. ``PDF EXIM'') to different format version recognition, or an insufficient mime-type specification (``text/plain'' vs. ``text/rtf''). 
+The problem of conflicting values arises from the fact, that \emph{FITS} uses several independent tools to gather information about the inspected files. This is necessary, because different tools retrieve information of different quality on the vast amount of file types and formats. The downside of this is the fact, that the tools sometimes don't agree on the value of metadata properties. Reasons for this disagreement are various and range from different wording (``Portable Document Format'' vs. ``PDF EXIM'') to different format version recognition, or an insufficient mime-type specification (``text/plain'' vs. ``text/rtf''). 
 
-While some of these conflicts are detected correctly and correspond to corrupted or incorrect data in the inspected file, a bigger portion of them could be avoided, if the specific weaknesses of the used tools were known to \emph{C3PO}. To provide this ability, rules need to be defined by human experts, that know about the abilities and flaws of the tools. They then need to be applied automatically while parsing the data provided by FITS. 
+While some of these conflicts are detected correctly and correspond to corrupted or incorrect data in the inspected file, a bigger portion of them could be avoided, if the specific weaknesses of the used tools were known to \emph{C3PO}. To provide this ability, rules need to be defined by human experts, that know about the abilities and flaws of the tools. They then need to be applied automatically while parsing the data provided by \emph{FITS}. 
 
 \emph{C3PO} already provides a way to apply and execute post-processing rules. They are applied either while parsing single properties (pre-processing) or after all information is available (post-processing). We will use the built in mechanisms to apply our conflict resolution techniques. We provide a language for defining conflict resolution strategies and a mechanism to generate post-processing rules from these definitions. The rules can be exchanged and adapted and while some generic or proven rules could be packed into \emph{C3PO} by default, every user of \emph{C3PO} gains the possibility to add his own specific set according to the circumstances of his configuration.
 
 Digital preservation depends strongly on data integrity and authenticity. Traceability of any action taken throughout the whole process is needed not only for testing and quality assurance, but also for provability and justification. To achieve this, we keep track of all rules and changes that were applied to the metadata during conflict resolution. This gives human experts the possibility to evaluate the set of rules used and to redefine them iteratively.
 
-\clearpage
 
 \section{Problem Description}
 
@@ -74,7 +75,7 @@ For example, when an XHTML file is evaluated, \emph{JHove} returns ``text/html''
 
 
 \section{Current Workflow and Implementation}
-When profiling a file set, the single files need to be analysed using FITS, that generates an XML report for every single file. These reports are parsed by \emph{C3PO} by calling its command line interface with the \emph{-g} option to gather information. Upon initialization, the current configuration is loaded and several threads are spawned to parse the input data in parallel. Every thread uses an adaptor to handle the input data, according to its origin.
+When profiling a file set, the single files need to be analysed using \emph{FITS}, that generates an XML report for every single file. These reports are parsed by \emph{C3PO} by calling its command line interface with the \emph{-g} option to gather information. Upon initialization, the current configuration is loaded and several threads are spawned to parse the input data in parallel. Every thread uses an adaptor to handle the input data, according to its origin.
 
 The \emph{FITS} adaptor uses an Apache Commons Digester to parse the XML files. Therefore certain rules \footnote{\url{http://commons.apache.org/proper/commons-digester/guide/core.html\#doc.Rules}} are defined that are triggered on the occurrence of specific XML tags to copy the data into generated Java objects. To keep track of the objects during traversal of the file, the Digester uses an object stack. The adaptor pushes a \emph{DigesterContext} object onto that stack that holds all collected data.
 
@@ -101,9 +102,9 @@ All operators evaluate to boolean values that can be combined with logical expre
 If a rules condition eventually evaluates to true, an action needs to be performed. Possible actions are the removal of one or multiple properties, that match a certain criteria (originating from a specific tool or not having a specific value), removing all but one conflicting values or changing of a value in case of naming conflicts (see below). 
 
 \subsection{Applying Rules}
-\emph{C3PO} already provides a way to apply and execute processing rules to refine data input. They need to be added to the Controller that is responsible for parsing the information about the files provided by FITS. The rules are applied either while parsing single properties (pre-processing) or after all information is available (post-processing). We will use the latter to apply our conflict resolution techniques. The idea is to implement a framework for generic, configurable rules. A way to specify them could be one or several XML files, which are read and parsed during initialization. 
+\emph{C3PO} already provides a way to apply and execute processing rules to refine data input. They need to be added to the Controller that is responsible for parsing the information about the files provided by \emph{FITS}. The rules are applied either while parsing single properties (pre-processing) or after all information is available (post-processing). We will use the latter to apply our conflict resolution techniques. The idea is to implement a framework for generic, configurable rules. A way to specify them could be one or several XML files, which are read and parsed during initialization. 
 
-Whenever a resolution strategy got triggered and successfully removed a conflicting value, the status of the property needs to be recalculated. When looking at the structure of the XML files provided by FITS, this is would work for leave elements or attributes of the XML tree. But for hierarchical properties like the triple of mime-type, file-format and version, this becomes more complex. Two tools could agree on the format version value, but define different mime-types. In the case of conflicting mime-types, \emph{C3PO} marks all three properties of the triple as conflicting, so resolving a mime-type conflict makes recalculating the other property states necessary.
+Whenever a resolution strategy got triggered and successfully removed a conflicting value, the status of the property needs to be recalculated. When looking at the structure of the XML files provided by \emph{FITS}, this is would work for leave elements or attributes of the XML tree. But for hierarchical properties like the triple of mime-type, file-format and version, this becomes more complex. Two tools could agree on the format version value, but define different mime-types. In the case of conflicting mime-types, \emph{C3PO} marks all three properties of the triple as conflicting, so resolving a mime-type conflict makes recalculating the other property states necessary.
 
 To ensure the traceability of the rules, and to confirm, that no valuable knowledge is lost, each change to an element is logged:
 \begin{itemize}
@@ -111,14 +112,14 @@ To ensure the traceability of the rules, and to confirm, that no valuable knowle
 \item Which values were changed or removed
 \end{itemize}
 
-This information will be stored in the database, along with a copy of the representation of the rule for reference. This is necessary, because the original definition of the rule in the XML file could be changed or removed on the file system. Keeping the original values further gives the option to revert the changes applied to one or all objects by this rule. Also, applying rules to objects in the database after parsing FITS input would be possible, but these features are most likely out of the scope of this project.
+This information will be stored in the database, along with a copy of the representation of the rule for reference. This is necessary, because the original definition of the rule in the XML file could be changed or removed on the file system. Keeping the original values further gives the option to revert the changes applied to one or all objects by this rule. Also, applying rules to objects in the database after parsing \emph{FITS} input would be possible, but these features are most likely out of the scope of this project.
 
 \subsection{Types of Conflicts}
 Different sources of conflicts need different resolution strategies. Some possibilities, on how rules could work on those types of conflicts are explained in the following sections.
 
 \subsubsection{Naming Conflicts}
 
-Often different tools, that are used in FITS, have just different names for each and the same file format. For example, \emph{Exiftool} classifies some PDF files as "PDF EXIF", while \emph{Droid}, \emph{Jhove} along others identify them as "Portable Document Format".
+Often different tools, that are used in \emph{FITS}, have just different names for each and the same file format. For example, \emph{Exiftool} classifies some PDF files as "PDF EXIF", while \emph{Droid}, \emph{Jhove} along others identify them as "Portable Document Format".
 
 For known cases, where specific tools use a wrong or unusual naming for e.g. file formats, one could implement some easy matching rules, which compare the different values and, if they are found as equal, will be set to the specified value. This is the only case where setting a value instead of deleting it is useful. Actually this case would be even interesting, if no conflict was detected, but the single tool providing the value is known to be erroneous.
 
@@ -133,5 +134,23 @@ If the element is in conflicted state, it could also possible to look for the ex
 
 \section{Adapting C3PO}
 (Hier muss noch rein, wo wir in den Code eingreifen und was wir am bestehenden code ändern werden. Z.B: Initialisierung muss Rules einlesen, Rules in DB persistieren, Source-Cache erweitern um ID zu Tool name und Version aufzulösen.)
+
+änderungen:
+
+cmd module: 
+	zusätzliche option für config
+
+core module: 
+	controller: 
+		checkconfiguration (rules überprüfen, ggf fehlermeldung)
+		getRules() rules reinladen und baun
+	element:
+		liste mit applied rules und changed values
+		
+neuer code:
+
+	db:
+		persistierung
+		parser von (xml) regeln
 
 \end{document}
