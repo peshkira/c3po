@@ -28,9 +28,6 @@ import com.petpet.c3po.api.model.helper.MetadataStream;
  */
 public abstract class AbstractAdaptor implements Runnable {
 
-  @Deprecated
-  public static final String UNKNOWN_COLLECTION_ID = "unknown";
-
   /**
    * The gatherer that is used to obtain the next meta data stream.
    */
@@ -86,13 +83,15 @@ public abstract class AbstractAdaptor implements Runnable {
    * {@link MetadataStream#getData()} object to a {@link Element}. The
    * implementing class should make use of the {@link PreProcessingRule}s
    * provided by the {@link AbstractAdaptor#getPreProcessingRules()} method in
-   * cases where the data allows it.
+   * cases where the data allows it. Note that the MetadataStream object will
+   * never be null. The implementing method does not have to take care of
+   * closing the stream as this is handled by this super class.
    * 
-   * @param ms
+   * @param stream
    *          the {@link MetadataStream} to adapt.
    * @return the parsed {@link Element} object.
    */
-  public abstract Element parseElement(MetadataStream ms);
+  public abstract Element parseElement(MetadataStream stream);
 
   /**
    * Sets the cache to the passed {@link ReadOnlyCache} iff it is not null and
