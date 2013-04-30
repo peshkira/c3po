@@ -22,6 +22,7 @@ import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataStream;
@@ -30,14 +31,13 @@ import com.petpet.c3po.gatherer.LocalFileGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
-//TODO generalize the gatherer with the interface.
 public class Controller {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Controller.class);
   private PersistenceLayer persistence;
   private ExecutorService adaptorPool;
   private ExecutorService consolidatorPool;
-  private LocalFileGatherer gatherer;
+  private MetaDataGatherer gatherer;
   private final Queue<Element> processingQueue;
   private int counter = 0;
 
@@ -62,12 +62,12 @@ public class Controller {
       consCount = config.get(Constants.CNF_CONSOLIDATORS_COUNT);
       consThreads = Integer.parseInt(consCount);
       if (consThreads <= 0) {
-        LOGGER.warn("The provided consolidators count config '{}' is negative. Using the default.", consCount);
+        LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", consCount);
         consThreads = 2;
       }
 
     } catch (NumberFormatException e) {
-      LOGGER.warn("The provided consolidators count config '{}' is invalid. Using the default.", consCount);
+      LOG.warn("The provided consolidators count config '{}' is invalid. Using the default.", consCount);
     }
 
     try {
@@ -75,12 +75,12 @@ public class Controller {
       adaptorsCount = config.get(Constants.CNF_ADAPTORS_COUNT);
       adaptorThreads = Integer.parseInt(adaptorsCount);
       if (adaptorThreads <= 0) {
-        LOGGER.warn("The provided consolidators count config '{}' is negative. Using the default.", adaptorsCount);
+        LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", adaptorsCount);
         adaptorThreads = 4;
       }
 
     } catch (NumberFormatException e) {
-      LOGGER.warn("The provided adaptors count config '{}' is invalid. Using the default.", adaptorsCount);
+      LOG.warn("The provided adaptors count config '{}' is invalid. Using the default.", adaptorsCount);
     }
 
     String name = config.get(Constants.OPT_COLLECTION_NAME);
@@ -161,7 +161,7 @@ public class Controller {
     // no more adaptors can be added.
     this.adaptorPool.shutdown();
 
-    this.gatherer.start();
+    new Thread(this.gatherer, "MetadataGatherer");
 
     try {
 
@@ -180,7 +180,7 @@ public class Controller {
         this.consolidatorPool.awaitTermination(2678400, TimeUnit.SECONDS);
 
       } else {
-        LOGGER.error("Time out occurred, process was terminated");
+        LOG.error("Time out occurred, process was terminated");
       }
 
     } catch (InterruptedException e) {
@@ -207,7 +207,7 @@ public class Controller {
     this.counter++;
 
     if (counter % 1000 == 0) {
-      LOGGER.info("Finished processing {} files", counter);
+      LOG.info("Finished processing {} files", counter);
     }
 
     return result;

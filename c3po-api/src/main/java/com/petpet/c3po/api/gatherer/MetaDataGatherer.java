@@ -12,7 +12,7 @@ import com.petpet.c3po.api.model.helper.MetadataStream;
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
-public interface MetaDataGatherer {
+public interface MetaDataGatherer extends Runnable {
 
   /**
    * Some gatherer specific configuration.

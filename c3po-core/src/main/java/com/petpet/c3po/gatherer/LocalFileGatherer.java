@@ -3,6 +3,7 @@ package com.petpet.c3po.gatherer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,7 @@ import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 
-//TODO implement as a worker adding new streams to the queue.
-// then the terminate condition will be this queue is empty (this worker is ready (some flag))
-// and the other two pools await termination...
-public class LocalFileGatherer extends Thread implements MetaDataGatherer {
+public class LocalFileGatherer implements MetaDataGatherer {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalFileGatherer.class);
 
@@ -34,7 +32,6 @@ public class LocalFileGatherer extends Thread implements MetaDataGatherer {
     this.config = config;
     this.queue = new LinkedList<String>();
     this.ready = false;
-    setName("LocalFileGatherer");
   }
 
   @Override
@@ -42,12 +39,30 @@ public class LocalFileGatherer extends Thread implements MetaDataGatherer {
     String path = this.config.get(Constants.OPT_COLLECTION_LOCATION);
     boolean recursive = Boolean.valueOf(this.config.get(Constants.OPT_RECURSIVE));
 
-    // TODO checks and throw exception if something is wrong...
-    
     this.ready = false;
     this.sum = this.traverseFiles(new File(path), recursive, true);
     LOG.info("{} files were gathered successfully", this.sum);
     this.ready = true;
+  }
+
+  @Override
+  public List<MetadataStream> getNext(int count) {
+    List<MetadataStream> result = new ArrayList<MetadataStream>();
+    if (count > 0) {
+
+      while (count > 0) {
+        MetadataStream next = this.getNext();
+        if (next == null) {
+          break;
+
+        } else {
+          result.add(next);
+        }
+
+        count--;
+      }
+    }
+    return result;
   }
 
   public MetadataStream getNext() {
@@ -100,12 +115,6 @@ public class LocalFileGatherer extends Thread implements MetaDataGatherer {
   @Override
   public long getRemaining() {
     throw new UnsupportedOperationException("This method is deprecated and not supported anymore.");
-  }
-
-  @Override
-  public List<MetadataStream> getNext(int count) {
-    // TODO implement me...
-    return null;
   }
 
   @Override
