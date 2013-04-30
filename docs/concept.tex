@@ -133,24 +133,15 @@ An approach could be, to prioritize more specific values over less detailed ones
 If the element is in conflicted state, it could also possible to look for the existence of other properties or even specific values, that are known to exist just on a specific file type or format. From this value one could derive the right format or mime-type. These rules can be rather complex but allow a detailed level of conflict resolution.
 
 \section{Adapting C3PO}
-(Hier muss noch rein, wo wir in den Code eingreifen und was wir am bestehenden code ändern werden. Z.B: Initialisierung muss Rules einlesen, Rules in DB persistieren, Source-Cache erweitern um ID zu Tool name und Version aufzulösen.)
 
-änderungen:
+As mentioned above, \emph{C3PO} already provides an interface and mechanism to implement and call post-processing rules. We will use this method to add our own conflict resolution rules and therefore keep the impact on the existing code as minimal as possible. Still, there are some modifications that need to be applied.
 
-cmd module: 
-	zusätzliche option für config
+In the c3po-cmd module, we will likely have to add additional functionality to control rule execution from the command line.
 
-core module: 
-	controller: 
-		checkconfiguration (rules überprüfen, ggf fehlermeldung)
-		getRules() rules reinladen und baun
-	element:
-		liste mit applied rules und changed values
-		
-neuer code:
+The core module will be slightly extended. The Controller gains the ability to check and parse the post-processing rules and check their syntactic validity. This will be done in the ``checkConfiguration()'' method. Further the rules will have to be loaded into the rule set by extending the existing ``getRules()'' method.
 
-	db:
-		persistierung
-		parser von (xml) regeln
+The data model needs to be extended by adding a backlog of changes to the elements saved in the database. The backlog combines a reference to the applied rules with the original values of changed properties. This feature assures the traceability of changes applied to the data.
+
+Additionally to these adoptions of the existing code, the newly added code \emph{C3PO} is reduced to a utility for parsing the rules from their textual definition and a mechanism to persist the rules in the database. Persisting the rules is necessary to assure traceability of changes, as the textual definition of the rules can be altered easily. 
 
 \end{document}
