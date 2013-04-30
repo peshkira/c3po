@@ -28,10 +28,14 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
   private boolean ready;
 
-  public LocalFileGatherer(Map<String, String> config) {
-    this.config = config;
+  public LocalFileGatherer() {
     this.queue = new LinkedList<String>();
     this.ready = false;
+  }
+  
+  public LocalFileGatherer(Map<String, String> config) {
+    this();
+    this.config = config;
   }
 
   @Override

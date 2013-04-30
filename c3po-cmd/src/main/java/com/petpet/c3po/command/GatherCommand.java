@@ -47,7 +47,7 @@ public class GatherCommand implements Command {
 
     final Controller ctrl = new Controller(this.pLayer);
     try {
-      ctrl.collect(conf);
+      ctrl.processMetaData(conf);
     } catch (C3POConfigurationException e) {
        LOG.error(e.getMessage());
     }

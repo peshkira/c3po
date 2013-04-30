@@ -31,26 +31,81 @@ import com.petpet.c3po.gatherer.LocalFileGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
+/**
+ * A simple controller that manages the operations coming as input from the
+ * client applications. This class ties up the gathering, adaptation and
+ * consolidation of data.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class Controller {
 
+  /**
+   * A default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(Controller.class);
-  private PersistenceLayer persistence;
-  private ExecutorService adaptorPool;
-  private ExecutorService consolidatorPool;
-  private MetaDataGatherer gatherer;
-  private final Queue<Element> processingQueue;
-  private int counter = 0;
 
+  /**
+   * The persistence layer that this class uses.
+   */
+  private PersistenceLayer persistence;
+
+  /**
+   * A thread pool for the adaptors.
+   */
+  private ExecutorService adaptorPool;
+
+  /**
+   * A thread pool for the consolidators.
+   */
+  private ExecutorService consolidatorPool;
+
+  /**
+   * A meta data gatherer that collects meta data objects.
+   */
+  private MetaDataGatherer gatherer;
+
+  /**
+   * A processing queue that is passed to each adaptor and is used for the
+   * synchronisation between adaptors and consolidators.
+   */
+  private final Queue<Element> processingQueue;
+
+  private final Map<String, Class<? extends AbstractAdaptor>> knownAdaptors;
+
+  /**
+   * This constructors sets the persistence layer, initializes the processing
+   * queue and the {@link LocalFileGatherer};
+   * 
+   * @param pLayer
+   */
   public Controller(PersistenceLayer pLayer) {
     this.persistence = pLayer;
     this.processingQueue = new LinkedList<Element>();
+    this.gatherer = new LocalFileGatherer();
+    this.knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
+
+    // TODO detect adaptors automatically from the class path
+    // and add them to this map.
+    this.knownAdaptors.put("FITS", FITSAdaptor.class);
+    this.knownAdaptors.put("TIKA", TIKAAdaptor.class);
   }
 
-  public void collect(Map<String, String> config) throws C3POConfigurationException {
+  /**
+   * This starts a gather-adapt-persist workflow, where all the needed
+   * compontents are configured and run. If the passed configuration is invalid
+   * an exception is thrown.
+   * 
+   * @param config
+   *          a map of the application configurations.
+   * @throws C3POConfigurationException
+   *           if the configuration is missing or invalid.
+   */
+  public void processMetaData(Map<String, String> config) throws C3POConfigurationException {
 
     this.checkConfiguration(config);
-
-    this.gatherer = new LocalFileGatherer(config);
+    this.gatherer.setConfig(config);
 
     String adaptorsCount = null;
     String consCount = null;
@@ -88,7 +143,7 @@ public class Controller {
     String prefix = this.getAdaptor(type).getAdaptorPrefix();
     Map<String, String> adaptorcnf = this.getAdaptorConfig(config, prefix);
 
-    this.startJobs(name, adaptorThreads, consThreads, type, adaptorcnf);
+    this.startWorkers(name, adaptorThreads, consThreads, type, adaptorcnf);
 
   }
 
@@ -99,6 +154,11 @@ public class Controller {
    * @throws C3POConfigurationException
    */
   private void checkConfiguration(final Map<String, String> config) throws C3POConfigurationException {
+
+    if (config == null) {
+      throw new C3POConfigurationException("No config map provided");
+    }
+
     String inputType = config.get(Constants.OPT_INPUT_TYPE);
     if (inputType == null || (!inputType.equals("TIKA") && !inputType.equals("FITS"))) {
       throw new C3POConfigurationException("No input type specified. Please use one of FITS or TIKA.");
@@ -115,6 +175,19 @@ public class Controller {
     }
   }
 
+  /**
+   * Filters out only adaptor specific configurations. This method returns a map
+   * of configs with keys in the form 'c3po.adaptor.[rest]' or
+   * 'c3po.adaptor.[prefix].[rest]', where rest is any arbitrary string and
+   * prefix is the adaptor prefix returned in
+   * {@link AbstractAdaptor#getAdaptorPrefix()}
+   * 
+   * @param config
+   *          the config to filter.
+   * @param prefix
+   *          the prefix to look for.
+   * @return a map with the adaptor specific configuration.
+   */
   private Map<String, String> getAdaptorConfig(Map<String, String> config, String prefix) {
     final Map<String, String> adaptorcnf = new HashMap<String, String>();
     for (String key : config.keySet()) {
@@ -126,7 +199,21 @@ public class Controller {
     return adaptorcnf;
   }
 
-  private void startJobs(String collection, int adaptThreads, int consThreads, String type,
+  /**
+   * Starts all the workers. Including the adaptors, consolidators and gatherer.
+   * 
+   * @param collection
+   *          the name of the collection that is processed.
+   * @param adaptThreads
+   *          the number of adaptor threads in the pool.
+   * @param consThreads
+   *          the number of consolidator threads in the pool.
+   * @param type
+   *          the type of the adaptors.
+   * @param adaptorcnf
+   *          the adaptor configuration.
+   */
+  private void startWorkers(String collection, int adaptThreads, int consThreads, String type,
       Map<String, String> adaptorcnf) {
 
     this.adaptorPool = Executors.newFixedThreadPool(adaptThreads);
@@ -191,29 +278,14 @@ public class Controller {
     new ActionLogHelper(this.persistence).recordAction(log);
   }
 
-  public PersistenceLayer getPersistence() {
-    return this.persistence;
-  }
-
-  @Deprecated
-  public synchronized MetadataStream getNext() {
-    List<MetadataStream> next = this.gatherer.getNext(1);
-    MetadataStream result = null;
-
-    if (!next.isEmpty()) {
-      result = next.get(0);
-    }
-
-    this.counter++;
-
-    if (counter % 1000 == 0) {
-      LOG.info("Finished processing {} files", counter);
-    }
-
-    return result;
-  }
-
   // TODO this should be generated via some user input.
+  /**
+   * Obtains a list of {@link ProcessingRule} objects for the adaptors.
+   * 
+   * @param name
+   *          the name of the collection that is going to be processed.
+   * @return the list of rules.
+   */
   private List<ProcessingRule> getRules(String name) {
     List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
 
@@ -225,14 +297,30 @@ public class Controller {
     return rules;
   }
 
+  /**
+   * Gets a new adaptor instance based on the type of adaptor. if the type is
+   * unknown, then null is returned.
+   * 
+   * @param type
+   *          the type of the adaptor.
+   * @return the instance of the adaptor.
+   */
   private AbstractAdaptor getAdaptor(String type) {
-    if (type.equals("FITS")) {
-      return new FITSAdaptor();
-    } else if (type.equals("TIKA")) {
-      return new TIKAAdaptor();
-    } else {
-      return null;
+    AbstractAdaptor adaptor = null;
+    Class<? extends AbstractAdaptor> clazz = this.knownAdaptors.get(type);
+    if (clazz != null) {
+      try {
+
+        adaptor = clazz.newInstance();
+
+      } catch (InstantiationException e) {
+        LOG.error("An error occurred while instantiating the adaptor: ", e.getMessage());
+      } catch (IllegalAccessException e) {
+        LOG.error("An error occurred while instantiating the adaptor: ", e.getMessage());
+      }
     }
+
+    return adaptor;
   }
 
 }
