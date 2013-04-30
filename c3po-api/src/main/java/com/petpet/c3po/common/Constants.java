@@ -15,16 +15,52 @@ public final class Constants {
   public static final String XML_SCHEMA_LANGUAGE = "http://www.w3.org/2001/XMLSchema";
 
   /**
-   * The version of the generated profile.
+   * A c3po configuration for the collection on which to operate.
    */
-  @Deprecated
-  public static final String PROFILE_FORMAT_VERSION = "0.1";
+  public static final String OPT_COLLECTION_NAME = "c3po.collection.name";
+
+  /**
+   * A c3po configuration for the location where the metadata is.
+   */
+  public static final String OPT_COLLECTION_LOCATION = "c3po.collection.location";
+
+  /**
+   * A c3po configuration for the type of the input files. Currently only FITS
+   * and TIKA are supported. This config is required for the controller to
+   * operate.
+   */
+  public static final String OPT_INPUT_TYPE = "c3po.input.type";
+
+  /**
+   * Experimental property allowing to infer the date of the objects, if their
+   * file names have a specific format.
+   */
+  public static final String OPT_INFER_DATE = "c3po.adaptor.inference.date";
+
+  /**
+   * A configuartion for recursive processing.
+   */
+  public static final String OPT_RECURSIVE = "c3po.recursive";
+
+  /**
+   * A config identifier for the persistence layer class.
+   */
+  public static final String CNF_PERSISTENCE = "c3po.persistence";
+
+  /**
+   * The thread count configuration for the adaptor workers.
+   */
+  public static final String CNF_ADAPTORS_COUNT = "c3po.controller.adaptors.count";
+
+  /**
+   * The thread count configuration for the consolidator workers.
+   */
+  public static final String CNF_CONSOLIDATORS_COUNT = "c3po.controller.consolidators.count";
 
   /**
    * The version of the core module.
    */
-  @Deprecated
-  public static final String CORE_VERSION = "0.3.0";
+  public static final String CORE_VERSION = "0.4.0-SNAPSHOT";
 
   public static final String API_VERSION = "0.4.0-SNAPSHOT";
 
@@ -57,46 +93,6 @@ public final class Constants {
    */
   @Deprecated
   public static final String TBL_ACTIONLOGS = "actionlogs";
-  
-  public static final String CNF_PERSISTENCE = "c3po.persistence";
-
-  /**
-   * A c3po configuration for the collection on which to operate.
-   */
-  public static final String CNF_COLLECTION_NAME = "c3po.collection.name";
-
-  /**
-   * A c3po configuration for the location where the metadata is.
-   */
-  public static final String CNF_COLLECTION_LOCATION = "c3po.collection.location";
-  
-  /**
-   * A c3po configuration for the type of the input files. 
-   * Currently only FITS and TIKA are supported. This config is
-   * required for the controller to operate.
-   */
-  public static final String CNF_INPUT_TYPE = "c3po.input.type";
-
-  /**
-   * Experimental property allowing to infer the date of the objects, if their
-   * file names have a specific format.
-   */
-  public static final String CNF_INFER_DATE = "adaptor.inference.date";
-
-  /**
-   * A collection identifier configuration for the adaptors.s
-   */
-  public static final String CNF_COLLECTION_ID = "adaptor.collection.identifier";
-
-  /**
-   * A configuartion for recursive processing.
-   */
-  public static final String CNF_RECURSIVE = "c3po.recursive";
-
-  /**
-   * The thread count configuration during meta data harvesting.
-   */
-  public static final String CNF_THREAD_COUNT = "c3po.thread.count";
 
   /**
    * A javascript Map function for building a histogram of a specific property.
@@ -152,6 +148,7 @@ public final class Constants {
    * filter (e.g. 'application/pdf') {3} - the property to aggregate (e.g.
    * 'size')
    */
+  @Deprecated
   public static final String FILTER_AGGREGATE_MAP = "function map() {if (this.metadata['{1}'].value === '{2}') {emit(1,{sum: this.metadata['{3}'].value, min: this.metadata['{3}'].value,max: this.metadata['{3}'].value,count:1,diff: 0,});}}";
 
   /**
@@ -166,13 +163,10 @@ public final class Constants {
    */
   @Deprecated
   public static final String AGGREGATE_FINALIZE = "function finalize(key, value){ value.avg = value.sum / value.count;value.variance = value.diff / value.count;value.stddev = Math.sqrt(value.variance);return value;}";
-  
-  
-  public static final String PROPERTIES_IN_COLLECTION_MAP = "function map() {for (var key in this) {if (key == 'metadata') {for (var subkey in this[key]) {emit(subkey, null);}}}}";
-  
-  public static final String PROPERTIES_IN_COLLECTION_REDUCE = "function reduce(key, values) {return null;}";
 
-  // "function reduce(key, values) {var res = {count: 0}; values.forEach(function (v) {res.count += v.count}); return res;}";
+  public static final String PROPERTIES_IN_COLLECTION_MAP = "function map() {for (var key in this) {if (key == 'metadata') {for (var subkey in this[key]) {emit(subkey, null);}}}}";
+
+  public static final String PROPERTIES_IN_COLLECTION_REDUCE = "function reduce(key, values) {return null;}";
 
   private Constants() {
 

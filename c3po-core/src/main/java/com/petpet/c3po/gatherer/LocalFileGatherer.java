@@ -39,8 +39,8 @@ public class LocalFileGatherer extends Thread implements MetaDataGatherer {
 
   @Override
   public synchronized void run() {
-    String path = this.config.get(Constants.CNF_COLLECTION_LOCATION);
-    boolean recursive = Boolean.valueOf(this.config.get(Constants.CNF_RECURSIVE));
+    String path = this.config.get(Constants.OPT_COLLECTION_LOCATION);
+    boolean recursive = Boolean.valueOf(this.config.get(Constants.OPT_RECURSIVE));
 
     // TODO checks and throw exception if something is wrong...
     

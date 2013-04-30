@@ -77,8 +77,8 @@ public class FileSystemGatherer implements MetaDataGatherer {
     this.pointer = 0;
     this.count = -1;
     this.remaining = -1;
-    String path = (String) this.config.get(Constants.CNF_COLLECTION_LOCATION);
-    boolean recursive = Boolean.valueOf(this.config.get(Constants.CNF_RECURSIVE));
+    String path = (String) this.config.get(Constants.OPT_COLLECTION_LOCATION);
+    boolean recursive = Boolean.valueOf(this.config.get(Constants.OPT_RECURSIVE));
 
     if (path == null) {
       LOG.error("No path config provided");

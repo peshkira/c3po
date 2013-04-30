@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
+import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
@@ -21,10 +22,12 @@ import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.LocalFileGatherer;
+import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
 //TODO generalize the gatherer with the interface.
@@ -49,15 +52,43 @@ public class Controller {
 
     this.gatherer = new LocalFileGatherer(config);
 
-    int threads = Integer.parseInt(config.get(Constants.CNF_THREAD_COUNT));
-    String type = (String) config.get(Constants.CNF_INPUT_TYPE);
-    Map<String, String> adaptorcnf = this.getAdaptorConfig(config);
+    String adaptorsCount = null;
+    String consCount = null;
+    int adaptorThreads = 4;
+    int consThreads = 2;
 
-    // LOGGER.info("{} files to be processed for collection {}",
-    // gatherer.getCount(),
-    // config.get(Constants.CNF_COLLECTION_NAME));
+    try {
 
-    this.startJobs(type, threads, adaptorcnf);
+      consCount = config.get(Constants.CNF_CONSOLIDATORS_COUNT);
+      consThreads = Integer.parseInt(consCount);
+      if (consThreads <= 0) {
+        LOGGER.warn("The provided consolidators count config '{}' is negative. Using the default.", consCount);
+        consThreads = 2;
+      }
+
+    } catch (NumberFormatException e) {
+      LOGGER.warn("The provided consolidators count config '{}' is invalid. Using the default.", consCount);
+    }
+
+    try {
+
+      adaptorsCount = config.get(Constants.CNF_ADAPTORS_COUNT);
+      adaptorThreads = Integer.parseInt(adaptorsCount);
+      if (adaptorThreads <= 0) {
+        LOGGER.warn("The provided consolidators count config '{}' is negative. Using the default.", adaptorsCount);
+        adaptorThreads = 4;
+      }
+
+    } catch (NumberFormatException e) {
+      LOGGER.warn("The provided adaptors count config '{}' is invalid. Using the default.", adaptorsCount);
+    }
+
+    String name = config.get(Constants.OPT_COLLECTION_NAME);
+    String type = (String) config.get(Constants.OPT_INPUT_TYPE);
+    String prefix = this.getAdaptor(type).getAdaptorPrefix();
+    Map<String, String> adaptorcnf = this.getAdaptorConfig(config, prefix);
+
+    this.startJobs(name, adaptorThreads, consThreads, type, adaptorcnf);
 
   }
 
@@ -68,80 +99,73 @@ public class Controller {
    * @throws C3POConfigurationException
    */
   private void checkConfiguration(final Map<String, String> config) throws C3POConfigurationException {
-    String inputType = config.get(Constants.CNF_INPUT_TYPE);
+    String inputType = config.get(Constants.OPT_INPUT_TYPE);
     if (inputType == null || (!inputType.equals("TIKA") && !inputType.equals("FITS"))) {
       throw new C3POConfigurationException("No input type specified. Please use one of FITS or TIKA.");
     }
 
-    String path = config.get(Constants.CNF_COLLECTION_LOCATION);
+    String path = config.get(Constants.OPT_COLLECTION_LOCATION);
     if (path == null) {
       throw new C3POConfigurationException("No input file path provided. Please provide a path to the input files.");
     }
 
-    String name = config.get(Constants.CNF_COLLECTION_NAME);
+    String name = config.get(Constants.OPT_COLLECTION_NAME);
     if (name == null || name.equals("")) {
       throw new C3POConfigurationException("The name of the collection is not set. Please set a name.");
     }
   }
 
-  private Map<String, String> getAdaptorConfig(Map<String, String> config) {
+  private Map<String, String> getAdaptorConfig(Map<String, String> config, String prefix) {
     final Map<String, String> adaptorcnf = new HashMap<String, String>();
     for (String key : config.keySet()) {
-      if (key.startsWith("adaptor.")) {
+      if (key.startsWith("c3po.adaptor.") || key.startsWith("c3po.adaptor." + prefix.toLowerCase())) {
         adaptorcnf.put(key, config.get(key));
       }
     }
 
-    adaptorcnf.put(Constants.CNF_COLLECTION_ID, config.get(Constants.CNF_COLLECTION_NAME));
     return adaptorcnf;
   }
 
-  private void startJobs(String type, int threads, Map<String, String> adaptorcnf) {
+  private void startJobs(String collection, int adaptThreads, int consThreads, String type,
+      Map<String, String> adaptorcnf) {
 
-    // LocalFileGatherer gatherer = new LocalFileGatherer();
-
-    this.adaptorPool = Executors.newFixedThreadPool(threads);
-    this.consolidatorPool = Executors.newFixedThreadPool(4); // TODO change this
+    this.adaptorPool = Executors.newFixedThreadPool(adaptThreads);
+    this.consolidatorPool = Executors.newFixedThreadPool(consThreads);
 
     List<Consolidator> consolidators = new ArrayList<Consolidator>();
 
-    for (int i = 0; i < 4; i++) {
-      Consolidator c = new Consolidator(processingQueue);
+    for (int i = 0; i < consThreads; i++) {
+      Consolidator c = new Consolidator(this.processingQueue);
       consolidators.add(c);
       this.consolidatorPool.submit(c);
     }
-    System.out.println("added consolidator workers");
+
     // no more consolidators can be added.
     this.consolidatorPool.shutdown();
 
-    System.out.println("shut down consoldator pool ");
+    List<ProcessingRule> rules = this.getRules(collection);
 
-    List<ProcessingRule> rules = this.getRules();
+    for (int i = 0; i < adaptThreads; i++) {
+      AbstractAdaptor a = this.getAdaptor(type);
 
-    for (int i = 0; i < threads; i++) {
-      // final AbstractAdaptor f = this.getAdaptor(type);
-      final AbstractAdaptor a = this.getAdaptor(type);
-      // TODO set gatherer.
-      a.setCache(persistence.getCache());
-      a.setQueue(processingQueue);
-      a.setGatherer(gatherer);
+      a.setCache(this.persistence.getCache());
+      a.setQueue(this.processingQueue);
+      a.setGatherer(this.gatherer);
       a.setConfig(adaptorcnf);
       a.setRules(rules);
       a.configure();
 
       this.adaptorPool.submit(a);
     }
-    System.out.println("added adaptor workers");
 
+    // no more adaptors can be added.
     this.adaptorPool.shutdown();
-
-    System.out.println("shutdown adaptor pool");
 
     this.gatherer.start();
 
     try {
 
-      // kills the pool and all workers after a month;
+      // kills the pool and all adaptor workers after a month;
       boolean adaptorsTerminated = this.adaptorPool.awaitTermination(2678400, TimeUnit.SECONDS);
 
       if (adaptorsTerminated) {
@@ -149,18 +173,11 @@ public class Controller {
           c.setRunning(false);
         }
 
-        System.out.println("Stopped consolidators");
-
         synchronized (processingQueue) {
           this.processingQueue.notifyAll();
         }
 
         this.consolidatorPool.awaitTermination(2678400, TimeUnit.SECONDS);
-
-        // String collection = (String)
-        // adaptorcnf.get(Constants.CNF_COLLECTION_ID);
-        // ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
-        // new ActionLogHelper(this.persistence).recordAction(log);
 
       } else {
         LOGGER.error("Time out occurred, process was terminated");
@@ -169,6 +186,9 @@ public class Controller {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+
+    ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
+    new ActionLogHelper(this.persistence).recordAction(log);
   }
 
   public PersistenceLayer getPersistence() {
@@ -194,12 +214,14 @@ public class Controller {
   }
 
   // TODO this should be generated via some user input.
-  private List<ProcessingRule> getRules() {
+  private List<ProcessingRule> getRules(String name) {
     List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
+
     rules.add(new HtmlInfoProcessingRule());
     rules.add(new EmptyValueProcessingRule());
     rules.add(new FormatVersionResolutionRule());
-    //TODO add collection name rule
+    rules.add(new AssignCollectionToElementRule(name));
+
     return rules;
   }
 

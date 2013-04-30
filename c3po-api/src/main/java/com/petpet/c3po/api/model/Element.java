@@ -133,7 +133,7 @@ public class Element implements Model {
    * Tries to parse a creation date out of the name of the current element. Some
    * sources include a timestamp in the name. The usage of this method can be
    * configured through the adaptor config parameter
-   * {@link Constants#CNF_INFER_DATE}
+   * {@link Constants#OPT_INFER_DATE}
    * 
    * If the name is not set or it does not include a timestamp, the method does
    * nothing.

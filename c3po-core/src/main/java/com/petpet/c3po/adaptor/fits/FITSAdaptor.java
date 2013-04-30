@@ -35,7 +35,7 @@ public class FITSAdaptor extends AbstractAdaptor {
 
   @Override
   public void configure() {
-    this.inferDate = this.getBooleanConfig(Constants.CNF_INFER_DATE, false);
+    this.inferDate = this.getBooleanConfig(Constants.OPT_INFER_DATE, false);
   }
 
   private void createParsingRules() {

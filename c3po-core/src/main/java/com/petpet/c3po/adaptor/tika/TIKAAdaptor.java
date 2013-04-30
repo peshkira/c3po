@@ -16,7 +16,6 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataStream;
-import com.petpet.c3po.common.Constants;
 
 public class TIKAAdaptor extends AbstractAdaptor {
 
@@ -61,7 +60,7 @@ public class TIKAAdaptor extends AbstractAdaptor {
 
   @Override
   public void configure() {
-    this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
+
   }
 
   // TODO implement properly.
