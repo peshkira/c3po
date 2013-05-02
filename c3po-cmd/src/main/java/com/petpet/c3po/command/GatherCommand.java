@@ -38,14 +38,12 @@ public class GatherCommand implements Command {
     this.pLayer = configurator.getPersistence();
 
     final Map<String, String> conf = new HashMap<String, String>();
-    conf.put(Constants.OPT_COLLECTION_NAME, getCollectionName());
     conf.put(Constants.OPT_COLLECTION_LOCATION, this.getMetaDataPath());
+    conf.put(Constants.OPT_COLLECTION_NAME, getCollectionName());
     conf.put(Constants.OPT_INPUT_TYPE, this.getAdaptorType());
     conf.put(Constants.OPT_RECURSIVE, this.isRecursive() + "");
-    conf.put(Constants.CNF_ADAPTORS_COUNT, configurator.getStringProperty(Constants.CNF_ADAPTORS_COUNT));
-    conf.put(Constants.OPT_INFER_DATE, configurator.getStringProperty(Constants.OPT_INFER_DATE));
 
-    final Controller ctrl = new Controller(this.pLayer);
+    final Controller ctrl = new Controller(configurator);
     try {
       ctrl.processMetaData(conf);
     } catch (C3POConfigurationException e) {

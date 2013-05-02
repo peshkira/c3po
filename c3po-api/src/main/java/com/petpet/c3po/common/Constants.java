@@ -32,12 +32,6 @@ public final class Constants {
   public static final String OPT_INPUT_TYPE = "c3po.input.type";
 
   /**
-   * Experimental property allowing to infer the date of the objects, if their
-   * file names have a specific format.
-   */
-  public static final String OPT_INFER_DATE = "c3po.adaptor.inference.date";
-
-  /**
    * A configuartion for recursive processing.
    */
   public static final String OPT_RECURSIVE = "c3po.recursive";
@@ -56,6 +50,37 @@ public final class Constants {
    * The thread count configuration for the consolidator workers.
    */
   public static final String CNF_CONSOLIDATORS_COUNT = "c3po.controller.consolidators.count";
+
+  /**
+   * The key for the create element identifier processing rule.
+   */
+  public static final String CNF_ELEMENT_IDENTIFIER_RULE = "c3po.rule.create_element_identifier";
+
+  /**
+   * The key for the empty value processing rule.
+   */
+  public static final String CNF_EMPTY_VALUE_RULE = "c3po.rule.empty_value_processing";
+
+  /**
+   * The key for the format version resolution processing rule.
+   */
+  public static final String CNF_VERSION_RESOLUTION_RULE = "c3po.rule.format_version_resolution";
+
+  /**
+   * The key for the html info processing rule.
+   */
+  public static final String CNF_HTML_INFO_RULE = "c3po.rule.html_info_processing";
+
+  /**
+   * The key for the infer date processing rule.
+   */
+  public static final String CNF_INFER_DATE_RULE = "c3po.rule.infer_date_from_file_name";
+
+  /**
+   * An array of the configurable processing rule keys.
+   */
+  public static final String[] RULE_KEYS = { CNF_ELEMENT_IDENTIFIER_RULE, CNF_VERSION_RESOLUTION_RULE,
+      CNF_EMPTY_VALUE_RULE, CNF_INFER_DATE_RULE, CNF_HTML_INFO_RULE };
 
   /**
    * The version of the core module.

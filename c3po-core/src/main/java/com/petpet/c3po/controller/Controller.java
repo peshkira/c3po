@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
+import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
+import com.petpet.c3po.adaptor.rules.InferDateFromFileNameRule;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
@@ -25,10 +27,10 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.api.model.Element;
-import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.LocalFileGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
+import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
 /**
@@ -72,104 +74,114 @@ public class Controller {
    */
   private final Queue<Element> processingQueue;
 
+  /**
+   * A map of the known adaptors.
+   */
   private final Map<String, Class<? extends AbstractAdaptor>> knownAdaptors;
+
+  /**
+   * A map of processing rules.
+   */
+  private final Map<String, Class<? extends ProcessingRule>> knownRules;
+
+  /**
+   * A {@link Configurator} that holds applications specific configurations.
+   */
+  private Configurator configurator;
 
   /**
    * This constructors sets the persistence layer, initializes the processing
    * queue and the {@link LocalFileGatherer};
    * 
-   * @param pLayer
+   * @param config
+   *          a configurator that holds application specific configs and can
+   *          initialize the application.
+   * 
    */
-  public Controller(PersistenceLayer pLayer) {
-    this.persistence = pLayer;
+  public Controller(Configurator config) {
+    this.configurator = config;
+    this.persistence = config.getPersistence();
     this.processingQueue = new LinkedList<Element>();
     this.gatherer = new LocalFileGatherer();
     this.knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
+    this.knownRules = new HashMap<String, Class<? extends ProcessingRule>>();
 
     // TODO detect adaptors automatically from the class path
     // and add them to this map.
     this.knownAdaptors.put("FITS", FITSAdaptor.class);
     this.knownAdaptors.put("TIKA", TIKAAdaptor.class);
+
+    // TODO detect these automatically from the class path
+    // and add them to this map.
+    this.knownRules.put(Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class);
+    this.knownRules.put(Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class);
+    this.knownRules.put(Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class);
+    this.knownRules.put(Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class);
+    this.knownRules.put(Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class);
   }
 
   /**
    * This starts a gather-adapt-persist workflow, where all the needed
-   * compontents are configured and run. If the passed configuration is invalid
-   * an exception is thrown.
+   * compontents are configured and run. If the passed options are invalid an
+   * exception is thrown.
    * 
-   * @param config
-   *          a map of the application configurations.
+   * @param options
+   *          a map of the application options.
    * @throws C3POConfigurationException
    *           if the configuration is missing or invalid.
    */
-  public void processMetaData(Map<String, String> config) throws C3POConfigurationException {
+  public void processMetaData(Map<String, String> options) throws C3POConfigurationException {
 
-    this.checkConfiguration(config);
-    this.gatherer.setConfig(config);
+    this.checkOptions(options);
+    this.gatherer.setConfig(options);
 
     String adaptorsCount = null;
     String consCount = null;
-    int adaptorThreads = 4;
-    int consThreads = 2;
 
-    try {
-
-      consCount = config.get(Constants.CNF_CONSOLIDATORS_COUNT);
-      consThreads = Integer.parseInt(consCount);
-      if (consThreads <= 0) {
-        LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", consCount);
-        consThreads = 2;
-      }
-
-    } catch (NumberFormatException e) {
-      LOG.warn("The provided consolidators count config '{}' is invalid. Using the default.", consCount);
+    int consThreads = this.configurator.getIntProperty(Constants.CNF_CONSOLIDATORS_COUNT, 2);
+    if (consThreads <= 0) {
+      LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", consCount);
+      consThreads = 2;
     }
 
-    try {
-
-      adaptorsCount = config.get(Constants.CNF_ADAPTORS_COUNT);
-      adaptorThreads = Integer.parseInt(adaptorsCount);
-      if (adaptorThreads <= 0) {
-        LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", adaptorsCount);
-        adaptorThreads = 4;
-      }
-
-    } catch (NumberFormatException e) {
-      LOG.warn("The provided adaptors count config '{}' is invalid. Using the default.", adaptorsCount);
+    int adaptorThreads = this.configurator.getIntProperty(Constants.CNF_ADAPTORS_COUNT, 4);
+    if (adaptorThreads <= 0) {
+      LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", adaptorsCount);
+      adaptorThreads = 4;
     }
 
-    String name = config.get(Constants.OPT_COLLECTION_NAME);
-    String type = (String) config.get(Constants.OPT_INPUT_TYPE);
+    String name = options.get(Constants.OPT_COLLECTION_NAME);
+    String type = (String) options.get(Constants.OPT_INPUT_TYPE);
     String prefix = this.getAdaptor(type).getAdaptorPrefix();
-    Map<String, String> adaptorcnf = this.getAdaptorConfig(config, prefix);
+    Map<String, String> adaptorcnf = this.getAdaptorConfig(options, prefix);
 
     this.startWorkers(name, adaptorThreads, consThreads, type, adaptorcnf);
 
   }
 
   /**
-   * Checks the config passed to this controller for required values.
+   * Checks the passed options passed to this controller for required values.
    * 
-   * @param config
+   * @param options
    * @throws C3POConfigurationException
    */
-  private void checkConfiguration(final Map<String, String> config) throws C3POConfigurationException {
+  private void checkOptions(final Map<String, String> options) throws C3POConfigurationException {
 
-    if (config == null) {
+    if (options == null) {
       throw new C3POConfigurationException("No config map provided");
     }
 
-    String inputType = config.get(Constants.OPT_INPUT_TYPE);
+    String inputType = options.get(Constants.OPT_INPUT_TYPE);
     if (inputType == null || (!inputType.equals("TIKA") && !inputType.equals("FITS"))) {
       throw new C3POConfigurationException("No input type specified. Please use one of FITS or TIKA.");
     }
 
-    String path = config.get(Constants.OPT_COLLECTION_LOCATION);
+    String path = options.get(Constants.OPT_COLLECTION_LOCATION);
     if (path == null) {
       throw new C3POConfigurationException("No input file path provided. Please provide a path to the input files.");
     }
 
-    String name = config.get(Constants.OPT_COLLECTION_NAME);
+    String name = options.get(Constants.OPT_COLLECTION_NAME);
     if (name == null || name.equals("")) {
       throw new C3POConfigurationException("The name of the collection is not set. Please set a name.");
     }
@@ -278,9 +290,10 @@ public class Controller {
     new ActionLogHelper(this.persistence).recordAction(log);
   }
 
-  // TODO this should be generated via some user input.
   /**
-   * Obtains a list of {@link ProcessingRule} objects for the adaptors.
+   * Obtains a list of {@link ProcessingRule} objects for the adaptors. The list
+   * always contains the {@link AssignCollectionToElementRule} object and all
+   * other rules depending on their configurations.
    * 
    * @param name
    *          the name of the collection that is going to be processed.
@@ -288,11 +301,34 @@ public class Controller {
    */
   private List<ProcessingRule> getRules(String name) {
     List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
+    rules.add(new AssignCollectionToElementRule(name)); // always on...
 
-    rules.add(new HtmlInfoProcessingRule());
-    rules.add(new EmptyValueProcessingRule());
-    rules.add(new FormatVersionResolutionRule());
-    rules.add(new AssignCollectionToElementRule(name));
+    for (String key : Constants.RULE_KEYS) {
+
+      boolean isOn = this.configurator.getBooleanProperty(key);
+
+      if (isOn) {
+
+        Class<? extends ProcessingRule> clazz = this.knownRules.get(key);
+
+        if (clazz != null) {
+
+          try {
+
+            LOG.debug("Adding rule '{}'", key);
+
+            ProcessingRule rule = clazz.newInstance();
+            rules.add(rule);
+
+          } catch (InstantiationException e) {
+            LOG.warn("Could not initialize the processing rule for key '{}'", key);
+          } catch (IllegalAccessException e) {
+            LOG.warn("Could not access the processing rule for key '{}'", key);
+          }
+
+        }
+      }
+    }
 
     return rules;
   }

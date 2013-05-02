@@ -98,6 +98,20 @@ public final class Configurator {
   }
 
   /**
+   * Returns the string property for the given key, or returns the default value
+   * if nothing is defined under the given key.
+   * 
+   * @param key
+   *          the key to look for
+   * @param def
+   *          the default value, in case the key does not exists.
+   * @return the string value corresponding to that key.
+   */
+  public String getStringProperty(final String key, final String def) {
+    return this.config.getProperty(key, def);
+  }
+
+  /**
    * Returns an integer value for the specified property key or -1.
    * 
    * @param key
@@ -105,7 +119,31 @@ public final class Configurator {
    * @return the value or -1.
    */
   public int getIntProperty(final String key) {
-    return Integer.parseInt(this.config.getProperty(key, "-1"));
+    return getIntProperty(key, -1);
+  }
+
+  /**
+   * Returns an integer for the specified property or the default value if the
+   * key is not defined in the configs.
+   * 
+   * @param key
+   *          the key to look for.
+   * @param def
+   *          the default value if the key does not exist.
+   * @return the value corresponding to the key or the default value.
+   */
+  public int getIntProperty(final String key, final int def) {
+    String property = this.config.getProperty(key);
+    int result = def;
+    if (property != null && property.equals("")) {
+      try {
+        result = Integer.parseInt(property);
+      } catch (NumberFormatException e) {
+        // nothing to do - return the default.
+        LOG.trace("The provided property {} is not a number, returning the default: {}", key, def);
+      }
+    }
+    return result;
   }
 
   /**
@@ -206,6 +244,12 @@ public final class Configurator {
         LOG.error("Could not access persistence layer class '{}'! Error: {}", persistence, e.getMessage());
         LOG.warn("Trying to use the default persistence layer");
         initDefaultPersistence();
+
+      } catch (Exception e) {
+        LOG.error("Could not start persistence layer class '{}'! Error: {}", persistence, e.getMessage());
+        LOG.warn("Trying to use the default persistence layer");
+        initDefaultPersistence();
+
       }
 
     }
