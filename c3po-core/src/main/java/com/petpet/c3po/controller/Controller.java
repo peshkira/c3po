@@ -234,7 +234,7 @@ public class Controller {
     List<Consolidator> consolidators = new ArrayList<Consolidator>();
 
     for (int i = 0; i < consThreads; i++) {
-      Consolidator c = new Consolidator(this.processingQueue);
+      Consolidator c = new Consolidator(this.persistence, this.processingQueue);
       consolidators.add(c);
       this.consolidatorPool.submit(c);
     }
@@ -259,8 +259,8 @@ public class Controller {
 
     // no more adaptors can be added.
     this.adaptorPool.shutdown();
-
-    new Thread(this.gatherer, "MetadataGatherer");
+    
+    new Thread(this.gatherer, "MetadataGatherer").start();
 
     try {
 

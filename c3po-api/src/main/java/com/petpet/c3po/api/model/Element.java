@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.mongodb.BasicDBObject;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.common.Constants;
 
 /**

@@ -32,11 +32,6 @@ public class MetadataRecord {
     SINGLE_RESULT,
 
     /**
-     * Signals that the tool was not confident in the extracted value.
-     */
-    PARTIAL,
-
-    /**
      * One, two or more tools have provided different values for the same
      * property.
      */
@@ -52,7 +47,7 @@ public class MetadataRecord {
    * The actual measured value.
    */
   private String value;
-  
+
   /**
    * A list for the conflicting values;
    */
@@ -138,10 +133,14 @@ public class MetadataRecord {
   }
 
   public List<String> getValues() {
+    if (values == null) {
+      this.values = new ArrayList<String>();
+    }
     return values;
   }
 
   public void setValues(List<String> values) {
     this.values = values;
   }
+
 }

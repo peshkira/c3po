@@ -24,6 +24,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
 
@@ -32,7 +33,7 @@ public final class DataHelper {
   private static final Logger LOG = LoggerFactory.getLogger(DataHelper.class);
 
   private static Properties TYPES;
-  
+
   /**
    * Some date patterns used for date parsing.
    */
@@ -54,7 +55,7 @@ public final class DataHelper {
   public static String getPropertyType(String key) {
     return TYPES.getProperty(key, "STRING");
   }
-  
+
   public static String removeTrailingZero(final String str) {
     if (str != null && str.endsWith(".0")) {
       return str.substring(0, str.length() - 2);
@@ -63,6 +64,57 @@ public final class DataHelper {
     return str;
   }
 
+  public static void mergeMetadataRecord(Element e, MetadataRecord mr) {
+
+    if (e == null || mr == null) {
+      return;
+    }
+
+    List<MetadataRecord> oldMetadata = e.removeMetadata(mr.getProperty().getId());
+    if (oldMetadata.size() == 0) {
+
+      e.getMetadata().add(mr);
+
+    } else if (oldMetadata.size() == 1) {
+
+      MetadataRecord oldMR = oldMetadata.get(0);
+      if (oldMR.getStatus().equals(Status.CONFLICT.name())) {
+        
+        String newVal = getTypedValue(mr.getProperty().getType(), mr.getValue()).toString();
+        if (!oldMR.getValues().contains(newVal)) {
+          mr.setStatus(Status.CONFLICT.name());
+          oldMetadata.add(mr);
+        }
+        
+      } else {
+        String oldVal = getTypedValue(oldMR.getProperty().getType(), oldMR.getValue()).toString();
+        String newVal = getTypedValue(mr.getProperty().getType(), mr.getValue()).toString();
+
+        if (!oldVal.equals(newVal)) {
+          oldMR.setStatus(Status.CONFLICT.name());
+          mr.setStatus(Status.CONFLICT.name());
+          oldMetadata.add(mr);
+        }
+      }
+    } else {
+
+      boolean exists = false;
+      for (MetadataRecord old : oldMetadata) {
+        String oldVal = getTypedValue(old.getProperty().getType(), old.getValue()).toString();
+        String newVal = getTypedValue(mr.getProperty().getType(), mr.getValue()).toString();
+        if (oldVal.equals(newVal)) {
+          exists = true;
+        }
+      }
+
+      if (!exists) {
+        mr.setStatus(Status.CONFLICT.name());
+        oldMetadata.add(mr);
+      }
+    }
+
+    e.getMetadata().addAll(oldMetadata);
+  }
 
   /**
    * Parses the element from a db object returned by the db.
@@ -177,7 +229,7 @@ public final class DataHelper {
         if (tmp.getValue().equals("Unknown")) {
           query.put("metadata." + tmp.getProperty() + ".values", new BasicDBObject("$exists", false));
           query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-          
+
         } else if (tmp.getValue().equals("Conflicted")) {
           query.put("metadata." + tmp.getProperty() + ".status", MetadataRecord.Status.CONFLICT.toString());
 
@@ -200,13 +252,13 @@ public final class DataHelper {
           String[] constraints = val.split(" - ");
           String low = constraints[0];
           String high = constraints[1];
-          
+
           BasicDBObject range = new BasicDBObject();
           range.put("$lte", Long.parseLong(high));
           range.put("$gte", Long.parseLong(low));
-          
+
           query.put("metadata." + tmp.getProperty() + ".value", range);
-          
+
         } else {
           query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
         }
@@ -229,9 +281,7 @@ public final class DataHelper {
 
     return result;
   }
-  
-  
-  
+
   /**
    * Tries to infer the type of the value based on the property type and
    * converts the value. Otherwise it leaves the string representation. This is

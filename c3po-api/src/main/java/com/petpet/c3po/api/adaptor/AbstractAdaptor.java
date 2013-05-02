@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.petpet.c3po.api.dao.ReadOnlyCache;
 import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.Element;
@@ -27,6 +30,8 @@ import com.petpet.c3po.api.model.helper.MetadataStream;
  * 
  */
 public abstract class AbstractAdaptor implements Runnable {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractAdaptor.class);
 
   /**
    * The gatherer that is used to obtain the next meta data stream.
@@ -190,7 +195,14 @@ public abstract class AbstractAdaptor implements Runnable {
         }
 
         if (stream != null) {
-          Element element = parseElement(stream);
+          Element element = null;
+          try {
+            
+            element = parseElement(stream);
+            
+          } catch (Exception e) {
+            LOG.warn("An error occurred while parsing, skipping {}: ", stream.getFileName(), e.getMessage());
+          }
 
           postProcessElement(element);
 
@@ -201,7 +213,7 @@ public abstract class AbstractAdaptor implements Runnable {
             try {
               data.close();
             } catch (IOException e) {
-              e.printStackTrace();
+              LOG.warn("An error occurred, while closing the stream for {}: {}", stream.getFileName(), e.getMessage());
             }
           }
         }
@@ -427,8 +439,8 @@ public abstract class AbstractAdaptor implements Runnable {
     synchronized (elementsQueue) {
       if (e != null) {
         elementsQueue.add(e);
-        elementsQueue.notify();
       }
+      elementsQueue.notify();
     }
   }
 

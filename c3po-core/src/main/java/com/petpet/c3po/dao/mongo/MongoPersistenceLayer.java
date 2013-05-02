@@ -394,6 +394,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    */
   @Override
   public <T extends Model> void remove(T object) {
+    if (object == null) {
+      return;
+    }
+
     DBCollection dbCollection = this.getCollection(object.getClass());
     MongoModelSerializer serializer = this.getSerializer(object.getClass());
 

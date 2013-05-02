@@ -37,11 +37,11 @@ public class MongoElementSerializer implements MongoModelSerializer {
       if (element.getName() != null && !element.getName().equals("")) {
         document.put("name", element.getName());
       }
-    
+
       if (element.getUid() != null && !element.getUid().equals("")) {
         document.put("uid", element.getUid());
       }
-      
+
       if (element.getCollection() != null && !element.getCollection().equals("")) {
         document.put("collection", element.getCollection());
       }
@@ -72,8 +72,16 @@ public class MongoElementSerializer implements MongoModelSerializer {
             values = new ArrayList<Object>();
             sources = new ArrayList<Object>();
 
-            values.add(DataHelper.getTypedValue(r.getProperty().getType(), r.getValue()));
-            sources.add(r.getSources().get(0));
+            if (r.getValue() == null || r.getValue().equals("")) {
+              for (String s : r.getValues()) {
+                values.add(DataHelper.getTypedValue(r.getProperty().getType(), s));
+              }
+              sources.addAll(r.getSources());
+            } else {
+
+              values.add(DataHelper.getTypedValue(r.getProperty().getType(), r.getValue()));
+              sources.add(r.getSources().get(0));
+            }
           }
 
           conflicting.put("values", values);
