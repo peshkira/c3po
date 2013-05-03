@@ -56,7 +56,6 @@ public class DataHelperTest {
     Assert.assertEquals(1, e.getMetadata().size());
     
     Assert.assertEquals(e.getMetadata().get(0).getProperty().getKey(), elmnt.getMetadata().get(0).getProperty().getKey());
-    Assert.assertEquals(source.getName()+" " +source.getVersion(), elmnt.getMetadata().get(0).getSources().get(0));
 
     p.remove(elmnt);
     } else {

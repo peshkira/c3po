@@ -135,7 +135,7 @@ public final class Configurator {
   public int getIntProperty(final String key, final int def) {
     String property = this.config.getProperty(key);
     int result = def;
-    if (property != null && property.equals("")) {
+    if (property != null && !property.equals("")) {
       try {
         result = Integer.parseInt(property);
       } catch (NumberFormatException e) {
