@@ -16,6 +16,7 @@ import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 
+//TODO try to lock/synchronize on the queue instead of this!
 public class LocalFileGatherer implements MetaDataGatherer {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalFileGatherer.class);
@@ -28,6 +29,8 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
   private boolean ready;
 
+  private Object lock;
+
   public LocalFileGatherer() {
     this.queue = new LinkedList<String>();
     this.ready = false;
@@ -37,6 +40,11 @@ public class LocalFileGatherer implements MetaDataGatherer {
     this();
     this.config = config;
   }
+  
+  public LocalFileGatherer(Object lock) {
+    this();
+    this.lock = lock;
+  }
 
   @Override
   public synchronized void run() {
@@ -44,9 +52,13 @@ public class LocalFileGatherer implements MetaDataGatherer {
     boolean recursive = Boolean.valueOf(this.config.get(Constants.OPT_RECURSIVE));
 
     this.ready = false;
-    this.sum = this.traverseFiles(new File(path), recursive, true);
+    this.traverseFiles(new File(path), recursive, true);
     LOG.info("{} files were gathered successfully", this.sum);
     this.ready = true;
+    synchronized (lock) {
+      this.lock.notifyAll();
+      
+    }
   }
 
   @Override
@@ -70,7 +82,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
   }
 
   public MetadataStream getNext() {
-    synchronized (queue) {
+    //synchronized (queue) {
 
       MetadataStream result = null;
       String filePath = queue.poll();
@@ -84,26 +96,28 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
       return result;
 
-    }
+    //}
   }
 
-  private long traverseFiles(File file, boolean recursive, boolean firstLevel) {
-    long sum = 0;
+  private void traverseFiles(File file, boolean recursive, boolean firstLevel) {
 
     if (file.isDirectory() && (recursive || firstLevel)) {
       File[] files = file.listFiles();
       for (File f : files) {
-        sum += traverseFiles(f, recursive, false);
+        traverseFiles(f, recursive, false);
       }
     } else {
-      synchronized (queue) {
         this.queue.add(file.getAbsolutePath());
         sum++;
-        this.notify();
-      }
+        
+//    synchronized (lock) {
+        if ((this.sum % 1000) == 0) {
+          LOG.info("traversed: {} files", this.sum);
+//          this.lock.notify();
+     //}
+     }
     }
 
-    return sum;
   }
 
   @Override
@@ -123,9 +137,9 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
   @Override
   public boolean hasNext() {
-    synchronized (queue) {
+//    synchronized (queue) {
       return !this.queue.isEmpty();
-    }
+//    }
   }
 
   @Override

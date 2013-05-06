@@ -34,7 +34,7 @@ public class Consolidator extends Thread {
   @Override
   public void run() {
     this.running = true;
-    while (this.isRunning() || !queue.isEmpty()) {
+    while (this.running || !queue.isEmpty()) {
       try {
 
         Element e = null;
@@ -51,16 +51,16 @@ public class Consolidator extends Thread {
 
           e = queue.poll();
 
-          // should this be here or outside of the sync block
-          process(e);
         }
+        // should this be here or outside of the sync block
+        process(e);
 
       } catch (InterruptedException e) {
         LOG.warn("An error occurred in {}: {}", getName(), e.getMessage());
         break;
       }
     }
-    LOG.debug(getName() + " is stopping");
+    LOG.info(getName() + " is stopping");
   }
 
   private void process(Element element) {
