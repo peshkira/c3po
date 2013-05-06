@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -25,8 +28,10 @@ import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
+import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.dao.mongo.mapreduce.HistogramJob;
@@ -36,6 +41,8 @@ import com.petpet.c3po.utils.DataHelper;
 public class ProfileGenerator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProfileGenerator.class);
+
+  private static final Class<com.petpet.c3po.api.model.Element> ELEMENT_CLASS = com.petpet.c3po.api.model.Element.class;
 
   private static final String[] PROPERTIES = { "format", "format_version", "puid", "mimetype", "charset", "linebreak",
       "compressionscheme", "creating_os", "byteorder", "compression_scheme", "colorspace", "icc_profile_name",
@@ -91,13 +98,15 @@ public class ProfileGenerator {
   }
 
   public Document generateProfile(Filter filter, boolean includeelements) {
-    final BasicDBObject ref = new BasicDBObject();
-    ref.put("collection", filter.getCollection());
-    final long count = this.persistence.count(Constants.TBL_ELEMENTS, ref);
+    // TODO check if subFilter is changed
+    // if not then it does not have a collection filter...
+    // and the collection name should be different...
+    Filter subFilter = filter.subFilter("collection");
+    final long count = this.persistence.count(ELEMENT_CLASS, subFilter);
 
     final Document document = DocumentHelper.createDocument();
-
-    final Element root = this.createRootElement(document, filter.getCollection(), count);
+    final String name = this.getCollectionNameFromFilter(filter);
+    final Element root = this.createRootElement(document, name, count);
     final Element partition = this.createPartition(root, filter);
     this.genereateFilterElement(partition, filter);
     final Element properties = this.createPropertiesElement(partition);
@@ -108,40 +117,60 @@ public class ProfileGenerator {
     return document;
   }
 
+  private String getCollectionNameFromFilter(Filter filter) {
+
+    if (filter == null) {
+      return "all-data";
+    }
+
+    String result = "";
+    List<FilterCondition> conditions = filter.getConditions();
+    for (FilterCondition fc : conditions) {
+      if (fc.getField().equals("collection")) {
+        result += fc.getValue().toString() + " ";
+      }
+    }
+
+    return result;
+  }
+
   private void genereateFilterElement(Element partition, Filter filter) {
     Element elmntFilter = partition.addElement("filter");
-    elmntFilter.addAttribute("id", filter.getDescriminator());
-    BasicDBObject query = DataHelper.getFilterQuery(filter);
+    // TODO get rid of id
+    elmntFilter.addAttribute("id", UUID.randomUUID().toString());
     Element parameters = elmntFilter.addElement("parameters");
-    for (String key : query.keySet()) {
+
+    for (FilterCondition fc : filter.getConditions()) {
       Element parameter = parameters.addElement("parameter");
-      parameter.addElement("name").addText(key);
-      parameter.addElement("value").addText(query.getString(key));
+      parameter.addElement("name").addText(fc.getField());
+      parameter.addElement("value").addText(fc.getValue().toString());
     }
 
   }
 
   // TODO serialize the filter better, not with the temp id.
   private Element createPartition(Element root, Filter filter) {
-    BasicDBObject query = DataHelper.getFilterQuery(filter);
 
-    DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, query);
+    long count = this.persistence.count(ELEMENT_CLASS, filter);
 
-    final Element partition = root.addElement("partition").addAttribute("count", cursor.count() + "");
+    final Element partition = root.addElement("partition").addAttribute("count", count + "");
     return partition;
   }
 
   private void generateProperties(final Filter filter, final Element properties) {
-    final List<Property> allprops = this.getProperties(this.persistence.findAll(Constants.TBL_PROEPRTIES));
+    Iterator<Property> allprops = this.persistence.find(Property.class, null);
     // final BasicDBObject query = new BasicDBObject("_id", null);
 
-    for (Property p : allprops) {
-      final BasicDBObject ref = DataHelper.getFilterQuery(filter);
-      // if it is already in the query do not overwrite
-      if (!ref.containsField("metadata." + p.getId() + ".value")) {
-        ref.put("metadata." + p.getId() + ".value", new BasicDBObject("$exists", true));
+    while (allprops.hasNext()) {
+      Property p = allprops.next();
+
+      Filter copy = new Filter(filter);
+
+      if (!copy.contains(p.getId())) {
+        copy.addFilterCondition(new FilterCondition(p.getId(), null));
       }
-      final int count = this.persistence.find(Constants.TBL_ELEMENTS, ref).count();
+
+      long count = this.persistence.count(ELEMENT_CLASS, copy);
 
       if (count != 0) {
         this.createPropertyElement(filter, properties, p, count);
@@ -149,7 +178,7 @@ public class ProfileGenerator {
     }
   }
 
-  private void createPropertyElement(final Filter filter, final Element properties, final Property p, int count) {
+  private void createPropertyElement(final Filter filter, final Element properties, final Property p, long count) {
     final Element prop = properties.addElement("property").addAttribute("id", p.getKey())
         .addAttribute("type", p.getType()).addAttribute("count", count + "");
 
@@ -198,10 +227,12 @@ public class ProfileGenerator {
   }
 
   private void createSampleElement(final Element samples, final String uid) {
-    DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, new BasicDBObject("uid", uid));
-    assert cursor.count() == 1;
+    Iterator<com.petpet.c3po.api.model.Element> iter = this.persistence.find(ELEMENT_CLASS, new Filter(
+        new FilterCondition("uid", uid)));
 
-    com.petpet.c3po.api.model.Element element = DataHelper.parseElement(cursor.next(), this.persistence);
+    assert iter.hasNext();
+
+    com.petpet.c3po.api.model.Element element = iter.next();
 
     Element sample = samples.addElement("sample").addAttribute("uid", uid);
     for (MetadataRecord mr : element.getMetadata()) {
@@ -210,6 +241,7 @@ public class ProfileGenerator {
         for (int i = 0; i < mr.getValues().size(); i++) {
           sample.addElement("record").addAttribute("name", mr.getProperty().getKey())
               .addAttribute("value", mr.getValues().get(i).toString()).addAttribute("tool", mr.getSources().get(i));
+          // TODO read source out of db/cache...
         }
 
       } else {
@@ -223,15 +255,12 @@ public class ProfileGenerator {
     final Element elements = partition.addElement("elements");
 
     if (includeelements) {
-      final BasicDBObject ref = DataHelper.getFilterQuery(filter);
-      final BasicDBObject keys = new BasicDBObject("_id", null);
-      keys.put("uid", 1);
 
-      final DBCursor cursor = this.persistence.find(Constants.TBL_ELEMENTS, ref, keys);
+      Iterator<com.petpet.c3po.api.model.Element> iter = this.persistence.find(ELEMENT_CLASS, filter);
 
-      while (cursor.hasNext()) {
-        final DBObject element = cursor.next();
-        elements.addElement("element").addAttribute("uid", (String) element.get("uid"));
+      while (iter.hasNext()) {
+        com.petpet.c3po.api.model.Element element = iter.next();
+        elements.addElement("element").addAttribute("uid", element.getUid());
       }
     }
   }
@@ -240,27 +269,12 @@ public class ProfileGenerator {
     for (final String s : PROPERTIES) {
       if (p.getKey().equals(s)) {
 
-        HistogramJob job = new HistogramJob(filter.getCollection(), p.getKey());
-        job.setFilterquery(DataHelper.getFilterQuery(filter));
+        Map<String, Long> histogram = this.persistence.getValueHistogramFor(p, filter);
 
-        final MapReduceOutput output = job.execute();
-        final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
-
-        Collections.sort(results, new Comparator<BasicDBObject>() {
-
-          @Override
-          public int compare(BasicDBObject o1, BasicDBObject o2) {
-            final String key = "value";
-            final Long l1 = o1.getLong(key);
-            final Long l2 = o2.getLong(key);
-            return l2.compareTo(l1); // from largest to smallest.
-          }
-
-        });
-
-        for (final BasicDBObject dbo : results) {
-          prop.addElement("item").addAttribute("id", dbo.getString("_id"))
-              .addAttribute("value", dbo.getLong("value") + "");
+        //TODO sort these according to value?
+        for (String key : histogram.keySet()) {
+          Long val = histogram.get(key);
+          prop.addElement("item").addAttribute("id", key).addAttribute("value", val + "");
         }
 
         break;
@@ -269,108 +283,75 @@ public class ProfileGenerator {
   }
 
   private void processBoolProperty(final Filter filter, final Element prop, final Property p) {
-    final BasicDBObject query = new BasicDBObject("_id", null);
-    final BasicDBObject ref = DataHelper.getFilterQuery(filter);
-    final String key = "metadata." + p.getId() + ".value";
-    int yes = 0;
-    int no = 0;
+//    final BasicDBObject query = new BasicDBObject("_id", null);
+//    final BasicDBObject ref = DataHelper.getFilterQuery(filter);
+//    final String key = "metadata." + p.getId() + ".value";
+//    long yes = 0;
+//    long no = 0;
 
     // when it equals uknown remove the elment.
     // TODO when it equals conflicted.
-    if (ref.get(key) != null && ref.get(key).toString().equals("{ \"$exists\" : false}")) {
-      prop.getParent().remove(prop);
-      return;
-
-    } else if (ref.get(key) != null) {
-      if (ref.getBoolean(key)) {
-        yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-      } else {
-        no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-      }
-    } else {
-      ref.put(key, true);
-      yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-
-      ref.put(key, false);
-      no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-
+//    if (ref.get(key) != null && ref.get(key).toString().equals("{ \"$exists\" : false}")) {
+//      prop.getParent().remove(prop);
+//      return;
+//
+//    } else 
+      
+//    if (ref.get(key) != null) {
+//      if (ref.getBoolean(key)) {
+//        yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+//      } else {
+//        no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+//      }
+//    } else {
+//      ref.put(key, true);
+//      yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+//
+//      ref.put(key, false);
+//      no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
+//
+//    }
+    
+//    Filter copy1 = new Filter(filter);
+//    Filter copy2 = new Filter(filter);
+//    
+//    //TODO check if copy has filter for this boolean prop and deal with it.
+//    copy1.addFilterCondition(new FilterCondition(p.getId(), true));
+//    copy2.addFilterCondition(new FilterCondition(p.getId(), false));
+//    yes = this.persistence.count(ELEMENT_CLASS, copy1);
+//    no = this.persistence.count(ELEMENT_CLASS, copy2);
+    Map<String, Long> histogram = this.persistence.getValueHistogramFor(p, filter);
+    for (String key : histogram.keySet()) {
+      Long val = histogram.get(key);
+      prop.addElement("item").addAttribute("value", key).addAttribute("count", val + "");
     }
-
-    prop.addElement("item").addAttribute("value", "true").addAttribute("count", yes + "");
-    prop.addElement("item").addAttribute("value", "false").addAttribute("count", no + "");
+    
+//    prop.addElement("item").addAttribute("value", "true").addAttribute("count", yes + "");
+//    prop.addElement("item").addAttribute("value", "false").addAttribute("count", no + "");
 
   }
 
   // if also a histogram is done, do not forget the bin_width...
   private void processNumericProperty(final Filter filter, final Element prop, final Property p) {
-    final NumericAggregationJob job = new NumericAggregationJob(filter.getCollection(), p.getId());
-    final BasicDBObject query = DataHelper.getFilterQuery(filter);
-    job.setFilterquery(query);
-    final MapReduceOutput output = job.execute();
+    NumericStatistics numericStatistics = this.persistence.getNumericStatistics(p, filter);
 
-    final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
-    final BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
 
-    prop.addAttribute("count", removeTrailingZero(aggregation.getString("count")));
-    prop.addAttribute("sum", removeTrailingZero(aggregation.getString("sum")));
-    prop.addAttribute("min", removeTrailingZero(aggregation.getString("min")));
-    prop.addAttribute("max", removeTrailingZero(aggregation.getString("max")));
-    prop.addAttribute("avg", removeTrailingZero(aggregation.getString("avg")));
-    prop.addAttribute("var", removeTrailingZero(aggregation.getString("variance")));
-    prop.addAttribute("sd", removeTrailingZero(aggregation.getString("stddev")));
+    prop.addAttribute("count", numericStatistics.getCount() + "");
+    prop.addAttribute("sum", numericStatistics.getSum() + "");
+    prop.addAttribute("min", numericStatistics.getMin() + "");
+    prop.addAttribute("max", numericStatistics.getMax() + "");
+    prop.addAttribute("avg", numericStatistics.getAverage() + "");
+    prop.addAttribute("var", numericStatistics.getVariance() +"");
+    prop.addAttribute("sd", numericStatistics.getStandardDeviation() + "");
   }
 
   private void processDateProperty(Filter filter, Element prop, Property p) {
-    final HistogramJob job = new HistogramJob(filter.getCollection(), p.getKey());
-    job.setFilterquery(DataHelper.getFilterQuery(filter));
+    Map<String, Long> histogram = this.persistence.getValueHistogramFor(p, filter);
 
-    MapReduceOutput output = job.execute();
-    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
-    for (BasicDBObject obj : results) {
-      String id = removeTrailingZero(obj.getString("_id"));
-      String val = removeTrailingZero(obj.getString("value"));
-      prop.addElement("item").addAttribute("id", id).addAttribute("value", val);
+    for (String key : histogram.keySet()) {
+      Long val = histogram.get(key);
+      prop.addElement("item").addAttribute("id", key).addAttribute("value", val + "");
     }
-  }
-
-  private String removeTrailingZero(final String str) {
-    if (str != null && str.endsWith(".0")) {
-      return str.substring(0, str.length() - 2);
-    }
-
-    return str;
-  }
-
-  // TODO find a better place for this and remove it from here and CSVGenerator
-  /**
-   * Extracts {@link Property} objects from the given cursor and only sets the
-   * id and the name field.
-   * 
-   * @param cursor
-   *          the cursor to look for property objects.
-   * @return a list of properties or an empty list.
-   */
-  private List<Property> getProperties(final DBCursor cursor) {
-    final List<Property> result = new ArrayList<Property>();
-
-    while (cursor.hasNext()) {
-      final DBObject next = cursor.next();
-
-      final String id = (String) next.get("_id");
-      final String name = (String) next.get("key");
-      final String type = (String) next.get("type");
-
-      if (id != null && name != null) {
-        final Property p = new Property();
-        p.setId(id);
-        p.setKey(name);
-        p.setType(type);
-
-        result.add(p);
-      }
-    }
-
-    return result;
   }
 
 }

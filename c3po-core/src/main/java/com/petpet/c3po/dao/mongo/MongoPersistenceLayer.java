@@ -459,7 +459,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
     int key = getCachedResultId(p.getKey(), filter);
-    System.out.println(key);
+    //System.out.println(key);
     DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
 
     if (cursor.count() == 0) {

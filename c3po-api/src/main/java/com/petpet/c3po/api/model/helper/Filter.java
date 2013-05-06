@@ -1,6 +1,7 @@
 package com.petpet.c3po.api.model.helper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.mongodb.BasicDBObject;
@@ -8,9 +9,9 @@ import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 
 /**
- * This class is used to define a filter for a c3po collection. It has a list of
- * filter conditions that should be applied on the data before executing a
- * query. This allows the drill down into the data.
+ * This class is used to define a filter for a c3po data model class. It has a
+ * list of filter conditions that should be applied on the data before executing
+ * a query. This allows the drill down into the data.
  * 
  * The persistence layer provider should interpret the conditions by logically
  * concatenating all conditions with an AND. If two or more filter conditions
@@ -24,11 +25,17 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
  * second - property is 'mimetype' and value is 'text/html' <br>
  * third - property is 'mimetype' and value is 'text/xml'
  * 
- * Consider now that the same filter hast to be applied but it has go over both
+ * Consider now that the same filter has to be applied but it has go over both
  * collection 'A' and collection 'B'. The caller has to include an additional
  * {@link FilterCondition} where the property is 'collection' and the value is
  * 'B' and the interpreter of this filter should use a logical OR for the
  * collection property as well.
+ * 
+ * Additionally, if a condition of the filter has a null value for a given
+ * field, then this has to be interpreted as, where any given value exists for
+ * this property. For example, if a condition has a property 'mimetype' and a
+ * value 'null', then the filter should interpret where the searched objects
+ * have a mimetype field that exists.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 
@@ -93,6 +100,16 @@ public class Filter {
     conditions = fcs;
   }
 
+  /**
+   * Copies the given filter to this filter.
+   * 
+   * @param another
+   *          the filter to copy.
+   */
+  public Filter(Filter another) {
+    this.conditions = another.conditions;
+  }
+
   public List<FilterCondition> getConditions() {
     return conditions;
   }
@@ -115,7 +132,34 @@ public class Filter {
     if (fc != null && !conditions.contains(fc))
       conditions.add(fc);
   }
-  
+
+  public Filter subFilter(String... fields) {
+    Filter subFilter = new Filter();
+    List fieldList = Arrays.asList(fields);
+
+    for (FilterCondition fc : this.conditions) {
+      if (fieldList.contains(fc.getField())) {
+        subFilter.addFilterCondition(fc);
+      }
+    }
+
+    return (subFilter.getConditions().size() > 0) ? subFilter : this;
+  }
+
+  public boolean contains(String field) {
+    for (FilterCondition fc : this.conditions) {
+      if (fc.getField().equals(field)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public boolean contains(FilterCondition fc) {
+    return this.conditions.contains(fc);
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;

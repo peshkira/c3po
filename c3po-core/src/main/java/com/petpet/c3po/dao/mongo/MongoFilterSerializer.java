@@ -46,7 +46,7 @@ public class MongoFilterSerializer {
         if (distinctFields.get(field) == 1) {
 
           Object val = this.getValueForField(conditions, field);
-          and.add(new BasicDBObject(this.mapFieldTopProperty(field), val));
+          and.add(new BasicDBObject(this.mapFieldToProperty(field), val));
 
         } else {
 
@@ -74,10 +74,7 @@ public class MongoFilterSerializer {
    *          the field to wrap
    * @return the wrapped field.
    */
-  public String mapFieldTopProperty(String f) {
-    // TODO check if there is an exception to the property name
-    // otherwise, wrap in metadata.[property].value
-
+  public String mapFieldToProperty(String f) {
     if (Arrays.asList(EXCLUDE).contains(f)) {
       return f;
     }
@@ -100,7 +97,7 @@ public class MongoFilterSerializer {
 
     for (FilterCondition fc : conditions) {
       if (field.equals(fc.getField())) {
-        or.add(new BasicDBObject(this.mapFieldTopProperty(field), fc.getValue()));
+        or.add(new BasicDBObject(this.mapFieldToProperty(field), fc.getValue()));
       }
     }
 
@@ -138,8 +135,11 @@ public class MongoFilterSerializer {
    */
   private Object getValueForField(List<FilterCondition> conditions, String field) {
     for (FilterCondition fc : conditions) {
-      if (fc.getField().equals(field))
-        return fc.getValue();
+      if (fc.getField().equals(field)) {
+        Object val = fc.getValue();
+        return (val == null) ? new BasicDBObject("$exists", true) : val;
+      }
+        
     }
 
     return null;

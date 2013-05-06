@@ -13,6 +13,7 @@ import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.Configurator;
 
 public class ProfileCommand implements Command {
@@ -41,8 +42,7 @@ public class ProfileCommand implements Command {
 
     final String name = this.getCollectionName();
     final boolean include = this.getIncludeElements();
-    final Filter f = new Filter(name, null, null);
-    f.setDescriminator(UUID.randomUUID().toString());
+    final Filter f = new Filter(new FilterCondition("collection", name));
     
     final Document profile = profileGen.generateProfile(f, include);
 
