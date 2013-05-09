@@ -1,10 +1,11 @@
 package com.petpet.c3po.api.model.helper;
 
-
 /**
  * Encapsulates a single filter condition of a filter. Example: Field is the
  * mimetype property and value is a string "application/pdf", then this
- * condition means that mimetype has to be application/pdf.
+ * condition means that mimetype has to be application/pdf. If the value is
+ * null, then the condition should be interpreted as exists (e.g. any value for
+ * the given field).
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 

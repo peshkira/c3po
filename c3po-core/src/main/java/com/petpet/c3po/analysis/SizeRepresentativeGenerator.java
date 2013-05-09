@@ -1,22 +1,22 @@
 package com.petpet.c3po.analysis;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.dao.mongo.mapreduce.NumericAggregationJob;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
+import com.petpet.c3po.api.model.helper.BetweenFilterCondition.Operator;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.DataHelper;
 
 public class SizeRepresentativeGenerator extends RepresentativeGenerator {
 
@@ -37,63 +37,46 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
   public List<String> execute(int limit) {
     LOG.info("Applying {} algorithm for representatice selection", this.getType());
     final Set<String> result = new HashSet<String>();
-    final BasicDBObject query = DataHelper.getFilterQuery(this.getFilter());
-    LOG.debug("Query: " + query.toString());
-    long count = pl.count(Constants.TBL_ELEMENTS, query);
+    long count = pl.count(Element.class, this.getFilter());
     if (count <= limit) {
-      DBCursor cursor = this.pl.find(Constants.TBL_ELEMENTS, query);
-      while (cursor.hasNext()) {
-        result.add(DataHelper.parseElement(cursor.next(), this.pl).getUid());
+      Iterator<Element> iter = this.pl.find(Element.class, this.getFilter());
+      while (iter.hasNext()) {
+        result.add(iter.next().getUid());
       }
     } else {
-      final NumericAggregationJob job = new NumericAggregationJob(this.getFilter().getCollection(), "size");
-      job.setFilterquery(query);
+      NumericStatistics statistics = this.pl.getNumericStatistics(pl.getCache().getProperty("size"), this.getFilter());
 
-      final MapReduceOutput output = job.execute();
-      final List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
-      final BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
+      double min = statistics.getMin();
+      double max = statistics.getMax();
+      double avg = statistics.getAverage();
+      double sd = statistics.getStandardDeviation();
 
-      double min = aggregation.getDouble("min");
-      double max = aggregation.getDouble("max");
-      double avg = aggregation.getDouble("avg");
-      double sd = aggregation.getDouble("stddev");
       double low = Math.floor((avg - sd / 10));
       double high = Math.ceil((avg + sd / 10));
 
-//      System.out.println("min " + min);
-//      System.out.println("max " + max);
-//      System.out.println("avg " + avg);
-//      System.out.println("sd " + sd);
-//      System.out.println("low " + low);
-//      System.out.println("high " + high);
+      Filter minFilter = new Filter(this.getFilter());
+      minFilter.addFilterCondition(new FilterCondition("size", min));
 
-      final BasicDBObject minQuery = new BasicDBObject(query).append("metadata.size.value", min);
-      final BasicDBObject maxQuery = new BasicDBObject(query).append("metadata.size.value", max);
-      List<BasicDBObject> and = new ArrayList<BasicDBObject>();
-      and.add(new BasicDBObject("metadata.size.value", new BasicDBObject("$lte", high)));
-      and.add(new BasicDBObject("metadata.size.value", new BasicDBObject("$gte", low)));
-      final BasicDBObject avgQuery = new BasicDBObject(query).append("$and", and);
-      
-      final DBCursor minCursor = this.pl.find(Constants.TBL_ELEMENTS, minQuery);
-      final DBCursor maxCursor = this.pl.find(Constants.TBL_ELEMENTS, maxQuery);
-      final DBCursor avgCursor = this.pl.find(Constants.TBL_ELEMENTS, avgQuery);
+      Filter maxFilter = new Filter(this.getFilter());
+      maxFilter.addFilterCondition(new FilterCondition("size", max));
 
-      if (minCursor.count() > 0 && result.size() < limit) {
-        result.add(DataHelper.parseElement(minCursor.next(), this.pl).getUid());
+      Filter avgFilter = new Filter(this.getFilter());
+      avgFilter.addFilterCondition(new BetweenFilterCondition("size", Operator.LTE, high, Operator.GTE, low));
+
+      Iterator<Element> minCursor = this.pl.find(Element.class, minFilter);
+      Iterator<Element> maxCursor = this.pl.find(Element.class, maxFilter);
+      Iterator<Element> avgCursor = this.pl.find(Element.class, avgFilter);
+
+      if (minCursor.hasNext() && result.size() < limit) {
+        result.add(minCursor.next().getUid());
       }
 
-      if (maxCursor.count() > 0 && result.size() < limit) {
-        result.add(DataHelper.parseElement(maxCursor.next(), this.pl).getUid());
+      if (maxCursor.hasNext() && result.size() < limit) {
+        result.add(maxCursor.next().getUid());
       }
 
-      if (avgCursor.count() >= (limit - 2)) {
-        while (avgCursor.hasNext() && result.size() < limit) {
-          result.add(DataHelper.parseElement(avgCursor.next(), this.pl).getUid());
-        }
-      } else {
-        while (avgCursor.hasNext()) {
-          result.add(DataHelper.parseElement(avgCursor.next(), this.pl).getUid());
-        }
+      while (avgCursor.hasNext() && result.size() < limit) {
+        result.add(avgCursor.next().getUid());
       }
 
     }

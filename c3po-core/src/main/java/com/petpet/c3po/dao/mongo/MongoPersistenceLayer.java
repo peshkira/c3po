@@ -437,7 +437,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     DBObject query = this.getCachedFilter(filter);
     DBCollection dbCollection = this.getCollection(clazz);
-
+    f = this.filterSerializer.mapFieldToProperty(f, new Object());
+    
     return dbCollection.distinct(f, query);
 
   }
