@@ -3,9 +3,6 @@ package com.petpet.c3po.analysis;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -21,10 +18,6 @@ import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
@@ -33,10 +26,6 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.api.model.helper.PropertyType;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.dao.mongo.mapreduce.HistogramJob;
-import com.petpet.c3po.dao.mongo.mapreduce.NumericAggregationJob;
-import com.petpet.c3po.utils.DataHelper;
 
 public class ProfileGenerator {
 
@@ -148,7 +137,6 @@ public class ProfileGenerator {
 
   }
 
-  // TODO serialize the filter better, not with the temp id.
   private Element createPartition(Element root, Filter filter) {
 
     long count = this.persistence.count(ELEMENT_CLASS, filter);
@@ -159,7 +147,6 @@ public class ProfileGenerator {
 
   private void generateProperties(final Filter filter, final Element properties) {
     Iterator<Property> allprops = this.persistence.find(Property.class, null);
-    // final BasicDBObject query = new BasicDBObject("_id", null);
 
     while (allprops.hasNext()) {
       Property p = allprops.next();
@@ -213,6 +200,7 @@ public class ProfileGenerator {
     return partition.addElement("properties");
   }
 
+  //TODO fix sample record generation
   private void createSamples(final Filter filter, final Element partition) {
     final Element samples = partition.addElement("samples");
     samples.addAttribute("type", this.sampleSelector.getType());
@@ -271,7 +259,6 @@ public class ProfileGenerator {
 
         Map<String, Long> histogram = this.persistence.getValueHistogramFor(p, filter);
 
-        //TODO sort these according to value?
         for (String key : histogram.keySet()) {
           Long val = histogram.get(key);
           prop.addElement("item").addAttribute("id", key).addAttribute("value", val + "");
@@ -283,51 +270,13 @@ public class ProfileGenerator {
   }
 
   private void processBoolProperty(final Filter filter, final Element prop, final Property p) {
-//    final BasicDBObject query = new BasicDBObject("_id", null);
-//    final BasicDBObject ref = DataHelper.getFilterQuery(filter);
-//    final String key = "metadata." + p.getId() + ".value";
-//    long yes = 0;
-//    long no = 0;
 
-    // when it equals uknown remove the elment.
-    // TODO when it equals conflicted.
-//    if (ref.get(key) != null && ref.get(key).toString().equals("{ \"$exists\" : false}")) {
-//      prop.getParent().remove(prop);
-//      return;
-//
-//    } else 
-      
-//    if (ref.get(key) != null) {
-//      if (ref.getBoolean(key)) {
-//        yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-//      } else {
-//        no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-//      }
-//    } else {
-//      ref.put(key, true);
-//      yes = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-//
-//      ref.put(key, false);
-//      no = this.persistence.find(Constants.TBL_ELEMENTS, ref, query).count();
-//
-//    }
-    
-//    Filter copy1 = new Filter(filter);
-//    Filter copy2 = new Filter(filter);
-//    
-//    //TODO check if copy has filter for this boolean prop and deal with it.
-//    copy1.addFilterCondition(new FilterCondition(p.getId(), true));
-//    copy2.addFilterCondition(new FilterCondition(p.getId(), false));
-//    yes = this.persistence.count(ELEMENT_CLASS, copy1);
-//    no = this.persistence.count(ELEMENT_CLASS, copy2);
     Map<String, Long> histogram = this.persistence.getValueHistogramFor(p, filter);
     for (String key : histogram.keySet()) {
       Long val = histogram.get(key);
       prop.addElement("item").addAttribute("value", key).addAttribute("count", val + "");
     }
     
-//    prop.addElement("item").addAttribute("value", "true").addAttribute("count", yes + "");
-//    prop.addElement("item").addAttribute("value", "false").addAttribute("count", no + "");
 
   }
 

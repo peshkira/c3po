@@ -107,7 +107,7 @@ public class Filter {
    *          the filter to copy.
    */
   public Filter(Filter another) {
-    this.conditions = another.conditions;
+    this.conditions = new ArrayList<FilterCondition>(another.conditions);
   }
 
   public List<FilterCondition> getConditions() {

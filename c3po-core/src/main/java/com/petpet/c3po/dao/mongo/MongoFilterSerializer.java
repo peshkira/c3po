@@ -21,8 +21,9 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
  */
 public class MongoFilterSerializer {
 
-  // TODO fix this. Pass the class and decide
   private static final String[] EXCLUDE = { "_id", "uid", "collection", "name" };
+  
+  private static final BasicDBObject EXISTS = new BasicDBObject("$exists", true);
 
   /**
    * Serializes the given filter according to the strategy proposed here:
@@ -45,8 +46,8 @@ public class MongoFilterSerializer {
 
         if (distinctFields.get(field) == 1) {
 
-          Object val = this.getValueForField(conditions, field);
-          and.add(new BasicDBObject(this.mapFieldToProperty(field), val));
+          Object val = this.getValueForField(field, conditions.toArray(new FilterCondition[conditions.size()]));
+          and.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
 
         } else {
 
@@ -74,12 +75,13 @@ public class MongoFilterSerializer {
    *          the field to wrap
    * @return the wrapped field.
    */
-  public String mapFieldToProperty(String f) {
+  public String mapFieldToProperty(String f, Object value) {
     if (Arrays.asList(EXCLUDE).contains(f)) {
       return f;
     }
 
-    return "metadata." + f + ".value";
+    String result = "metadata." + f;
+    return  (value.equals(EXISTS)) ? result : result + ".value";
   }
 
   /**
@@ -97,7 +99,8 @@ public class MongoFilterSerializer {
 
     for (FilterCondition fc : conditions) {
       if (field.equals(fc.getField())) {
-        or.add(new BasicDBObject(this.mapFieldToProperty(field), fc.getValue()));
+        Object val = this.getValueForField(field, fc);
+        or.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
       }
     }
 
@@ -133,11 +136,11 @@ public class MongoFilterSerializer {
    *          the field to look at.
    * @return the value or null.
    */
-  private Object getValueForField(List<FilterCondition> conditions, String field) {
+  private Object getValueForField(String field, FilterCondition... conditions) {
     for (FilterCondition fc : conditions) {
       if (fc.getField().equals(field)) {
         Object val = fc.getValue();
-        return (val == null) ? new BasicDBObject("$exists", true) : val;
+        return (val == null) ? EXISTS : val;
       }
         
     }
