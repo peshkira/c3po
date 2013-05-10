@@ -7,11 +7,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.DB;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MapReduceCommand;
-import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Model;
@@ -175,73 +170,6 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   @Override
   public <T extends Model> void update(T object, Filter f) {
     this.persistence.update(object, f);
-  }
-
-  // --- DEPRECATED METHODS REMOVE THEM
-
-  @Override
-  @Deprecated
-  public DB getDB() {
-    return this.persistence.getDB();
-  }
-
-  @Override
-  @Deprecated
-  public DB connect(Map<Object, Object> config) {
-    return this.persistence.connect(config);
-  }
-
-  @Override
-  @Deprecated
-  public DBCursor findAll(String collection) {
-    return this.persistence.findAll(collection);
-  }
-
-  @Override
-  @Deprecated
-  public DBCursor find(String collection, DBObject ref) {
-    return this.persistence.find(collection, ref);
-  }
-
-  @Override
-  @Deprecated
-  public DBCursor find(String collection, DBObject ref, DBObject keys) {
-    return this.persistence.find(collection, ref, keys);
-  }
-
-  @Override
-  @Deprecated
-  public List distinct(String collection, String key) {
-    return this.persistence.distinct(collection, key);
-  }
-
-  @Override
-  @Deprecated
-  public List distinct(String collection, String key, DBObject query) {
-    return this.persistence.distinct(collection, key, query);
-  }
-
-  @Override
-  @Deprecated
-  public void insert(String collection, DBObject data) {
-    this.persistence.insert(collection, data);
-  }
-
-  @Override
-  @Deprecated
-  public long count(String collection) {
-    return this.persistence.count(collection);
-  }
-
-  @Override
-  public long count(String collection, DBObject query) {
-    return this.persistence.count(collection, query);
-  }
-
-  @Override
-  @Deprecated
-  public MapReduceOutput mapreduce(String collection, MapReduceCommand cmd) {
-    return this.persistence.mapreduce(collection, cmd);
   }
 
 }

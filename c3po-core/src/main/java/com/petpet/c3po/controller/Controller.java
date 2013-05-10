@@ -41,6 +41,7 @@ import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
+//TODO record analysis actions after each write...
 /**
  * A simple controller that manages the operations coming as input from the
  * client applications. This class ties up the gathering, adaptation and

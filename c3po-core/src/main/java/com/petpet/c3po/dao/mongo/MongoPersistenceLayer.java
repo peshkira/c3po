@@ -438,7 +438,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBObject query = this.getCachedFilter(filter);
     DBCollection dbCollection = this.getCollection(clazz);
     f = this.filterSerializer.mapFieldToProperty(f, new Object());
-    
+
     return dbCollection.distinct(f, query);
 
   }
@@ -460,7 +460,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
     int key = getCachedResultId(p.getKey(), filter);
-    //System.out.println(key);
+    // System.out.println(key);
     DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
 
     if (cursor.count() == 0) {
@@ -740,62 +740,4 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return result;
 
   }
-
-  // -- TO BE REMOVED IN VERSION 0.4.0
-
-  @Override
-  public DB connect(Map<Object, Object> config) {
-    return null;
-  }
-
-  @Override
-  public DB getDB() {
-    return this.db;
-  }
-
-  @Override
-  public DBCursor findAll(String collection) {
-    return this.db.getCollection(collection).find();
-  }
-
-  @Override
-  public DBCursor find(String collection, DBObject ref) {
-    return this.db.getCollection(collection).find(ref);
-  }
-
-  @Override
-  public DBCursor find(String collection, DBObject ref, DBObject keys) {
-    return this.db.getCollection(collection).find(ref, keys);
-  }
-
-  @Override
-  public List distinct(String collection, String key) {
-    return this.db.getCollection(collection).distinct(key);
-  }
-
-  @Override
-  public List distinct(String collection, String key, DBObject query) {
-    return this.db.getCollection(collection).distinct(key, query);
-  }
-
-  @Override
-  public void insert(String collection, DBObject data) {
-    this.db.getCollection(collection).insert(data);
-  }
-
-  @Override
-  public long count(String collection) {
-    return this.db.getCollection(collection).getCount();
-  }
-
-  @Override
-  public long count(String collection, DBObject query) {
-    return this.db.getCollection(collection).count(query);
-  }
-
-  @Override
-  public MapReduceOutput mapreduce(String collection, MapReduceCommand cmd) {
-    return this.db.getCollection(collection).mapReduce(cmd);
-  }
-
 }

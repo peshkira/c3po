@@ -4,11 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.mongodb.DB;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MapReduceCommand;
-import com.mongodb.MapReduceOutput;
 import com.petpet.c3po.api.model.Model;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
@@ -196,41 +191,4 @@ public interface PersistenceLayer {
    *          the filter that uniquely identifies the object.
    */
   <T extends Model> void update(T object, Filter f);
-
-  /*
-   * DEPRECATED METHODS Will be removed after the changes are done...
-   */
-  @Deprecated
-  DB connect(Map<Object, Object> config);
-
-  @Deprecated
-  long count(String collection);
-
-  @Deprecated
-  long count(String collection, DBObject query);
-
-  @Deprecated
-  List distinct(String collection, String key);
-
-  @Deprecated
-  List distinct(String collection, String key, DBObject query);
-
-  @Deprecated
-  DBCursor find(String collection, DBObject ref);
-
-  @Deprecated
-  DBCursor find(String collection, DBObject ref, DBObject keys);
-
-  @Deprecated
-  DBCursor findAll(String collection);
-
-  @Deprecated
-  DB getDB();
-
-  @Deprecated
-  void insert(String collection, DBObject data);
-
-  @Deprecated
-  MapReduceOutput mapreduce(String collection, MapReduceCommand cmd);
-
 }
