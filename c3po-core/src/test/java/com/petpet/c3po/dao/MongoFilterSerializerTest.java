@@ -108,7 +108,6 @@ public class MongoFilterSerializerTest {
     Mockito.when(f.getConditions()).thenReturn(Arrays.asList(fc1, fc2, fc3, fc4));
 
     DBObject filter = ser.serialize(f);
-    System.out.println(filter.toString());
 
     String val = filter.toString();
     String expr = "{ \"$and\" : [ { \"$or\" : [ { \"metadata.mimetype.value\" : \"applciation/pdf\"} , { \"metadata.mimetype.value\" : \"text/html\"} , { \"metadata.mimetype.value\" : \"text/xml\"}]} , { \"metadata.puid.value\" : \"fmt/42\"}]}";

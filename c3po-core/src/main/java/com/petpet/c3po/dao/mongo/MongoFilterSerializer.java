@@ -8,6 +8,8 @@ import java.util.Map;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
+import com.petpet.c3po.api.model.helper.BetweenFilterCondition.Operator;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 
@@ -22,7 +24,7 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 public class MongoFilterSerializer {
 
   private static final String[] EXCLUDE = { "_id", "uid", "collection", "name" };
-  
+
   private static final BasicDBObject EXISTS = new BasicDBObject("$exists", true);
 
   /**
@@ -46,8 +48,8 @@ public class MongoFilterSerializer {
 
         if (distinctFields.get(field) == 1) {
 
-          Object val = this.getValueForField(field, conditions.toArray(new FilterCondition[conditions.size()]));
-          and.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
+          BasicDBObject val = this.getValueForField(field, conditions.toArray(new FilterCondition[conditions.size()]));
+          and.add(val);
 
         } else {
 
@@ -57,7 +59,7 @@ public class MongoFilterSerializer {
         }
 
       }
-      
+
       if (and.size() > 0) {
         result.put("$and", and);
       }
@@ -81,7 +83,7 @@ public class MongoFilterSerializer {
     }
 
     String result = "metadata." + f;
-    return  (value.equals(EXISTS)) ? result : result + ".value";
+    return (value.equals(EXISTS)) ? result : result + ".value";
   }
 
   /**
@@ -99,8 +101,8 @@ public class MongoFilterSerializer {
 
     for (FilterCondition fc : conditions) {
       if (field.equals(fc.getField())) {
-        Object val = this.getValueForField(field, fc);
-        or.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
+        BasicDBObject val = this.getValueForField(field, fc);
+        or.add(val);
       }
     }
 
@@ -136,15 +138,53 @@ public class MongoFilterSerializer {
    *          the field to look at.
    * @return the value or null.
    */
-  private Object getValueForField(String field, FilterCondition... conditions) {
+  private BasicDBObject getValueForField(String field, FilterCondition... conditions) {
     for (FilterCondition fc : conditions) {
       if (fc.getField().equals(field)) {
+
         Object val = fc.getValue();
-        return (val == null) ? EXISTS : val;
+        BasicDBObject res = null;
+        if (fc instanceof BetweenFilterCondition) {
+          BetweenFilterCondition bfc = (BetweenFilterCondition) fc;
+          String mappedField = this.mapFieldToProperty(field, new Object());
+          BasicDBObject low = new BasicDBObject(mappedField, getBoundQuery(bfc.getLOperator(), bfc.getLValue()));
+          BasicDBObject high = new BasicDBObject(mappedField, getBoundQuery(bfc.getHOperator(), bfc.getHValue()));
+          
+          List<BasicDBObject> and = new ArrayList<BasicDBObject>();
+          and.add(low);
+          and.add(high);
+          res = new BasicDBObject("$and", and);
+          
+        } else {
+          val = (val == null) ? EXISTS : val;
+          res = new BasicDBObject(this.mapFieldToProperty(field, val), val);
+        }
+
+        return res;
       }
-        
+
     }
 
     return null;
+  }
+
+  private BasicDBObject getBoundQuery(Operator op, Object val) {
+    String operator = "";
+    switch (op) {
+      case GT:
+        operator = "$gt";
+        break;
+      case GTE:
+        operator = "$gte";
+        break;
+      case LT:
+        operator = "$lt";
+        break;
+      case LTE:
+        operator = "$lte";
+        break;
+    }
+    
+    return new BasicDBObject(operator, val);
   }
 }
