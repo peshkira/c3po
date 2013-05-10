@@ -17,7 +17,7 @@ public class RepresentativeAlgorithmFactory {
   /**
    * The known algorithms.
    */
-  private static final String[] ALGORITHMS = { "size", "syssampling", "distsampling" };
+  private static final String[] ALGORITHMS = { "sizesampling", "syssampling", "distsampling" };
 
   /**
    * The factory method.
@@ -52,5 +52,19 @@ public class RepresentativeAlgorithmFactory {
     }
 
     return gen;
+  }
+  
+  public static boolean isValidAlgorithm(String alg) {
+    if (alg == null) {
+      return false;
+    }
+    
+    for (String a : ALGORITHMS) {
+      if (a.equalsIgnoreCase(alg)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 }

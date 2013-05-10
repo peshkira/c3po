@@ -37,6 +37,28 @@ public final class Constants {
   public static final String OPT_RECURSIVE = "c3po.recursive";
 
   /**
+   * A configuration option for the sampling algorithm to use.
+   */
+  public static final String OPT_SAMPLING_ALGORITHM = "c3po.sampling.alogrithm";
+  
+  /**
+   * A configuration option for the size of the sample set.
+   */
+  public static final String OPT_SAMPLING_SIZE = "c3po.sampling.size";
+  
+  /**
+   * A configuration option for the properties over which some sample algorithms should work.
+   */
+  public static final String OPT_SAMPLING_PROPERTIES = "c3po.sampling.properties";
+  
+  /**
+   * A configuration option for including the element identifiers.
+   */
+  public static final String OPT_INCLUDE_ELEMENTS = "c3po.profile.includeelements";
+  
+  public static final String OPT_OUTPUT_LOCATION = "c3po.profile.outputlocation";
+
+  /**
    * A config identifier for the persistence layer class.
    */
   public static final String CNF_PERSISTENCE = "c3po.persistence";

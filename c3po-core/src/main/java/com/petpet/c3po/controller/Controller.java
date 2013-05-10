@@ -1,5 +1,6 @@
 package com.petpet.c3po.controller;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +23,18 @@ import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
 import com.petpet.c3po.adaptor.rules.InferDateFromFileNameRule;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
+import com.petpet.c3po.analysis.CSVGenerator;
+import com.petpet.c3po.analysis.ProfileGenerator;
+import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
+import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.LocalFileGatherer;
 import com.petpet.c3po.utils.ActionLogHelper;
@@ -132,7 +140,7 @@ public class Controller {
    */
   public void processMetaData(Map<String, String> options) throws C3POConfigurationException {
 
-    this.checkOptions(options);
+    this.checkGatherOptions(options);
     this.gatherer.setConfig(options);
 
     String adaptorsCount = null;
@@ -151,12 +159,48 @@ public class Controller {
     }
 
     String name = options.get(Constants.OPT_COLLECTION_NAME);
-    String type = (String) options.get(Constants.OPT_INPUT_TYPE);
+    String type = options.get(Constants.OPT_INPUT_TYPE);
     String prefix = this.getAdaptor(type).getAdaptorPrefix();
     Map<String, String> adaptorcnf = this.getAdaptorConfig(options, prefix);
 
     this.startWorkers(name, adaptorThreads, consThreads, type, adaptorcnf);
 
+  }
+  
+  public void profile(Map<String, Object> options) throws C3POConfigurationException {
+    if (options == null) {
+      throw new C3POConfigurationException("No config map provided");
+    }
+    
+    List<String> props = (List<String>) options.get(Constants.OPT_SAMPLING_PROPERTIES);
+    String alg = (String) options.get(Constants.OPT_SAMPLING_ALGORITHM);
+    int size = (Integer) options.get(Constants.OPT_SAMPLING_SIZE);
+    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
+    String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
+    boolean include = (Boolean) options.get(Constants.OPT_INCLUDE_ELEMENTS);
+    
+    RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
+    Map<String, Object> samplesOptions = new HashMap<String, Object>();
+    samplesOptions.put("properties", props);
+    samplesGen.setOptions(samplesOptions);
+    
+    ProfileGenerator profileGen = new ProfileGenerator(this.persistence, samplesGen);
+
+    final Filter f = new Filter(new FilterCondition("collection", name));
+    
+    final Document profile = profileGen.generateProfile(f, size, include);
+
+    profileGen.write(profile, location + File.separator + name + ".xml");
+
+  }
+  
+  public void export(Map<String, Object> options) throws C3POConfigurationException {
+    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
+    String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
+    
+    CSVGenerator generator = new CSVGenerator(this.persistence);
+
+    generator.exportAll(name, location + File.separator + name +".csv");
   }
 
   /**
@@ -165,7 +209,7 @@ public class Controller {
    * @param options
    * @throws C3POConfigurationException
    */
-  private void checkOptions(final Map<String, String> options) throws C3POConfigurationException {
+  private void checkGatherOptions(final Map<String, String> options) throws C3POConfigurationException {
 
     if (options == null) {
       throw new C3POConfigurationException("No config map provided");
