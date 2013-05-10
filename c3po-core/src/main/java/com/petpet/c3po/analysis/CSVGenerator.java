@@ -4,19 +4,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.utils.DataHelper;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 
 public class CSVGenerator {
 
@@ -39,29 +38,8 @@ public class CSVGenerator {
    *          the output file
    */
   public void exportAll(String collection, String output) {
-    final DBCursor matrix = this.buildMatrix(collection);
-    final DBCursor allprops = this.persistence.findAll(Constants.TBL_PROEPRTIES);
-    final List<Property> props = this.getProperties(allprops);
-
-    this.write(matrix, props, output);
-  }
-
-  /**
-   * Exports all data for the given mimetype to a sparse matrix view where each
-   * column is a property and each row is an element with the values for the
-   * corresponding property.
-   * 
-   * @param collection
-   *          the collection to export
-   * @param mimetype
-   *          the mimetype to filter
-   * @param output
-   *          the output file
-   */
-  @Deprecated
-  public void exportAll(String collection, String mimetype, String output) {
-    final DBCursor matrix = this.buildMatrix(collection, mimetype);
-    final DBCursor allprops = this.persistence.findAll(Constants.TBL_PROEPRTIES);
+    final Iterator<Element> matrix = this.buildMatrix(collection);
+    final Iterator<Property> allprops = this.persistence.find(Property.class, null);
     final List<Property> props = this.getProperties(allprops);
 
     this.write(matrix, props, output);
@@ -80,47 +58,25 @@ public class CSVGenerator {
    *          the output file.
    */
   public void export(final String collection, final List<Property> props, String output) {
-    final DBCursor matrix = this.buildMatrix(collection, props);
-
-    this.write(matrix, props, output);
-  }
-
-  /**
-   * Exports all the given properties for the given mimetype to a sparse matrix
-   * view where each column is a property and each row is an element with the
-   * values for the corresponding property.
-   * 
-   * @param collection
-   *          the collection to export
-   * @param mimetype
-   *          the mimetype filter
-   * @param props
-   *          the properties filter
-   * @param output
-   *          the output file
-   */
-  @Deprecated
-  public void export(final String collection, final String mimetype, final List<Property> props, String output) {
-    final DBCursor matrix = this.buildMatrix(collection, mimetype, props);
+    final Iterator<Element> matrix = this.buildMatrix(collection, props);
 
     this.write(matrix, props, output);
   }
 
   public void export(final Filter filter, String output) {
-    final DBCursor allprops = this.persistence.findAll(Constants.TBL_PROEPRTIES);
+    final Iterator<Property> allprops = this.persistence.find(Property.class, null);
     final List<Property> props = this.getProperties(allprops);
 
     this.export(filter, props, output);
   }
 
   public void export(final Filter filter, final List<Property> props, String output) {
-    BasicDBObject query = DataHelper.getFilterQuery(filter);
-    DBCursor matrix = this.persistence.find(Constants.TBL_ELEMENTS, query);
+    Iterator<Element> matrix = this.persistence.find(Element.class, filter);
 
     this.write(matrix, props, output);
   }
 
-  private void write(DBCursor matrix, List<Property> props, String output) {
+  private void write(Iterator<Element> matrix, List<Property> props, String output) {
     try {
 
       final File file = new File(output);
@@ -144,15 +100,17 @@ public class CSVGenerator {
 
       // for all elements append the values in the correct column
       while (matrix.hasNext()) {
-        final BasicDBObject next = (BasicDBObject) matrix.next();
+        Element next = matrix.next();
 
         // first the uid
-        writer.append(replace((String) next.get("uid")) + ", ");
+        writer.append(replace(next.getUid()) + ", ");
 
-        final BasicDBObject metadata = (BasicDBObject) next.get("metadata");
         // then the properties
         for (Property p : props) {
-          final BasicDBObject value = (BasicDBObject) metadata.get(p.getId());
+          List<MetadataRecord> value = next.removeMetadata(p.getId());
+          
+          assert value.size() == 0 || value.size() == 1; 
+          
           final String val = this.getValueFromMetaDataRecord(value);
           writer.append(val);
           writer.append(", ");
@@ -168,84 +126,26 @@ public class CSVGenerator {
     }
   }
 
-  private DBCursor buildMatrix(final String collection) {
-    final BasicDBObject ref = new BasicDBObject("collection", collection);
-    final BasicDBObject query = new BasicDBObject();
+  private Iterator<Element> buildMatrix(final String collection) {
+    Filter filter = new Filter(new FilterCondition("collection", collection));
 
-    query.put("_id", null);
-    query.put("uid", 1);
-    query.put("metadata", 1);
-
-    return this.persistence.find("elements", ref, query);
+    return this.persistence.find(Element.class, filter);
   }
 
-  @Deprecated
-  private DBCursor buildMatrix(final String collection, final String mimetype) {
-    final BasicDBObject ref = new BasicDBObject("collection", collection);
-    final BasicDBObject query = new BasicDBObject();
-    final List<BasicDBObject> refs = new ArrayList<BasicDBObject>();
-    final Property m = this.persistence.getCache().getProperty("mimetype");
-
-    refs.add(new BasicDBObject("metadata." + m.getId() + ".value", mimetype));
-
-    ref.put("$and", refs);
-
-    query.put("_id", null);
-    query.put("uid", 1);
-    query.put("metadata", 1);
-
-    return this.persistence.find("elements", ref, query);
-
-  }
-
-  private DBCursor buildMatrix(final String collection, List<Property> props) {
-    final BasicDBObject ref = new BasicDBObject("collection", collection);
-    final BasicDBObject query = new BasicDBObject();
-
-    query.put("_id", null);
-    query.put("uid", 1);
-    query.put("metadata", 1);
-
+  private Iterator<Element> buildMatrix(final String collection, List<Property> props) {
+    Filter filter = new Filter(new FilterCondition("collection", collection));
+    
     for (Property p : props) {
-      query.put("metadata." + p.getId(), 1);
+      filter.addFilterCondition(new FilterCondition(p.getId(), null));
     }
 
-    return this.persistence.find(Constants.TBL_ELEMENTS, ref, query);
+    return this.persistence.find(Element.class, filter);
   }
 
-  /**
-   * Builds a query that will select the values for the passed properties and
-   * the uid out of each element.
-   * 
-   * @param props
-   *          the properties to select
-   * @return the query.
-   */
-  private DBCursor buildMatrix(final String collection, final String mimetype, final List<Property> props) {
-    final BasicDBObject ref = new BasicDBObject("collection", collection);
-    final BasicDBObject query = new BasicDBObject();
-    final List<BasicDBObject> refs = new ArrayList<BasicDBObject>();
-    final Property m = this.persistence.getCache().getProperty("mimetype");
-
-    refs.add(new BasicDBObject("metadata." + m.getId() + ".value", mimetype));
-
-    ref.put("$and", refs);
-
-    query.put("_id", null);
-    query.put("uid", 1);
-    query.put("metadata", 1);
-
-    for (Property p : props) {
-      query.put("metadata." + p.getId(), 1);
-    }
-
-    return this.persistence.find(Constants.TBL_ELEMENTS, ref, query);
-  }
-
-  private String getValueFromMetaDataRecord(final BasicDBObject value) {
+  private String getValueFromMetaDataRecord(List<MetadataRecord> value) {
     String result = "";
-    if (value != null) {
-      final Object v = value.get("value");
+    if (value.size() != 0) {
+      final String v = value.get(0).getValue();
       result = (v == null) ? "CONFLICT" : replace(v.toString());
     }
 
@@ -257,25 +157,15 @@ public class CSVGenerator {
    * id and the name field.
    * 
    * @param cursor
-   *          the cursor to look for property objects.
+   *          the iterator over the properties
    * @return a list of properties or an empty list.
    */
-  private List<Property> getProperties(final DBCursor cursor) {
+  private List<Property> getProperties(final Iterator<Property> cursor) {
     final List<Property> result = new ArrayList<Property>();
 
     while (cursor.hasNext()) {
-      final DBObject next = cursor.next();
-
-      final String id = (String) next.get("_id");
-      final String name = (String) next.get("key");
-
-      if (id != null && name != null) {
-        final Property p = new Property();
-        p.setId(id);
-        p.setKey(name);
-
-        result.add(p);
-      }
+      final Property next = cursor.next();
+      result.add(next);
     }
 
     return result;
@@ -289,7 +179,7 @@ public class CSVGenerator {
    * @return a new altered string or an empty string if the input was null.
    */
   private String replace(String str) {
-    return (str == null) ? "" : str.replaceAll(",", "");
+    return (str == null) ? "" : str.replaceAll(",", "").replaceAll("\n", " ");
   }
 
 }
