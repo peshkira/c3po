@@ -1,31 +1,28 @@
 package com.petpet.c3po.command;
 
-import java.io.File;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.commons.cli.Option;
-import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.analysis.ProfileGenerator;
-import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
-import com.petpet.c3po.analysis.RepresentativeGenerator;
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.api.model.helper.Filter;
-import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.controller.Controller;
+import com.petpet.c3po.parameters.Params;
+import com.petpet.c3po.parameters.ProfileParams;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
+import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 public class ProfileCommand implements Command {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProfileCommand.class);
 
-  private Option[] options;
-  private PersistenceLayer pLayer;
   private long time = -1L;
-
-  public ProfileCommand(Option[] options) {
-    this.options = options;
+  private ProfileParams params;
+  
+  public ProfileCommand() {
+    
   }
 
   @Override
@@ -35,65 +32,43 @@ public class ProfileCommand implements Command {
     final Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure();
 
-    this.pLayer = configurator.getPersistence();
-    final String alg = configurator.getStringProperty("c3po.samples.algorithm");
-    final RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
-    final ProfileGenerator profileGen = new ProfileGenerator(this.pLayer, samplesGen);
-
-    final String name = this.getCollectionName();
-    final boolean include = this.getIncludeElements();
-    final Filter f = new Filter(new FilterCondition("collection", name));
+    Map<String, Object> options = new HashMap<String, Object>();
+    options.put(Constants.OPT_COLLECTION_NAME, this.params.getCollection());
+    options.put(Constants.OPT_OUTPUT_LOCATION, this.params.getLocation());
+    options.put(Constants.OPT_SAMPLING_ALGORITHM, this.params.getAlgorithm());
+    options.put(Constants.OPT_SAMPLING_SIZE, this.params.getSize());
+    options.put(Constants.OPT_SAMPLING_PROPERTIES, this.params.getProperties());
+    options.put(Constants.OPT_INCLUDE_ELEMENTS, this.params.isIncludeElements());
     
-    final Document profile = profileGen.generateProfile(f, include);
-
-    profileGen.write(profile, this.getOutputFile(name));
-
+    Controller ctrl = new Controller(configurator);
+    
+    try {
+      ctrl.profile(options);
+    } catch (C3POConfigurationException e) {
+      LOG.error(e.getMessage());
+    }
+    
+    try {
+      configurator.getPersistence().close();
+    } catch (C3POPersistenceException e) {
+      LOG.error(e.getMessage());
+    }
+    
     final long end = System.currentTimeMillis();
     this.time = end - start;
-  }
-
-  private String getOutputFile(String name) {
-    final String extension = ".xml";
-    String result = null;
-
-    for (Option o : this.options) {
-      if (o.getArgName().equals(CommandConstants.PROFILE_FILEPATH_ARGUMENT)) {
-        result = o.getValue();
-      }
-    }
-
-    if (result != null) {
-      return result + File.separator + name + extension;
-    }
-
-    LOG.debug("No output filepath was specified, using default");
-    return name + ".xml";
-  }
-
-  private String getCollectionName() {
-    for (Option o : this.options) {
-      if (o.getArgName().equals(CommandConstants.COLLECTION_ID_ARGUMENT)) {
-        return o.getValue();
-      }
-    }
-
-    LOG.warn("No collection identifier found, using DefaultCollection");
-    return "DefaultCollection";
-  }
-  
-  private boolean getIncludeElements() {
-    for (Option o : this.options) {
-      if (o.getLongOpt().equals(CommandConstants.PROFILE_INCLUDE_ELEMENT_IDENTIFIERS)) {
-        return true;
-      }
-    }
-    
-    return false;
   }
 
   @Override
   public long getTime() {
     return this.time;
+  }
+
+  @Override
+  public void setDelegateParams(Params params) {
+    if (params != null && params instanceof ProfileParams) {
+      this.params = (ProfileParams) params;
+    }
+    
   }
 
 }

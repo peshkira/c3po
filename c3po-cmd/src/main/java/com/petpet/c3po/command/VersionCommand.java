@@ -2,6 +2,7 @@ package com.petpet.c3po.command;
 
 import com.petpet.c3po.C3PO;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.parameters.Params;
 
 public class VersionCommand implements Command {
 
@@ -17,6 +18,11 @@ public class VersionCommand implements Command {
   @Override
   public long getTime() {
     return -1;
+  }
+
+  @Override
+  public void setDelegateParams(Params params) {
+    
   }
 
 }

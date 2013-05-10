@@ -73,11 +73,11 @@ public class FITSAdaptor extends AbstractAdaptor {
       }
 
     } catch (IOException e) {
-      LOG.error("An exception occurred while processing {}: {}", stream.getFileName(), e.getMessage());
+      LOG.warn("An exception occurred while processing {}: {}", stream.getFileName(), e.getMessage());
     } catch (SAXException e) {
-      LOG.error("An exception occurred while parsing {}: {}", stream.getFileName(), e.getMessage());
+      LOG.warn("An exception occurred while parsing {}: {}", stream.getFileName(), e.getMessage());
     } catch (Exception e) {
-      LOG.error("An exception occurred while parsing {}: {}", stream.getFileName(), e.getMessage());
+      LOG.warn("An exception occurred while parsing {}: {}", stream.getFileName(), e.getMessage());
     }
 
     return element;

@@ -83,10 +83,10 @@ public class ProfileGenerator {
   }
 
   public Document generateProfile(Filter filter) {
-    return this.generateProfile(filter, false);
+    return this.generateProfile(filter, 5, false);
   }
 
-  public Document generateProfile(Filter filter, boolean includeelements) {
+  public Document generateProfile(Filter filter, int sampleSize, boolean includeelements) {
     // TODO check if subFilter is changed
     // if not then it does not have a collection filter...
     // and the collection name should be different...
@@ -100,7 +100,7 @@ public class ProfileGenerator {
     this.genereateFilterElement(partition, filter);
     final Element properties = this.createPropertiesElement(partition);
     this.generateProperties(filter, properties);
-    this.createSamples(filter, partition);
+    this.createSamples(filter, partition, sampleSize);
     this.createElements(filter, partition, includeelements);
 
     return document;
@@ -201,11 +201,11 @@ public class ProfileGenerator {
   }
 
   //TODO fix sample record generation
-  private void createSamples(final Filter filter, final Element partition) {
+  private void createSamples(final Filter filter, final Element partition, int sampleSize) {
     final Element samples = partition.addElement("samples");
     samples.addAttribute("type", this.sampleSelector.getType());
     this.sampleSelector.setFilter(filter);
-    final List<String> output = this.sampleSelector.execute(5);
+    final List<String> output = this.sampleSelector.execute(sampleSize);
 
     LOG.debug("Found {} representatives", output.size());
     for (String s : output) {
