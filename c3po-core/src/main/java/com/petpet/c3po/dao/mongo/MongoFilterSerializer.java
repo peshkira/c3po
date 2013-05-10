@@ -101,8 +101,8 @@ public class MongoFilterSerializer {
 
     for (FilterCondition fc : conditions) {
       if (field.equals(fc.getField())) {
-        Object val = this.getValueForField(field, fc);
-        or.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
+        BasicDBObject val = this.getValueForField(field, fc);
+        or.add(val);
       }
     }
 
