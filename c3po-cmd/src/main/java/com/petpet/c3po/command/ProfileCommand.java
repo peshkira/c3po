@@ -12,17 +12,15 @@ import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.parameters.ProfileParams;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
-import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
-public class ProfileCommand implements Command {
+public class ProfileCommand extends AbstractCLICommand implements Command {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProfileCommand.class);
 
-  private long time = -1L;
   private ProfileParams params;
-  
+
   public ProfileCommand() {
-    
+
   }
 
   @Override
@@ -39,28 +37,21 @@ public class ProfileCommand implements Command {
     options.put(Constants.OPT_SAMPLING_SIZE, this.params.getSize());
     options.put(Constants.OPT_SAMPLING_PROPERTIES, this.params.getProperties());
     options.put(Constants.OPT_INCLUDE_ELEMENTS, this.params.isIncludeElements());
-    
+
     Controller ctrl = new Controller(configurator);
-    
+
     try {
       ctrl.profile(options);
     } catch (C3POConfigurationException e) {
       LOG.error(e.getMessage());
-    }
-    
-    try {
-      configurator.getPersistence().close();
-    } catch (C3POPersistenceException e) {
-      LOG.error(e.getMessage());
-    }
-    
-    final long end = System.currentTimeMillis();
-    this.time = end - start;
-  }
+      return;
 
-  @Override
-  public long getTime() {
-    return this.time;
+    } finally {
+      cleanup();
+    }
+
+    final long end = System.currentTimeMillis();
+    this.setTime(end - start);
   }
 
   @Override
@@ -68,7 +59,7 @@ public class ProfileCommand implements Command {
     if (params != null && params instanceof ProfileParams) {
       this.params = (ProfileParams) params;
     }
-    
+
   }
 
 }

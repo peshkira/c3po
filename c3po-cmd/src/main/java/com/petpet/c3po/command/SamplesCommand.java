@@ -17,15 +17,12 @@ import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.parameters.SamplesParams;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
-import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
-public class SamplesCommand implements Command {
+public class SamplesCommand extends AbstractCLICommand implements Command {
 
   private static final Logger LOG = LoggerFactory.getLogger(SamplesCommand.class);
 
   private SamplesParams params;
-
-  private long time = -1L;
 
   @Override
   public void setDelegateParams(Params params) {
@@ -83,32 +80,19 @@ public class SamplesCommand implements Command {
 
     } catch (C3POConfigurationException e) {
       LOG.error(e.getMessage());
-      return; //still executes finally :)
+      return; // still executes finally :)
 
     } finally {
       cleanup();
     }
 
     long end = System.currentTimeMillis();
-    this.time = end - start;
-  }
-
-  @Override
-  public long getTime() {
-    return this.time;
+    this.setTime(end - start);
   }
 
   private void print(List<String> samples) {
     for (String sample : samples) {
       System.out.println(sample);
-    }
-  }
-
-  private void cleanup() {
-    try {
-      Configurator.getDefaultConfigurator().getPersistence().close();
-    } catch (C3POPersistenceException e) {
-      LOG.error(e.getMessage());
     }
   }
 

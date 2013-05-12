@@ -8,17 +8,14 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.controller.Controller;
-import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.parameters.GatherParams;
+import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
-import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
-public class GatherCommand implements Command {
+public class GatherCommand extends AbstractCLICommand implements Command {
 
   private static final Logger LOG = LoggerFactory.getLogger(GatherCommand.class);
-
-  private long time = -1L;
 
   private GatherParams params;
 
@@ -41,20 +38,15 @@ public class GatherCommand implements Command {
       ctrl.processMetaData(conf);
     } catch (C3POConfigurationException e) {
       LOG.error(e.getMessage());
+      return;
+      
+    } finally {
+      cleanup();
     }
+    
 
-    try {
-      configurator.getPersistence().close();
-    } catch (C3POPersistenceException e) {
-      LOG.error(e.getMessage());
-    }
     long end = System.currentTimeMillis();
-    this.time = end - start;
-  }
-
-  @Override
-  public long getTime() {
-    return this.time;
+    this.setTime(end - start);
   }
 
   @Override
