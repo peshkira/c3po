@@ -19,6 +19,10 @@ public class ActionLogHelper {
     ActionLog lastAction = this.getLastAction(action.getCollection());
     this.persistence.remove(lastAction);
     this.persistence.insert(action);
+
+    if (this.isLastActionUpdated(action.getCollection())) {
+      this.persistence.clearCache();
+    }
   }
 
   public ActionLog getLastAction(String collection) {
