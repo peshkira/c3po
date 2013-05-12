@@ -227,6 +227,12 @@ public class Controller {
 
     generator.exportAll(name, location + File.separator + name +".csv");
   }
+  
+  public void removeCollection(Map<String, Object> options) throws C3POConfigurationException {
+    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
+    
+    this.persistence.remove(Element.class, new Filter(new FilterCondition("collection", name)));
+  }
 
   /**
    * Checks the passed options passed to this controller for required values.

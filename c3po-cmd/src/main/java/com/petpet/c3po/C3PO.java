@@ -14,12 +14,14 @@ import com.petpet.c3po.command.ExportCommand;
 import com.petpet.c3po.command.GatherCommand;
 import com.petpet.c3po.command.HelpCommand;
 import com.petpet.c3po.command.ProfileCommand;
+import com.petpet.c3po.command.RemoveCommand;
 import com.petpet.c3po.command.SamplesCommand;
 import com.petpet.c3po.command.VersionCommand;
 import com.petpet.c3po.parameters.ExportParams;
 import com.petpet.c3po.parameters.GatherParams;
 import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.parameters.ProfileParams;
+import com.petpet.c3po.parameters.RemoveParams;
 import com.petpet.c3po.parameters.SamplesParams;
 
 public class C3PO {
@@ -32,7 +34,7 @@ public class C3PO {
 
   private Map<String, Params> params;
 
-  private static final String[] MODES = {"help", "version", "gather", "profile", "samples", "export" };
+  private static final String[] MODES = {"help", "version", "gather", "profile", "samples", "export", "remove" };
 
   public C3PO() {
     params = new HashMap<String, Params>();
@@ -42,6 +44,7 @@ public class C3PO {
     params.put(MODES[3], new ProfileParams());
     params.put(MODES[4], new SamplesParams());
     params.put(MODES[5], new ExportParams());
+    params.put(MODES[6], new RemoveParams());
 
     commands = new HashMap<String, Command>();
     commands.put(MODES[0], new HelpCommand(params));
@@ -50,6 +53,7 @@ public class C3PO {
     commands.put(MODES[3], new ProfileCommand());
     commands.put(MODES[4], new SamplesCommand());
     commands.put(MODES[5], new ExportCommand());
+    commands.put(MODES[6], new RemoveCommand());
   }
 
   private void compute(String mode, String[] args) {
