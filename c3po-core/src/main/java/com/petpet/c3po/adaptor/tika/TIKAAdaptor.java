@@ -16,6 +16,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataStream;
+import com.petpet.c3po.api.model.helper.PropertyType;
 
 public class TIKAAdaptor extends AbstractAdaptor {
 
@@ -40,11 +41,14 @@ public class TIKAAdaptor extends AbstractAdaptor {
 
     for (String key : metadata.keySet()) {
       String value = metadata.get(key);
-      key = key.replace('.', '_');
+      key = key.replace('.', '_').replace(' ', '_').replace(':', '_').toLowerCase();
       key = TIKAHelper.getPropertyKeyByTikaName(key);
 
       if (key != null) {
         Property prop = cache.getProperty(key);
+        if (prop.getType().equals(PropertyType.INTEGER.name()) || prop.getType().equals(PropertyType.FLOAT.name())) {
+          value = value.split(" ")[0];
+        }
         MetadataRecord record = new MetadataRecord(prop, value);
         Source source = cache.getSource("Tika", "");
         record.setSources(Arrays.asList(source.getId()));
@@ -63,7 +67,6 @@ public class TIKAAdaptor extends AbstractAdaptor {
 
   }
 
-  // TODO implement properly.
   @Override
   public Element parseElement(MetadataStream ms) {
     try {
