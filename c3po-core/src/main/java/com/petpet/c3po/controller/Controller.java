@@ -41,7 +41,6 @@ import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
-//TODO record analysis actions after each write...
 /**
  * A simple controller that manages the operations coming as input from the
  * client applications. This class ties up the gathering, adaptation and
@@ -167,71 +166,82 @@ public class Controller {
     this.startWorkers(name, adaptorThreads, consThreads, type, adaptorcnf);
 
   }
-  
+
   public void profile(Map<String, Object> options) throws C3POConfigurationException {
     if (options == null) {
       throw new C3POConfigurationException("No config map provided");
     }
-    
+
     List<String> props = (List<String>) options.get(Constants.OPT_SAMPLING_PROPERTIES);
     String alg = (String) options.get(Constants.OPT_SAMPLING_ALGORITHM);
     int size = (Integer) options.get(Constants.OPT_SAMPLING_SIZE);
     String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
     String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
     boolean include = (Boolean) options.get(Constants.OPT_INCLUDE_ELEMENTS);
-    
+
     this.checkAlgOptions(alg, props);
-    
+
     RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
     Map<String, Object> samplesOptions = new HashMap<String, Object>();
     samplesOptions.put("properties", props);
     samplesGen.setOptions(samplesOptions);
-    
+
     ProfileGenerator profileGen = new ProfileGenerator(this.persistence, samplesGen);
 
     final Filter f = new Filter(new FilterCondition("collection", name));
-    
+
     final Document profile = profileGen.generateProfile(f, size, include);
 
     profileGen.write(profile, location + File.separator + name + ".xml");
 
+    ActionLog log = new ActionLog(name, ActionLog.ANALYSIS_ACTION);
+    new ActionLogHelper(this.persistence).recordAction(log);
+
   }
-  
+
   public List<String> findSamples(Map<String, Object> options) throws C3POConfigurationException {
     if (options == null) {
       throw new C3POConfigurationException("No options provided");
     }
-    
-    
+
     List<String> props = (List<String>) options.get(Constants.OPT_SAMPLING_PROPERTIES);
     String alg = (String) options.get(Constants.OPT_SAMPLING_ALGORITHM);
     int size = (Integer) options.get(Constants.OPT_SAMPLING_SIZE);
     String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
 
     this.checkAlgOptions(alg, props);
-    
+
     RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
     Map<String, Object> samplesOptions = new HashMap<String, Object>();
     samplesOptions.put("properties", props);
     samplesGen.setOptions(samplesOptions);
     samplesGen.setFilter(new Filter(new FilterCondition("collection", name)));
-    
+
+    ActionLog log = new ActionLog(name, ActionLog.ANALYSIS_ACTION);
+    new ActionLogHelper(this.persistence).recordAction(log);
+
     return samplesGen.execute(size);
   }
-  
+
   public void export(Map<String, Object> options) throws C3POConfigurationException {
     String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
     String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
-    
+
     CSVGenerator generator = new CSVGenerator(this.persistence);
 
-    generator.exportAll(name, location + File.separator + name +".csv");
+    generator.exportAll(name, location + File.separator + name + ".csv");
+
+    ActionLog log = new ActionLog(name, ActionLog.ANALYSIS_ACTION);
+    new ActionLogHelper(this.persistence).recordAction(log);
   }
-  
+
   public void removeCollection(Map<String, Object> options) throws C3POConfigurationException {
     String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
-    
+
     this.persistence.remove(Element.class, new Filter(new FilterCondition("collection", name)));
+
+    ActionLog log = new ActionLog(name, ActionLog.UPDATED_ACTION);
+    new ActionLogHelper(this.persistence).recordAction(log);
   }
 
   /**
@@ -261,10 +271,11 @@ public class Controller {
       throw new C3POConfigurationException("The name of the collection is not set. Please set a name.");
     }
   }
-  
+
   private void checkAlgOptions(String alg, List<String> props) throws C3POConfigurationException {
     if (alg.equals("distsampling") && (props == null || props.size() == 0)) {
-      throw new C3POConfigurationException("Cannot use 'distsampling' without properties. Please specify at least one property");
+      throw new C3POConfigurationException(
+          "Cannot use 'distsampling' without properties. Please specify at least one property");
     }
   }
 
@@ -340,7 +351,7 @@ public class Controller {
 
     // no more adaptors can be added.
     this.adaptorPool.shutdown();
-    
+
     new Thread(this.gatherer, "MetadataGatherer").start();
 
     try {

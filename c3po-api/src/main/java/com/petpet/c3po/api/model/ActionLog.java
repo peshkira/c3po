@@ -21,8 +21,6 @@ public class ActionLog implements Model {
 
   public static final String UPDATED_ACTION = "updated";
 
-  public static final String PROFILE_ACTION = "profile";
-
   public static final String ANALYSIS_ACTION = "analysis";
 
   private String collection;
