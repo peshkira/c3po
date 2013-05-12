@@ -180,6 +180,8 @@ public class Controller {
     String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
     boolean include = (Boolean) options.get(Constants.OPT_INCLUDE_ELEMENTS);
     
+    this.checkAlgOptions(alg, props);
+    
     RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
     Map<String, Object> samplesOptions = new HashMap<String, Object>();
     samplesOptions.put("properties", props);
@@ -193,6 +195,28 @@ public class Controller {
 
     profileGen.write(profile, location + File.separator + name + ".xml");
 
+  }
+  
+  public List<String> findSamples(Map<String, Object> options) throws C3POConfigurationException {
+    if (options == null) {
+      throw new C3POConfigurationException("No options provided");
+    }
+    
+    
+    List<String> props = (List<String>) options.get(Constants.OPT_SAMPLING_PROPERTIES);
+    String alg = (String) options.get(Constants.OPT_SAMPLING_ALGORITHM);
+    int size = (Integer) options.get(Constants.OPT_SAMPLING_SIZE);
+    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
+
+    this.checkAlgOptions(alg, props);
+    
+    RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
+    Map<String, Object> samplesOptions = new HashMap<String, Object>();
+    samplesOptions.put("properties", props);
+    samplesGen.setOptions(samplesOptions);
+    samplesGen.setFilter(new Filter(new FilterCondition("collection", name)));
+    
+    return samplesGen.execute(size);
   }
   
   public void export(Map<String, Object> options) throws C3POConfigurationException {
@@ -229,6 +253,12 @@ public class Controller {
     String name = options.get(Constants.OPT_COLLECTION_NAME);
     if (name == null || name.equals("")) {
       throw new C3POConfigurationException("The name of the collection is not set. Please set a name.");
+    }
+  }
+  
+  private void checkAlgOptions(String alg, List<String> props) throws C3POConfigurationException {
+    if (alg.equals("distsampling") && (props == null || props.size() == 0)) {
+      throw new C3POConfigurationException("Cannot use 'distsampling' without properties. Please specify at least one property");
     }
   }
 

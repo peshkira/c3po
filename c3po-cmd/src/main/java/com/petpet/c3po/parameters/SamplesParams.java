@@ -4,18 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
-import com.petpet.c3po.parameters.validation.EmptyStringValidator;
 import com.petpet.c3po.parameters.validation.SampleSizeValidator;
 
-public class ProfileParams implements Params {
+public class SamplesParams implements Params {
 
-  @Parameter(names = { "-c", "--collection" }, validateValueWith = EmptyStringValidator.class, required = true, description = "The name of the collection")
+  @Parameter(names = { "-c", "--collection" }, description = "The name of the collection", required = true)
   private String collection;
 
-  @Parameter(names = { "-o", "--outputdir" }, description = "The output directory where the profile will be stored")
-  private String location = "";
+  @Parameter(names = { "-o", "--outputdir" }, description = "The output directory where the profile will be stored. If nothing is provided the output is written to the console")
+  private String location = null;
   
-  @Parameter(names = {"-a", "--algorithm"}, description = "The algorithm that will be used for selecting the samples records")
+  @Parameter(names = {"-a", "--algorithm"}, description = "The algorithm that will be used for selecting the samples records. Use one of 'sizesampling', 'syssampling', 'distsampling'")
   private String algorithm = "sizesampling";
   
   @Parameter(names = {"-s", "--size"}, validateValueWith = SampleSizeValidator.class,description = "The size of the samples set.")
@@ -23,12 +22,9 @@ public class ProfileParams implements Params {
   
   @Parameter(names = {"-props", "--properties"}, variableArity = true, description = "The list of properties for the 'distsampling' algorithm")
   private List<String> properties = new ArrayList<String>();
-  
-  @Parameter(names = { "-ie", "--includeelements" }, arity = 0, description = "Whether or not to gather recursively")
-  private boolean includeElements = false;
 
   public String getCollection() {
-    return this.collection;
+    return collection;
   }
 
   public void setCollection(String collection) {
@@ -66,13 +62,4 @@ public class ProfileParams implements Params {
   public void setProperties(List<String> properties) {
     this.properties = properties;
   }
-
-  public boolean isIncludeElements() {
-    return includeElements;
-  }
-
-  public void setIncludeElements(boolean includeElements) {
-    this.includeElements = includeElements;
-  }
-
 }

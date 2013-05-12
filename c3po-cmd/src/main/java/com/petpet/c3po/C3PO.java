@@ -14,11 +14,13 @@ import com.petpet.c3po.command.ExportCommand;
 import com.petpet.c3po.command.GatherCommand;
 import com.petpet.c3po.command.HelpCommand;
 import com.petpet.c3po.command.ProfileCommand;
+import com.petpet.c3po.command.SamplesCommand;
 import com.petpet.c3po.command.VersionCommand;
 import com.petpet.c3po.parameters.ExportParams;
 import com.petpet.c3po.parameters.GatherParams;
 import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.parameters.ProfileParams;
+import com.petpet.c3po.parameters.SamplesParams;
 
 public class C3PO {
 
@@ -30,24 +32,24 @@ public class C3PO {
 
   private Map<String, Params> params;
 
-  private static final String[] MODES = { "gather", "profile", "export", "version", "help" };
+  private static final String[] MODES = {"help", "version", "gather", "profile", "samples", "export" };
 
   public C3PO() {
     params = new HashMap<String, Params>();
-    params.put(MODES[0], new GatherParams());
-    params.put(MODES[1], new ProfileParams());
-    params.put(MODES[2], new ExportParams());
-    params.put(MODES[3], new Params() {
-    });
-    params.put(MODES[4], new Params() {
-    });
+    params.put(MODES[0], new Params() { });
+    params.put(MODES[1], new Params() { });
+    params.put(MODES[2], new GatherParams());
+    params.put(MODES[3], new ProfileParams());
+    params.put(MODES[4], new SamplesParams());
+    params.put(MODES[5], new ExportParams());
 
     commands = new HashMap<String, Command>();
-    commands.put(MODES[0], new GatherCommand());
-    commands.put(MODES[1], new ProfileCommand());
-    commands.put(MODES[2], new ExportCommand());
-    commands.put(MODES[3], new VersionCommand());
-    commands.put(MODES[4], new HelpCommand(params));
+    commands.put(MODES[0], new HelpCommand(params));
+    commands.put(MODES[1], new VersionCommand());
+    commands.put(MODES[2], new GatherCommand());
+    commands.put(MODES[3], new ProfileCommand());
+    commands.put(MODES[4], new SamplesCommand());
+    commands.put(MODES[5], new ExportCommand());
   }
 
   private void compute(String mode, String[] args) {
