@@ -2,8 +2,6 @@ package com.petpet.c3po.api.model;
 
 import java.util.UUID;
 
-import com.mongodb.BasicDBObject;
-
 /**
  * The source represents a tool that has extracted specific measurements of
  * elements.
@@ -72,22 +70,6 @@ public class Source implements Model {
 
   public void setVersion(String version) {
     this.version = version;
-  }
-
-  /**
-   * Gets the BSON Object representing the document of this source.
-   * 
-   * @return the source document.
-   */
-  @Deprecated
-  public BasicDBObject getDocument() {
-    final BasicDBObject source = new BasicDBObject();
-
-    source.put("_id", this.getId());
-    source.put("name", this.getName());
-    source.put("version", this.getVersion());
-
-    return source;
   }
 
 }

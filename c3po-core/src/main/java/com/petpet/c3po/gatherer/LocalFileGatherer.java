@@ -6,9 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
@@ -69,27 +67,6 @@ public class LocalFileGatherer implements MetaDataGatherer {
       this.lock.notifyAll();
 
     }
-  }
-
-  @Deprecated
-  @Override
-  public List<MetadataStream> getNext( int count ) {
-    List<MetadataStream> result = new ArrayList<MetadataStream>();
-    if ( count > 0 ) {
-
-      while ( count > 0 ) {
-        MetadataStream next = this.getNext();
-        if ( next == null ) {
-          break;
-
-        } else {
-          result.add( next );
-        }
-
-        count--;
-      }
-    }
-    return result;
   }
 
   public MetadataStream getNext() {
@@ -228,17 +205,6 @@ public class LocalFileGatherer implements MetaDataGatherer {
     this.config = config;
   }
 
-  @Override
-  public long getCount() {
-    throw new UnsupportedOperationException( "This method is deprecated and not supported anymore." );
-  }
-
-  @Override
-  public long getRemaining() {
-    throw new UnsupportedOperationException( "This method is deprecated and not supported anymore." );
-  }
-
-  @Override
   public boolean hasNext() {
     return !this.queue.isEmpty();
   }

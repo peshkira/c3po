@@ -2,8 +2,6 @@ package com.petpet.c3po.api.model;
 
 import java.util.Date;
 
-import com.mongodb.BasicDBObject;
-
 /**
  * A basic model class that stores the information of the last action done on a
  * collection and the date that the action was executed. It is used to retrieve
@@ -19,22 +17,58 @@ import com.mongodb.BasicDBObject;
  */
 public class ActionLog implements Model {
 
+  /**
+   * A constant denoting that the last action over a collection has changed the
+   * collection and might have changed the results of any cached data for this
+   * collection.
+   */
   public static final String UPDATED_ACTION = "updated";
 
+  /**
+   * A constant denoting that the last action over a collection has just done
+   * some analysis over it and hasn't changed the data.
+   */
   public static final String ANALYSIS_ACTION = "analysis";
 
+  /**
+   * The collection that was operated on.
+   */
   private String collection;
 
+  /**
+   * The action that was done.
+   */
   private String action;
 
+  /**
+   * The date of the action.
+   */
   private Date date;
 
+  /**
+   * Creates an action log with the current date.
+   * 
+   * @param collection
+   *          the collection that was operated on.
+   * @param action
+   *          the action done.
+   */
   public ActionLog(String collection, String action) {
     this.collection = collection;
     this.action = action;
     this.date = new Date();
   }
 
+  /**
+   * Creates an action log.
+   * 
+   * @param collection
+   *          the collection that was operated on.
+   * @param action
+   *          the action done.
+   * @param date
+   *          the date when the action was done.
+   */
   public ActionLog(String collection, String action, Date date) {
     this(collection, action);
     this.date = date;
@@ -62,15 +96,5 @@ public class ActionLog implements Model {
 
   public void setDate(Date date) {
     this.date = date;
-  }
-
-  @Deprecated
-  public BasicDBObject getDocument() {
-    final BasicDBObject log = new BasicDBObject();
-    log.put("collection", this.collection);
-    log.put("action", this.action);
-    log.put("date", this.date);
-
-    return log;
   }
 }

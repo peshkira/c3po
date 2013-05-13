@@ -29,6 +29,9 @@ import com.petpet.c3po.api.model.helper.MetadataStream;
  */
 public abstract class AbstractAdaptor implements Runnable {
 
+  /**
+   * A default logger for this class.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(AbstractAdaptor.class);
 
   /**
@@ -58,6 +61,9 @@ public abstract class AbstractAdaptor implements Runnable {
    */
   private Queue<Element> elementsQueue;
 
+  /**
+   * The lock on which the adaptors and the gatherer synchronize.
+   */
   private Object gatherLock;
 
   /**
@@ -84,16 +90,17 @@ public abstract class AbstractAdaptor implements Runnable {
   public abstract String getAdaptorPrefix();
 
   /**
-   * This element is responsible for adapting the input stream in the
-   * {@link MetadataStream#getData()} object to a {@link Element}. The
-   * implementing class should make use of the {@link PreProcessingRule}s
-   * provided by the {@link AbstractAdaptor#getPreProcessingRules()} method in
-   * cases where the data allows it. Note that the MetadataStream object will
-   * never be null. The implementing method does not have to take care of
-   * closing the stream as this is handled by this super class.
+   * This element is responsible for adapting the data in the object to a
+   * {@link Element}. The implementing class should make use of the
+   * {@link PreProcessingRule}s provided by the
+   * {@link AbstractAdaptor#getPreProcessingRules()} method in cases where the
+   * data allows it. Note that the data string will never be null and will
+   * contain the contents of each object that was gathered.
    * 
-   * @param stream
-   *          the {@link MetadataStream} to adapt.
+   * @param name
+   *          the name of the file/object that is read.
+   * @param data
+   *          the data to adapt.
    * @return the parsed {@link Element} object.
    */
   public abstract Element parseElement(String name, String data);
@@ -121,6 +128,18 @@ public abstract class AbstractAdaptor implements Runnable {
   public final void setGatherer(MetaDataGatherer gatherer) {
     if (gatherer != null) {
       this.gatherer = gatherer;
+    }
+  }
+
+  /**
+   * Sets the object on which to synchronize with the gatherer.
+   * 
+   * @param gatherLock
+   *          the lock object.
+   */
+  public void setGatherLock(Object gatherLock) {
+    if (gatherLock != null && this.gatherLock == null) {
+      this.gatherLock = gatherLock;
     }
   }
 
@@ -165,10 +184,10 @@ public abstract class AbstractAdaptor implements Runnable {
   }
 
   /**
-   * Starts an infinite loop that runs this thread. The thread checks if the
-   * gatherer has a next stream to process. If no, then it sleeps until it is
-   * notified by the gatherer. If yes, then it gets the next stream and calls
-   * the {@link AbstractAdaptor#parseElement(MetadataStream)} method. Once an
+   * Starts a loop that runs this thread. The thread checks if the gatherer has
+   * a next stream to process. If no, then it sleeps until it is notified by the
+   * gatherer. If yes, then it gets the next stream and calls the
+   * {@link AbstractAdaptor#parseElement(MetadataStream)} method. Once an
    * element is parsed, then all the post processing rules submitted to this
    * adaptor are run on the element. Then the element is submitted for further
    * processing by the next in chain.
@@ -200,10 +219,14 @@ public abstract class AbstractAdaptor implements Runnable {
           try {
 
             String name = stream.getFileName();
-            String data = stream.getReadData();
-            
-            element = parseElement(name, data);
-            
+            String data = stream.getData();
+
+            if (name != null || data != null) {
+
+              element = parseElement(name, data);
+
+            }
+
           } catch (Exception e) {
             LOG.warn("An error occurred while parsing, skipping {}: ", stream.getFileName(), e.getMessage());
           }
@@ -436,16 +459,9 @@ public abstract class AbstractAdaptor implements Runnable {
     synchronized (elementsQueue) {
       if (e != null) {
         elementsQueue.add(e);
+        elementsQueue.notify();
       }
-
-      // if (elementsQueue.size() % 100 == 0) {
-      elementsQueue.notify();
-      // }
     }
-  }
-
-  public void setGatherLock(Object gatherLock) {
-    this.gatherLock = gatherLock;
   }
 
 }

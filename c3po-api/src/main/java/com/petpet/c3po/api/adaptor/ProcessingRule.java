@@ -1,5 +1,13 @@
 package com.petpet.c3po.api.adaptor;
 
+/**
+ * A processing rule is a rule that has a priority.
+ * 
+ * @see PreProcessingRule
+ * @see PostProcessingRule
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public interface ProcessingRule {
 
   /**

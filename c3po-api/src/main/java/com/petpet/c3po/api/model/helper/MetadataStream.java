@@ -1,7 +1,5 @@
 package com.petpet.c3po.api.model.helper;
 
-import java.io.InputStream;
-
 /**
  * A simple wrapper around an input stream that holds the fileName (or some
  * human readable identifier) of the stream. Used to output more verbose logs
@@ -19,11 +17,9 @@ public class MetadataStream {
   private String fileName;
 
   /**
-   * The actual meta data in an input stream form.
+   * The meta data that was read from the file or source.
    */
-  private InputStream data;
-  
-  private String readData;
+  private String data;
 
   /**
    * Sets the passed variables.
@@ -32,29 +28,18 @@ public class MetadataStream {
    *          a human readable identifier of the object that this metadata
    *          stream describes.
    * @param data
-   *          the actial meta data in stream form.
+   *          the actial meta data in string form.
    */
-  @Deprecated
-  public MetadataStream(String fileName, InputStream data) {
-    this.fileName = fileName;
-    this.data = data;
-  }
-  
   public MetadataStream(String fileName, String data) {
     this.fileName = fileName;
-    this.readData = data;
+    this.data = data;
   }
 
   public String getFileName() {
     return this.fileName;
   }
 
-  @Deprecated
-  public InputStream getData() {
+  public String getData() {
     return this.data;
-  }
-  
-  public String getReadData() {
-    return this.readData;
   }
 }
