@@ -18,16 +18,35 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.utils.Configurator;
 
+/**
+ * The size representative generator is a strategy for selecting samples based
+ * on size. It selects the largest, smallest and a few average-sized elements.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class SizeRepresentativeGenerator extends RepresentativeGenerator {
 
+  /**
+   * Default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(SizeRepresentativeGenerator.class);
 
+  /**
+   * The persistence layer.
+   */
   private PersistenceLayer pl;
 
+  /**
+   * Creates the generator.
+   */
   public SizeRepresentativeGenerator() {
     this.pl = Configurator.getDefaultConfigurator().getPersistence();
   }
 
+  /**
+   * Selects 10 samples per default.
+   */
   @Override
   public List<String> execute() {
     return execute(10);

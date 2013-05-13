@@ -49,7 +49,7 @@ public class FITSAdaptor extends AbstractAdaptor {
    */
   @Override
   public void configure() {
-
+    // nothing to do...
   }
 
   /**
@@ -60,16 +60,16 @@ public class FITSAdaptor extends AbstractAdaptor {
   @Override
   public Element parseElement(String name, String data) {
     Element element = null;
-    
+
     if (data == null) {
       return element;
-      
+
     }
     try {
 
       DigesterContext context = new DigesterContext(this.getCache(), this.getPreProcessingRules());
       this.digester.push(context);
-      
+
       context = (DigesterContext) this.digester.parse(new StringReader(data));
       element = context.getElement();
       List<MetadataRecord> values = context.getValues();

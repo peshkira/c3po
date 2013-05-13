@@ -5,6 +5,15 @@ import java.util.Map;
 
 import com.petpet.c3po.api.model.helper.Filter;
 
+/**
+ * A representative generator is a class that can select a set of sample objects
+ * that are somehow representative to a collection or a super set of elements.
+ * There are different implementation strategies for finding representative
+ * samples.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public abstract class RepresentativeGenerator {
 
   /**

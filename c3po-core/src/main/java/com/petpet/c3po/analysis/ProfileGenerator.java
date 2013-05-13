@@ -27,39 +27,90 @@ import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.api.model.helper.PropertyType;
 
+/**
+ * Generates a c3po content profile in an xml format according to the
+ * c3po/format/c3po.xsd schema.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class ProfileGenerator {
 
+  /**
+   * Default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(ProfileGenerator.class);
 
+  /**
+   * The {@link com.petpet.c3po.api.model.Element} class.
+   */
   private static final Class<com.petpet.c3po.api.model.Element> ELEMENT_CLASS = com.petpet.c3po.api.model.Element.class;
 
+  /**
+   * A set of properties that will be expanded with histograms.
+   */
   private static final String[] PROPERTIES = { "format", "format_version", "puid", "mimetype", "charset", "linebreak",
       "compressionscheme", "creating_os", "byteorder", "compression_scheme", "colorspace", "icc_profile_name",
       "icc_profile_version", "created", "creating.application.name" };
 
+  /**
+   * The persistence layer.
+   */
   private PersistenceLayer persistence;
 
+  /**
+   * The representative samples generator.
+   */
   private final RepresentativeGenerator sampleSelector;
 
+  /**
+   * Creates this generator.
+   * 
+   * @param persistence
+   *          the persistence to use.
+   * @param generator
+   *          the samples generator to use.
+   */
   public ProfileGenerator(final PersistenceLayer persistence, RepresentativeGenerator generator) {
     this.persistence = persistence;
     this.sampleSelector = generator;
   }
 
+  /**
+   * writes the xml string to a local folder 'profiles' in a file called
+   * output.xml.
+   * 
+   * @param xml
+   *          the xml to write.
+   */
   public void write(final String xml) {
     try {
       final Document doc = DocumentHelper.parseText(xml);
       this.write(doc);
 
     } catch (final DocumentException e) {
-      e.printStackTrace();
+      LOG.warn("An error occurred: {}", e.getMessage());
     }
   }
 
+  /**
+   * Writes the xml document to a local 'profiles' folder.
+   * 
+   * @param doc
+   *          the document to write.
+   */
   public void write(final Document doc) {
     this.write(doc, "profiles/output.xml");
   }
 
+  /**
+   * Writes the given document to the given path.
+   * 
+   * @param doc
+   *          the document to write.
+   * @param path
+   *          the path to write to.
+   */
   public void write(final Document doc, final String path) {
     try {
       final OutputFormat format = OutputFormat.createPrettyPrint();
@@ -82,10 +133,30 @@ public class ProfileGenerator {
     }
   }
 
+  /**
+   * Generates a profile for the given filter with a default sample size set of
+   * 5 and without including the element identifiers.
+   * 
+   * @param filter
+   *          the filter to apply.
+   * @return a xml document for the given profile.
+   */
   public Document generateProfile(Filter filter) {
     return this.generateProfile(filter, 5, false);
   }
 
+  /**
+   * Generates a profile matching the given filter with the given sample set
+   * size and including the elements if set to true.
+   * 
+   * @param filter
+   *          the filter to use.
+   * @param sampleSize
+   *          the size of the samples.
+   * @param includeelements
+   *          whether or not to include the element identifiers.
+   * @return the xml document of the profile.
+   */
   public Document generateProfile(Filter filter, int sampleSize, boolean includeelements) {
     // TODO check if subFilter is changed
     // if not then it does not have a collection filter...
@@ -106,6 +177,15 @@ public class ProfileGenerator {
     return document;
   }
 
+  /**
+   * Returns the name of the collection from the filter. If the filter is null,
+   * then 'all-data' is returned. If the filter is not null, but does not
+   * contain a collection condition, then an empty string is returned.
+   * 
+   * @param filter
+   *          the filter to check.
+   * @return the name of the collection.
+   */
   private String getCollectionNameFromFilter(Filter filter) {
 
     if (filter == null) {
@@ -200,7 +280,7 @@ public class ProfileGenerator {
     return partition.addElement("properties");
   }
 
-  //TODO fix sample record generation
+  // TODO fix sample record generation
   private void createSamples(final Filter filter, final Element partition, int sampleSize) {
     final Element samples = partition.addElement("samples");
     samples.addAttribute("type", this.sampleSelector.getType());
@@ -276,7 +356,6 @@ public class ProfileGenerator {
       Long val = histogram.get(key);
       prop.addElement("item").addAttribute("value", key).addAttribute("count", val + "");
     }
-    
 
   }
 
@@ -284,13 +363,12 @@ public class ProfileGenerator {
   private void processNumericProperty(final Filter filter, final Element prop, final Property p) {
     NumericStatistics numericStatistics = this.persistence.getNumericStatistics(p, filter);
 
-
     prop.addAttribute("count", numericStatistics.getCount() + "");
     prop.addAttribute("sum", numericStatistics.getSum() + "");
     prop.addAttribute("min", numericStatistics.getMin() + "");
     prop.addAttribute("max", numericStatistics.getMax() + "");
     prop.addAttribute("avg", numericStatistics.getAverage() + "");
-    prop.addAttribute("var", numericStatistics.getVariance() +"");
+    prop.addAttribute("var", numericStatistics.getVariance() + "");
     prop.addAttribute("sd", numericStatistics.getStandardDeviation() + "");
   }
 

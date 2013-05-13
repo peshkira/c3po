@@ -13,24 +13,61 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.utils.DataHelper;
 
+/**
+ * The consolidator is a class (worker thread) that processes parsed elements
+ * and stores them to the data base. It consolidates the elements meta data if
+ * the elements already exist.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class Consolidator extends Thread {
 
+  /**
+   * A default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(Consolidator.class);
 
+  /**
+   * A static instance counter.
+   */
   private static int instance = 0;
 
+  /**
+   * The queue that will be used for the processing.
+   */
   private final Queue<Element> queue;
 
+  /**
+   * The persistence layer for storing the elements.
+   */
   private final PersistenceLayer persistence;
 
+  /**
+   * A flag whether or not the consolidator should run in the next run loop.
+   */
   private boolean running;
 
+  /**
+   * Creates the consolidator worker.
+   * 
+   * @param p
+   *          the persistence layer.
+   * @param q
+   *          the queue to use.
+   */
   public Consolidator(PersistenceLayer p, Queue<Element> q) {
     persistence = p;
     queue = q;
     setName("Consolidator[" + instance++ + "]");
   }
 
+  /**
+   * Runs as long as the queue is not empty or the running flag is true. If the
+   * running flag is true but the queue is empty, then this worker synchronizes
+   * and waits on the queue to be notified. Processes the next element in the
+   * queue.
+   */
   @Override
   public void run() {
     this.running = true;
@@ -48,8 +85,8 @@ public class Consolidator extends Thread {
 
             queue.wait();
           }
-          
-          //LOG.debug("cons queue count: " + queue.size());
+
+          // LOG.debug("cons queue count: " + queue.size());
           e = queue.poll();
 
         }
@@ -64,6 +101,22 @@ public class Consolidator extends Thread {
     LOG.info(getName() + " is stopping");
   }
 
+  public boolean isRunning() {
+    return running;
+  }
+
+  public void setRunning(boolean running) {
+    this.running = running;
+  }
+
+  /**
+   * Checks if the given element already exists and if yes merges the given
+   * element meta data with the old metadata. If not, it just stores it to the
+   * data base.
+   * 
+   * @param element
+   *          the element to process.
+   */
   private void process(Element element) {
     if (element == null) {
       LOG.debug("Cannot consolidate null element");
@@ -71,7 +124,9 @@ public class Consolidator extends Thread {
       return;
     }
 
-//    LOG.debug(getName() + " is consolidating element: " + element.getUid());
+    // this can be abstracted into a consolidation strategy
+    // e.g. consolidate based on equal ids oder based on
+    // equal uids or something else.
     Filter f = new Filter(new FilterCondition("uid", element.getUid()));
     Iterator<Element> iter = this.persistence.find(Element.class, f);
 
@@ -93,9 +148,17 @@ public class Consolidator extends Thread {
     } else {
       this.persistence.insert(element);
     }
-    
+
   }
 
+  /**
+   * Merges the two elements.
+   * 
+   * @param element
+   *          the new element
+   * @param stored
+   *          the stored element.
+   */
   private void consolidate(Element element, Element stored) {
     try {
 
@@ -104,16 +167,8 @@ public class Consolidator extends Thread {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("An error occurred: {}", e.getMessage());
     }
 
-  }
-
-  public boolean isRunning() {
-    return running;
-  }
-
-  public void setRunning(boolean running) {
-    this.running = running;
   }
 }

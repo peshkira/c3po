@@ -53,18 +53,26 @@ public class RepresentativeAlgorithmFactory {
 
     return gen;
   }
-  
+
+  /**
+   * Checks if the given algorithm is supported and returns true if yes, false
+   * otherwise.
+   * 
+   * @param alg
+   *          the algorithm name to check.
+   * @return true if supported, false otherwise.
+   */
   public static boolean isValidAlgorithm(String alg) {
     if (alg == null) {
       return false;
     }
-    
+
     for (String a : ALGORITHMS) {
       if (a.equalsIgnoreCase(alg)) {
         return true;
       }
     }
-    
+
     return false;
   }
 }

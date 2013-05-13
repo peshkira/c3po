@@ -17,7 +17,7 @@ public class MetadataStream {
   private String fileName;
 
   /**
-   * The meta data that was read from the file or source.
+   * The meta data that was read from the file or source stream.
    */
   private String data;
 

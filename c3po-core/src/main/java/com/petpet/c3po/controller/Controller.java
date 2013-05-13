@@ -42,9 +42,9 @@ import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
 /**
- * A simple controller that manages the operations coming as input from the
- * client applications. This class ties up the gathering, adaptation and
- * consolidation of data.
+ * A controller that manages the operations coming as input from the client
+ * applications. This class ties up the gathering, adaptation and consolidation
+ * of data. It acts as a facade of the core to the client applications.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 
@@ -97,6 +97,9 @@ public class Controller {
    */
   private Configurator configurator;
 
+  /**
+   * A lock object for synchronization between the gatherer and the adaptors.
+   */
   private Object gatherLock;
 
   /**
@@ -124,6 +127,7 @@ public class Controller {
 
     // TODO detect these automatically from the class path
     // and add them to this map.
+    // TODO the InferDateFromFileNameRule needs a setter for the cache.
     this.knownRules.put(Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class);
     this.knownRules.put(Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class);
     this.knownRules.put(Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class);
@@ -133,8 +137,16 @@ public class Controller {
 
   /**
    * This starts a gather-adapt-persist workflow, where all the needed
-   * compontents are configured and run. If the passed options are invalid an
-   * exception is thrown.
+   * components are configured and run. If the passed options are invalid an
+   * exception is thrown. The expected options are: <br>
+   * 
+   * {@link Constants#CNF_CONSOLIDATORS_COUNT} - default 2 <br>
+   * {@link Constants#CNF_ADAPTORS_COUNT} - default 4 <br>
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_COLLECTION_LOCATION} <br>
+   * {@link Constants#OPT_INPUT_TYPE} <br>
+   * and all other options that an adaptor might need. The adaptor will receive
+   * only options starting with c3po.adaptor and c3po.adaptor.[prefix]
    * 
    * @param options
    *          a map of the application options.
@@ -170,6 +182,21 @@ public class Controller {
 
   }
 
+  /**
+   * Generates a profile. The options include the following: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_OUTPUT_LOCATION} <br>
+   * {@link Constants#OPT_INCLUDE_ELEMENTS} <br>
+   * {@link Constants#OPT_SAMPLING_ALGORITHM} <br>
+   * {@link Constants#OPT_SAMPLING_SIZE} <br>
+   * {@link Constants#OPT_SAMPLING_PROPERTIES} <br>
+   * 
+   * @param options
+   *          the options to use.
+   * @throws C3POConfigurationException
+   *           if the options are missing or wrong.
+   */
   public void profile(Map<String, Object> options) throws C3POConfigurationException {
     if (options == null) {
       throw new C3POConfigurationException("No config map provided");
@@ -202,6 +229,20 @@ public class Controller {
 
   }
 
+  /**
+   * Finds sample records that are representative. The options include: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_SAMPLING_SIZE} <br>
+   * {@link Constants#OPT_SAMPLING_ALGORITHM} <br>
+   * {@link Constants#OPT_SAMPLING_PROPERTIES} <br>
+   * 
+   * @param options
+   *          the options to use
+   * @return a list of sample identifiers.
+   * @throws C3POConfigurationException
+   *           if the options are missing or wrong.
+   */
   public List<String> findSamples(Map<String, Object> options) throws C3POConfigurationException {
     if (options == null) {
       throw new C3POConfigurationException("No options provided");
@@ -226,6 +267,17 @@ public class Controller {
     return samplesGen.execute(size);
   }
 
+  /**
+   * Exports the data in a CSV format. The options include the following: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_OUTPUT_LOCATION} <br>
+   * 
+   * @param options
+   *          the options to use
+   * @throws C3POConfigurationException
+   *           if the options are missing or wrong.
+   */
   public void export(Map<String, Object> options) throws C3POConfigurationException {
     String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
     String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
@@ -238,8 +290,22 @@ public class Controller {
     new ActionLogHelper(this.persistence).recordAction(log);
   }
 
+  /**
+   * Removes all elements for a given collection. The options include: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME}
+   * 
+   * @param options
+   *          the options to use.
+   * @throws C3POConfigurationException
+   *           if the options are missing or invalid
+   */
   public void removeCollection(Map<String, Object> options) throws C3POConfigurationException {
     String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
+
+    if (name == null || name.equals("")) {
+      throw new C3POConfigurationException("The collection name cannot be empty");
+    }
 
     this.persistence.remove(Element.class, new Filter(new FilterCondition("collection", name)));
 
@@ -275,6 +341,17 @@ public class Controller {
     }
   }
 
+  /**
+   * Checks if the algorithm is distsampling and if it has properties defines.
+   * If no, then an exception is thrown.
+   * 
+   * @param alg
+   *          the algo to check.
+   * @param props
+   *          the list of properties for the alg.
+   * @throws C3POConfigurationException
+   *           if the requirements for the distsampling algorithm are not met.
+   */
   private void checkAlgOptions(String alg, List<String> props) throws C3POConfigurationException {
     if (alg.equals("distsampling") && (props == null || props.size() == 0)) {
       throw new C3POConfigurationException(
@@ -384,6 +461,13 @@ public class Controller {
     new ActionLogHelper(this.persistence).recordAction(log);
   }
 
+  /**
+   * Sets the running flag of all consolidator workers in the list to false and
+   * notifies them on the processing queue.
+   * 
+   * @param consolidators
+   *          the consolidators to stop.
+   */
   private void stopConsoldators(List<Consolidator> consolidators) {
     for (Consolidator c : consolidators) {
       c.setRunning(false);

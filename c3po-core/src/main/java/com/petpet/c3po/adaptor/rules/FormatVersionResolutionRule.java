@@ -8,21 +8,27 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 
 /**
- * A simple post processing rule to correct a FITS reported conflict in
- * the format version that was marked as ok.
+ * A post processing rule to correct a FITS reported conflict in the format
+ * version that was marked as ok. This rule is turned on per default and can be
+ * disabled via the .c3poconfig file with the following key set to false:
+ * 'c3po.rule.format_version_resolution'.
+ * 
  * @author Petar Petrov <me@petarpetrov.org>
- *
+ * 
  */
 public class FormatVersionResolutionRule implements PostProcessingRule {
 
+  /**
+   * Has a high priotity.
+   */
   @Override
   public int getPriority() {
     return 900;
   }
 
   /**
-   * Make sure that all format_version have the correct status.
-   * Especially when there is a CONFLICT
+   * Make sure that all format_version have the correct status. Especially when
+   * there is a CONFLICT
    */
   @Override
   public Element process(Element e) {
@@ -32,9 +38,9 @@ public class FormatVersionResolutionRule implements PostProcessingRule {
         mr.setStatus(Status.CONFLICT.name());
       }
     }
-    
+
     e.getMetadata().addAll(formatVersionRecords);
-    
+
     return e;
   }
 

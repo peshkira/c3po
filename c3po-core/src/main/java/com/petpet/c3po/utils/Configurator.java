@@ -20,7 +20,11 @@ import com.petpet.c3po.dao.DefaultPersistenceLayer;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 /**
- * Configures the application based on a configuration file.
+ * Configures the application based on a configuration file. The application
+ * provides its own configuration file with default configurations. If you want
+ * to overwrite them, you have to create a .c3poconfig file in your home
+ * directory. All properties defined within that file will overwrite the
+ * defaults. All other properties will use the default values.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 

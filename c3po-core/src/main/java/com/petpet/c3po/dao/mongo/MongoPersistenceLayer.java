@@ -36,6 +36,13 @@ import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.utils.DataHelper;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
+/**
+ * A MongoDB (http://www.mongodb.org) specific back-end persistence layer
+ * implementation.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class MongoPersistenceLayer implements PersistenceLayer {
 
   /**

@@ -14,22 +14,49 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.DataHelper;
 
+/**
+ * Implements the {@link Cache} interface.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class DBCache implements Cache {
 
+  /**
+   * A map of {@link Property} objects.
+   */
   private Map<String, Property> propertyCache;
 
+  /**
+   * A map of {@link Source} objects.
+   */
   private Map<String, Source> sourceCache;
 
+  /**
+   * A map of arbitrary objects.
+   */
   private Map<Object, Object> misc;
 
+  /**
+   * The persistence layer to use.
+   */
   private PersistenceLayer persistence;
 
+  /**
+   * Creates a new cache with synchronized empty maps.
+   */
   public DBCache() {
     this.propertyCache = Collections.synchronizedMap(new HashMap<String, Property>());
     this.sourceCache = Collections.synchronizedMap(new HashMap<String, Source>());
     this.misc = Collections.synchronizedMap(new HashMap<Object, Object>());
   }
 
+  /**
+   * Sets the persistence layer
+   * 
+   * @param persistence
+   *          the persitence to use.
+   */
   public void setPersistence(PersistenceLayer persistence) {
     this.persistence = persistence;
   }
@@ -70,6 +97,20 @@ public class DBCache implements Cache {
     return property;
   }
 
+  /**
+   * Looks in the cache for a source with the given name and version. If the
+   * source is found in the cache it is retrieved, if it is not found in the
+   * cache, the db is queried. Supposedly the source is found in the db, then it
+   * is loaded into the cache and it is returned. If no source with the given
+   * name and version is found in the db, then a new source is created, stored
+   * into the db, added to the cache and then it is returned.
+   * 
+   * @param name
+   *          the name of the source.
+   * @param version
+   *          the version of the source.
+   * @return the source.
+   */
   @Override
   public synchronized Source getSource(String name, String version) {
     Source source = this.sourceCache.get(name + ":" + version);
@@ -94,16 +135,25 @@ public class DBCache implements Cache {
     return source;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Object getObject(Object key) {
     return this.misc.get(key);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void put(Object key, Object value) {
     this.misc.put(key, value);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public synchronized void clear() {
     this.propertyCache.clear();

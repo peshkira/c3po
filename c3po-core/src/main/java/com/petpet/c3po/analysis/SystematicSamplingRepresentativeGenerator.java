@@ -11,16 +11,34 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.utils.Configurator;
 
+/**
+ * Systematic sampling generator selects samples on random in a fair fashion.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class SystematicSamplingRepresentativeGenerator extends RepresentativeGenerator {
 
+  /**
+   * Default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(SizeRepresentativeGenerator.class);
 
+  /**
+   * The persistence layer.
+   */
   private PersistenceLayer pl;
 
+  /**
+   * Creates the generator.
+   */
   public SystematicSamplingRepresentativeGenerator() {
     this.pl = Configurator.getDefaultConfigurator().getPersistence();
   }
-  
+
+  /**
+   * Selects 10 samples per default.
+   */
   @Override
   public List<String> execute() {
     return this.execute(10);
@@ -29,27 +47,27 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
   @Override
   public List<String> execute(int limit) {
     LOG.info("Applying {} algorithm for representatice selection", this.getType());
-    
+
     final List<String> result = new ArrayList<String>();
-    
+
     long count = pl.count(Element.class, this.getFilter());
-    
+
     if (count <= limit) {
       final Iterator<Element> cursor = this.pl.find(Element.class, this.getFilter());
       while (cursor.hasNext()) {
         result.add(cursor.next().getUid());
       }
-      
+
     } else {
       long skip = Math.round((double) count / limit);
       LOG.debug("Calculated skip is: {}", skip);
-      
+
       Iterator<Element> cursor = this.pl.find(Element.class, this.getFilter());
-      
+
       while (result.size() < limit) {
         int offset = (int) ((skip * result.size() + (int) ((Math.random() * skip) % count)) % count);
         LOG.debug("offset {}", offset);
-        //  skip the offset
+        // skip the offset
         int i = 0;
         while (i < 0) {
           i++;
@@ -57,12 +75,12 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
         }
         Element next = cursor.next();
         result.add(next.getUid());
-        
+
         cursor = this.pl.find(Element.class, this.getFilter());
       }
-      
+
     }
-    
+
     return result;
   }
 
@@ -70,5 +88,5 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
   public String getType() {
     return "systematic sampling";
   }
-  
+
 }

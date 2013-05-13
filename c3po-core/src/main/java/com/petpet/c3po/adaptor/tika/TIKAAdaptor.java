@@ -17,16 +17,55 @@ import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.PropertyType;
 
+/**
+ * A C3PO adaptor for RAW Apache TIKA output.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class TIKAAdaptor extends AbstractAdaptor {
 
   private static final Logger LOG = LoggerFactory.getLogger(TIKAAdaptor.class);
 
-  private String collection;
+  private static final String OPT_TIKA_VERSION = "c3po.adaptor.tika.version";
 
-  public TIKAAdaptor() {
+  private String version = "";
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void configure() {
+    this.version = this.getStringConfig(OPT_TIKA_VERSION, "");
   }
 
+  /**
+   * Parses the TIKA data.
+   */
+  @Override
+  public Element parseElement(String name, String data) {
+    try {
+      Map<String, String> metadata = TIKAResultParser.getKeyValueMap(data);
+      Element element = this.createElement(metadata);
+      return element;
+    } catch (IOException e) {
+      LOG.warn("Could not parse data for {}", name);
+      return null;
+    }
+  }
+
+  @Override
+  public String getAdaptorPrefix() {
+    return "tika";
+  }
+
+  /**
+   * Creates an element out of the parsed metadata map.
+   * 
+   * @param metadata
+   *          the map of property value pairs.
+   * @return the element object.
+   */
   private Element createElement(Map<String, String> metadata) {
 
     String name = metadata.remove("resourceName");
@@ -49,37 +88,15 @@ public class TIKAAdaptor extends AbstractAdaptor {
           value = value.split(" ")[0];
         }
         MetadataRecord record = new MetadataRecord(prop, value);
-        Source source = cache.getSource("Tika", "");
+        Source source = cache.getSource("Tika", this.version);
         record.setSources(Arrays.asList(source.getId()));
         records.add(record);
       }
     }
 
     element.setMetadata(records);
-    element.setCollection(this.collection);
     return element;
 
-  }
-
-  @Override
-  public void configure() {
-
-  }
-
-  @Override
-  public Element parseElement(String name, String data) {
-    try {
-      Map<String, String> metadata = TIKAResultParser.getKeyValueMap(data);
-      Element element = this.createElement(metadata);
-      return element;
-    } catch (IOException e) {
-      return null;
-    }
-  }
-
-  @Override
-  public String getAdaptorPrefix() {
-    return "tika";
   }
 
 }

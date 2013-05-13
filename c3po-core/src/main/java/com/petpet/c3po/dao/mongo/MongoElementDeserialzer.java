@@ -1,7 +1,6 @@
 package com.petpet.c3po.dao.mongo;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import com.mongodb.BasicDBObject;
@@ -9,9 +8,6 @@ import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
-import com.petpet.c3po.api.model.Source;
-import com.petpet.c3po.api.model.helper.Filter;
-import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 
 /**

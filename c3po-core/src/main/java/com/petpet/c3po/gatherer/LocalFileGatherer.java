@@ -24,58 +24,139 @@ import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 
+/**
+ * A gatherer of a local file system. It is a {@link Runnable} class that reads
+ * the meta data files into memory and stores them into a processing queue.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class LocalFileGatherer implements MetaDataGatherer {
 
-  private static final Logger LOG = LoggerFactory.getLogger( LocalFileGatherer.class );
+  /**
+   * A default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger(LocalFileGatherer.class);
 
+  /**
+   * The configuration of the gatherer.
+   */
   private Map<String, String> config;
 
+  /**
+   * A queue where the {@link MetadataStream} objects are stored.
+   */
   private final Queue<MetadataStream> queue;
 
-  private long sum;
+  /**
+   * The count of objects gathered.
+   */
+  private long count;
 
+  /**
+   * A flag denoting whether this gatherer is ready traversing the file system.
+   */
   private boolean ready;
 
+  /**
+   * A lock for synchronization with other workers.
+   */
   private Object lock;
 
+  /**
+   * Creates a new gatherer.
+   */
   public LocalFileGatherer() {
     this.queue = new LinkedList<MetadataStream>();
     this.ready = false;
   }
 
+  /**
+   * Creates a new gatherer with the given config.
+   * 
+   * @param config
+   */
   public LocalFileGatherer(Map<String, String> config) {
     this();
     this.config = config;
   }
 
+  /**
+   * Creates a new gatherer with the given object lock.
+   * 
+   * @param lock
+   */
   public LocalFileGatherer(Object lock) {
     this();
     this.lock = lock;
   }
 
+  /**
+   * Runs this gatherer and traverses the file system (optionally in a recursive
+   * fashion) . Once the files are gathered, all waiting threads on the locks
+   * monitor are notified.
+   */
   @Override
   public synchronized void run() {
     String path = this.config.get( Constants.OPT_COLLECTION_LOCATION );
     boolean recursive = Boolean.valueOf( this.config.get( Constants.OPT_RECURSIVE ) );
 
     this.ready = false;
-    this.traverseFiles( new File( path ), recursive, true );
-    System.out.println( this.sum + " files were gathered successfully" );
-    LOG.info( "{} files were gathered successfully", this.sum );
+    this.traverseFiles(new File(path), recursive, true);
+    System.out.println(this.count + " files were gathered successfully");
+    LOG.info("{} files were gathered successfully", this.count);
     this.ready = true;
+
     synchronized ( lock ) {
       this.lock.notifyAll();
 
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   public MetadataStream getNext() {
     synchronized ( lock ) {
       return queue.poll();
     }
   }
 
-  private String readStream( String name, InputStream data ) {
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void setConfig(Map<String, String> config) {
+    this.config = config;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean hasNext() {
+    return !this.queue.isEmpty();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isReady() {
+    return this.ready;
+  }
+
+  /**
+   * Reads the given input stream into memory and returns it. The stream is
+   * closed.
+   * 
+   * @param name
+   *          the name of the file/object holding the stream.
+   * @param data
+   *          the input stream to read.
+   * @return the string that was read out of the stream.
+   */
+  private String readStream(String name, InputStream data) {
     String result = null;
     try {
       result = IOUtils.toString( data );
@@ -87,7 +168,18 @@ public class LocalFileGatherer implements MetaDataGatherer {
     return result;
   }
 
-  private void traverseFiles( File file, boolean recursive, boolean firstLevel ) {
+  /**
+   * Traverses the file system starting from the given file. If the recursive
+   * flag is true, then the traversal is recursive.
+   * 
+   * @param file
+   *          the directory to traverse.
+   * @param recursive
+   *          whether or not to do it recursively.
+   * @param firstLevel
+   *          denotes whether this is the first level of traversal.
+   */
+  private void traverseFiles(File file, boolean recursive, boolean firstLevel) {
 
     if ( file.isDirectory() && (recursive || firstLevel) ) {
 
@@ -107,25 +199,27 @@ public class LocalFileGatherer implements MetaDataGatherer {
         processFile( filePath );
 
       }
+    }
 
-      if ( (this.sum % 1000) == 0 ) {
-        LOG.info( "traversed: {} files", this.sum );
-        synchronized ( lock ) {
+      if ((this.count % 1000) == 0) {
+        LOG.info("traversed: {} files", this.count);
+        synchronized (lock) {
           this.lock.notify();
 
         }
       }
 
-      if ( this.queue.size() > 10000 && this.sum % 1000 == 0 ) {
-        synchronized ( lock ) {
+      if (this.queue.size() > 10000 && this.count % 1000 == 0) {
+        synchronized (lock) {
           this.lock.notifyAll();
         }
       }
-
-      if ( this.sum % 10000 == 0 ) {
-        System.out.println( this.sum + " files were processed" );
+      
+      if (this.count % 10000 == 0) {
+        System.out.println(this.count + " files were processed");
       }
-    }
+
+      
   }
 
   private void traverseArchive( String filePath, FileObject file ) {
@@ -197,20 +291,6 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
   private void submitMetadataResult( MetadataStream ms ) {
     this.queue.add( ms );
-    sum++;
-  }
-
-  @Override
-  public void setConfig( Map<String, String> config ) {
-    this.config = config;
-  }
-
-  public boolean hasNext() {
-    return !this.queue.isEmpty();
-  }
-
-  @Override
-  public boolean isReady() {
-    return this.ready;
+    count++;
   }
 }

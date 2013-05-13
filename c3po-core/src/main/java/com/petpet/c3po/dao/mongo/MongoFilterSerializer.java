@@ -23,8 +23,14 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
  */
 public class MongoFilterSerializer {
 
+  /**
+   * A list of properties to exclude from wrapping. This is mongo specific.
+   */
   private static final String[] EXCLUDE = { "_id", "uid", "collection", "name" };
 
+  /**
+   * A static exists query for Mongo.
+   */
   private static final BasicDBObject EXISTS = new BasicDBObject("$exists", true);
 
   /**
@@ -149,12 +155,12 @@ public class MongoFilterSerializer {
           String mappedField = this.mapFieldToProperty(field, new Object());
           BasicDBObject low = new BasicDBObject(mappedField, getBoundQuery(bfc.getLOperator(), bfc.getLValue()));
           BasicDBObject high = new BasicDBObject(mappedField, getBoundQuery(bfc.getHOperator(), bfc.getHValue()));
-          
+
           List<BasicDBObject> and = new ArrayList<BasicDBObject>();
           and.add(low);
           and.add(high);
           res = new BasicDBObject("$and", and);
-          
+
         } else {
           val = (val == null) ? EXISTS : val;
           res = new BasicDBObject(this.mapFieldToProperty(field, val), val);
@@ -168,6 +174,15 @@ public class MongoFilterSerializer {
     return null;
   }
 
+  /**
+   * Retrieves a bound query with the given operator and value.
+   * 
+   * @param op
+   *          the operator to use.
+   * @param val
+   *          the value to use.
+   * @return the mongo query.
+   */
   private BasicDBObject getBoundQuery(Operator op, Object val) {
     String operator = "";
     switch (op) {
@@ -184,7 +199,7 @@ public class MongoFilterSerializer {
         operator = "$lte";
         break;
     }
-    
+
     return new BasicDBObject(operator, val);
   }
 }

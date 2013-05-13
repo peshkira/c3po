@@ -12,10 +12,25 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.adaptor.PreProcessingRule;
 
+/**
+ * A {@link PreProcessingRule} that cleans up values provided by a special tool
+ * bundled in FITS by TU Wien. Note that this rule is turned off by default and
+ * can be enabled via the .c3poconfig file with the following key set to true:
+ * 'c3po.rule.html_info_processing'.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class HtmlInfoProcessingRule implements PreProcessingRule {
 
+  /**
+   * A default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(HtmlInfoProcessingRule.class);
 
+  /**
+   * A set of valid html tags.
+   */
   private Set<String> tags;
 
   public HtmlInfoProcessingRule() {
@@ -23,6 +38,9 @@ public class HtmlInfoProcessingRule implements PreProcessingRule {
     this.readTags();
   }
 
+  /**
+   * Reads the valid html tags into memory.
+   */
   private void readTags() {
     try {
       BufferedReader reader = new BufferedReader(new InputStreamReader(HtmlInfoProcessingRule.class.getClassLoader()
@@ -42,11 +60,17 @@ public class HtmlInfoProcessingRule implements PreProcessingRule {
 
   }
 
+  /**
+   * Has the lowest possible priority.
+   */
   @Override
   public int getPriority() {
     return 1;
   }
 
+  /**
+   * Skips the value if the property is not a valid html tag.
+   */
   @Override
   public boolean shouldSkip(String property, String value, String status, String tool, String version) {
 

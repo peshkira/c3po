@@ -17,12 +17,31 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 
+/**
+ * A CSV generator that creates a sparse matrix view of the data, where each
+ * column is a property and each row is an element identifier and each cell has
+ * the corresponding value.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class CSVGenerator {
 
+  /**
+   * Default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(CSVGenerator.class);
 
+  /**
+   * The persistence layer.
+   */
   private PersistenceLayer persistence;
 
+  /**
+   * Creates the generator with the given persistence layer.
+   * 
+   * @param p
+   */
   public CSVGenerator(PersistenceLayer p) {
     this.persistence = p;
   }
@@ -63,6 +82,14 @@ public class CSVGenerator {
     this.write(matrix, props, output);
   }
 
+  /**
+   * Exports all the data matching the given filter to the given output file.
+   * 
+   * @param filter
+   *          the filter to match.
+   * @param output
+   *          the output file.
+   */
   public void export(final Filter filter, String output) {
     final Iterator<Property> allprops = this.persistence.find(Property.class, null);
     final List<Property> props = this.getProperties(allprops);
@@ -70,12 +97,34 @@ public class CSVGenerator {
     this.export(filter, props, output);
   }
 
+  /**
+   * Exports all the given properties and data that matches the given filter to
+   * the given output file.
+   * 
+   * @param filter
+   *          the filter to apply.
+   * @param props
+   *          the properties to generate.
+   * @param output
+   *          the output file.
+   */
   public void export(final Filter filter, final List<Property> props, String output) {
     Iterator<Element> matrix = this.persistence.find(Element.class, filter);
 
     this.write(matrix, props, output);
   }
 
+  /**
+   * Writes a file containing the data of all elements in the matrix iterator
+   * over all properties to the given output file.
+   * 
+   * @param matrix
+   *          the elements that the csv file should contain
+   * @param props
+   *          the properties that the csv file should contain
+   * @param output
+   *          the output file where to write to.
+   */
   private void write(Iterator<Element> matrix, List<Property> props, String output) {
     try {
 
@@ -108,9 +157,9 @@ public class CSVGenerator {
         // then the properties
         for (Property p : props) {
           List<MetadataRecord> value = next.removeMetadata(p.getId());
-          
-          assert value.size() == 0 || value.size() == 1; 
-          
+
+          assert value.size() == 0 || value.size() == 1;
+
           final String val = this.getValueFromMetaDataRecord(value);
           writer.append(val);
           writer.append(", ");
@@ -126,15 +175,32 @@ public class CSVGenerator {
     }
   }
 
+  /**
+   * Queries the db and obtains all elements for the given collection.
+   * 
+   * @param collection
+   *          the name of the colleciton.
+   * @return the matching elements.
+   */
   private Iterator<Element> buildMatrix(final String collection) {
     Filter filter = new Filter(new FilterCondition("collection", collection));
 
     return this.persistence.find(Element.class, filter);
   }
 
+  /**
+   * Queries the db and obtains all elements for the given collection provided
+   * they have a value for all properties in the list.
+   * 
+   * @param collection
+   *          the name of the collection.
+   * @param props
+   *          the properties to look for.
+   * @return the matching elements.
+   */
   private Iterator<Element> buildMatrix(final String collection, List<Property> props) {
     Filter filter = new Filter(new FilterCondition("collection", collection));
-    
+
     for (Property p : props) {
       filter.addFilterCondition(new FilterCondition(p.getId(), null));
     }
@@ -142,6 +208,14 @@ public class CSVGenerator {
     return this.persistence.find(Element.class, filter);
   }
 
+  /**
+   * Gets the value for the given list of meta data rocords or 'CONFLICT' if
+   * there are more values.
+   * 
+   * @param value
+   *          the list of records.
+   * @return the output string for the csv cell.
+   */
   private String getValueFromMetaDataRecord(List<MetadataRecord> value) {
     String result = "";
     if (value.size() != 0) {

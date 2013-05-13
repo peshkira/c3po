@@ -17,10 +17,22 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.api.model.helper.PropertyType;
 
+/**
+ * The data helper class offers some data manipulation methods.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public final class DataHelper {
 
+  /**
+   * Default logger.
+   */
   private static final Logger LOG = LoggerFactory.getLogger(DataHelper.class);
 
+  /**
+   * The types of known properties.
+   */
   private static Properties TYPES;
 
   /**
@@ -30,6 +42,10 @@ public final class DataHelper {
       "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
       "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss", "yyyy-MM-dd'T'HH:mm:ss" };
 
+  /**
+   * Loads the types of known properties into the TYPES {@link Properties}
+   * object.
+   */
   public static void init() {
     try {
       InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("datatypes.properties");
@@ -41,10 +57,25 @@ public final class DataHelper {
     }
   }
 
+  /**
+   * Gets the type of the property defined by the given key. If it is not found,
+   * STRING is returned.
+   * 
+   * @param key
+   *          the key to look for.
+   * @return the type of the property.
+   */
   public static String getPropertyType(String key) {
     return TYPES.getProperty(key, "STRING");
   }
 
+  /**
+   * Removes a trailing zero (.0) from a string.
+   * 
+   * @param str
+   *          the string to chop.
+   * @return the string without the trailing .0.
+   */
   public static String removeTrailingZero(final String str) {
     if (str != null && str.endsWith(".0")) {
       return str.substring(0, str.length() - 2);
@@ -53,6 +84,16 @@ public final class DataHelper {
     return str;
   }
 
+  /**
+   * Merges the given metadata record within the given element. If a value for
+   * this record already exists, then a proper merge is done, where Conflicts
+   * are set if necessary.
+   * 
+   * @param e
+   *          the element to use for merging.
+   * @param mr
+   *          the record to merge.
+   */
   public static void mergeMetadataRecord(Element e, MetadataRecord mr) {
 
     if (e == null || mr == null) {
@@ -68,13 +109,13 @@ public final class DataHelper {
 
       MetadataRecord oldMR = oldMetadata.get(0);
       if (oldMR.getStatus().equals(Status.CONFLICT.name())) {
-        
+
         String newVal = getTypedValue(mr.getProperty().getType(), mr.getValue()).toString();
         if (!oldMR.getValues().contains(newVal)) {
           mr.setStatus(Status.CONFLICT.name());
           oldMetadata.add(mr);
         }
-        
+
       } else {
         String oldVal = getTypedValue(oldMR.getProperty().getType(), oldMR.getValue()).toString();
         String newVal = getTypedValue(mr.getProperty().getType(), mr.getValue()).toString();
@@ -105,78 +146,85 @@ public final class DataHelper {
     e.getMetadata().addAll(oldMetadata);
   }
 
-//  @Deprecated
-//  public static BasicDBObject getFilterQuery(Filter filter) {
-//    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-//    BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
-//    ref.put("collection", filter.getCollection());
-//    DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
-//
-//    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
-//
-//    Filter tmp;
-//    while (cursor.hasNext()) {
-//      DBObject next = cursor.next();
-//      tmp = DataHelper.parseFilter(next);
-//      if (tmp.getValue() != null) {
-//
-//        Property property = pl.getCache().getProperty(tmp.getProperty());
-//
-//        if (tmp.getValue().equals("Unknown")) {
-//          query.put("metadata." + tmp.getProperty() + ".values", new BasicDBObject("$exists", false));
-//          query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-//
-//        } else if (tmp.getValue().equals("Conflicted")) {
-//          query.put("metadata." + tmp.getProperty() + ".status", MetadataRecord.Status.CONFLICT.toString());
-//
-//        } else if (property.getType().equals(PropertyType.DATE.toString())) {
-//
-//          Calendar cal = Calendar.getInstance();
-//          cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
-//          Date start = cal.getTime();
-//          cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
-//          Date end = cal.getTime();
-//
-//          BasicDBObject date = new BasicDBObject();
-//          date.put("$lte", end);
-//          date.put("$gte", start);
-//
-//          query.put("metadata." + tmp.getProperty() + ".value", date);
-//
-//        } else if (property.getType().equals(PropertyType.INTEGER.toString())) {
-//          String val = tmp.getValue();
-//          String[] constraints = val.split(" - ");
-//          String low = constraints[0];
-//          String high = constraints[1];
-//
-//          BasicDBObject range = new BasicDBObject();
-//          range.put("$lte", Long.parseLong(high));
-//          range.put("$gte", Long.parseLong(low));
-//
-//          query.put("metadata." + tmp.getProperty() + ".value", range);
-//
-//        } else {
-//          query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
-//        }
-//      }
-//    }
-//
-//    LOG.debug("FILTER QUERY: {}", query.toString());
-//    return query;
-//  }
+  // @Deprecated
+  // public static BasicDBObject getFilterQuery(Filter filter) {
+  // PersistenceLayer pl =
+  // Configurator.getDefaultConfigurator().getPersistence();
+  // BasicDBObject ref = new BasicDBObject("descriminator",
+  // filter.getDescriminator());
+  // ref.put("collection", filter.getCollection());
+  // DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
+  //
+  // BasicDBObject query = new BasicDBObject("collection",
+  // filter.getCollection());
+  //
+  // Filter tmp;
+  // while (cursor.hasNext()) {
+  // DBObject next = cursor.next();
+  // tmp = DataHelper.parseFilter(next);
+  // if (tmp.getValue() != null) {
+  //
+  // Property property = pl.getCache().getProperty(tmp.getProperty());
+  //
+  // if (tmp.getValue().equals("Unknown")) {
+  // query.put("metadata." + tmp.getProperty() + ".values", new
+  // BasicDBObject("$exists", false));
+  // query.put("metadata." + tmp.getProperty() + ".value", new
+  // BasicDBObject("$exists", false));
+  //
+  // } else if (tmp.getValue().equals("Conflicted")) {
+  // query.put("metadata." + tmp.getProperty() + ".status",
+  // MetadataRecord.Status.CONFLICT.toString());
+  //
+  // } else if (property.getType().equals(PropertyType.DATE.toString())) {
+  //
+  // Calendar cal = Calendar.getInstance();
+  // cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
+  // Date start = cal.getTime();
+  // cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
+  // Date end = cal.getTime();
+  //
+  // BasicDBObject date = new BasicDBObject();
+  // date.put("$lte", end);
+  // date.put("$gte", start);
+  //
+  // query.put("metadata." + tmp.getProperty() + ".value", date);
+  //
+  // } else if (property.getType().equals(PropertyType.INTEGER.toString())) {
+  // String val = tmp.getValue();
+  // String[] constraints = val.split(" - ");
+  // String low = constraints[0];
+  // String high = constraints[1];
+  //
+  // BasicDBObject range = new BasicDBObject();
+  // range.put("$lte", Long.parseLong(high));
+  // range.put("$gte", Long.parseLong(low));
+  //
+  // query.put("metadata." + tmp.getProperty() + ".value", range);
+  //
+  // } else {
+  // query.put("metadata." + tmp.getProperty() + ".value",
+  // inferValue(tmp.getValue()));
+  // }
+  // }
+  // }
+  //
+  // LOG.debug("FILTER QUERY: {}", query.toString());
+  // return query;
+  // }
 
-//  private static Object inferValue(String value) {
-//    Object result = value;
-//    if (value.equalsIgnoreCase("true")) {
-//      result = new Boolean(true);
-//    }
-//
-//    if (value.equalsIgnoreCase("false")) {
-//      result = new Boolean(false);
-//    }
-//
-//    return result;
-//  }
+  // private static Object inferValue(String value) {
+  // Object result = value;
+  // if (value.equalsIgnoreCase("true")) {
+  // result = new Boolean(true);
+  // }
+  //
+  // if (value.equalsIgnoreCase("false")) {
+  // result = new Boolean(false);
+  // }
+  //
+  // return result;
+  // }
 
   /**
    * Tries to infer the type of the value based on the property type and
