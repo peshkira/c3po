@@ -46,6 +46,7 @@ public interface MetaDataGatherer extends Runnable {
    *          the desired number of records.
    * @return
    */
+  @Deprecated
   List<MetadataStream> getNext(int count);
 
   /**

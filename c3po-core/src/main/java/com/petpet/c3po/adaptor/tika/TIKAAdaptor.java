@@ -15,7 +15,6 @@ import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.api.model.helper.PropertyType;
 
 public class TIKAAdaptor extends AbstractAdaptor {
@@ -68,9 +67,9 @@ public class TIKAAdaptor extends AbstractAdaptor {
   }
 
   @Override
-  public Element parseElement(MetadataStream ms) {
+  public Element parseElement(String name, String data) {
     try {
-      Map<String, String> metadata = TIKAResultParser.getKeyValueMap(ms.getData());
+      Map<String, String> metadata = TIKAResultParser.getKeyValueMap(data);
       Element element = this.createElement(metadata);
       return element;
     } catch (IOException e) {

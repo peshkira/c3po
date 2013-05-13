@@ -1,6 +1,7 @@
 package com.petpet.c3po.adaptor.fits;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
 
 import org.apache.commons.digester3.Digester;
@@ -13,7 +14,6 @@ import org.xml.sax.SAXException;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.petpet.c3po.api.model.helper.MetadataStream;
 
 /**
  * An adaptor for FITS <url>https://github.com/harvard-lts/fits</url> meta data.
@@ -58,13 +58,19 @@ public class FITSAdaptor extends AbstractAdaptor {
    * helper object has some methods for handling some special cases.
    */
   @Override
-  public Element parseElement(MetadataStream stream) {
+  public Element parseElement(String name, String data) {
     Element element = null;
+    
+    if (data == null) {
+      return element;
+      
+    }
     try {
 
       DigesterContext context = new DigesterContext(this.getCache(), this.getPreProcessingRules());
       this.digester.push(context);
-      context = (DigesterContext) this.digester.parse(stream.getData());
+      
+      context = (DigesterContext) this.digester.parse(new StringReader(data));
       element = context.getElement();
       List<MetadataRecord> values = context.getValues();
 
@@ -73,11 +79,11 @@ public class FITSAdaptor extends AbstractAdaptor {
       }
 
     } catch (IOException e) {
-      LOG.warn("An exception occurred while processing {}: {}", stream.getFileName(), e.getMessage());
+      LOG.warn("An exception occurred while processing {}: {}", name, e.getMessage());
     } catch (SAXException e) {
-      LOG.warn("An exception occurred while parsing {}: {}", stream.getFileName(), e.getMessage());
+      LOG.warn("An exception occurred while parsing {}: {}", name, e.getMessage());
     } catch (Exception e) {
-      LOG.warn("An exception occurred while parsing {}: {}", stream.getFileName(), e.getMessage());
+      LOG.warn("An exception occurred while parsing {}: {}", name, e.getMessage());
     }
 
     return element;

@@ -22,6 +22,8 @@ public class MetadataStream {
    * The actual meta data in an input stream form.
    */
   private InputStream data;
+  
+  private String readData;
 
   /**
    * Sets the passed variables.
@@ -32,16 +34,27 @@ public class MetadataStream {
    * @param data
    *          the actial meta data in stream form.
    */
+  @Deprecated
   public MetadataStream(String fileName, InputStream data) {
     this.fileName = fileName;
     this.data = data;
+  }
+  
+  public MetadataStream(String fileName, String data) {
+    this.fileName = fileName;
+    this.readData = data;
   }
 
   public String getFileName() {
     return this.fileName;
   }
 
+  @Deprecated
   public InputStream getData() {
     return this.data;
+  }
+  
+  public String getReadData() {
+    return this.readData;
   }
 }

@@ -48,7 +48,8 @@ public class Consolidator extends Thread {
 
             queue.wait();
           }
-
+          
+          //LOG.debug("cons queue count: " + queue.size());
           e = queue.poll();
 
         }
@@ -70,7 +71,7 @@ public class Consolidator extends Thread {
       return;
     }
 
-    LOG.debug(getName() + " is consolidating element: " + element.getUid());
+//    LOG.debug(getName() + " is consolidating element: " + element.getUid());
     Filter f = new Filter(new FilterCondition("uid", element.getUid()));
     Iterator<Element> iter = this.persistence.find(Element.class, f);
 
@@ -92,6 +93,7 @@ public class Consolidator extends Thread {
     } else {
       this.persistence.insert(element);
     }
+    
   }
 
   private void consolidate(Element element, Element stored) {

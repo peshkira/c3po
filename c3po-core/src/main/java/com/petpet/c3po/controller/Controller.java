@@ -357,7 +357,7 @@ public class Controller {
     this.adaptorPool.shutdown();
 
     Thread gathererThread = new Thread(this.gatherer, "MetadataGatherer");
-    gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
+    // gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
     gathererThread.start();
 
     try {
@@ -366,26 +366,32 @@ public class Controller {
       boolean adaptorsTerminated = this.adaptorPool.awaitTermination(2678400, TimeUnit.SECONDS);
 
       if (adaptorsTerminated) {
-        for (Consolidator c : consolidators) {
-          c.setRunning(false);
-        }
-
-        synchronized (processingQueue) {
-          this.processingQueue.notifyAll();
-        }
-
+        System.out.println("I finished translating the data. I am fluent in over six million forms of communication.");
+        this.stopConsoldators(consolidators);
         this.consolidatorPool.awaitTermination(2678400, TimeUnit.SECONDS);
+        System.out.println("I finished memorizing all the data.");
 
       } else {
+        System.out.println("Oh my, It seems something went wrong. This process took too long");
         LOG.error("Time out occurred, process was terminated");
       }
 
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOG.error("An error occurred: {}", e.getMessage());
     }
 
     ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
     new ActionLogHelper(this.persistence).recordAction(log);
+  }
+
+  private void stopConsoldators(List<Consolidator> consolidators) {
+    for (Consolidator c : consolidators) {
+      c.setRunning(false);
+    }
+
+    synchronized (processingQueue) {
+      this.processingQueue.notifyAll();
+    }
   }
 
   /**

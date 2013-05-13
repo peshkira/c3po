@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,9 +41,8 @@ public class TIKAResultParser {
    * @throws IOException
    *           if an io problem occurs.
    */
-  public static Map<String, String> getKeyValueMap(InputStream input) throws IOException {
-    InputStreamReader streamReader = new InputStreamReader(input, "UTF-8");
-    BufferedReader bufferedReader = new BufferedReader(streamReader);
+  public static Map<String, String> getKeyValueMap(String data) throws IOException {
+    BufferedReader bufferedReader = new BufferedReader(new StringReader(data));
 
     Map<String, String> map = new LinkedHashMap<String, String>();
 
