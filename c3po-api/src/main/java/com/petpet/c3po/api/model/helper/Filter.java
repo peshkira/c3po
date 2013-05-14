@@ -17,11 +17,11 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
  * Consider the following example where we want to filter all objects from a
  * collection 'A' that have either text/html or text/xml mimetype. In such a
  * case the filter that will be passed to the {@link PersistenceLayer} will have
- * three {@link FilterCondition} objects:
+ * three {@link FilterCondition} objects: <br><br>
  * 
  * first - property is 'collection' and value is 'A' <br>
  * second - property is 'mimetype' and value is 'text/html' <br>
- * third - property is 'mimetype' and value is 'text/xml'
+ * third - property is 'mimetype' and value is 'text/xml' <br><br>
  * 
  * Consider now that the same filter has to be applied but it has go over both
  * collection 'A' and collection 'B'. The caller has to include an additional
