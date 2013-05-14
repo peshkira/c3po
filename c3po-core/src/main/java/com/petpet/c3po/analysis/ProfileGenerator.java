@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
@@ -280,7 +281,6 @@ public class ProfileGenerator {
     return partition.addElement( "properties" );
   }
 
-  // TODO fix sample record generation
   private void createSamples( final Filter filter, final Element partition, int sampleSize ) {
     final Element samples = partition.addElement( "samples" );
     samples.addAttribute( "type", this.sampleSelector.getType() );
@@ -307,14 +307,19 @@ public class ProfileGenerator {
       LOG.debug( "Metadata record: {}", mr.getProperty().getKey() );
       if ( mr.getStatus().equals( Status.CONFLICT.toString() ) ) {
         for ( int i = 0; i < mr.getValues().size(); i++ ) {
+          Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
+              .getSources().get( i ) ) ) );
+          Source source = sources.next();
           sample.addElement( "record" ).addAttribute( "name", mr.getProperty().getKey() ).addAttribute( "value",
-              mr.getValues().get( i ).toString() ).addAttribute( "tool", mr.getSources().get( i ) );
-          // TODO read source out of db/cache...
+              mr.getValues().get( i ).toString() ).addAttribute( "tool", source.getName() + " " + source.getVersion() );
         }
 
       } else {
+        Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
+            .getSources().get( 0 ) ) ) );
+        Source source = sources.next();
         sample.addElement( "record" ).addAttribute( "name", mr.getProperty().getKey() ).addAttribute( "value",
-            mr.getValue().toString() ).addAttribute( "tool", mr.getSources().get( 0 ) );
+            mr.getValue().toString() ).addAttribute( "tool", source.getName() + " " + source.getVersion() );
       }
     }
   }
