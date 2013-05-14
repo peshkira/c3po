@@ -24,81 +24,131 @@ import com.petpet.c3po.parameters.ProfileParams;
 import com.petpet.c3po.parameters.RemoveParams;
 import com.petpet.c3po.parameters.SamplesParams;
 
+/**
+ * This is the entry point for the command line interface.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class C3PO {
 
-  private static final Logger LOG = LoggerFactory.getLogger(C3PO.class);
+  /**
+   * Default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger( C3PO.class );
 
+  /**
+   * The version of the command line interface.
+   */
   public static final String VERSION = "0.4.0-SNAPSHOT";
 
+  /**
+   * A map of the supported commands for this CLI.
+   */
   private Map<String, Command> commands;
 
+  /**
+   * A map of parameter objects for each CLI.
+   */
   private Map<String, Params> params;
 
-  private static final String[] MODES = {"help", "version", "gather", "profile", "samples", "export", "remove" };
+  /**
+   * An array of CLI modes. These are the higher level features/commands that
+   * the application supports. Most of them have then a combination of different
+   * parameters.
+   */
+  private static final String[] MODES = { "help", "version", "gather", "profile", "samples", "export", "remove" };
 
+  /**
+   * Creates the CLI and initializes the maps with all commands and parameters.
+   */
   public C3PO() {
     params = new HashMap<String, Params>();
-    params.put(MODES[0], new Params() { });
-    params.put(MODES[1], new Params() { });
-    params.put(MODES[2], new GatherParams());
-    params.put(MODES[3], new ProfileParams());
-    params.put(MODES[4], new SamplesParams());
-    params.put(MODES[5], new ExportParams());
-    params.put(MODES[6], new RemoveParams());
+    params.put( MODES[0], new Params() {} );
+    params.put( MODES[1], new Params() {} );
+    params.put( MODES[2], new GatherParams() );
+    params.put( MODES[3], new ProfileParams() );
+    params.put( MODES[4], new SamplesParams() );
+    params.put( MODES[5], new ExportParams() );
+    params.put( MODES[6], new RemoveParams() );
 
     commands = new HashMap<String, Command>();
-    commands.put(MODES[0], new HelpCommand(params));
-    commands.put(MODES[1], new VersionCommand());
-    commands.put(MODES[2], new GatherCommand());
-    commands.put(MODES[3], new ProfileCommand());
-    commands.put(MODES[4], new SamplesCommand());
-    commands.put(MODES[5], new ExportCommand());
-    commands.put(MODES[6], new RemoveCommand());
+    commands.put( MODES[0], new HelpCommand( params ) );
+    commands.put( MODES[1], new VersionCommand() );
+    commands.put( MODES[2], new GatherCommand() );
+    commands.put( MODES[3], new ProfileCommand() );
+    commands.put( MODES[4], new SamplesCommand() );
+    commands.put( MODES[5], new ExportCommand() );
+    commands.put( MODES[6], new RemoveCommand() );
   }
 
-  private void compute(String mode, String[] args) {
+  /**
+   * Runs a command that is inferred from the given mode and passes all the
+   * arguments as parameters.
+   * 
+   * @param mode
+   *          the mode in which the CLI should run
+   * @param args
+   *          the parameters for the command.
+   */
+  private void compute( String mode, String[] args ) {
 
-    if (!Arrays.asList(MODES).contains(mode)) {
-      System.err.println("Unknown mode: " + mode);
-      new HelpCommand(params).execute();
-      System.exit(1);
+    if ( !Arrays.asList( MODES ).contains( mode ) ) {
+
+      System.err.println( "Unknown mode: " + mode );
+      new HelpCommand( params ).execute();
+      System.exit( 1 );
+
     }
 
-    Params params = this.params.get(mode);
-    JCommander jc = new JCommander(params);
-    jc.setProgramName("c3po " + mode);
+    Params params = this.params.get( mode );
+    JCommander jc = new JCommander( params );
+    jc.setProgramName( "c3po " + mode );
+
     try {
-      jc.parse(Arrays.copyOfRange(args, 1, args.length));
-      Command command = this.commands.get(mode);
-      if (command == null) {
-        throw new ParameterException("Unknown mode '" + mode + "'.");
+
+      jc.parse( Arrays.copyOfRange( args, 1, args.length ) );
+
+      Command command = this.commands.get( mode );
+
+      if ( command == null ) {
+        throw new ParameterException( "Unknown mode '" + mode + "'." );
       }
-      command.setDelegateParams(params);
+
+      command.setParams( params );
       command.execute();
+
       long time = command.getTime();
 
-      if (time != -1) {
-        System.out.println("Success. Execution Time: " + time + "ms");
+      if ( time != -1 ) {
+        System.out.println( "Success. Execution Time: " + time + "ms" );
       }
-    } catch (ParameterException e) {
-      LOG.warn("{}", e.getMessage());
-      System.err.println(e.getMessage());
+
+    } catch ( ParameterException e ) {
+
+      LOG.warn( "{}", e.getMessage() );
+      System.err.println( e.getMessage() );
       jc.usage();
+
     }
   }
 
   /**
+   * The entry point for this command line interfaces. If no arguments are
+   * submitted a help message is printed and the program exits.
+   * 
    * @param args
+   *          the arguments to pass to the CLI.
    */
-  public static void main(String[] args) {
+  public static void main( String[] args ) {
 
-    if (args.length == 0) {
-      System.err.println("Please use one of the following");
-      System.exit(1);
+    if ( args.length == 0 ) {
+      System.err.println( "Please use one of the following arguments: " + Arrays.deepToString( MODES ) );
+      System.exit( 1 );
     }
 
     C3PO c3po = new C3PO();
-    c3po.compute(args[0], args);
+    c3po.compute( args[0], args );
   }
 
 }

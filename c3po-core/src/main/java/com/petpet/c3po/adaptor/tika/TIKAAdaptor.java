@@ -17,62 +17,39 @@ import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.PropertyType;
 
+/**
+ * A C3PO adaptor for RAW Apache TIKA output.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class TIKAAdaptor extends AbstractAdaptor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TIKAAdaptor.class);
+  private static final Logger LOG = LoggerFactory.getLogger( TIKAAdaptor.class );
 
-  private String collection;
+  private static final String OPT_TIKA_VERSION = "c3po.adaptor.tika.version";
 
-  public TIKAAdaptor() {
+  private String version = "";
 
-  }
-
-  private Element createElement(Map<String, String> metadata) {
-
-    String name = metadata.remove("resourceName");
-    if (name == null) {
-      return null;
-    }
-
-    Element element = new Element(name, name);
-    ReadOnlyCache cache = this.getCache();
-    List<MetadataRecord> records = new ArrayList<MetadataRecord>();
-
-    for (String key : metadata.keySet()) {
-      String value = metadata.get(key);
-      key = key.replace('.', '_').replace(' ', '_').replace(':', '_').toLowerCase();
-      key = TIKAHelper.getPropertyKeyByTikaName(key);
-
-      if (key != null) {
-        Property prop = cache.getProperty(key);
-        if (prop.getType().equals(PropertyType.INTEGER.name()) || prop.getType().equals(PropertyType.FLOAT.name())) {
-          value = value.split(" ")[0];
-        }
-        MetadataRecord record = new MetadataRecord(prop, value);
-        Source source = cache.getSource("Tika", "");
-        record.setSources(Arrays.asList(source.getId()));
-        records.add(record);
-      }
-    }
-
-    element.setMetadata(records);
-    element.setCollection(this.collection);
-    return element;
-
-  }
-
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void configure() {
-
+    this.version = this.getStringConfig( OPT_TIKA_VERSION, "" );
   }
 
+  /**
+   * Parses the TIKA data.
+   */
   @Override
-  public Element parseElement(String name, String data) {
+  public Element parseElement( String name, String data ) {
     try {
-      Map<String, String> metadata = TIKAResultParser.getKeyValueMap(data);
-      Element element = this.createElement(metadata);
+      Map<String, String> metadata = TIKAResultParser.getKeyValueMap( data );
+      Element element = this.createElement( metadata );
       return element;
-    } catch (IOException e) {
+    } catch ( IOException e ) {
+      LOG.warn( "Could not parse data for {}", name );
       return null;
     }
   }
@@ -80,6 +57,46 @@ public class TIKAAdaptor extends AbstractAdaptor {
   @Override
   public String getAdaptorPrefix() {
     return "tika";
+  }
+
+  /**
+   * Creates an element out of the parsed metadata map.
+   * 
+   * @param metadata
+   *          the map of property value pairs.
+   * @return the element object.
+   */
+  private Element createElement( Map<String, String> metadata ) {
+
+    String name = metadata.remove( "resourceName" );
+    if ( name == null ) {
+      return null;
+    }
+
+    Element element = new Element( name, name );
+    ReadOnlyCache cache = this.getCache();
+    List<MetadataRecord> records = new ArrayList<MetadataRecord>();
+
+    for ( String key : metadata.keySet() ) {
+      String value = metadata.get( key );
+      key = key.replace( '.', '_' ).replace( ' ', '_' ).replace( ':', '_' ).toLowerCase();
+      key = TIKAHelper.getPropertyKeyByTikaName( key );
+
+      if ( key != null ) {
+        Property prop = cache.getProperty( key );
+        if ( prop.getType().equals( PropertyType.INTEGER.name() ) || prop.getType().equals( PropertyType.FLOAT.name() ) ) {
+          value = value.split( " " )[0];
+        }
+        MetadataRecord record = new MetadataRecord( prop, value );
+        Source source = cache.getSource( "Tika", this.version );
+        record.setSources( Arrays.asList( source.getId() ) );
+        records.add( record );
+      }
+    }
+
+    element.setMetadata( records );
+    return element;
+
   }
 
 }

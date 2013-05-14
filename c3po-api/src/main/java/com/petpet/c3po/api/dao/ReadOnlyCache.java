@@ -21,7 +21,7 @@ public interface ReadOnlyCache {
    *          the key to look for.
    * @return the cached property.
    */
-  Property getProperty(String key);
+  Property getProperty( String key );
 
   /**
    * Retrieves the source designated by the given name and version. Depending on
@@ -34,7 +34,7 @@ public interface ReadOnlyCache {
    *          the version of the too.
    * @return
    */
-  Source getSource(String name, String version);
+  Source getSource( String name, String version );
 
   /**
    * Any other non-persistence layer object that can be cached.
@@ -43,5 +43,5 @@ public interface ReadOnlyCache {
    *          the key for the cache.
    * @return the object that was cached in memory.
    */
-  Object getObject(Object key);
+  Object getObject( Object key );
 }

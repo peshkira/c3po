@@ -15,6 +15,6 @@ public interface MongoModelDeserializer {
    *          the object to deserialize.
    * @return the deserialized object.
    */
-  Object deserialize(Object object);
+  Object deserialize( Object object );
 
 }

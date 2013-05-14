@@ -4,14 +4,20 @@ import com.petpet.c3po.C3PO;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.parameters.Params;
 
+/**
+ * Prints the version information of c3po.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class VersionCommand implements Command {
 
   @Override
   public void execute() {
-    System.out.println("I am c3po, human content profiling relations!");
-    System.out.println("c3po-cmd: " + C3PO.VERSION);
-    System.out.println("c3po-core: " + Constants.CORE_VERSION);
-    System.out.println("c3po-api: " + Constants.API_VERSION);
+    System.out.println( "I am c3po, human content profiling relations!" );
+    System.out.println( "c3po-cmd: " + C3PO.VERSION );
+    System.out.println( "c3po-core: " + Constants.CORE_VERSION );
+    System.out.println( "c3po-api: " + Constants.API_VERSION );
 
   }
 
@@ -21,8 +27,6 @@ public class VersionCommand implements Command {
   }
 
   @Override
-  public void setDelegateParams(Params params) {
-    
-  }
+  public void setParams( Params params ) {}
 
 }

@@ -26,18 +26,18 @@ public class RepresentativeAlgorithmFactory {
    *          the id of the algorithm implementation
    * @return the implementation of the algorithm.
    */
-  public RepresentativeGenerator getAlgorithm(String id) {
+  public RepresentativeGenerator getAlgorithm( String id ) {
     RepresentativeGenerator gen = null;
 
     int pos = 0;
-    for (int i = 0; i < ALGORITHMS.length; i++) {
-      if (ALGORITHMS[i].equalsIgnoreCase(id)) {
+    for ( int i = 0; i < ALGORITHMS.length; i++ ) {
+      if ( ALGORITHMS[i].equalsIgnoreCase( id ) ) {
         pos = i;
         break;
       }
     }
 
-    switch (pos) {
+    switch ( pos ) {
       case 0:
         gen = new SizeRepresentativeGenerator();
         break;
@@ -53,18 +53,26 @@ public class RepresentativeAlgorithmFactory {
 
     return gen;
   }
-  
-  public static boolean isValidAlgorithm(String alg) {
-    if (alg == null) {
+
+  /**
+   * Checks if the given algorithm is supported and returns true if yes, false
+   * otherwise.
+   * 
+   * @param alg
+   *          the algorithm name to check.
+   * @return true if supported, false otherwise.
+   */
+  public static boolean isValidAlgorithm( String alg ) {
+    if ( alg == null ) {
       return false;
     }
-    
-    for (String a : ALGORITHMS) {
-      if (a.equalsIgnoreCase(alg)) {
+
+    for ( String a : ALGORITHMS ) {
+      if ( a.equalsIgnoreCase( alg ) ) {
         return true;
       }
     }
-    
+
     return false;
   }
 }

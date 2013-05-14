@@ -36,12 +36,19 @@ import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.utils.DataHelper;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
+/**
+ * A MongoDB (http://www.mongodb.org) specific back-end persistence layer
+ * implementation.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class MongoPersistenceLayer implements PersistenceLayer {
 
   /**
    * A default logger for this class.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(MongoPersistenceLayer.class);
+  private static final Logger LOG = LoggerFactory.getLogger( MongoPersistenceLayer.class );
 
   /**
    * The hostname of the server where the db is running.
@@ -178,16 +185,16 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    */
   public MongoPersistenceLayer() {
     this.deserializers = new HashMap<String, MongoModelDeserializer>();
-    this.deserializers.put(Element.class.getName(), new MongoElementDeserialzer(this));
-    this.deserializers.put(Property.class.getName(), new MongoPropertyDeserialzer());
-    this.deserializers.put(Source.class.getName(), new MongoSourceDeserializer());
-    this.deserializers.put(ActionLog.class.getName(), new MongoActionLogDeserializer());
+    this.deserializers.put( Element.class.getName(), new MongoElementDeserialzer( this ) );
+    this.deserializers.put( Property.class.getName(), new MongoPropertyDeserialzer() );
+    this.deserializers.put( Source.class.getName(), new MongoSourceDeserializer() );
+    this.deserializers.put( ActionLog.class.getName(), new MongoActionLogDeserializer() );
 
     this.serializers = new HashMap<String, MongoModelSerializer>();
-    this.serializers.put(Element.class.getName(), new MongoElementSerializer());
-    this.serializers.put(Property.class.getName(), new MongoPropertySerializer());
-    this.serializers.put(Source.class.getName(), new MongoSourceSerializer());
-    this.serializers.put(ActionLog.class.getName(), new MongoActionLogSerializer());
+    this.serializers.put( Element.class.getName(), new MongoElementSerializer() );
+    this.serializers.put( Property.class.getName(), new MongoPropertySerializer() );
+    this.serializers.put( Source.class.getName(), new MongoSourceSerializer() );
+    this.serializers.put( ActionLog.class.getName(), new MongoActionLogSerializer() );
 
     this.filterSerializer = new MongoFilterSerializer();
 
@@ -210,55 +217,55 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *           exception.
    */
   @Override
-  public void establishConnection(Map<String, String> config) throws C3POPersistenceException {
+  public void establishConnection( Map<String, String> config ) throws C3POPersistenceException {
     this.close();
 
-    if (config == null || config.keySet().isEmpty()) {
-      throw new C3POPersistenceException("Cannot establish connection. No configuration provided");
+    if ( config == null || config.keySet().isEmpty() ) {
+      throw new C3POPersistenceException( "Cannot establish connection. No configuration provided" );
     }
 
     try {
-      String name = config.get(CNF_DB_NAME);
-      String host = config.get(CNF_DB_HOST);
-      int port = Integer.parseInt(config.get(CNF_DB_PORT));
+      String name = config.get( CNF_DB_NAME );
+      String host = config.get( CNF_DB_HOST );
+      int port = Integer.parseInt( config.get( CNF_DB_PORT ) );
 
-      this.mongo = new Mongo(host, port);
-      this.db = this.mongo.getDB(name);
+      this.mongo = new Mongo( host, port );
+      this.db = this.mongo.getDB( name );
 
-      DBObject uid = new BasicDBObject("uid", 1);
-      DBObject key = new BasicDBObject("key", 1);
-      DBObject unique = new BasicDBObject("unique", true);
+      DBObject uid = new BasicDBObject( "uid", 1 );
+      DBObject key = new BasicDBObject( "key", 1 );
+      DBObject unique = new BasicDBObject( "unique", true );
 
-      this.db.getCollection(TBL_ELEMENTS).ensureIndex(uid, unique);
-      this.db.getCollection(TBL_PROEPRTIES).ensureIndex(key, unique);
+      this.db.getCollection( TBL_ELEMENTS ).ensureIndex( uid, unique );
+      this.db.getCollection( TBL_PROEPRTIES ).ensureIndex( key, unique );
 
-      this.collections.put(Source.class.getName(), this.db.getCollection(TBL_SOURCES));
-      this.collections.put(Element.class.getName(), this.db.getCollection(TBL_ELEMENTS));
-      this.collections.put(Property.class.getName(), this.db.getCollection(TBL_PROEPRTIES));
-      this.collections.put(ActionLog.class.getName(), this.db.getCollection(TBL_ACTIONLOGS));
+      this.collections.put( Source.class.getName(), this.db.getCollection( TBL_SOURCES ) );
+      this.collections.put( Element.class.getName(), this.db.getCollection( TBL_ELEMENTS ) );
+      this.collections.put( Property.class.getName(), this.db.getCollection( TBL_PROEPRTIES ) );
+      this.collections.put( ActionLog.class.getName(), this.db.getCollection( TBL_ACTIONLOGS ) );
 
-      if (this.dbCache == null) {
+      if ( this.dbCache == null ) {
         DBCache cache = new DBCache();
-        cache.setPersistence(this);
+        cache.setPersistence( this );
         this.dbCache = cache;
       }
 
       this.connected = true;
 
-    } catch (NumberFormatException e) {
+    } catch ( NumberFormatException e ) {
 
-      LOG.error("Cannot parse port information! Error: {}", e.getMessage());
-      throw new C3POPersistenceException("Could not parse port information", e);
+      LOG.error( "Cannot parse port information! Error: {}", e.getMessage() );
+      throw new C3POPersistenceException( "Could not parse port information", e );
 
-    } catch (UnknownHostException e) {
+    } catch ( UnknownHostException e ) {
 
-      LOG.error("Could not find host! Error: {}", e.getMessage());
-      throw new C3POPersistenceException("Could not find host", e);
+      LOG.error( "Could not find host! Error: {}", e.getMessage() );
+      throw new C3POPersistenceException( "Could not find host", e );
 
-    } catch (MongoException e) {
+    } catch ( MongoException e ) {
 
-      LOG.error("The mongo driver threw an exception! Error: {}", e.getMessage());
-      throw new C3POPersistenceException("A mongo specific error occurred", e);
+      LOG.error( "The mongo driver threw an exception! Error: {}", e.getMessage() );
+      throw new C3POPersistenceException( "A mongo specific error occurred", e );
 
     }
 
@@ -270,8 +277,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    */
   @Override
   public void close() throws C3POPersistenceException {
-    if (this.isConnected() && this.mongo != null) {
-      this.db.cleanCursors(true);
+    if ( this.isConnected() && this.mongo != null ) {
+      this.db.cleanCursors( true );
       this.mongo.close();
       this.connected = false;
     }
@@ -297,7 +304,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public void setCache(Cache c) {
+  public void setCache( Cache c ) {
     this.dbCache = c;
   }
 
@@ -307,13 +314,13 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    */
   @Override
   public void clearCache() {
-    synchronized (TBL_NUMERIC_STATISTICS) {
+    synchronized ( TBL_NUMERIC_STATISTICS ) {
 
       this.dbCache.clear();
 
       BasicDBObject all = new BasicDBObject();
-      this.db.getCollection(TBL_NUMERIC_STATISTICS).remove(all);
-      this.db.getCollection(TBL_HISTOGRAMS).remove(all);
+      this.db.getCollection( TBL_NUMERIC_STATISTICS ).remove( all );
+      this.db.getCollection( TBL_HISTOGRAMS ).remove( all );
 
     }
   }
@@ -322,33 +329,33 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> Iterator<T> find(Class<T> clazz, Filter filter) {
+  public <T extends Model> Iterator<T> find( Class<T> clazz, Filter filter ) {
 
-    DBObject query = this.getCachedFilter(filter);
+    DBObject query = this.getCachedFilter( filter );
 
-    DBCollection dbCollection = this.getCollection(clazz);
-    MongoModelDeserializer modelDeserializer = this.getDeserializer(clazz);
+    DBCollection dbCollection = this.getCollection( clazz );
+    MongoModelDeserializer modelDeserializer = this.getDeserializer( clazz );
 
-    if (dbCollection == null) {
-      LOG.warn("No collection found for clazz [{}]", clazz.getName());
-      return new MongoIterator<T>(modelDeserializer, null);
+    if ( dbCollection == null ) {
+      LOG.warn( "No collection found for clazz [{}]", clazz.getName() );
+      return new MongoIterator<T>( modelDeserializer, null );
     }
 
-    DBCursor cursor = dbCollection.find(query);
+    DBCursor cursor = dbCollection.find( query );
 
-    return new MongoIterator<T>(modelDeserializer, cursor);
+    return new MongoIterator<T>( modelDeserializer, cursor );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> void insert(T object) {
+  public <T extends Model> void insert( T object ) {
 
-    DBCollection dbCollection = this.getCollection(object.getClass());
-    MongoModelSerializer serializer = this.getSerializer(object.getClass());
+    DBCollection dbCollection = this.getCollection( object.getClass() );
+    MongoModelSerializer serializer = this.getSerializer( object.getClass() );
 
-    dbCollection.insert(serializer.serialize(object));
+    dbCollection.insert( serializer.serialize( object ) );
 
   }
 
@@ -367,25 +374,25 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          updated.
    */
   @Override
-  public <T extends Model> void update(T object, Filter f) {
+  public <T extends Model> void update( T object, Filter f ) {
 
-    DBObject filter = this.getCachedFilter(f);
+    DBObject filter = this.getCachedFilter( f );
 
-    if (filter.keySet().isEmpty()) {
-      LOG.warn("Cannot update an object without a filter");
+    if ( filter.keySet().isEmpty() ) {
+      LOG.warn( "Cannot update an object without a filter" );
       return;
     }
 
-    if (object == null) {
-      LOG.warn("Cannot update a null object");
+    if ( object == null ) {
+      LOG.warn( "Cannot update a null object" );
       return;
     }
 
-    DBCollection dbCollection = this.getCollection(object.getClass());
-    MongoModelSerializer serializer = this.getSerializer(object.getClass());
-    DBObject objectToUpdate = serializer.serialize(object);
-    BasicDBObject set = new BasicDBObject("$set", objectToUpdate);
-    dbCollection.update(filter, set, true, true);
+    DBCollection dbCollection = this.getCollection( object.getClass() );
+    MongoModelSerializer serializer = this.getSerializer( object.getClass() );
+    DBObject objectToUpdate = serializer.serialize( object );
+    BasicDBObject set = new BasicDBObject( "$set", objectToUpdate );
+    dbCollection.update( filter, set, true, true );
 
   }
 
@@ -393,27 +400,15 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> void remove(T object) {
-    if (object == null) {
+  public <T extends Model> void remove( T object ) {
+    if ( object == null ) {
       return;
     }
 
-    DBCollection dbCollection = this.getCollection(object.getClass());
-    MongoModelSerializer serializer = this.getSerializer(object.getClass());
+    DBCollection dbCollection = this.getCollection( object.getClass() );
+    MongoModelSerializer serializer = this.getSerializer( object.getClass() );
 
-    dbCollection.remove(serializer.serialize(object));
-
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public <T extends Model> void remove(Class<T> clazz, Filter filter) {
-
-    DBObject query = this.getCachedFilter(filter);
-    DBCollection dbCollection = this.getCollection(clazz);
-    dbCollection.remove(query);
+    dbCollection.remove( serializer.serialize( object ) );
 
   }
 
@@ -421,11 +416,11 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> long count(Class<T> clazz, Filter filter) {
+  public <T extends Model> void remove( Class<T> clazz, Filter filter ) {
 
-    DBObject query = this.getCachedFilter(filter);
-    DBCollection dbCollection = this.getCollection(clazz);
-    return dbCollection.count(query);
+    DBObject query = this.getCachedFilter( filter );
+    DBCollection dbCollection = this.getCollection( clazz );
+    dbCollection.remove( query );
 
   }
 
@@ -433,13 +428,25 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter) {
+  public <T extends Model> long count( Class<T> clazz, Filter filter ) {
 
-    DBObject query = this.getCachedFilter(filter);
-    DBCollection dbCollection = this.getCollection(clazz);
-    f = this.filterSerializer.mapFieldToProperty(f, new Object());
+    DBObject query = this.getCachedFilter( filter );
+    DBCollection dbCollection = this.getCollection( clazz );
+    return dbCollection.count( query );
 
-    return dbCollection.distinct(f, query);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T extends Model> List<String> distinct( Class<T> clazz, String f, Filter filter ) {
+
+    DBObject query = this.getCachedFilter( filter );
+    DBCollection dbCollection = this.getCollection( clazz );
+    f = this.filterSerializer.mapFieldToProperty( f, new Object() );
+
+    return dbCollection.distinct( f, query );
 
   }
 
@@ -451,27 +458,27 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * elements are added.
    */
   @Override
-  public <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
+  public <T extends Model> Map<String, Long> getValueHistogramFor( Property p, Filter filter )
       throws UnsupportedOperationException {
 
     Map<String, Long> histogram = new HashMap<String, Long>();
 
     filter = (filter == null) ? new Filter() : filter;
 
-    DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
-    int key = getCachedResultId(p.getKey(), filter);
+    DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
+    int key = getCachedResultId( p.getKey(), filter );
     // System.out.println(key);
-    DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
+    DBCursor cursor = histCollection.find( new BasicDBObject( "_id", key ) );
 
-    if (cursor.count() == 0) {
+    if ( cursor.count() == 0 ) {
       // no cached results for this histogram
-      DBObject object = this.histogramMapReduce(key, p, filter);
-      histogram = this.parseHistogramResults(object);
+      DBObject object = this.histogramMapReduce( key, p, filter );
+      histogram = this.parseHistogramResults( object );
 
     } else {
       // process
-      DBObject object = (DBObject) cursor.next().get("results");
-      histogram = this.parseHistogramResults(object);
+      DBObject object = (DBObject) cursor.next().get( "results" );
+      histogram = this.parseHistogramResults( object );
     }
 
     return histogram;
@@ -489,33 +496,33 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *           if the property is null or not numeric.
    */
   @Override
-  public NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException,
+  public NumericStatistics getNumericStatistics( Property p, Filter filter ) throws UnsupportedOperationException,
       IllegalArgumentException {
 
-    if (p == null) {
-      throw new IllegalArgumentException("No property provider. Cannot aggregate");
+    if ( p == null ) {
+      throw new IllegalArgumentException( "No property provider. Cannot aggregate" );
     }
 
-    if (!p.getType().equals(PropertyType.INTEGER.name()) && !p.getType().equals(PropertyType.FLOAT.name())) {
-      throw new IllegalArgumentException("Cannot aggregate a non numeric property: " + p.getKey());
+    if ( !p.getType().equals( PropertyType.INTEGER.name() ) && !p.getType().equals( PropertyType.FLOAT.name() ) ) {
+      throw new IllegalArgumentException( "Cannot aggregate a non numeric property: " + p.getKey() );
     }
 
     filter = (filter == null) ? new Filter() : filter;
 
-    DBCollection statsCollection = this.db.getCollection(TBL_NUMERIC_STATISTICS);
-    int key = getCachedResultId(p.getKey(), filter);
-    DBCursor cursor = statsCollection.find(new BasicDBObject("_id", key));
+    DBCollection statsCollection = this.db.getCollection( TBL_NUMERIC_STATISTICS );
+    int key = getCachedResultId( p.getKey(), filter );
+    DBCursor cursor = statsCollection.find( new BasicDBObject( "_id", key ) );
 
     NumericStatistics result = null;
-    if (cursor.count() == 0) {
+    if ( cursor.count() == 0 ) {
 
-      DBObject object = this.numericMapReduce(p.getKey(), filter);
-      result = this.parseNumericStatistics(object);
+      DBObject object = this.numericMapReduce( p.getKey(), filter );
+      result = this.parseNumericStatistics( object );
 
     } else {
 
-      DBObject next = (DBObject) cursor.next().get("value");
-      result = this.parseNumericStatistics(next);
+      DBObject next = (DBObject) cursor.next().get( "value" );
+      result = this.parseNumericStatistics( next );
 
     }
 
@@ -535,48 +542,49 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the filter to apply
    * @return a {@link DBObject} containing the results.
    */
-  private DBObject histogramMapReduce(int key, Property p, Filter filter) {
+  private DBObject histogramMapReduce( int key, Property p, Filter filter ) {
     String map = "";
 
-    DBObject query = this.getCachedFilter(filter);
+    DBObject query = this.getCachedFilter( filter );
 
-    if (p.getType().equals(PropertyType.DATE.toString())) {
+    if ( p.getType().equals( PropertyType.DATE.toString() ) ) {
 
-      map = DATE_HISTOGRAM_MAP.replace("@1", p.getKey());
+      map = DATE_HISTOGRAM_MAP.replace( "@1", p.getKey() );
 
-    } else if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
+    } else if ( p.getType().equals( PropertyType.INTEGER.toString() )
+        || p.getType().equals( PropertyType.FLOAT.toString() ) ) {
 
       // TODO allow possibility for options in order to specify the bin width
       // and potentially other options.
       // hard coded bin width: 10
-      map = NUMERIC_HISTOGRAM_MAP.replace("@1", p.getKey()).replace("@2", "10");
+      map = NUMERIC_HISTOGRAM_MAP.replace( "@1", p.getKey() ).replace( "@2", "10" );
 
     } else {
 
-      map = HISTOGRAM_MAP.replace("@1", p.getId());
+      map = HISTOGRAM_MAP.replace( "@1", p.getId() );
     }
 
-    LOG.debug("Executing histogram map reduce job with following map:\n{}", map);
-    LOG.debug("filter query is:\n{}", query);
-    DBCollection elmnts = getCollection(Element.class);
-    MapReduceCommand cmd = new MapReduceCommand(elmnts, map, HISTOGRAM_REDUCE, null, INLINE, query);
+    LOG.debug( "Executing histogram map reduce job with following map:\n{}", map );
+    LOG.debug( "filter query is:\n{}", query );
+    DBCollection elmnts = getCollection( Element.class );
+    MapReduceCommand cmd = new MapReduceCommand( elmnts, map, HISTOGRAM_REDUCE, null, INLINE, query );
 
-    MapReduceOutput output = elmnts.mapReduce(cmd);
-    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
+    MapReduceOutput output = elmnts.mapReduce( cmd );
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
 
-    DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
-    BasicDBObject old = new BasicDBObject("_id", key);
-    BasicDBObject res = new BasicDBObject(old.toMap());
-    res.put("results", results);
-    histCollection.update(old, res, true, false);
+    DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
+    BasicDBObject old = new BasicDBObject( "_id", key );
+    BasicDBObject res = new BasicDBObject( old.toMap() );
+    res.put( "results", results );
+    histCollection.update( old, res, true, false );
 
-    DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
+    DBCursor cursor = histCollection.find( new BasicDBObject( "_id", key ) );
 
-    if (cursor.count() == 0) {
+    if ( cursor.count() == 0 ) {
       return null;
     }
 
-    return (DBObject) cursor.next().get("results");
+    return (DBObject) cursor.next().get( "results" );
   }
 
   /**
@@ -589,26 +597,26 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the filter to apply
    * @return a {@link DBObject} with the results.
    */
-  private DBObject numericMapReduce(String property, Filter filter) {
-    int key = getCachedResultId(property, filter);
+  private DBObject numericMapReduce( String property, Filter filter ) {
+    int key = getCachedResultId( property, filter );
 
-    DBCollection elmnts = getCollection(Element.class);
-    DBObject query = this.getCachedFilter(filter);
+    DBCollection elmnts = getCollection( Element.class );
+    DBObject query = this.getCachedFilter( filter );
 
-    String map = AGGREGATE_MAP.replaceAll("@1", key + "").replaceAll("@2", property);
-    MapReduceCommand cmd = new MapReduceCommand(elmnts, map, AGGREGATE_REDUCE, TBL_NUMERIC_STATISTICS, MERGE, query);
-    cmd.setFinalize(AGGREGATE_FINALIZE);
+    String map = AGGREGATE_MAP.replaceAll( "@1", key + "" ).replaceAll( "@2", property );
+    MapReduceCommand cmd = new MapReduceCommand( elmnts, map, AGGREGATE_REDUCE, TBL_NUMERIC_STATISTICS, MERGE, query );
+    cmd.setFinalize( AGGREGATE_FINALIZE );
 
-    elmnts.mapReduce(cmd);
+    elmnts.mapReduce( cmd );
 
-    DBCollection statsCollection = this.db.getCollection(TBL_NUMERIC_STATISTICS);
-    DBCursor cursor = statsCollection.find(new BasicDBObject("_id", key));
+    DBCollection statsCollection = this.db.getCollection( TBL_NUMERIC_STATISTICS );
+    DBCursor cursor = statsCollection.find( new BasicDBObject( "_id", key ) );
 
-    if (cursor.count() == 0) {
+    if ( cursor.count() == 0 ) {
       return null;
     }
 
-    return (DBObject) cursor.next().get("value");
+    return (DBObject) cursor.next().get( "value" );
   }
 
   /**
@@ -621,7 +629,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the filter that was used.
    * @return the generated key.
    */
-  private int getCachedResultId(String property, Filter filter) {
+  private int getCachedResultId( String property, Filter filter ) {
     return (property + filter.hashCode()).hashCode();
   }
 
@@ -634,16 +642,16 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the object to parse.
    * @return the histogram map.
    */
-  private Map<String, Long> parseHistogramResults(DBObject object) {
+  private Map<String, Long> parseHistogramResults( DBObject object ) {
     Map<String, Long> histogram = new HashMap<String, Long>();
 
-    if (object == null) {
+    if ( object == null ) {
       return histogram;
     }
 
     List<BasicDBObject> results = (List<BasicDBObject>) object;
-    for (final BasicDBObject dbo : results) {
-      histogram.put(DataHelper.removeTrailingZero(dbo.getString("_id")), dbo.getLong("value"));
+    for ( final BasicDBObject dbo : results ) {
+      histogram.put( DataHelper.removeTrailingZero( dbo.getString( "_id" ) ), dbo.getLong( "value" ) );
     }
 
     return histogram;
@@ -656,25 +664,25 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the object to parse.
    * @return a {@link NumericStatistics} object that wraps the results.
    */
-  private NumericStatistics parseNumericStatistics(DBObject object) {
+  private NumericStatistics parseNumericStatistics( DBObject object ) {
     NumericStatistics result = null;
 
-    if (object == null) {
+    if ( object == null ) {
       result = new NumericStatistics();
 
     } else {
 
       BasicDBObject obj = (BasicDBObject) object;
 
-      long count = obj.getLong("count");
-      double sum = obj.getDouble("sum");
-      double min = obj.getDouble("min");
-      double max = obj.getDouble("max");
-      double avg = obj.getDouble("avg");
-      double std = obj.getDouble("stddev");
-      double var = obj.getDouble("variance");
+      long count = obj.getLong( "count" );
+      double sum = obj.getDouble( "sum" );
+      double min = obj.getDouble( "min" );
+      double max = obj.getDouble( "max" );
+      double avg = obj.getDouble( "avg" );
+      double std = obj.getDouble( "stddev" );
+      double var = obj.getDouble( "variance" );
 
-      result = new NumericStatistics(count, sum, min, max, avg, std, var);
+      result = new NumericStatistics( count, sum, min, max, avg, std, var );
     }
 
     return result;
@@ -687,8 +695,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the class that we want to serialize.
    * @return the serializer.
    */
-  private <T extends Model> MongoModelSerializer getSerializer(Class<T> clazz) {
-    return this.serializers.get(clazz.getName());
+  private <T extends Model> MongoModelSerializer getSerializer( Class<T> clazz ) {
+    return this.serializers.get( clazz.getName() );
   }
 
   /**
@@ -698,8 +706,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the class that we want to deserialize.
    * @return the deserializer.
    */
-  private <T extends Model> MongoModelDeserializer getDeserializer(Class<T> clazz) {
-    return this.deserializers.get(clazz.getName());
+  private <T extends Model> MongoModelDeserializer getDeserializer( Class<T> clazz ) {
+    return this.deserializers.get( clazz.getName() );
   }
 
   /**
@@ -709,8 +717,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    *          the class we want to store.
    * @return the {@link DBCollection}.
    */
-  private <T extends Model> DBCollection getCollection(Class<T> clazz) {
-    return this.collections.get(clazz.getName());
+  private <T extends Model> DBCollection getCollection( Class<T> clazz ) {
+    return this.collections.get( clazz.getName() );
   }
 
   /**
@@ -725,16 +733,16 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * @return the cached filter or the updated version.
    * @see MongoFilterSerializer;
    */
-  private DBObject getCachedFilter(Filter f) {
-    Filter filter = (Filter) this.dbCache.getObject(LAST_FILTER);
+  private DBObject getCachedFilter( Filter f ) {
+    Filter filter = (Filter) this.dbCache.getObject( LAST_FILTER );
     DBObject result = null;
 
-    if (filter != null && filter.equals(f)) {
-      result = (DBObject) this.dbCache.getObject(LAST_FILTER_QUERY);
+    if ( filter != null && filter.equals( f ) ) {
+      result = (DBObject) this.dbCache.getObject( LAST_FILTER_QUERY );
     } else {
-      result = this.filterSerializer.serialize(f);
-      this.dbCache.put(LAST_FILTER, f);
-      this.dbCache.put(LAST_FILTER_QUERY, result);
+      result = this.filterSerializer.serialize( f );
+      this.dbCache.put( LAST_FILTER, f );
+      this.dbCache.put( LAST_FILTER_QUERY, result );
     }
 
     return result;

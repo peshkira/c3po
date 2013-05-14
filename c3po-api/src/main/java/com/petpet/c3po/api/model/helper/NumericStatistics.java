@@ -83,7 +83,7 @@ public class NumericStatistics {
     return count;
   }
 
-  public void setCount(long count) {
+  public void setCount( long count ) {
     this.count = count;
   }
 
@@ -91,7 +91,7 @@ public class NumericStatistics {
     return sum;
   }
 
-  public void setSum(double sum) {
+  public void setSum( double sum ) {
     this.sum = sum;
   }
 
@@ -99,7 +99,7 @@ public class NumericStatistics {
     return min;
   }
 
-  public void setMin(double min) {
+  public void setMin( double min ) {
     this.min = min;
   }
 
@@ -107,7 +107,7 @@ public class NumericStatistics {
     return max;
   }
 
-  public void setMax(double max) {
+  public void setMax( double max ) {
     this.max = max;
   }
 
@@ -115,7 +115,7 @@ public class NumericStatistics {
     return average;
   }
 
-  public void setAverage(double average) {
+  public void setAverage( double average ) {
     this.average = average;
   }
 
@@ -123,7 +123,7 @@ public class NumericStatistics {
     return standardDeviation;
   }
 
-  public void setStandardDeviation(double standardDeviation) {
+  public void setStandardDeviation( double standardDeviation ) {
     this.standardDeviation = standardDeviation;
   }
 
@@ -131,7 +131,7 @@ public class NumericStatistics {
     return variance;
   }
 
-  public void setVariance(double variance) {
+  public void setVariance( double variance ) {
     this.variance = variance;
   }
 }

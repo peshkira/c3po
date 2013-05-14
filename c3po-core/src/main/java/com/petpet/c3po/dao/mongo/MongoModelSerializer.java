@@ -18,6 +18,6 @@ public interface MongoModelSerializer {
    *          the object to serialize.
    * @return the serialized {@link DBObject}
    */
-  DBObject serialize(Object object);
+  DBObject serialize( Object object );
 
 }

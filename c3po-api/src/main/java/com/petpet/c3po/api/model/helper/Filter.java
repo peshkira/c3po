@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 
 /**
@@ -32,10 +30,13 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
  * collection property as well.
  * 
  * Additionally, if a condition of the filter has a null value for a given
- * field, then this has to be interpreted as, where any given value exists for
+ * field, then this has to be interpreted as: where any given value exists for
  * this property. For example, if a condition has a property 'mimetype' and a
  * value 'null', then the filter should interpret where the searched objects
  * have a mimetype field that exists.
+ * 
+ * Note that a filter might also contain a {@link BetweenFilterCondition} object
+ * for numeric properties and this should be interpreted accordingly.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 
@@ -47,28 +48,6 @@ public class Filter {
    * provider to a query or addition to a query.
    */
   private List<FilterCondition> conditions;
-
-  @Deprecated
-  private String descriminator;
-
-  /**
-   * The collection that is filtered.
-   */
-  @Deprecated
-  private String collection;
-
-  /**
-   * The property that is filtered by this filter (e.g. mimetype).
-   */
-  @Deprecated
-  private String property;
-
-  /**
-   * The value of the property by which the filter is partitioning (e.g.
-   * application/pdf).
-   */
-  @Deprecated
-  private String value;
 
   /**
    * Create a new empty filter with an initialized empty list of
@@ -86,7 +65,7 @@ public class Filter {
    */
   public Filter(FilterCondition fc) {
     this();
-    this.conditions.add(fc);
+    this.conditions.add( fc );
   }
 
   /**
@@ -107,14 +86,14 @@ public class Filter {
    *          the filter to copy.
    */
   public Filter(Filter another) {
-    this.conditions = new ArrayList<FilterCondition>(another.conditions);
+    this.conditions = new ArrayList<FilterCondition>( another.conditions );
   }
 
   public List<FilterCondition> getConditions() {
     return conditions;
   }
 
-  public void setConditions(List<FilterCondition> conditions) {
+  public void setConditions( List<FilterCondition> conditions ) {
     this.conditions = conditions;
   }
 
@@ -124,31 +103,48 @@ public class Filter {
    * @param fc
    *          the filter condition to add.
    */
-  public void addFilterCondition(FilterCondition fc) {
-    if (conditions == null) {
+  public void addFilterCondition( FilterCondition fc ) {
+    if ( conditions == null ) {
       conditions = new ArrayList<FilterCondition>();
     }
 
-    if (fc != null && !conditions.contains(fc))
-      conditions.add(fc);
+    if ( fc != null && !conditions.contains( fc ) )
+      conditions.add( fc );
   }
 
-  public Filter subFilter(String... fields) {
+  /**
+   * Create a new filter that contains only the {@link FilterCondition} objects
+   * that are part of the fields array. However, if the new filter has no filter
+   * condition, then the current filter is returned.
+   * 
+   * @param fields
+   *          the fields that should remain in the subfilter.
+   * @return the new filter or the same if none of the conditions were matching.
+   */
+  public Filter subFilter( String... fields ) {
     Filter subFilter = new Filter();
-    List fieldList = Arrays.asList(fields);
+    List<String> fieldList = Arrays.asList( fields );
 
-    for (FilterCondition fc : this.conditions) {
-      if (fieldList.contains(fc.getField())) {
-        subFilter.addFilterCondition(fc);
+    for ( FilterCondition fc : this.conditions ) {
+      if ( fieldList.contains( fc.getField() ) ) {
+        subFilter.addFilterCondition( fc );
       }
     }
 
     return (subFilter.getConditions().size() > 0) ? subFilter : this;
   }
 
-  public boolean contains(String field) {
-    for (FilterCondition fc : this.conditions) {
-      if (fc.getField().equals(field)) {
+  /**
+   * Returns true if this filter has at least one {@link FilterCondition} with
+   * the given field.
+   * 
+   * @param field
+   *          the field to check for.
+   * @return true if it contains such a filter condition, false otherwise.
+   */
+  public boolean contains( String field ) {
+    for ( FilterCondition fc : this.conditions ) {
+      if ( fc.getField().equals( field ) ) {
         return true;
       }
     }
@@ -156,8 +152,16 @@ public class Filter {
     return false;
   }
 
-  public boolean contains(FilterCondition fc) {
-    return this.conditions.contains(fc);
+  /**
+   * Checks if it contains the given {@link FilterCondition}. Note that the
+   * values are checked for equality as well.
+   * 
+   * @param fc
+   *          the {@link FilterCondition} to check.
+   * @return true if it contains this {@link FilterCondition}, false otherwise.
+   */
+  public boolean contains( FilterCondition fc ) {
+    return this.conditions.contains( fc );
   }
 
   @Override
@@ -169,88 +173,20 @@ public class Filter {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals( Object obj ) {
+    if ( this == obj )
       return true;
-    if (obj == null)
+    if ( obj == null )
       return false;
-    if (getClass() != obj.getClass())
+    if ( getClass() != obj.getClass() )
       return false;
     Filter other = (Filter) obj;
-    if (conditions == null) {
-      if (other.conditions != null)
+    if ( conditions == null ) {
+      if ( other.conditions != null )
         return false;
-    } else if (!conditions.equals(other.conditions))
+    } else if ( !conditions.equals( other.conditions ) )
       return false;
     return true;
   }
 
-  /**
-   * Creates a default root filter. This means that the filter has no parent
-   * filter.
-   * 
-   * @param collection
-   *          the collection to filter.
-   * @param property
-   *          the property to apply.
-   * @param value
-   *          the value of the property to apply for this filter.
-   */
-  @Deprecated
-  public Filter(String collection, String property, String value) {
-    this.collection = collection;
-    this.property = property;
-    this.value = value;
-  }
-
-  @Deprecated
-  public String getDescriminator() {
-    return descriminator;
-  }
-
-  @Deprecated
-  public void setDescriminator(String id) {
-    this.descriminator = id;
-  }
-
-  @Deprecated
-  public String getCollection() {
-    return collection;
-  }
-
-  @Deprecated
-  public void setCollection(String collection) {
-    this.collection = collection;
-  }
-
-  @Deprecated
-  public String getProperty() {
-    return property;
-  }
-
-  @Deprecated
-  public void setProperty(String property) {
-    this.property = property;
-  }
-
-  @Deprecated
-  public String getValue() {
-    return value;
-  }
-
-  @Deprecated
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  @Deprecated
-  public DBObject getDocument() {
-    final BasicDBObject filter = new BasicDBObject();
-    filter.put("descriminator", this.descriminator);
-    filter.put("collection", collection);
-    filter.put("property", property);
-    filter.put("value", value);
-
-    return filter;
-  }
 }

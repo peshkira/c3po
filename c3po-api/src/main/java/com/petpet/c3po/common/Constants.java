@@ -40,23 +40,27 @@ public final class Constants {
    * A configuration option for the sampling algorithm to use.
    */
   public static final String OPT_SAMPLING_ALGORITHM = "c3po.sampling.alogrithm";
-  
+
   /**
    * A configuration option for the size of the sample set.
    */
   public static final String OPT_SAMPLING_SIZE = "c3po.sampling.size";
-  
+
   /**
-   * A configuration option for the properties over which some sample algorithms should work.
+   * A configuration option for the properties over which some sample algorithms
+   * should work.
    */
   public static final String OPT_SAMPLING_PROPERTIES = "c3po.sampling.properties";
-  
+
   /**
    * A configuration option for including the element identifiers.
    */
   public static final String OPT_INCLUDE_ELEMENTS = "c3po.profile.includeelements";
-  
-  public static final String OPT_OUTPUT_LOCATION = "c3po.profile.outputlocation";
+
+  /**
+   * A configuration option for the output location of a CLI command.
+   */
+  public static final String OPT_OUTPUT_LOCATION = "c3po.cli.outputlocation";
 
   /**
    * A config identifier for the persistence layer class.
@@ -109,84 +113,10 @@ public final class Constants {
    */
   public static final String CORE_VERSION = "0.4.0-SNAPSHOT";
 
+  /**
+   * The version of the api module.
+   */
   public static final String API_VERSION = "0.4.0-SNAPSHOT";
-
-  /**
-   * The elements collection in the document store.
-   */
-  @Deprecated
-  public static final String TBL_ELEMENTS = "elements";
-
-  /**
-   * The properties collection in the document store.
-   */
-  @Deprecated
-  public static final String TBL_PROEPRTIES = "properties";
-
-  /**
-   * The source collection in the document store.
-   */
-  @Deprecated
-  public static final String TBL_SOURCES = "sources";
-
-  /**
-   * The filters stored in the db.
-   */
-  @Deprecated
-  public static final String TBL_FILTERS = "filters";
-
-  /**
-   * The actions done on a collection basis in the db.
-   */
-  @Deprecated
-  public static final String TBL_ACTIONLOGS = "actionlogs";
-
-  /**
-   * A javascript Map function for building a histogram of a specific property.
-   * All occurrences of that property are used (if they do not have conflcited
-   * values). Note that there is a '{}' wildcard that has to be replaced with
-   * the id of the desired property, prior to usage.
-   */
-  @Deprecated
-  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value, 1);}else{emit('Conflicted', 1);}} else {emit('Unknown', 1);}}";
-
-  /**
-   * A javascript Map function for building a histogram over a specific date
-   * property. All occurrences of that property are used. If they are conflicted
-   * then they are aggregated under one key 'Conflcited'. If the property is
-   * missing, then the values are aggregated under the key 'Unknown'. Otherwise
-   * the year is used as the key. Note that there is a '{}' wildcard that has to
-   * be replaced with the id of the desired property, prior to usage.
-   */
-  @Deprecated
-  public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['{}'] != null) {if (this.metadata['{}'].status !== 'CONFLICT') {emit(this.metadata['{}'].value.getFullYear(), 1);}else{emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
-
-  /**
-   * A javascript Map function for building a histogram with fixed bin size. It
-   * takes two wilde cards as parameters - The {1} is the numeric property and
-   * the {2} is the bin size. The result contains the bins, where the id is from
-   * 0 to n and the value is the number of occurrences. Note that each bin has a
-   * fixed size so the label can be easily calculated. For example the id 0
-   * marks the number of elements where the numeric property was between 0 and
-   * the width, the id 1 marks the number of elements where the numeric property
-   * was between the width and 2*width and so on.
-   */
-  @Deprecated
-  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['{1}'] != null) {if (this.metadata['{1}'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['{1}'].value / {2});emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
-
-  /**
-   * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
-   */
-  @Deprecated
-  public static final String HISTOGRAM_REDUCE = "function reduce(key, values) {var res = 0;values.forEach(function (v) {res += v;});return res;}";
-
-  /**
-   * A javascript Map function for calculating the min, max, sum, avg, sd and
-   * var of a numeric property. Note that there is a wildcard {1} that has to be
-   * replaced with the id of the desired numeric property prior to usage.
-   */
-  @Deprecated
-  public static final String AGGREGATE_MAP = "function map() {emit(1,{sum: this.metadata['{1}'].value, min: this.metadata['{1}'].value,max: this.metadata['{1}'].value,count:1,diff: 0,});}";
 
   /**
    * The same as {@link Constants#AGGREGATE_MAP} but it aggregates the desired
@@ -198,21 +128,10 @@ public final class Constants {
   @Deprecated
   public static final String FILTER_AGGREGATE_MAP = "function map() {if (this.metadata['{1}'].value === '{2}') {emit(1,{sum: this.metadata['{3}'].value, min: this.metadata['{3}'].value,max: this.metadata['{3}'].value,count:1,diff: 0,});}}";
 
-  /**
-   * The reduce of the aggregation functions.
-   */
   @Deprecated
-  public static final String AGGREGATE_REDUCE = "function reduce(key, values) {var a = values[0];for (var i=1; i < values.length; i++){var b = values[i];var delta = a.sum/a.count - b.sum/b.count;var weight = (a.count * b.count)/(a.count + b.count);a.diff += b.diff + delta*delta*weight;a.sum += b.sum;a.count += b.count;a.min = Math.min(a.min, b.min);a.max = Math.max(a.max, b.max);}return a;}";
-
-  /**
-   * A finalize function for the aggregation map reduce job, to calculate the
-   * average, standard deviation and variance.
-   */
-  @Deprecated
-  public static final String AGGREGATE_FINALIZE = "function finalize(key, value){ value.avg = value.sum / value.count;value.variance = value.diff / value.count;value.stddev = Math.sqrt(value.variance);return value;}";
-
   public static final String PROPERTIES_IN_COLLECTION_MAP = "function map() {for (var key in this) {if (key == 'metadata') {for (var subkey in this[key]) {emit(subkey, null);}}}}";
 
+  @Deprecated
   public static final String PROPERTIES_IN_COLLECTION_REDUCE = "function reduce(key, values) {return null;}";
 
   private Constants() {

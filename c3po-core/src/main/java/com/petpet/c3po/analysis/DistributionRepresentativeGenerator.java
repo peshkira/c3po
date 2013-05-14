@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -17,20 +16,42 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.Configurator;
 
+/**
+ * This class generates a sample set based on a distribution coverage strategy.
+ * It calculates the distributions of the values of each of the given properties
+ * and tries to find a sample set that has similar distribution for the given
+ * values.
+ * 
+ * <b>Note</b> that giving many properties will most certainly result in an
+ * empty set. <b>Note</b> that giving exclusive properties (e.g. pagecount and
+ * audio_dataencoding) will always result in an empty set. <b>Note</b> that this
+ * version of the strategy does not detect outliers.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class DistributionRepresentativeGenerator extends RepresentativeGenerator {
 
+  /**
+   * Executes with the default sample size of 10. Returns the list of
+   * identifiers with at most 10 elements.
+   */
   @Override
   public List<String> execute() {
-    return this.execute(10);
+    return this.execute( 10 );
   }
 
+  /**
+   * Executes with the given sample size and returns a list of size up to the
+   * given limit.
+   */
   @Override
-  public List<String> execute(int limit) {
+  public List<String> execute( int limit ) {
     final List<String> properties = this.getProperties();
     final List<String> result = new ArrayList<String>();
 
-    if (properties.isEmpty()) {
-      throw new IllegalArgumentException("No properties were provided for distribution calculation");
+    if ( properties.isEmpty() ) {
+      throw new IllegalArgumentException( "No properties were provided for distribution calculation" );
     }
 
     // for each property
@@ -56,47 +77,46 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
     // proceed with the last 2 steps until the limit is reached.
 
     PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    long overallCount = pl.count(Element.class, this.getFilter());
+    long overallCount = pl.count( Element.class, this.getFilter() );
     FilterCondition[][] matrix = new FilterCondition[properties.size()][];
-    for (int i = 0; i < properties.size(); i++) {
-      String key = properties.get(i);
-      List distinct = pl.distinct(Element.class, properties.get(i), this.getFilter());
+    for ( int i = 0; i < properties.size(); i++ ) {
+      String key = properties.get( i );
+      List<String> distinct = pl.distinct( Element.class, properties.get( i ), this.getFilter() );
       FilterCondition[] values = new FilterCondition[distinct.size()];
-      for (int j = 0; j < distinct.size(); j++) {
-        values[j] = new FilterCondition(key, distinct.get(j));
+      for ( int j = 0; j < distinct.size(); j++ ) {
+        values[j] = new FilterCondition( key, distinct.get( j ) );
       }
 
       matrix[i] = values;
 
     }
 
-//    System.out.println(Arrays.deepToString(matrix));
+    // System.out.println(Arrays.deepToString(matrix));
 
     List<Combination> combinations = new ArrayList<Combination>();
-    Set<List<FilterCondition>> results = this.combinations(matrix);
-    for (List<FilterCondition> combs : results) {
-      Filter query = new Filter(this.getFilter());
-      for (FilterCondition c : combs) {
-        query.addFilterCondition(c);
+    Set<List<FilterCondition>> results = this.combinations( matrix );
+    for ( List<FilterCondition> combs : results ) {
+      Filter query = new Filter( this.getFilter() );
+      for ( FilterCondition c : combs ) {
+        query.addFilterCondition( c );
       }
 
-      //TODO change query to a new query...
-      long count = pl.count(Element.class, query);
-      // System.out.println(query.toString() + " " + count);
-      combinations.add(new Combination(query, count));
+      long count = pl.count( Element.class, query );
+      combinations.add( new Combination( query, count ) );
     }
 
-    Collections.sort(combinations, new CombinationComparator());
+    Collections.sort( combinations, new CombinationComparator() );
 
-    for (Combination c : combinations) {
-      if (c.count > 0 && result.size() < limit) {
+    for ( Combination c : combinations ) {
+      if ( c.count > 0 && result.size() < limit ) {
         double percent = c.count * 100 / overallCount;
-        int tmpLimit = (int) Math.round(percent / 100 * limit);
+        int tmpLimit = (int) Math.round( percent / 100 * limit );
 
-        Iterator<Element> cursor = pl.find(Element.class, c.query);
-//        System.out.println(c.query + " count: " + c.count + " percent: " + percent + "% absolute: " + tmpLimit);
-        while (cursor.hasNext() && tmpLimit != 0 && result.size() < limit) {
-          result.add(cursor.next().getUid());
+        Iterator<Element> cursor = pl.find( Element.class, c.query );
+        // System.out.println(c.query + " count: " + c.count + " percent: " +
+        // percent + "% absolute: " + tmpLimit);
+        while ( cursor.hasNext() && tmpLimit != 0 && result.size() < limit ) {
+          result.add( cursor.next().getUid() );
           tmpLimit--;
         }
       }
@@ -106,27 +126,44 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
     return result;
   }
 
-  private Set<List<FilterCondition>> combinations(FilterCondition[][] opts) {
+  /*
+   * some crazy shit.
+   */
+  /**
+   * Builds all combinations of the given filter conditions.
+   * 
+   * @param opts
+   *          the conditions.
+   * @return returns a set of lists of filter conditions.
+   */
+  private Set<List<FilterCondition>> combinations( FilterCondition[][] opts ) {
 
     Set<List<FilterCondition>> results = new HashSet<List<FilterCondition>>();
 
-    if (opts.length == 1) {
-      for (FilterCondition s : opts[0])
-        results.add(new ArrayList<FilterCondition>(Arrays.asList(s)));
+    if ( opts.length == 1 ) {
+      for ( FilterCondition s : opts[0] )
+        results.add( new ArrayList<FilterCondition>( Arrays.asList( s ) ) );
     } else
-      for (FilterCondition obj : opts[0]) {
-        FilterCondition[][] tail = Arrays.copyOfRange(opts, 1, opts.length);
-        for (List<FilterCondition> combs : combinations(tail)) {
-          combs.add(obj);
-          results.add(combs);
+      for ( FilterCondition obj : opts[0] ) {
+        FilterCondition[][] tail = Arrays.copyOfRange( opts, 1, opts.length );
+        for ( List<FilterCondition> combs : combinations( tail ) ) {
+          combs.add( obj );
+          results.add( combs );
         }
       }
     return results;
   }
 
+  /**
+   * A combination has a filter query and count of objects matching the query.
+   * 
+   * @author Petar Petrov <me@petarpetrov.org>
+   * 
+   */
   private static class Combination {
 
     private Filter query;
+
     private long count;
 
     public Combination(Filter query, long count) {
@@ -136,10 +173,16 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
 
   }
 
+  /**
+   * Sorts the combinations descending according to the combination count.
+   * 
+   * @author Petar Petrov <me@petarpetrov.org>
+   * 
+   */
   private class CombinationComparator implements Comparator<Combination> {
     @Override
-    public int compare(Combination c1, Combination c2) {
-      return new Long(c2.count).compareTo(c1.count); // descending
+    public int compare( Combination c1, Combination c2 ) {
+      return new Long( c2.count ).compareTo( c1.count ); // descending
     }
 
   }
@@ -149,35 +192,21 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
     return "distribution sampling";
   }
 
+  /**
+   * Obtains the properties, for which this generator will build the
+   * distributions.
+   * 
+   * @return the list of properties or an empty list.
+   */
   private List<String> getProperties() {
     final Map<String, Object> options = this.getOptions();
-    List<String> properties = (List<String>) options.get("properties");
+    List<String> properties = (List<String>) options.get( "properties" );
 
-    if (properties == null) {
+    if ( properties == null ) {
       properties = new ArrayList<String>();
     }
 
     return properties;
   }
-
-//  public static void main(String... args) {
-//    Configurator configurator = Configurator.getDefaultConfigurator();
-//    configurator.configure();
-//   // PersistenceLayer pl = configurator.getPersistence();
-//
-//    Map<String, Object> options = new HashMap<String, Object>();
-//    options.put("properties", Arrays.asList("valid", "format"));
-//
-//    Filter f = new Filter(new FilterCondition("collection", "test"));
-//    DistributionRepresentativeGenerator drg = new DistributionRepresentativeGenerator();
-//    drg.setOptions(options);
-//    drg.setFilter(f);
-//
-//    List<String> result = drg.execute();
-//    System.out.println("REPRESENTATIVES");
-//    for (String s : result) {
-//      System.out.println(s);
-//    }
-//  }
 
 }

@@ -1,6 +1,5 @@
 package com.petpet.c3po.api.gatherer;
 
-import java.util.List;
 import java.util.Map;
 
 import com.petpet.c3po.api.model.helper.MetadataStream;
@@ -19,35 +18,7 @@ public interface MetaDataGatherer extends Runnable {
    * 
    * @param config
    */
-  void setConfig(Map<String, String> config);
-
-  /**
-   * The overall count of the meta data records or -1 if unknown.
-   * 
-   * @return the count of the records.
-   */
-  @Deprecated
-  long getCount();
-
-  /**
-   * The remaining metadata records or -1 if unknonw.
-   * 
-   * @return the count of the remaining records.
-   */
-  @Deprecated
-  long getRemaining();
-
-  /**
-   * A list of input streams (of the meta data) for the next N records. If the
-   * count is less than 0 then an empty list is returned. If the count is larger
-   * than the remaining records then all remaining records are returned.
-   * 
-   * @param count
-   *          the desired number of records.
-   * @return
-   */
-  @Deprecated
-  List<MetadataStream> getNext(int count);
+  void setConfig( Map<String, String> config );
 
   /**
    * Gets the next {@link MetadataStream} object.

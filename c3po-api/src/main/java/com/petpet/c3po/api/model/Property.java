@@ -1,6 +1,5 @@
 package com.petpet.c3po.api.model;
 
-import com.mongodb.BasicDBObject;
 import com.petpet.c3po.api.model.helper.PropertyType;
 
 /**
@@ -21,24 +20,6 @@ public class Property implements Model {
    */
   private String key;
 
-  /*
-   * currently not used
-   */
-  /**
-   * Some human readable name of the property.
-   */
-  @Deprecated
-  private String name;
-
-  /*
-   * currently not used
-   */
-  /**
-   * A description of the property.
-   */
-  @Deprecated
-  private String description;
-
   /**
    * The type of the property.
    */
@@ -49,60 +30,6 @@ public class Property implements Model {
    */
   public Property() {
 
-  }
-
-  /**
-   * Creates a new property with the given key and name. It genrates a ranomd
-   * uuid as an id and sets the type as String.
-   * 
-   * @param key
-   *          the key of the property
-   * @param name
-   *          the name of the property.
-   */
-  @Deprecated
-  public Property(String key, String name) {
-    this.id = key;
-    this.setKey(key);
-    this.setName(name);
-    this.setType(PropertyType.STRING.name());
-  }
-
-  /**
-   * Creates a new property with the given key and name. It genrates a ranomd
-   * uuid as an id and sets the type as the given type.
-   * 
-   * @param key
-   *          the key of the property
-   * @param name
-   *          the name of the property
-   * @param type
-   *          the type of the property.
-   */
-  @Deprecated
-  public Property(String key, String name, PropertyType type) {
-    this(key, name);
-    this.setType(type.name());
-  }
-
-  /**
-   * Creates a new property with the given key and name. It genrates a ranomd
-   * uuid as an id and sets the type as the given type and the given
-   * description.
-   * 
-   * @param key
-   *          the key of the property
-   * @param name
-   *          the name of the property
-   * @param type
-   *          the type of the property.
-   * @param desc
-   *          the description of the property
-   */
-  @Deprecated
-  public Property(String key, String name, PropertyType type, String desc) {
-    this(key, name, type);
-    this.setDescription(desc);
   }
 
   /**
@@ -126,11 +53,11 @@ public class Property implements Model {
    * @param type
    */
   public Property(String key, PropertyType type) {
-    this(key);
+    this( key );
     this.type = type.name();
   }
 
-  public void setId(String id) {
+  public void setId( String id ) {
     this.id = id;
   }
 
@@ -142,35 +69,15 @@ public class Property implements Model {
     return key;
   }
 
-  public void setKey(String key) {
+  public void setKey( String key ) {
     this.key = key;
-  }
-
-  @Deprecated
-  public String getName() {
-    return name;
-  }
-
-  @Deprecated
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  @Deprecated
-  public String getDescription() {
-    return description;
-  }
-
-  @Deprecated
-  public void setDescription(String description) {
-    this.description = description;
   }
 
   public String getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType( String type ) {
     this.type = type;
   }
 
@@ -185,46 +92,30 @@ public class Property implements Model {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals( Object obj ) {
+    if ( this == obj )
       return true;
-    if (obj == null)
+    if ( obj == null )
       return false;
-    if (getClass() != obj.getClass())
+    if ( getClass() != obj.getClass() )
       return false;
     Property other = (Property) obj;
-    if (id == null) {
-      if (other.id != null)
+    if ( id == null ) {
+      if ( other.id != null )
         return false;
-    } else if (!id.equals(other.id))
+    } else if ( !id.equals( other.id ) )
       return false;
-    if (key == null) {
-      if (other.key != null)
+    if ( key == null ) {
+      if ( other.key != null )
         return false;
-    } else if (!key.equals(other.key))
+    } else if ( !key.equals( other.key ) )
       return false;
-    if (type == null) {
-      if (other.type != null)
+    if ( type == null ) {
+      if ( other.type != null )
         return false;
-    } else if (!type.equals(other.type))
+    } else if ( !type.equals( other.type ) )
       return false;
     return true;
-  }
-
-  /**
-   * Obtains the BSON Object representing the document of this property.in the
-   * document store. Currently only the id, key and type are added.
-   * 
-   * @return the document of the property.
-   */
-  @Deprecated
-  public BasicDBObject getDocument() {
-    final BasicDBObject property = new BasicDBObject();
-    property.put("_id", this.getId());
-    property.put("key", this.getKey());
-    property.put("type", this.getType());
-
-    return property;
   }
 
 }

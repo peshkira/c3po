@@ -42,7 +42,7 @@ public interface PersistenceLayer {
    *          the filter.
    * @return the number of objects corresponding to that type and filter.
    */
-  <T extends Model> long count(Class<T> clazz, Filter filter);
+  <T extends Model> long count( Class<T> clazz, Filter filter );
 
   /**
    * This method will be called upon initialisation of the application. The map
@@ -52,7 +52,7 @@ public interface PersistenceLayer {
    * @param config
    *          the configuration
    */
-  void establishConnection(Map<String, String> config) throws C3POPersistenceException;
+  void establishConnection( Map<String, String> config ) throws C3POPersistenceException;
 
   /**
    * Finds objects corresponding to the supplied filter and type. The type has
@@ -67,7 +67,7 @@ public interface PersistenceLayer {
    *          the optional filter.
    * @return a typed iterator for the given type of objects.
    */
-  <T extends Model> Iterator<T> find(Class<T> clazz, Filter filter);
+  <T extends Model> Iterator<T> find( Class<T> clazz, Filter filter );
 
   /**
    * Returns the distinct values for the given property (in string form). If the
@@ -82,7 +82,7 @@ public interface PersistenceLayer {
    *          operation is executed
    * @return the distinct values for a given property
    */
-  <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter);
+  <T extends Model> List<String> distinct( Class<T> clazz, String f, Filter filter );
 
   /**
    * Gets a cache object.
@@ -112,7 +112,7 @@ public interface PersistenceLayer {
    *           if the arguments are not appropriate, e.g. if the datatype of the
    *           property is not of a numeric type.
    */
-  NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException,
+  NumericStatistics getNumericStatistics( Property p, Filter filter ) throws UnsupportedOperationException,
       IllegalArgumentException;
 
   /**
@@ -134,7 +134,7 @@ public interface PersistenceLayer {
    * @throws UnsupportedOperationException
    *           if the current persistence layer cannot create such a histogram.
    */
-  <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
+  <T extends Model> Map<String, Long> getValueHistogramFor( Property p, Filter filter )
       throws UnsupportedOperationException;
 
   /**
@@ -143,7 +143,7 @@ public interface PersistenceLayer {
    * @param object
    *          the object to store.
    */
-  <T extends Model> void insert(T object);
+  <T extends Model> void insert( T object );
 
   /**
    * Whether or not there is an established connection to the database.
@@ -161,7 +161,7 @@ public interface PersistenceLayer {
    * @param filter
    *          the filter to match. Can be null.
    */
-  <T extends Model> void remove(Class<T> clazz, Filter filter);
+  <T extends Model> void remove( Class<T> clazz, Filter filter );
 
   /**
    * Removes the given object from the underlying data store.
@@ -169,7 +169,7 @@ public interface PersistenceLayer {
    * @param object
    *          the object to remove.
    */
-  <T extends Model> void remove(T object);
+  <T extends Model> void remove( T object );
 
   /**
    * Sets the cache to the passed cache.
@@ -177,7 +177,7 @@ public interface PersistenceLayer {
    * @param c
    *          the cache to use.
    */
-  void setCache(Cache c);
+  void setCache( Cache c );
 
   /**
    * Inserts or updates the given object to the underlying data store. Note that
@@ -190,5 +190,5 @@ public interface PersistenceLayer {
    * @param f
    *          the filter that uniquely identifies the object.
    */
-  <T extends Model> void update(T object, Filter f);
+  <T extends Model> void update( T object, Filter f );
 }

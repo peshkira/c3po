@@ -20,7 +20,11 @@ import com.petpet.c3po.dao.DefaultPersistenceLayer;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
 /**
- * Configures the application based on a configuration file.
+ * Configures the application based on a configuration file. The application
+ * provides its own configuration file with default configurations. If you want
+ * to overwrite them, you have to create a .c3poconfig file in your home
+ * directory. All properties defined within that file will overwrite the
+ * defaults. All other properties will use the default values.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 
@@ -30,12 +34,12 @@ public final class Configurator {
   /**
    * Default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(Configurator.class);
+  private static final Logger LOG = LoggerFactory.getLogger( Configurator.class );
 
   /**
    * The user specified configuration file path. Can be found in ~/.c3poconfig
    */
-  public static final String USER_PROPERTIES = System.getProperty("user.home") + File.separator + ".c3poconfig";
+  public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3poconfig";
 
   /**
    * The Default persistence layer implementation.
@@ -70,7 +74,7 @@ public final class Configurator {
    * 3. inits the helper objects.
    */
   public void configure() {
-    LOG.info("Hello, I am c3po, human content profiling relations");
+    LOG.info( "Hello, I am c3po, human content profiling relations" );
     this.loadApplicationConfiguration();
     this.initPersistenceLayer();
     this.initializeHelpers();
@@ -93,8 +97,8 @@ public final class Configurator {
    *          the key of the property
    * @return a string with the value or an empty string if none found.
    */
-  public String getStringProperty(final String key) {
-    return this.config.getProperty(key, "");
+  public String getStringProperty( final String key ) {
+    return this.config.getProperty( key, "" );
   }
 
   /**
@@ -107,8 +111,8 @@ public final class Configurator {
    *          the default value, in case the key does not exists.
    * @return the string value corresponding to that key.
    */
-  public String getStringProperty(final String key, final String def) {
-    return this.config.getProperty(key, def);
+  public String getStringProperty( final String key, final String def ) {
+    return this.config.getProperty( key, def );
   }
 
   /**
@@ -118,8 +122,8 @@ public final class Configurator {
    *          the key of the property.
    * @return the value or -1.
    */
-  public int getIntProperty(final String key) {
-    return getIntProperty(key, -1);
+  public int getIntProperty( final String key ) {
+    return getIntProperty( key, -1 );
   }
 
   /**
@@ -132,15 +136,15 @@ public final class Configurator {
    *          the default value if the key does not exist.
    * @return the value corresponding to the key or the default value.
    */
-  public int getIntProperty(final String key, final int def) {
-    String property = this.config.getProperty(key);
+  public int getIntProperty( final String key, final int def ) {
+    String property = this.config.getProperty( key );
     int result = def;
-    if (property != null && !property.equals("")) {
+    if ( property != null && !property.equals( "" ) ) {
       try {
-        result = Integer.parseInt(property);
-      } catch (NumberFormatException e) {
+        result = Integer.parseInt( property );
+      } catch ( NumberFormatException e ) {
         // nothing to do - return the default.
-        LOG.trace("The provided property {} is not a number, returning the default: {}", key, def);
+        LOG.trace( "The provided property {} is not a number, returning the default: {}", key, def );
       }
     }
     return result;
@@ -154,8 +158,8 @@ public final class Configurator {
    *          the key of the property.
    * @return the value or false.
    */
-  public boolean getBooleanProperty(final String key) {
-    return Boolean.valueOf(this.config.getProperty(key, "false"));
+  public boolean getBooleanProperty( final String key ) {
+    return Boolean.valueOf( this.config.getProperty( key, "false" ) );
   }
 
   /**
@@ -164,42 +168,42 @@ public final class Configurator {
    * default behavior.
    */
   private void loadApplicationConfiguration() {
-    LOG.info("Loading default configuration file");
+    LOG.info( "Loading default configuration file" );
     this.config = new Properties();
 
     try {
-      this.config.load(Configurator.class.getClassLoader().getResourceAsStream("default.properties"));
-    } catch (final IOException e) {
-      LOG.error("Default config file not found! {}", e.getMessage());
+      this.config.load( Configurator.class.getClassLoader().getResourceAsStream( "default.properties" ) );
+    } catch ( final IOException e ) {
+      LOG.error( "Default config file not found! {}", e.getMessage() );
     }
 
-    LOG.info("Lookig for user defined config file: {}", USER_PROPERTIES);
+    LOG.info( "Lookig for user defined config file: {}", USER_PROPERTIES );
 
-    final File f = new File(USER_PROPERTIES);
+    final File f = new File( USER_PROPERTIES );
 
-    if (f.exists() && f.isFile()) {
-      LOG.debug("Found user defined properties, loading.");
+    if ( f.exists() && f.isFile() ) {
+      LOG.debug( "Found user defined properties, loading." );
       FileInputStream stream = null;
       try {
-        stream = new FileInputStream(f);
-        this.config.load(stream);
-        LOG.info("User defined config is successfully loaded");
-        LOG.debug(this.config.toString());
+        stream = new FileInputStream( f );
+        this.config.load( stream );
+        LOG.info( "User defined config is successfully loaded" );
+        LOG.debug( this.config.toString() );
 
-      } catch (final IOException e) {
-        LOG.warn("Could not load user defined properties file '{}', cause: {}", USER_PROPERTIES, e.getMessage());
+      } catch ( final IOException e ) {
+        LOG.warn( "Could not load user defined properties file '{}', cause: {}", USER_PROPERTIES, e.getMessage() );
       } finally {
         try {
-          if (stream != null) {
+          if ( stream != null ) {
             stream.close();
           }
-        } catch (final IOException e) {
-          LOG.warn("Could not close the stream in a clean fashion: {}", e.getMessage());
+        } catch ( final IOException e ) {
+          LOG.warn( "Could not close the stream in a clean fashion: {}", e.getMessage() );
         }
       }
 
     } else {
-      LOG.info("User defined config file was not found.");
+      LOG.info( "User defined config file was not found." );
     }
 
   }
@@ -215,39 +219,39 @@ public final class Configurator {
    */
   private void initPersistenceLayer() {
 
-    String persistence = this.getStringProperty(Constants.CNF_PERSISTENCE);
+    String persistence = this.getStringProperty( Constants.CNF_PERSISTENCE );
 
-    if (persistence.equals("") || persistence.equals("default")) {
+    if ( persistence.equals( "" ) || persistence.equals( "default" ) ) {
 
       initDefaultPersistence();
 
     } else {
 
       try {
-        Class<PersistenceLayer> persistenceLayerClazz = (Class<PersistenceLayer>) Class.forName(persistence);
+        Class<PersistenceLayer> persistenceLayerClazz = (Class<PersistenceLayer>) Class.forName( persistence );
 
         this.persistence = persistenceLayerClazz.newInstance();
 
         this.initCache();
 
-      } catch (ClassNotFoundException e) {
-        LOG.error("Could not find persistence class '{}' on the classpath! Error: {}", persistence, e.getMessage());
-        LOG.warn("Trying to use the default persistence layer");
+      } catch ( ClassNotFoundException e ) {
+        LOG.error( "Could not find persistence class '{}' on the classpath! Error: {}", persistence, e.getMessage() );
+        LOG.warn( "Trying to use the default persistence layer" );
         initDefaultPersistence();
 
-      } catch (InstantiationException e) {
-        LOG.error("Could not instantiate persistence layer class '{}'! Error: {}", persistence, e.getMessage());
-        LOG.warn("Trying to use the default persistence layer");
+      } catch ( InstantiationException e ) {
+        LOG.error( "Could not instantiate persistence layer class '{}'! Error: {}", persistence, e.getMessage() );
+        LOG.warn( "Trying to use the default persistence layer" );
         initDefaultPersistence();
 
-      } catch (IllegalAccessException e) {
-        LOG.error("Could not access persistence layer class '{}'! Error: {}", persistence, e.getMessage());
-        LOG.warn("Trying to use the default persistence layer");
+      } catch ( IllegalAccessException e ) {
+        LOG.error( "Could not access persistence layer class '{}'! Error: {}", persistence, e.getMessage() );
+        LOG.warn( "Trying to use the default persistence layer" );
         initDefaultPersistence();
 
-      } catch (Exception e) {
-        LOG.error("Could not start persistence layer class '{}'! Error: {}", persistence, e.getMessage());
-        LOG.warn("Trying to use the default persistence layer");
+      } catch ( Exception e ) {
+        LOG.error( "Could not start persistence layer class '{}'! Error: {}", persistence, e.getMessage() );
+        LOG.warn( "Trying to use the default persistence layer" );
         initDefaultPersistence();
 
       }
@@ -257,10 +261,10 @@ public final class Configurator {
     try {
 
       Map<String, String> persistenceConfigs = this.getPersistenceConfigs();
-      this.persistence.establishConnection(persistenceConfigs);
+      this.persistence.establishConnection( persistenceConfigs );
 
-    } catch (C3POPersistenceException e) {
-      LOG.error("Could not establish connection to the data store: {}", e.getMessage());
+    } catch ( C3POPersistenceException e ) {
+      LOG.error( "Could not establish connection to the data store: {}", e.getMessage() );
     }
   }
 
@@ -278,9 +282,9 @@ public final class Configurator {
    */
   private void initCache() {
     DBCache c = new DBCache();
-    c.setPersistence(this.persistence);
+    c.setPersistence( this.persistence );
 
-    this.persistence.setCache(c);
+    this.persistence.setCache( c );
   }
 
   /**
@@ -292,10 +296,10 @@ public final class Configurator {
     Map<String, String> dbConfig = new HashMap<String, String>();
 
     Set<Object> keySet = this.config.keySet();
-    for (Object k : keySet) {
+    for ( Object k : keySet ) {
       String key = (String) k;
-      if (key.startsWith("db.")) {
-        dbConfig.put(key, this.getStringProperty(key));
+      if ( key.startsWith( "db." ) ) {
+        dbConfig.put( key, this.getStringProperty( key ) );
       }
     }
 
@@ -306,7 +310,7 @@ public final class Configurator {
    * Initializes some helper objects.
    */
   private void initializeHelpers() {
-    LOG.debug("Initializing helpers.");
+    LOG.debug( "Initializing helpers." );
     XMLUtils.init();
     FITSHelper.init();
     TIKAHelper.init();

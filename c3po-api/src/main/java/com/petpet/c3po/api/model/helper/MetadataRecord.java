@@ -96,7 +96,7 @@ public class MetadataRecord {
    * @param status
    */
   public MetadataRecord(Property p, String value, Status status) {
-    this(p, value);
+    this( p, value );
     this.status = status.name();
   }
 
@@ -104,7 +104,7 @@ public class MetadataRecord {
     return this.property;
   }
 
-  public void setProperty(Property p) {
+  public void setProperty( Property p ) {
     this.property = p;
   }
 
@@ -112,7 +112,7 @@ public class MetadataRecord {
     return value;
   }
 
-  public void setValue(String value) {
+  public void setValue( String value ) {
     this.value = value;
   }
 
@@ -120,7 +120,7 @@ public class MetadataRecord {
     return status;
   }
 
-  public void setStatus(String status) {
+  public void setStatus( String status ) {
     this.status = status;
   }
 
@@ -128,18 +128,18 @@ public class MetadataRecord {
     return sources;
   }
 
-  public void setSources(List<String> sources) {
+  public void setSources( List<String> sources ) {
     this.sources = sources;
   }
 
   public List<String> getValues() {
-    if (values == null) {
+    if ( values == null ) {
       this.values = new ArrayList<String>();
     }
     return values;
   }
 
-  public void setValues(List<String> values) {
+  public void setValues( List<String> values ) {
     this.values = values;
   }
 

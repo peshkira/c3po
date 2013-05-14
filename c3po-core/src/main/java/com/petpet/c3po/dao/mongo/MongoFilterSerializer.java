@@ -23,9 +23,15 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
  */
 public class MongoFilterSerializer {
 
+  /**
+   * A list of properties to exclude from wrapping. This is mongo specific.
+   */
   private static final String[] EXCLUDE = { "_id", "uid", "collection", "name" };
 
-  private static final BasicDBObject EXISTS = new BasicDBObject("$exists", true);
+  /**
+   * A static exists query for Mongo.
+   */
+  private static final BasicDBObject EXISTS = new BasicDBObject( "$exists", true );
 
   /**
    * Serializes the given filter according to the strategy proposed here:
@@ -36,32 +42,33 @@ public class MongoFilterSerializer {
    *          the filter to serialize.
    * @return the Mongo {@link DBObject}
    */
-  public DBObject serialize(Filter filter) {
+  public DBObject serialize( Filter filter ) {
     DBObject result = new BasicDBObject();
 
-    if (filter != null) {
+    if ( filter != null ) {
       List<FilterCondition> conditions = filter.getConditions();
-      Map<String, Integer> distinctFields = this.getDistinctFields(conditions);
+      Map<String, Integer> distinctFields = this.getDistinctFields( conditions );
       List<BasicDBObject> and = new ArrayList<BasicDBObject>();
 
-      for (String field : distinctFields.keySet()) {
+      for ( String field : distinctFields.keySet() ) {
 
-        if (distinctFields.get(field) == 1) {
+        if ( distinctFields.get( field ) == 1 ) {
 
-          BasicDBObject val = this.getValueForField(field, conditions.toArray(new FilterCondition[conditions.size()]));
-          and.add(val);
+          BasicDBObject val = this
+              .getValueForField( field, conditions.toArray( new FilterCondition[conditions.size()] ) );
+          and.add( val );
 
         } else {
 
-          BasicDBObject orQuery = this.getOrQuery(conditions, field);
-          and.add(orQuery);
+          BasicDBObject orQuery = this.getOrQuery( conditions, field );
+          and.add( orQuery );
 
         }
 
       }
 
-      if (and.size() > 0) {
-        result.put("$and", and);
+      if ( and.size() > 0 ) {
+        result.put( "$and", and );
       }
 
     }
@@ -77,13 +84,13 @@ public class MongoFilterSerializer {
    *          the field to wrap
    * @return the wrapped field.
    */
-  public String mapFieldToProperty(String f, Object value) {
-    if (Arrays.asList(EXCLUDE).contains(f)) {
+  public String mapFieldToProperty( String f, Object value ) {
+    if ( Arrays.asList( EXCLUDE ).contains( f ) ) {
       return f;
     }
 
     String result = "metadata." + f;
-    return (value.equals(EXISTS)) ? result : result + ".value";
+    return (value.equals( EXISTS )) ? result : result + ".value";
   }
 
   /**
@@ -96,17 +103,17 @@ public class MongoFilterSerializer {
    *          the field that has to be or concatenated.
    * @return the or condition.
    */
-  private BasicDBObject getOrQuery(List<FilterCondition> conditions, String field) {
+  private BasicDBObject getOrQuery( List<FilterCondition> conditions, String field ) {
     List<BasicDBObject> or = new ArrayList<BasicDBObject>();
 
-    for (FilterCondition fc : conditions) {
-      if (field.equals(fc.getField())) {
-        BasicDBObject val = this.getValueForField(field, fc);
-        or.add(val);
+    for ( FilterCondition fc : conditions ) {
+      if ( field.equals( fc.getField() ) ) {
+        BasicDBObject val = this.getValueForField( field, fc );
+        or.add( val );
       }
     }
 
-    return new BasicDBObject("$or", or);
+    return new BasicDBObject( "$or", or );
   }
 
   /**
@@ -117,13 +124,13 @@ public class MongoFilterSerializer {
    *          the conditions to look at.
    * @return a map of the distinct fields and the number of occurrences.
    */
-  private Map<String, Integer> getDistinctFields(List<FilterCondition> conditions) {
+  private Map<String, Integer> getDistinctFields( List<FilterCondition> conditions ) {
     Map<String, Integer> distinctFields = new HashMap<String, Integer>();
 
-    for (FilterCondition fc : conditions) {
-      Integer integer = distinctFields.get(fc.getField());
+    for ( FilterCondition fc : conditions ) {
+      Integer integer = distinctFields.get( fc.getField() );
       int res = (integer == null) ? 0 : integer;
-      distinctFields.put(fc.getField(), ++res);
+      distinctFields.put( fc.getField(), ++res );
     }
 
     return distinctFields;
@@ -138,26 +145,26 @@ public class MongoFilterSerializer {
    *          the field to look at.
    * @return the value or null.
    */
-  private BasicDBObject getValueForField(String field, FilterCondition... conditions) {
-    for (FilterCondition fc : conditions) {
-      if (fc.getField().equals(field)) {
+  private BasicDBObject getValueForField( String field, FilterCondition... conditions ) {
+    for ( FilterCondition fc : conditions ) {
+      if ( fc.getField().equals( field ) ) {
 
         Object val = fc.getValue();
         BasicDBObject res = null;
-        if (fc instanceof BetweenFilterCondition) {
+        if ( fc instanceof BetweenFilterCondition ) {
           BetweenFilterCondition bfc = (BetweenFilterCondition) fc;
-          String mappedField = this.mapFieldToProperty(field, new Object());
-          BasicDBObject low = new BasicDBObject(mappedField, getBoundQuery(bfc.getLOperator(), bfc.getLValue()));
-          BasicDBObject high = new BasicDBObject(mappedField, getBoundQuery(bfc.getHOperator(), bfc.getHValue()));
-          
+          String mappedField = this.mapFieldToProperty( field, new Object() );
+          BasicDBObject low = new BasicDBObject( mappedField, getBoundQuery( bfc.getLOperator(), bfc.getLValue() ) );
+          BasicDBObject high = new BasicDBObject( mappedField, getBoundQuery( bfc.getHOperator(), bfc.getHValue() ) );
+
           List<BasicDBObject> and = new ArrayList<BasicDBObject>();
-          and.add(low);
-          and.add(high);
-          res = new BasicDBObject("$and", and);
-          
+          and.add( low );
+          and.add( high );
+          res = new BasicDBObject( "$and", and );
+
         } else {
           val = (val == null) ? EXISTS : val;
-          res = new BasicDBObject(this.mapFieldToProperty(field, val), val);
+          res = new BasicDBObject( this.mapFieldToProperty( field, val ), val );
         }
 
         return res;
@@ -168,9 +175,18 @@ public class MongoFilterSerializer {
     return null;
   }
 
-  private BasicDBObject getBoundQuery(Operator op, Object val) {
+  /**
+   * Retrieves a bound query with the given operator and value.
+   * 
+   * @param op
+   *          the operator to use.
+   * @param val
+   *          the value to use.
+   * @return the mongo query.
+   */
+  private BasicDBObject getBoundQuery( Operator op, Object val ) {
     String operator = "";
-    switch (op) {
+    switch ( op ) {
       case GT:
         operator = "$gt";
         break;
@@ -184,7 +200,7 @@ public class MongoFilterSerializer {
         operator = "$lte";
         break;
     }
-    
-    return new BasicDBObject(operator, val);
+
+    return new BasicDBObject( operator, val );
   }
 }

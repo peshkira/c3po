@@ -42,9 +42,9 @@ import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
 /**
- * A simple controller that manages the operations coming as input from the
- * client applications. This class ties up the gathering, adaptation and
- * consolidation of data.
+ * A controller that manages the operations coming as input from the client
+ * applications. This class ties up the gathering, adaptation and consolidation
+ * of data. It acts as a facade of the core to the client applications.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 
@@ -54,7 +54,7 @@ public class Controller {
   /**
    * A default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(Controller.class);
+  private static final Logger LOG = LoggerFactory.getLogger( Controller.class );
 
   /**
    * The persistence layer that this class uses.
@@ -97,6 +97,9 @@ public class Controller {
    */
   private Configurator configurator;
 
+  /**
+   * A lock object for synchronization between the gatherer and the adaptors.
+   */
   private Object gatherLock;
 
   /**
@@ -113,138 +116,201 @@ public class Controller {
     this.persistence = config.getPersistence();
     this.processingQueue = new LinkedList<Element>();
     this.gatherLock = new Object();
-    this.gatherer = new LocalFileGatherer(this.gatherLock);
+    this.gatherer = new LocalFileGatherer( this.gatherLock );
     this.knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
     this.knownRules = new HashMap<String, Class<? extends ProcessingRule>>();
 
     // TODO detect adaptors automatically from the class path
     // and add them to this map.
-    this.knownAdaptors.put("FITS", FITSAdaptor.class);
-    this.knownAdaptors.put("TIKA", TIKAAdaptor.class);
+    this.knownAdaptors.put( "FITS", FITSAdaptor.class );
+    this.knownAdaptors.put( "TIKA", TIKAAdaptor.class );
 
     // TODO detect these automatically from the class path
     // and add them to this map.
-    this.knownRules.put(Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class);
-    this.knownRules.put(Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class);
-    this.knownRules.put(Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class);
-    this.knownRules.put(Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class);
-    this.knownRules.put(Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class);
+    // TODO the InferDateFromFileNameRule needs a setter for the cache.
+    this.knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
+    this.knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
+    this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
+    this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
+    this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
   }
 
   /**
    * This starts a gather-adapt-persist workflow, where all the needed
-   * compontents are configured and run. If the passed options are invalid an
-   * exception is thrown.
+   * components are configured and run. If the passed options are invalid an
+   * exception is thrown. The expected options are: <br>
+   * 
+   * {@link Constants#CNF_CONSOLIDATORS_COUNT} - default 2 <br>
+   * {@link Constants#CNF_ADAPTORS_COUNT} - default 4 <br>
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_COLLECTION_LOCATION} <br>
+   * {@link Constants#OPT_INPUT_TYPE} <br>
+   * and all other options that an adaptor might need. The adaptor will receive
+   * only options starting with c3po.adaptor and c3po.adaptor.[prefix]
    * 
    * @param options
    *          a map of the application options.
    * @throws C3POConfigurationException
    *           if the configuration is missing or invalid.
    */
-  public void processMetaData(Map<String, String> options) throws C3POConfigurationException {
+  public void processMetaData( Map<String, String> options ) throws C3POConfigurationException {
 
-    this.checkGatherOptions(options);
-    this.gatherer.setConfig(options);
+    this.checkGatherOptions( options );
+    this.gatherer.setConfig( options );
 
     String adaptorsCount = null;
     String consCount = null;
 
-    int consThreads = this.configurator.getIntProperty(Constants.CNF_CONSOLIDATORS_COUNT, 2);
-    if (consThreads <= 0) {
-      LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", consCount);
+    int consThreads = this.configurator.getIntProperty( Constants.CNF_CONSOLIDATORS_COUNT, 2 );
+    if ( consThreads <= 0 ) {
+      LOG.warn( "The provided consolidators count config '{}' is negative. Using the default.", consCount );
       consThreads = 2;
     }
 
-    int adaptorThreads = this.configurator.getIntProperty(Constants.CNF_ADAPTORS_COUNT, 4);
-    if (adaptorThreads <= 0) {
-      LOG.warn("The provided consolidators count config '{}' is negative. Using the default.", adaptorsCount);
+    int adaptorThreads = this.configurator.getIntProperty( Constants.CNF_ADAPTORS_COUNT, 4 );
+    if ( adaptorThreads <= 0 ) {
+      LOG.warn( "The provided consolidators count config '{}' is negative. Using the default.", adaptorsCount );
       adaptorThreads = 4;
     }
 
-    String name = options.get(Constants.OPT_COLLECTION_NAME);
-    String type = options.get(Constants.OPT_INPUT_TYPE);
-    String prefix = this.getAdaptor(type).getAdaptorPrefix();
-    Map<String, String> adaptorcnf = this.getAdaptorConfig(options, prefix);
+    String name = options.get( Constants.OPT_COLLECTION_NAME );
+    String type = options.get( Constants.OPT_INPUT_TYPE );
+    String prefix = this.getAdaptor( type ).getAdaptorPrefix();
+    Map<String, String> adaptorcnf = this.getAdaptorConfig( options, prefix );
 
-    this.startWorkers(name, adaptorThreads, consThreads, type, adaptorcnf);
+    this.startWorkers( name, adaptorThreads, consThreads, type, adaptorcnf );
 
   }
 
-  public void profile(Map<String, Object> options) throws C3POConfigurationException {
-    if (options == null) {
-      throw new C3POConfigurationException("No config map provided");
+  /**
+   * Generates a profile. The options include the following: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_OUTPUT_LOCATION} <br>
+   * {@link Constants#OPT_INCLUDE_ELEMENTS} <br>
+   * {@link Constants#OPT_SAMPLING_ALGORITHM} <br>
+   * {@link Constants#OPT_SAMPLING_SIZE} <br>
+   * {@link Constants#OPT_SAMPLING_PROPERTIES} <br>
+   * 
+   * @param options
+   *          the options to use.
+   * @throws C3POConfigurationException
+   *           if the options are missing or wrong.
+   */
+  public void profile( Map<String, Object> options ) throws C3POConfigurationException {
+    if ( options == null ) {
+      throw new C3POConfigurationException( "No config map provided" );
     }
 
-    List<String> props = (List<String>) options.get(Constants.OPT_SAMPLING_PROPERTIES);
-    String alg = (String) options.get(Constants.OPT_SAMPLING_ALGORITHM);
-    int size = (Integer) options.get(Constants.OPT_SAMPLING_SIZE);
-    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
-    String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
-    boolean include = (Boolean) options.get(Constants.OPT_INCLUDE_ELEMENTS);
+    List<String> props = (List<String>) options.get( Constants.OPT_SAMPLING_PROPERTIES );
+    String alg = (String) options.get( Constants.OPT_SAMPLING_ALGORITHM );
+    int size = (Integer) options.get( Constants.OPT_SAMPLING_SIZE );
+    String name = (String) options.get( Constants.OPT_COLLECTION_NAME );
+    String location = (String) options.get( Constants.OPT_OUTPUT_LOCATION );
+    boolean include = (Boolean) options.get( Constants.OPT_INCLUDE_ELEMENTS );
 
-    this.checkAlgOptions(alg, props);
+    this.checkAlgOptions( alg, props );
 
-    RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
+    RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm( alg );
     Map<String, Object> samplesOptions = new HashMap<String, Object>();
-    samplesOptions.put("properties", props);
-    samplesGen.setOptions(samplesOptions);
+    samplesOptions.put( "properties", props );
+    samplesGen.setOptions( samplesOptions );
 
-    ProfileGenerator profileGen = new ProfileGenerator(this.persistence, samplesGen);
+    ProfileGenerator profileGen = new ProfileGenerator( this.persistence, samplesGen );
 
-    final Filter f = new Filter(new FilterCondition("collection", name));
+    final Filter f = new Filter( new FilterCondition( "collection", name ) );
 
-    final Document profile = profileGen.generateProfile(f, size, include);
+    final Document profile = profileGen.generateProfile( f, size, include );
 
-    profileGen.write(profile, location + File.separator + name + ".xml");
+    profileGen.write( profile, location + File.separator + name + ".xml" );
 
-    ActionLog log = new ActionLog(name, ActionLog.ANALYSIS_ACTION);
-    new ActionLogHelper(this.persistence).recordAction(log);
+    ActionLog log = new ActionLog( name, ActionLog.ANALYSIS_ACTION );
+    new ActionLogHelper( this.persistence ).recordAction( log );
 
   }
 
-  public List<String> findSamples(Map<String, Object> options) throws C3POConfigurationException {
-    if (options == null) {
-      throw new C3POConfigurationException("No options provided");
+  /**
+   * Finds sample records that are representative. The options include: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_SAMPLING_SIZE} <br>
+   * {@link Constants#OPT_SAMPLING_ALGORITHM} <br>
+   * {@link Constants#OPT_SAMPLING_PROPERTIES} <br>
+   * 
+   * @param options
+   *          the options to use
+   * @return a list of sample identifiers.
+   * @throws C3POConfigurationException
+   *           if the options are missing or wrong.
+   */
+  public List<String> findSamples( Map<String, Object> options ) throws C3POConfigurationException {
+    if ( options == null ) {
+      throw new C3POConfigurationException( "No options provided" );
     }
 
-    List<String> props = (List<String>) options.get(Constants.OPT_SAMPLING_PROPERTIES);
-    String alg = (String) options.get(Constants.OPT_SAMPLING_ALGORITHM);
-    int size = (Integer) options.get(Constants.OPT_SAMPLING_SIZE);
-    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
+    List<String> props = (List<String>) options.get( Constants.OPT_SAMPLING_PROPERTIES );
+    String alg = (String) options.get( Constants.OPT_SAMPLING_ALGORITHM );
+    int size = (Integer) options.get( Constants.OPT_SAMPLING_SIZE );
+    String name = (String) options.get( Constants.OPT_COLLECTION_NAME );
 
-    this.checkAlgOptions(alg, props);
+    this.checkAlgOptions( alg, props );
 
-    RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
+    RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm( alg );
     Map<String, Object> samplesOptions = new HashMap<String, Object>();
-    samplesOptions.put("properties", props);
-    samplesGen.setOptions(samplesOptions);
-    samplesGen.setFilter(new Filter(new FilterCondition("collection", name)));
+    samplesOptions.put( "properties", props );
+    samplesGen.setOptions( samplesOptions );
+    samplesGen.setFilter( new Filter( new FilterCondition( "collection", name ) ) );
 
-    ActionLog log = new ActionLog(name, ActionLog.ANALYSIS_ACTION);
-    new ActionLogHelper(this.persistence).recordAction(log);
+    ActionLog log = new ActionLog( name, ActionLog.ANALYSIS_ACTION );
+    new ActionLogHelper( this.persistence ).recordAction( log );
 
-    return samplesGen.execute(size);
+    return samplesGen.execute( size );
   }
 
-  public void export(Map<String, Object> options) throws C3POConfigurationException {
-    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
-    String location = (String) options.get(Constants.OPT_OUTPUT_LOCATION);
+  /**
+   * Exports the data in a CSV format. The options include the following: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME} <br>
+   * {@link Constants#OPT_OUTPUT_LOCATION} <br>
+   * 
+   * @param options
+   *          the options to use
+   * @throws C3POConfigurationException
+   *           if the options are missing or wrong.
+   */
+  public void export( Map<String, Object> options ) throws C3POConfigurationException {
+    String name = (String) options.get( Constants.OPT_COLLECTION_NAME );
+    String location = (String) options.get( Constants.OPT_OUTPUT_LOCATION );
 
-    CSVGenerator generator = new CSVGenerator(this.persistence);
+    CSVGenerator generator = new CSVGenerator( this.persistence );
 
-    generator.exportAll(name, location + File.separator + name + ".csv");
+    generator.exportAll( name, location + File.separator + name + ".csv" );
 
-    ActionLog log = new ActionLog(name, ActionLog.ANALYSIS_ACTION);
-    new ActionLogHelper(this.persistence).recordAction(log);
+    ActionLog log = new ActionLog( name, ActionLog.ANALYSIS_ACTION );
+    new ActionLogHelper( this.persistence ).recordAction( log );
   }
 
-  public void removeCollection(Map<String, Object> options) throws C3POConfigurationException {
-    String name = (String) options.get(Constants.OPT_COLLECTION_NAME);
+  /**
+   * Removes all elements for a given collection. The options include: <br>
+   * 
+   * {@link Constants#OPT_COLLECTION_NAME}
+   * 
+   * @param options
+   *          the options to use.
+   * @throws C3POConfigurationException
+   *           if the options are missing or invalid
+   */
+  public void removeCollection( Map<String, Object> options ) throws C3POConfigurationException {
+    String name = (String) options.get( Constants.OPT_COLLECTION_NAME );
 
-    this.persistence.remove(Element.class, new Filter(new FilterCondition("collection", name)));
+    if ( name == null || name.equals( "" ) ) {
+      throw new C3POConfigurationException( "The collection name cannot be empty" );
+    }
 
-    ActionLog log = new ActionLog(name, ActionLog.UPDATED_ACTION);
-    new ActionLogHelper(this.persistence).recordAction(log);
+    this.persistence.remove( Element.class, new Filter( new FilterCondition( "collection", name ) ) );
+
+    ActionLog log = new ActionLog( name, ActionLog.UPDATED_ACTION );
+    new ActionLogHelper( this.persistence ).recordAction( log );
   }
 
   /**
@@ -253,32 +319,43 @@ public class Controller {
    * @param options
    * @throws C3POConfigurationException
    */
-  private void checkGatherOptions(final Map<String, String> options) throws C3POConfigurationException {
+  private void checkGatherOptions( final Map<String, String> options ) throws C3POConfigurationException {
 
-    if (options == null) {
-      throw new C3POConfigurationException("No config map provided");
+    if ( options == null ) {
+      throw new C3POConfigurationException( "No config map provided" );
     }
 
-    String inputType = options.get(Constants.OPT_INPUT_TYPE);
-    if (inputType == null || (!inputType.equals("TIKA") && !inputType.equals("FITS"))) {
-      throw new C3POConfigurationException("No input type specified. Please use one of FITS or TIKA.");
+    String inputType = options.get( Constants.OPT_INPUT_TYPE );
+    if ( inputType == null || (!inputType.equals( "TIKA" ) && !inputType.equals( "FITS" )) ) {
+      throw new C3POConfigurationException( "No input type specified. Please use one of FITS or TIKA." );
     }
 
-    String path = options.get(Constants.OPT_COLLECTION_LOCATION);
-    if (path == null) {
-      throw new C3POConfigurationException("No input file path provided. Please provide a path to the input files.");
+    String path = options.get( Constants.OPT_COLLECTION_LOCATION );
+    if ( path == null ) {
+      throw new C3POConfigurationException( "No input file path provided. Please provide a path to the input files." );
     }
 
-    String name = options.get(Constants.OPT_COLLECTION_NAME);
-    if (name == null || name.equals("")) {
-      throw new C3POConfigurationException("The name of the collection is not set. Please set a name.");
+    String name = options.get( Constants.OPT_COLLECTION_NAME );
+    if ( name == null || name.equals( "" ) ) {
+      throw new C3POConfigurationException( "The name of the collection is not set. Please set a name." );
     }
   }
 
-  private void checkAlgOptions(String alg, List<String> props) throws C3POConfigurationException {
-    if (alg.equals("distsampling") && (props == null || props.size() == 0)) {
+  /**
+   * Checks if the algorithm is distsampling and if it has properties defines.
+   * If no, then an exception is thrown.
+   * 
+   * @param alg
+   *          the algo to check.
+   * @param props
+   *          the list of properties for the alg.
+   * @throws C3POConfigurationException
+   *           if the requirements for the distsampling algorithm are not met.
+   */
+  private void checkAlgOptions( String alg, List<String> props ) throws C3POConfigurationException {
+    if ( alg.equals( "distsampling" ) && (props == null || props.size() == 0) ) {
       throw new C3POConfigurationException(
-          "Cannot use 'distsampling' without properties. Please specify at least one property");
+          "Cannot use 'distsampling' without properties. Please specify at least one property" );
     }
   }
 
@@ -295,11 +372,11 @@ public class Controller {
    *          the prefix to look for.
    * @return a map with the adaptor specific configuration.
    */
-  private Map<String, String> getAdaptorConfig(Map<String, String> config, String prefix) {
+  private Map<String, String> getAdaptorConfig( Map<String, String> config, String prefix ) {
     final Map<String, String> adaptorcnf = new HashMap<String, String>();
-    for (String key : config.keySet()) {
-      if (key.startsWith("c3po.adaptor.") || key.startsWith("c3po.adaptor." + prefix.toLowerCase())) {
-        adaptorcnf.put(key, config.get(key));
+    for ( String key : config.keySet() ) {
+      if ( key.startsWith( "c3po.adaptor." ) || key.startsWith( "c3po.adaptor." + prefix.toLowerCase() ) ) {
+        adaptorcnf.put( key, config.get( key ) );
       }
     }
 
@@ -320,76 +397,83 @@ public class Controller {
    * @param adaptorcnf
    *          the adaptor configuration.
    */
-  private void startWorkers(String collection, int adaptThreads, int consThreads, String type,
-      Map<String, String> adaptorcnf) {
+  private void startWorkers( String collection, int adaptThreads, int consThreads, String type,
+      Map<String, String> adaptorcnf ) {
 
-    this.adaptorPool = Executors.newFixedThreadPool(adaptThreads);
-    this.consolidatorPool = Executors.newFixedThreadPool(consThreads);
+    this.adaptorPool = Executors.newFixedThreadPool( adaptThreads );
+    this.consolidatorPool = Executors.newFixedThreadPool( consThreads );
 
     List<Consolidator> consolidators = new ArrayList<Consolidator>();
 
-    for (int i = 0; i < consThreads; i++) {
-      Consolidator c = new Consolidator(this.persistence, this.processingQueue);
-      consolidators.add(c);
-      this.consolidatorPool.submit(c);
+    for ( int i = 0; i < consThreads; i++ ) {
+      Consolidator c = new Consolidator( this.persistence, this.processingQueue );
+      consolidators.add( c );
+      this.consolidatorPool.submit( c );
     }
 
     // no more consolidators can be added.
     this.consolidatorPool.shutdown();
 
-    List<ProcessingRule> rules = this.getRules(collection);
+    List<ProcessingRule> rules = this.getRules( collection );
 
-    for (int i = 0; i < adaptThreads; i++) {
-      AbstractAdaptor a = this.getAdaptor(type);
+    for ( int i = 0; i < adaptThreads; i++ ) {
+      AbstractAdaptor a = this.getAdaptor( type );
 
-      a.setCache(this.persistence.getCache());
-      a.setQueue(this.processingQueue);
-      a.setGatherLock(this.gatherLock);
-      a.setGatherer(this.gatherer);
-      a.setConfig(adaptorcnf);
-      a.setRules(rules);
+      a.setCache( this.persistence.getCache() );
+      a.setQueue( this.processingQueue );
+      a.setGatherLock( this.gatherLock );
+      a.setGatherer( this.gatherer );
+      a.setConfig( adaptorcnf );
+      a.setRules( rules );
       a.configure();
 
-      this.adaptorPool.submit(a);
+      this.adaptorPool.submit( a );
     }
 
     // no more adaptors can be added.
     this.adaptorPool.shutdown();
 
-    Thread gathererThread = new Thread(this.gatherer, "MetadataGatherer");
+    Thread gathererThread = new Thread( this.gatherer, "MetadataGatherer" );
     // gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
     gathererThread.start();
 
     try {
 
       // kills the pool and all adaptor workers after a month;
-      boolean adaptorsTerminated = this.adaptorPool.awaitTermination(2678400, TimeUnit.SECONDS);
+      boolean adaptorsTerminated = this.adaptorPool.awaitTermination( 2678400, TimeUnit.SECONDS );
 
-      if (adaptorsTerminated) {
-        System.out.println("I finished translating the data. I am fluent in over six million forms of communication.");
-        this.stopConsoldators(consolidators);
-        this.consolidatorPool.awaitTermination(2678400, TimeUnit.SECONDS);
-        System.out.println("I finished memorizing all the data.");
+      if ( adaptorsTerminated ) {
+        System.out.println( "I finished translating the data. I am fluent in over six million forms of communication." );
+        this.stopConsoldators( consolidators );
+        this.consolidatorPool.awaitTermination( 2678400, TimeUnit.SECONDS );
+        System.out.println( "I finished memorizing all the data." );
 
       } else {
-        System.out.println("Oh my, It seems something went wrong. This process took too long");
-        LOG.error("Time out occurred, process was terminated");
+        System.out.println( "Oh my, It seems something went wrong. This process took too long" );
+        LOG.error( "Time out occurred, process was terminated" );
       }
 
-    } catch (InterruptedException e) {
-      LOG.error("An error occurred: {}", e.getMessage());
+    } catch ( InterruptedException e ) {
+      LOG.error( "An error occurred: {}", e.getMessage() );
     }
 
-    ActionLog log = new ActionLog(collection, ActionLog.UPDATED_ACTION);
-    new ActionLogHelper(this.persistence).recordAction(log);
+    ActionLog log = new ActionLog( collection, ActionLog.UPDATED_ACTION );
+    new ActionLogHelper( this.persistence ).recordAction( log );
   }
 
-  private void stopConsoldators(List<Consolidator> consolidators) {
-    for (Consolidator c : consolidators) {
-      c.setRunning(false);
+  /**
+   * Sets the running flag of all consolidator workers in the list to false and
+   * notifies them on the processing queue.
+   * 
+   * @param consolidators
+   *          the consolidators to stop.
+   */
+  private void stopConsoldators( List<Consolidator> consolidators ) {
+    for ( Consolidator c : consolidators ) {
+      c.setRunning( false );
     }
 
-    synchronized (processingQueue) {
+    synchronized ( processingQueue ) {
       this.processingQueue.notifyAll();
     }
   }
@@ -403,31 +487,31 @@ public class Controller {
    *          the name of the collection that is going to be processed.
    * @return the list of rules.
    */
-  private List<ProcessingRule> getRules(String name) {
+  private List<ProcessingRule> getRules( String name ) {
     List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
-    rules.add(new AssignCollectionToElementRule(name)); // always on...
+    rules.add( new AssignCollectionToElementRule( name ) ); // always on...
 
-    for (String key : Constants.RULE_KEYS) {
+    for ( String key : Constants.RULE_KEYS ) {
 
-      boolean isOn = this.configurator.getBooleanProperty(key);
+      boolean isOn = this.configurator.getBooleanProperty( key );
 
-      if (isOn) {
+      if ( isOn ) {
 
-        Class<? extends ProcessingRule> clazz = this.knownRules.get(key);
+        Class<? extends ProcessingRule> clazz = this.knownRules.get( key );
 
-        if (clazz != null) {
+        if ( clazz != null ) {
 
           try {
 
-            LOG.debug("Adding rule '{}'", key);
+            LOG.debug( "Adding rule '{}'", key );
 
             ProcessingRule rule = clazz.newInstance();
-            rules.add(rule);
+            rules.add( rule );
 
-          } catch (InstantiationException e) {
-            LOG.warn("Could not initialize the processing rule for key '{}'", key);
-          } catch (IllegalAccessException e) {
-            LOG.warn("Could not access the processing rule for key '{}'", key);
+          } catch ( InstantiationException e ) {
+            LOG.warn( "Could not initialize the processing rule for key '{}'", key );
+          } catch ( IllegalAccessException e ) {
+            LOG.warn( "Could not access the processing rule for key '{}'", key );
           }
 
         }
@@ -445,18 +529,18 @@ public class Controller {
    *          the type of the adaptor.
    * @return the instance of the adaptor.
    */
-  private AbstractAdaptor getAdaptor(String type) {
+  private AbstractAdaptor getAdaptor( String type ) {
     AbstractAdaptor adaptor = null;
-    Class<? extends AbstractAdaptor> clazz = this.knownAdaptors.get(type);
-    if (clazz != null) {
+    Class<? extends AbstractAdaptor> clazz = this.knownAdaptors.get( type );
+    if ( clazz != null ) {
       try {
 
         adaptor = clazz.newInstance();
 
-      } catch (InstantiationException e) {
-        LOG.error("An error occurred while instantiating the adaptor: ", e.getMessage());
-      } catch (IllegalAccessException e) {
-        LOG.error("An error occurred while instantiating the adaptor: ", e.getMessage());
+      } catch ( InstantiationException e ) {
+        LOG.error( "An error occurred while instantiating the adaptor: ", e.getMessage() );
+      } catch ( IllegalAccessException e ) {
+        LOG.error( "An error occurred while instantiating the adaptor: ", e.getMessage() );
       }
     }
 
