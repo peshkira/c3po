@@ -13,30 +13,46 @@ import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
+/**
+ * Submits an export to csv request to the controller based on the passed
+ * parameters.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class ExportCommand extends AbstractCLICommand implements Command {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ExportCommand.class);
+  /**
+   * Default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger( ExportCommand.class );
 
+  /**
+   * The parameters passed on the command line.
+   */
   private ExportParams params;
 
+  /**
+   * Creates a controller and submits an export request.
+   */
   @Override
   public void execute() {
     long start = System.currentTimeMillis();
-    LOG.info("Starting csv export of all data");
+    LOG.info( "Starting csv export of all data" );
 
     final Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure();
 
     Map<String, Object> options = new HashMap<String, Object>();
-    options.put(Constants.OPT_COLLECTION_NAME, this.params.getCollection());
-    options.put(Constants.OPT_OUTPUT_LOCATION, this.params.getLocation());
+    options.put( Constants.OPT_COLLECTION_NAME, this.params.getCollection() );
+    options.put( Constants.OPT_OUTPUT_LOCATION, this.params.getLocation() );
 
-    Controller ctrl = new Controller(configurator);
+    Controller ctrl = new Controller( configurator );
 
     try {
-      ctrl.export(options);
-    } catch (C3POConfigurationException e) {
-      LOG.error(e.getMessage());
+      ctrl.export( options );
+    } catch ( C3POConfigurationException e ) {
+      LOG.error( e.getMessage() );
       return;
 
     } finally {
@@ -44,12 +60,12 @@ public class ExportCommand extends AbstractCLICommand implements Command {
     }
 
     long end = System.currentTimeMillis();
-    this.setTime(end - start);
+    this.setTime( end - start );
   }
 
   @Override
-  public void setDelegateParams(Params params) {
-    if (params != null && params instanceof ExportParams) {
+  public void setParams( Params params ) {
+    if ( params != null && params instanceof ExportParams ) {
       this.params = (ExportParams) params;
     }
   }
