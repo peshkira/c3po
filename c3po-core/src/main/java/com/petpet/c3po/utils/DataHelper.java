@@ -250,7 +250,7 @@ public final class DataHelper {
     }
 
     if (result == null) {
-      LOG.debug("No pattern matching for value {}, try to parse as long", value);
+      LOG.trace("No pattern matching for value {}, try to parse as long", value);
     }
 
     try {

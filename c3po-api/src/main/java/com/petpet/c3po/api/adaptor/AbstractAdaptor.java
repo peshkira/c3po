@@ -1,7 +1,5 @@
 package com.petpet.c3po.api.adaptor;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,7 +28,7 @@ import com.petpet.c3po.api.model.helper.MetadataStream;
  * 
  */
 public abstract class AbstractAdaptor implements Runnable {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(AbstractAdaptor.class);
 
   /**
@@ -59,6 +57,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * processing by the application.
    */
   private Queue<Element> elementsQueue;
+
+  private Object gatherLock;
 
   /**
    * This method will be called once before the adaptor is started and gives the
@@ -96,7 +96,7 @@ public abstract class AbstractAdaptor implements Runnable {
    *          the {@link MetadataStream} to adapt.
    * @return the parsed {@link Element} object.
    */
-  public abstract Element parseElement(MetadataStream stream);
+  public abstract Element parseElement(String name, String data);
 
   /**
    * Sets the cache to the passed {@link ReadOnlyCache} iff it is not null and
@@ -176,29 +176,33 @@ public abstract class AbstractAdaptor implements Runnable {
    */
   @Override
   public final void run() {
-    while (true) {
+    while (!gatherer.isReady() || gatherer.hasNext()) {
       try {
 
         MetadataStream stream = null;
 
-        synchronized (gatherer) {
+        synchronized (gatherLock) {
           while (!gatherer.hasNext()) {
 
             if (gatherer.isReady()) {
               break;
             }
 
-            gatherer.wait();
+            gatherLock.wait();
           }
 
           stream = this.gatherer.getNext();
+
         }
 
         if (stream != null) {
           Element element = null;
           try {
+
+            String name = stream.getFileName();
+            String data = stream.getReadData();
             
-            element = parseElement(stream);
+            element = parseElement(name, data);
             
           } catch (Exception e) {
             LOG.warn("An error occurred while parsing, skipping {}: ", stream.getFileName(), e.getMessage());
@@ -207,27 +211,20 @@ public abstract class AbstractAdaptor implements Runnable {
           postProcessElement(element);
 
           submitElement(element);
-
-          InputStream data = stream.getData();
-          if (data != null) {
-            try {
-              data.close();
-            } catch (IOException e) {
-              LOG.warn("An error occurred, while closing the stream for {}: {}", stream.getFileName(), e.getMessage());
-            }
-          }
-        }
-
-        if (gatherer.isReady() && !gatherer.hasNext()) {
-          break;
         }
 
       } catch (InterruptedException e) {
         e.printStackTrace();
         break;
       }
+
     }
 
+    synchronized (elementsQueue) {
+      this.elementsQueue.notifyAll();
+    }
+
+    LOG.info("Stopping adaptor: {}", Thread.currentThread().getName());
   }
 
   /**
@@ -440,8 +437,15 @@ public abstract class AbstractAdaptor implements Runnable {
       if (e != null) {
         elementsQueue.add(e);
       }
+
+      // if (elementsQueue.size() % 100 == 0) {
       elementsQueue.notify();
+      // }
     }
+  }
+
+  public void setGatherLock(Object gatherLock) {
+    this.gatherLock = gatherLock;
   }
 
 }

@@ -34,7 +34,7 @@ public class Consolidator extends Thread {
   @Override
   public void run() {
     this.running = true;
-    while (this.isRunning() || !queue.isEmpty()) {
+    while (this.running || !queue.isEmpty()) {
       try {
 
         Element e = null;
@@ -48,19 +48,20 @@ public class Consolidator extends Thread {
 
             queue.wait();
           }
-
+          
+          //LOG.debug("cons queue count: " + queue.size());
           e = queue.poll();
 
-          // should this be here or outside of the sync block
-          process(e);
         }
+        // should this be here or outside of the sync block
+        process(e);
 
       } catch (InterruptedException e) {
         LOG.warn("An error occurred in {}: {}", getName(), e.getMessage());
         break;
       }
     }
-    LOG.debug(getName() + " is stopping");
+    LOG.info(getName() + " is stopping");
   }
 
   private void process(Element element) {
@@ -70,7 +71,7 @@ public class Consolidator extends Thread {
       return;
     }
 
-    LOG.debug(getName() + " is consolidating element: " + element.getUid());
+//    LOG.debug(getName() + " is consolidating element: " + element.getUid());
     Filter f = new Filter(new FilterCondition("uid", element.getUid()));
     Iterator<Element> iter = this.persistence.find(Element.class, f);
 
@@ -92,6 +93,7 @@ public class Consolidator extends Thread {
     } else {
       this.persistence.insert(element);
     }
+    
   }
 
   private void consolidate(Element element, Element stored) {

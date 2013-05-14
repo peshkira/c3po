@@ -20,6 +20,9 @@
   <logger name="org.apache.commons.beanutils">
     <level value="INFO" />
   </logger>
+  <logger name="org.apache.commons.vfs">
+    <level value="WARN" />
+  </logger>
   <root>
     <appender-ref ref="CONSOLE" />
     <appender-ref ref="FILEAPPENDER" />
