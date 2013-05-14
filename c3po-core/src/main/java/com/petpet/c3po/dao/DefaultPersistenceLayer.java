@@ -30,7 +30,7 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   /**
    * A default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(DefaultPersistenceLayer.class);
+  private static final Logger LOG = LoggerFactory.getLogger( DefaultPersistenceLayer.class );
 
   /**
    * The wrapped persistence layer of this class.
@@ -61,8 +61,8 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   public void close() {
     try {
       this.persistence.close();
-    } catch (C3POPersistenceException e) {
-      LOG.error("An error occurred: {}", e.getMessage());
+    } catch ( C3POPersistenceException e ) {
+      LOG.error( "An error occurred: {}", e.getMessage() );
     }
   }
 
@@ -70,16 +70,16 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> long count(Class<T> clazz, Filter filter) {
-    return this.persistence.count(clazz, filter);
+  public <T extends Model> long count( Class<T> clazz, Filter filter ) {
+    return this.persistence.count( clazz, filter );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void establishConnection(Map<String, String> config) throws C3POPersistenceException {
-    this.persistence.establishConnection(config);
+  public void establishConnection( Map<String, String> config ) throws C3POPersistenceException {
+    this.persistence.establishConnection( config );
 
   }
 
@@ -87,16 +87,16 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> Iterator<T> find(Class<T> clazz, Filter filter) {
-    return this.persistence.find(clazz, filter);
+  public <T extends Model> Iterator<T> find( Class<T> clazz, Filter filter ) {
+    return this.persistence.find( clazz, filter );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> List<String> distinct(Class<T> clazz, String f, Filter filter) {
-    return this.persistence.distinct(clazz, f, filter);
+  public <T extends Model> List<String> distinct( Class<T> clazz, String f, Filter filter ) {
+    return this.persistence.distinct( clazz, f, filter );
   }
 
   /**
@@ -111,26 +111,26 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public NumericStatistics getNumericStatistics(Property p, Filter filter) throws UnsupportedOperationException {
-    return this.persistence.getNumericStatistics(p, filter);
+  public NumericStatistics getNumericStatistics( Property p, Filter filter ) throws UnsupportedOperationException {
+    return this.persistence.getNumericStatistics( p, filter );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> Map<String, Long> getValueHistogramFor(Property p, Filter filter)
+  public <T extends Model> Map<String, Long> getValueHistogramFor( Property p, Filter filter )
       throws UnsupportedOperationException {
 
-    return this.persistence.getValueHistogramFor(p, filter);
+    return this.persistence.getValueHistogramFor( p, filter );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> void insert(T object) {
-    this.persistence.insert(object);
+  public <T extends Model> void insert( T object ) {
+    this.persistence.insert( object );
   }
 
   /**
@@ -145,31 +145,31 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> void remove(T object) {
-    this.persistence.remove(object);
+  public <T extends Model> void remove( T object ) {
+    this.persistence.remove( object );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> void remove(Class<T> clazz, Filter filter) {
-    this.persistence.remove(clazz, filter);
+  public <T extends Model> void remove( Class<T> clazz, Filter filter ) {
+    this.persistence.remove( clazz, filter );
   }
 
   /**
    * {@inheritDoc}
    */
-  public void setCache(Cache c) {
-    this.persistence.setCache(c);
+  public void setCache( Cache c ) {
+    this.persistence.setCache( c );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <T extends Model> void update(T object, Filter f) {
-    this.persistence.update(object, f);
+  public <T extends Model> void update( T object, Filter f ) {
+    this.persistence.update( object, f );
   }
 
 }

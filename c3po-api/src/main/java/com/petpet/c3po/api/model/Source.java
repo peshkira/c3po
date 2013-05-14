@@ -52,7 +52,7 @@ public class Source implements Model {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId( String id ) {
     this.id = id;
   }
 
@@ -60,7 +60,7 @@ public class Source implements Model {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName( String name ) {
     this.name = name;
   }
 
@@ -68,7 +68,7 @@ public class Source implements Model {
     return version;
   }
 
-  public void setVersion(String version) {
+  public void setVersion( String version ) {
     this.version = version;
   }
 

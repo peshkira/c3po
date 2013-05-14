@@ -53,11 +53,11 @@ public class Property implements Model {
    * @param type
    */
   public Property(String key, PropertyType type) {
-    this(key);
+    this( key );
     this.type = type.name();
   }
 
-  public void setId(String id) {
+  public void setId( String id ) {
     this.id = id;
   }
 
@@ -69,7 +69,7 @@ public class Property implements Model {
     return key;
   }
 
-  public void setKey(String key) {
+  public void setKey( String key ) {
     this.key = key;
   }
 
@@ -77,7 +77,7 @@ public class Property implements Model {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType( String type ) {
     this.type = type;
   }
 
@@ -92,28 +92,28 @@ public class Property implements Model {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals( Object obj ) {
+    if ( this == obj )
       return true;
-    if (obj == null)
+    if ( obj == null )
       return false;
-    if (getClass() != obj.getClass())
+    if ( getClass() != obj.getClass() )
       return false;
     Property other = (Property) obj;
-    if (id == null) {
-      if (other.id != null)
+    if ( id == null ) {
+      if ( other.id != null )
         return false;
-    } else if (!id.equals(other.id))
+    } else if ( !id.equals( other.id ) )
       return false;
-    if (key == null) {
-      if (other.key != null)
+    if ( key == null ) {
+      if ( other.key != null )
         return false;
-    } else if (!key.equals(other.key))
+    } else if ( !key.equals( other.key ) )
       return false;
-    if (type == null) {
-      if (other.type != null)
+    if ( type == null ) {
+      if ( other.type != null )
         return false;
-    } else if (!type.equals(other.type))
+    } else if ( !type.equals( other.type ) )
       return false;
     return true;
   }

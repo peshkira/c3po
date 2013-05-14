@@ -46,9 +46,9 @@ public class DBCache implements Cache {
    * Creates a new cache with synchronized empty maps.
    */
   public DBCache() {
-    this.propertyCache = Collections.synchronizedMap(new HashMap<String, Property>());
-    this.sourceCache = Collections.synchronizedMap(new HashMap<String, Source>());
-    this.misc = Collections.synchronizedMap(new HashMap<Object, Object>());
+    this.propertyCache = Collections.synchronizedMap( new HashMap<String, Property>() );
+    this.sourceCache = Collections.synchronizedMap( new HashMap<String, Source>() );
+    this.misc = Collections.synchronizedMap( new HashMap<Object, Object>() );
   }
 
   /**
@@ -57,7 +57,7 @@ public class DBCache implements Cache {
    * @param persistence
    *          the persitence to use.
    */
-  public void setPersistence(PersistenceLayer persistence) {
+  public void setPersistence( PersistenceLayer persistence ) {
     this.persistence = persistence;
   }
 
@@ -74,22 +74,22 @@ public class DBCache implements Cache {
    * @return the property.
    */
   @Override
-  public synchronized Property getProperty(String key) {
-    Property property = this.propertyCache.get(key);
+  public synchronized Property getProperty( String key ) {
+    Property property = this.propertyCache.get( key );
 
-    if (property == null) {
-      Iterator<Property> result = this.findProperty(key);
+    if ( property == null ) {
+      Iterator<Property> result = this.findProperty( key );
 
-      if (result.hasNext()) {
+      if ( result.hasNext() ) {
         property = result.next();
-        this.propertyCache.put(key, property);
+        this.propertyCache.put( key, property );
 
-        if (result.hasNext()) {
-          throw new RuntimeException("More than one properties found for key: " + key);
+        if ( result.hasNext() ) {
+          throw new RuntimeException( "More than one properties found for key: " + key );
         }
 
       } else {
-        property = this.createProperty(key);
+        property = this.createProperty( key );
 
       }
     }
@@ -112,22 +112,22 @@ public class DBCache implements Cache {
    * @return the source.
    */
   @Override
-  public synchronized Source getSource(String name, String version) {
-    Source source = this.sourceCache.get(name + ":" + version);
+  public synchronized Source getSource( String name, String version ) {
+    Source source = this.sourceCache.get( name + ":" + version );
 
-    if (source == null) {
-      Iterator<Source> result = this.findSource(name, version);
+    if ( source == null ) {
+      Iterator<Source> result = this.findSource( name, version );
 
-      if (result.hasNext()) {
+      if ( result.hasNext() ) {
         source = result.next();
-        this.sourceCache.put(name + ":" + version, source);
+        this.sourceCache.put( name + ":" + version, source );
 
-        if (result.hasNext()) {
-          throw new RuntimeException("More than one sources found for name: " + name + " and version: " + version);
+        if ( result.hasNext() ) {
+          throw new RuntimeException( "More than one sources found for name: " + name + " and version: " + version );
         }
 
       } else {
-        source = this.createSource(name, version);
+        source = this.createSource( name, version );
 
       }
     }
@@ -139,16 +139,16 @@ public class DBCache implements Cache {
    * {@inheritDoc}
    */
   @Override
-  public Object getObject(Object key) {
-    return this.misc.get(key);
+  public Object getObject( Object key ) {
+    return this.misc.get( key );
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void put(Object key, Object value) {
-    this.misc.put(key, value);
+  public void put( Object key, Object value ) {
+    this.misc.put( key, value );
   }
 
   /**
@@ -161,40 +161,40 @@ public class DBCache implements Cache {
     this.misc.clear();
   }
 
-  private Iterator<Source> findSource(String name, String version) {
+  private Iterator<Source> findSource( String name, String version ) {
 
-    FilterCondition fc1 = new FilterCondition("name", name);
-    FilterCondition fc2 = new FilterCondition("version", version);
-    Filter f = new Filter(Arrays.asList(fc1, fc2));
+    FilterCondition fc1 = new FilterCondition( "name", name );
+    FilterCondition fc2 = new FilterCondition( "version", version );
+    Filter f = new Filter( Arrays.asList( fc1, fc2 ) );
 
-    return this.persistence.find(Source.class, f);
-
-  }
-
-  private Iterator<Property> findProperty(String key) {
-
-    FilterCondition fc = new FilterCondition("key", key);
-    Filter f = new Filter(fc);
-
-    return this.persistence.find(Property.class, f);
+    return this.persistence.find( Source.class, f );
 
   }
 
-  private Source createSource(String name, String version) {
-    Source s = new Source(name, version);
+  private Iterator<Property> findProperty( String key ) {
 
-    this.persistence.insert(s);
-    this.sourceCache.put(name + ":" + version, s);
+    FilterCondition fc = new FilterCondition( "key", key );
+    Filter f = new Filter( fc );
+
+    return this.persistence.find( Property.class, f );
+
+  }
+
+  private Source createSource( String name, String version ) {
+    Source s = new Source( name, version );
+
+    this.persistence.insert( s );
+    this.sourceCache.put( name + ":" + version, s );
 
     return s;
   }
 
-  private Property createProperty(String key) {
-    Property p = new Property(key);
-    p.setType(DataHelper.getPropertyType(key));
+  private Property createProperty( String key ) {
+    Property p = new Property( key );
+    p.setType( DataHelper.getPropertyType( key ) );
 
-    this.persistence.insert(p);
-    this.propertyCache.put(key, p);
+    this.persistence.insert( p );
+    this.propertyCache.put( key, p );
 
     return p;
   }

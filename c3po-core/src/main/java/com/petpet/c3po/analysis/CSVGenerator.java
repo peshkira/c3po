@@ -30,7 +30,7 @@ public class CSVGenerator {
   /**
    * Default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(CSVGenerator.class);
+  private static final Logger LOG = LoggerFactory.getLogger( CSVGenerator.class );
 
   /**
    * The persistence layer.
@@ -56,12 +56,12 @@ public class CSVGenerator {
    * @param output
    *          the output file
    */
-  public void exportAll(String collection, String output) {
-    final Iterator<Element> matrix = this.buildMatrix(collection);
-    final Iterator<Property> allprops = this.persistence.find(Property.class, null);
-    final List<Property> props = this.getProperties(allprops);
+  public void exportAll( String collection, String output ) {
+    final Iterator<Element> matrix = this.buildMatrix( collection );
+    final Iterator<Property> allprops = this.persistence.find( Property.class, null );
+    final List<Property> props = this.getProperties( allprops );
 
-    this.write(matrix, props, output);
+    this.write( matrix, props, output );
   }
 
   /**
@@ -76,10 +76,10 @@ public class CSVGenerator {
    * @param output
    *          the output file.
    */
-  public void export(final String collection, final List<Property> props, String output) {
-    final Iterator<Element> matrix = this.buildMatrix(collection, props);
+  public void export( final String collection, final List<Property> props, String output ) {
+    final Iterator<Element> matrix = this.buildMatrix( collection, props );
 
-    this.write(matrix, props, output);
+    this.write( matrix, props, output );
   }
 
   /**
@@ -90,11 +90,11 @@ public class CSVGenerator {
    * @param output
    *          the output file.
    */
-  public void export(final Filter filter, String output) {
-    final Iterator<Property> allprops = this.persistence.find(Property.class, null);
-    final List<Property> props = this.getProperties(allprops);
+  public void export( final Filter filter, String output ) {
+    final Iterator<Property> allprops = this.persistence.find( Property.class, null );
+    final List<Property> props = this.getProperties( allprops );
 
-    this.export(filter, props, output);
+    this.export( filter, props, output );
   }
 
   /**
@@ -108,10 +108,10 @@ public class CSVGenerator {
    * @param output
    *          the output file.
    */
-  public void export(final Filter filter, final List<Property> props, String output) {
-    Iterator<Element> matrix = this.persistence.find(Element.class, filter);
+  public void export( final Filter filter, final List<Property> props, String output ) {
+    Iterator<Element> matrix = this.persistence.find( Element.class, filter );
 
-    this.write(matrix, props, output);
+    this.write( matrix, props, output );
   }
 
   /**
@@ -125,52 +125,52 @@ public class CSVGenerator {
    * @param output
    *          the output file where to write to.
    */
-  private void write(Iterator<Element> matrix, List<Property> props, String output) {
+  private void write( Iterator<Element> matrix, List<Property> props, String output ) {
     try {
 
-      final File file = new File(output);
+      final File file = new File( output );
 
-      LOG.info("Will export data in {}", file.getAbsolutePath());
+      LOG.info( "Will export data in {}", file.getAbsolutePath() );
 
-      if (file.getParentFile() != null && !file.getParentFile().exists()) {
+      if ( file.getParentFile() != null && !file.getParentFile().exists() ) {
         file.getParentFile().mkdirs();
       }
 
       file.createNewFile();
 
-      final FileWriter writer = new FileWriter(file);
+      final FileWriter writer = new FileWriter( file );
 
       // build header of csv
-      writer.append("uid, ");
-      for (Property p : props) {
-        writer.append(p.getKey() + ", ");
+      writer.append( "uid, " );
+      for ( Property p : props ) {
+        writer.append( p.getKey() + ", " );
       }
-      writer.append("\n");
+      writer.append( "\n" );
 
       // for all elements append the values in the correct column
-      while (matrix.hasNext()) {
+      while ( matrix.hasNext() ) {
         Element next = matrix.next();
 
         // first the uid
-        writer.append(replace(next.getUid()) + ", ");
+        writer.append( replace( next.getUid() ) + ", " );
 
         // then the properties
-        for (Property p : props) {
-          List<MetadataRecord> value = next.removeMetadata(p.getId());
+        for ( Property p : props ) {
+          List<MetadataRecord> value = next.removeMetadata( p.getId() );
 
           assert value.size() == 0 || value.size() == 1;
 
-          final String val = this.getValueFromMetaDataRecord(value);
-          writer.append(val);
-          writer.append(", ");
+          final String val = this.getValueFromMetaDataRecord( value );
+          writer.append( val );
+          writer.append( ", " );
         }
-        writer.append("\n");
+        writer.append( "\n" );
       }
 
       writer.flush();
       writer.close();
 
-    } catch (IOException e) {
+    } catch ( IOException e ) {
       e.printStackTrace();
     }
   }
@@ -182,10 +182,10 @@ public class CSVGenerator {
    *          the name of the colleciton.
    * @return the matching elements.
    */
-  private Iterator<Element> buildMatrix(final String collection) {
-    Filter filter = new Filter(new FilterCondition("collection", collection));
+  private Iterator<Element> buildMatrix( final String collection ) {
+    Filter filter = new Filter( new FilterCondition( "collection", collection ) );
 
-    return this.persistence.find(Element.class, filter);
+    return this.persistence.find( Element.class, filter );
   }
 
   /**
@@ -198,14 +198,14 @@ public class CSVGenerator {
    *          the properties to look for.
    * @return the matching elements.
    */
-  private Iterator<Element> buildMatrix(final String collection, List<Property> props) {
-    Filter filter = new Filter(new FilterCondition("collection", collection));
+  private Iterator<Element> buildMatrix( final String collection, List<Property> props ) {
+    Filter filter = new Filter( new FilterCondition( "collection", collection ) );
 
-    for (Property p : props) {
-      filter.addFilterCondition(new FilterCondition(p.getId(), null));
+    for ( Property p : props ) {
+      filter.addFilterCondition( new FilterCondition( p.getId(), null ) );
     }
 
-    return this.persistence.find(Element.class, filter);
+    return this.persistence.find( Element.class, filter );
   }
 
   /**
@@ -216,11 +216,11 @@ public class CSVGenerator {
    *          the list of records.
    * @return the output string for the csv cell.
    */
-  private String getValueFromMetaDataRecord(List<MetadataRecord> value) {
+  private String getValueFromMetaDataRecord( List<MetadataRecord> value ) {
     String result = "";
-    if (value.size() != 0) {
-      final String v = value.get(0).getValue();
-      result = (v == null) ? "CONFLICT" : replace(v.toString());
+    if ( value.size() != 0 ) {
+      final String v = value.get( 0 ).getValue();
+      result = (v == null) ? "CONFLICT" : replace( v.toString() );
     }
 
     return result;
@@ -234,12 +234,12 @@ public class CSVGenerator {
    *          the iterator over the properties
    * @return a list of properties or an empty list.
    */
-  private List<Property> getProperties(final Iterator<Property> cursor) {
+  private List<Property> getProperties( final Iterator<Property> cursor ) {
     final List<Property> result = new ArrayList<Property>();
 
-    while (cursor.hasNext()) {
+    while ( cursor.hasNext() ) {
       final Property next = cursor.next();
-      result.add(next);
+      result.add( next );
     }
 
     return result;
@@ -252,8 +252,8 @@ public class CSVGenerator {
    *          the string to check
    * @return a new altered string or an empty string if the input was null.
    */
-  private String replace(String str) {
-    return (str == null) ? "" : str.replaceAll(",", "").replaceAll("\n", " ");
+  private String replace( String str ) {
+    return (str == null) ? "" : str.replaceAll( ",", "" ).replaceAll( "\n", " " );
   }
 
 }

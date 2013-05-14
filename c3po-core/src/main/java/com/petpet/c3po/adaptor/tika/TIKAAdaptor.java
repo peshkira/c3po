@@ -25,7 +25,7 @@ import com.petpet.c3po.api.model.helper.PropertyType;
  */
 public class TIKAAdaptor extends AbstractAdaptor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TIKAAdaptor.class);
+  private static final Logger LOG = LoggerFactory.getLogger( TIKAAdaptor.class );
 
   private static final String OPT_TIKA_VERSION = "c3po.adaptor.tika.version";
 
@@ -36,20 +36,20 @@ public class TIKAAdaptor extends AbstractAdaptor {
    */
   @Override
   public void configure() {
-    this.version = this.getStringConfig(OPT_TIKA_VERSION, "");
+    this.version = this.getStringConfig( OPT_TIKA_VERSION, "" );
   }
 
   /**
    * Parses the TIKA data.
    */
   @Override
-  public Element parseElement(String name, String data) {
+  public Element parseElement( String name, String data ) {
     try {
-      Map<String, String> metadata = TIKAResultParser.getKeyValueMap(data);
-      Element element = this.createElement(metadata);
+      Map<String, String> metadata = TIKAResultParser.getKeyValueMap( data );
+      Element element = this.createElement( metadata );
       return element;
-    } catch (IOException e) {
-      LOG.warn("Could not parse data for {}", name);
+    } catch ( IOException e ) {
+      LOG.warn( "Could not parse data for {}", name );
       return null;
     }
   }
@@ -66,35 +66,35 @@ public class TIKAAdaptor extends AbstractAdaptor {
    *          the map of property value pairs.
    * @return the element object.
    */
-  private Element createElement(Map<String, String> metadata) {
+  private Element createElement( Map<String, String> metadata ) {
 
-    String name = metadata.remove("resourceName");
-    if (name == null) {
+    String name = metadata.remove( "resourceName" );
+    if ( name == null ) {
       return null;
     }
 
-    Element element = new Element(name, name);
+    Element element = new Element( name, name );
     ReadOnlyCache cache = this.getCache();
     List<MetadataRecord> records = new ArrayList<MetadataRecord>();
 
-    for (String key : metadata.keySet()) {
-      String value = metadata.get(key);
-      key = key.replace('.', '_').replace(' ', '_').replace(':', '_').toLowerCase();
-      key = TIKAHelper.getPropertyKeyByTikaName(key);
+    for ( String key : metadata.keySet() ) {
+      String value = metadata.get( key );
+      key = key.replace( '.', '_' ).replace( ' ', '_' ).replace( ':', '_' ).toLowerCase();
+      key = TIKAHelper.getPropertyKeyByTikaName( key );
 
-      if (key != null) {
-        Property prop = cache.getProperty(key);
-        if (prop.getType().equals(PropertyType.INTEGER.name()) || prop.getType().equals(PropertyType.FLOAT.name())) {
-          value = value.split(" ")[0];
+      if ( key != null ) {
+        Property prop = cache.getProperty( key );
+        if ( prop.getType().equals( PropertyType.INTEGER.name() ) || prop.getType().equals( PropertyType.FLOAT.name() ) ) {
+          value = value.split( " " )[0];
         }
-        MetadataRecord record = new MetadataRecord(prop, value);
-        Source source = cache.getSource("Tika", this.version);
-        record.setSources(Arrays.asList(source.getId()));
-        records.add(record);
+        MetadataRecord record = new MetadataRecord( prop, value );
+        Source source = cache.getSource( "Tika", this.version );
+        record.setSources( Arrays.asList( source.getId() ) );
+        records.add( record );
       }
     }
 
-    element.setMetadata(records);
+    element.setMetadata( records );
     return element;
 
   }

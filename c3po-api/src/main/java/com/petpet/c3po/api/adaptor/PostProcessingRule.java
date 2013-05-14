@@ -21,6 +21,6 @@ public interface PostProcessingRule extends ProcessingRule {
    *          the element to process.
    * @return the processed element.
    */
-  Element process(Element e);
+  Element process( Element e );
 
 }

@@ -31,15 +31,15 @@ public class FormatVersionResolutionRule implements PostProcessingRule {
    * there is a CONFLICT
    */
   @Override
-  public Element process(Element e) {
-    List<MetadataRecord> formatVersionRecords = e.removeMetadata("format_version");
-    if (formatVersionRecords.size() > 1) {
-      for (MetadataRecord mr : formatVersionRecords) {
-        mr.setStatus(Status.CONFLICT.name());
+  public Element process( Element e ) {
+    List<MetadataRecord> formatVersionRecords = e.removeMetadata( "format_version" );
+    if ( formatVersionRecords.size() > 1 ) {
+      for ( MetadataRecord mr : formatVersionRecords ) {
+        mr.setStatus( Status.CONFLICT.name() );
       }
     }
 
-    e.getMetadata().addAll(formatVersionRecords);
+    e.getMetadata().addAll( formatVersionRecords );
 
     return e;
   }

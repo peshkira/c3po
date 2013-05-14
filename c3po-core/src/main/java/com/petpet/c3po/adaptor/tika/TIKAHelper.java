@@ -22,12 +22,12 @@ public class TIKAHelper {
    */
   public static void init() {
     try {
-      InputStream in = Thread.currentThread().getContextClassLoader()
-          .getResourceAsStream("tika_property_mapping.properties");
+      InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+          "tika_property_mapping.properties" );
       TIKA_PROPS = new Properties();
-      TIKA_PROPS.load(in);
+      TIKA_PROPS.load( in );
       in.close();
-    } catch (IOException e) {
+    } catch ( IOException e ) {
       e.printStackTrace();
     }
   }
@@ -40,8 +40,8 @@ public class TIKAHelper {
    *          the name of the property
    * @return the normalised property key corresponding to TIKAs property name
    */
-  public static String getPropertyKeyByTikaName(String name) {
-    final String prop = (String) TIKA_PROPS.get(name);
+  public static String getPropertyKeyByTikaName( String name ) {
+    final String prop = (String) TIKA_PROPS.get( name );
     return prop;
   }
 

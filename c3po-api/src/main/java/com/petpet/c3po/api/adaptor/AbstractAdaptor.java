@@ -32,7 +32,7 @@ public abstract class AbstractAdaptor implements Runnable {
   /**
    * A default logger for this class.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractAdaptor.class);
+  private static final Logger LOG = LoggerFactory.getLogger( AbstractAdaptor.class );
 
   /**
    * The gatherer that is used to obtain the next meta data stream.
@@ -103,7 +103,7 @@ public abstract class AbstractAdaptor implements Runnable {
    *          the data to adapt.
    * @return the parsed {@link Element} object.
    */
-  public abstract Element parseElement(String name, String data);
+  public abstract Element parseElement( String name, String data );
 
   /**
    * Sets the cache to the passed {@link ReadOnlyCache} iff it is not null and
@@ -112,8 +112,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param cache
    *          the cache to set.
    */
-  public final void setCache(ReadOnlyCache cache) {
-    if (cache != null && this.cache == null) {
+  public final void setCache( ReadOnlyCache cache ) {
+    if ( cache != null && this.cache == null ) {
       this.cache = cache;
     }
   }
@@ -125,8 +125,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param gatherer
    *          the gatherer to set.
    */
-  public final void setGatherer(MetaDataGatherer gatherer) {
-    if (gatherer != null) {
+  public final void setGatherer( MetaDataGatherer gatherer ) {
+    if ( gatherer != null ) {
       this.gatherer = gatherer;
     }
   }
@@ -137,8 +137,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param gatherLock
    *          the lock object.
    */
-  public void setGatherLock(Object gatherLock) {
-    if (gatherLock != null && this.gatherLock == null) {
+  public void setGatherLock( Object gatherLock ) {
+    if ( gatherLock != null && this.gatherLock == null ) {
       this.gatherLock = gatherLock;
     }
   }
@@ -150,8 +150,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param rules
    *          the list of processing rules.
    */
-  public final void setRules(List<ProcessingRule> rules) {
-    if (rules != null && this.rules == null) {
+  public final void setRules( List<ProcessingRule> rules ) {
+    if ( rules != null && this.rules == null ) {
       this.rules = rules;
     }
   }
@@ -163,8 +163,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param cnf
    *          the config to set.
    */
-  public final void setConfig(Map<String, String> cnf) {
-    if (cnf != null && this.config == null) {
+  public final void setConfig( Map<String, String> cnf ) {
+    if ( cnf != null && this.config == null ) {
       this.config = cnf;
     }
   }
@@ -177,8 +177,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param q
    *          the queue to use.
    */
-  public final void setQueue(Queue<Element> q) {
-    if (q != null && this.elementsQueue == null) {
+  public final void setQueue( Queue<Element> q ) {
+    if ( q != null && this.elementsQueue == null ) {
       this.elementsQueue = q;
     }
   }
@@ -195,15 +195,15 @@ public abstract class AbstractAdaptor implements Runnable {
    */
   @Override
   public final void run() {
-    while (!gatherer.isReady() || gatherer.hasNext()) {
+    while ( !gatherer.isReady() || gatherer.hasNext() ) {
       try {
 
         MetadataStream stream = null;
 
-        synchronized (gatherLock) {
-          while (!gatherer.hasNext()) {
+        synchronized ( gatherLock ) {
+          while ( !gatherer.hasNext() ) {
 
-            if (gatherer.isReady()) {
+            if ( gatherer.isReady() ) {
               break;
             }
 
@@ -214,40 +214,40 @@ public abstract class AbstractAdaptor implements Runnable {
 
         }
 
-        if (stream != null) {
+        if ( stream != null ) {
           Element element = null;
           try {
 
             String name = stream.getFileName();
             String data = stream.getData();
 
-            if (name != null || data != null) {
+            if ( name != null || data != null ) {
 
-              element = parseElement(name, data);
+              element = parseElement( name, data );
 
             }
 
-          } catch (Exception e) {
-            LOG.warn("An error occurred while parsing, skipping {}: ", stream.getFileName(), e.getMessage());
+          } catch ( Exception e ) {
+            LOG.warn( "An error occurred while parsing, skipping {}: ", stream.getFileName(), e.getMessage() );
           }
 
-          postProcessElement(element);
+          postProcessElement( element );
 
-          submitElement(element);
+          submitElement( element );
         }
 
-      } catch (InterruptedException e) {
+      } catch ( InterruptedException e ) {
         e.printStackTrace();
         break;
       }
 
     }
 
-    synchronized (elementsQueue) {
+    synchronized ( elementsQueue ) {
       this.elementsQueue.notifyAll();
     }
 
-    LOG.info("Stopping adaptor: {}", Thread.currentThread().getName());
+    LOG.info( "Stopping adaptor: {}", Thread.currentThread().getName() );
   }
 
   /**
@@ -270,13 +270,13 @@ public abstract class AbstractAdaptor implements Runnable {
     List<ProcessingRule> all = this.getRules();
     List<PreProcessingRule> prerules = new ArrayList<PreProcessingRule>();
 
-    for (ProcessingRule rule : all) {
-      if (rule instanceof PreProcessingRule) {
-        prerules.add((PreProcessingRule) rule);
+    for ( ProcessingRule rule : all ) {
+      if ( rule instanceof PreProcessingRule ) {
+        prerules.add( (PreProcessingRule) rule );
       }
     }
 
-    return Collections.unmodifiableList(prerules);
+    return Collections.unmodifiableList( prerules );
   }
 
   /**
@@ -288,8 +288,8 @@ public abstract class AbstractAdaptor implements Runnable {
    * @return the value for the given key, or an empty string if nothing was
    *         associated with it.
    */
-  protected String getConfig(String key) {
-    return this.getStringConfig(key, "");
+  protected String getConfig( String key ) {
+    return this.getStringConfig( key, "" );
   }
 
   /**
@@ -303,13 +303,13 @@ public abstract class AbstractAdaptor implements Runnable {
    * @return the value for the given key, or the given defaultValue string if
    *         nothing was associated with it.
    */
-  protected String getStringConfig(String key, String defaultValue) {
+  protected String getStringConfig( String key, String defaultValue ) {
     String result = null;
-    if (this.config != null) {
-      result = (String) this.config.get(key);
+    if ( this.config != null ) {
+      result = (String) this.config.get( key );
     }
 
-    if (result == null) {
+    if ( result == null ) {
       result = defaultValue;
     }
 
@@ -327,16 +327,16 @@ public abstract class AbstractAdaptor implements Runnable {
    * @return the value for the given key, or the given defaultValue if nothing
    *         was associated with it.
    */
-  protected Boolean getBooleanConfig(String key, boolean defaultValue) {
+  protected Boolean getBooleanConfig( String key, boolean defaultValue ) {
     Boolean result = null;
-    if (this.config != null) {
-      String val = this.config.get(key);
-      if (val != null && !val.equals("")) {
-        result = Boolean.parseBoolean(val);
+    if ( this.config != null ) {
+      String val = this.config.get( key );
+      if ( val != null && !val.equals( "" ) ) {
+        result = Boolean.parseBoolean( val );
       }
     }
 
-    if (result == null) {
+    if ( result == null ) {
       result = defaultValue;
     }
 
@@ -355,20 +355,20 @@ public abstract class AbstractAdaptor implements Runnable {
    * @return the value for the given key, or the given defaultValue if nothing
    *         was associated with it.
    */
-  protected Integer getIntegerConfig(String key, int defaultValue) {
+  protected Integer getIntegerConfig( String key, int defaultValue ) {
     Integer result = null;
-    if (this.config != null) {
-      String val = this.config.get(key);
-      if (val != null && !val.equals("")) {
+    if ( this.config != null ) {
+      String val = this.config.get( key );
+      if ( val != null && !val.equals( "" ) ) {
         try {
-          result = Integer.parseInt(val);
-        } catch (NumberFormatException e) {
+          result = Integer.parseInt( val );
+        } catch ( NumberFormatException e ) {
           // do nothing
         }
       }
     }
 
-    if (result == null) {
+    if ( result == null ) {
       result = defaultValue;
     }
 
@@ -382,33 +382,33 @@ public abstract class AbstractAdaptor implements Runnable {
    * @return the list of rules.
    */
   private final List<ProcessingRule> getRules() {
-    if (this.rules != null) {
+    if ( this.rules != null ) {
 
-      Collections.sort(this.rules, new Comparator<ProcessingRule>() {
+      Collections.sort( this.rules, new Comparator<ProcessingRule>() {
 
         // sorts from descending
         @Override
-        public int compare(ProcessingRule r1, ProcessingRule r2) {
-          int first = this.fixPriority(r2.getPriority());
-          int second = this.fixPriority(r1.getPriority());
-          return new Integer(first).compareTo(new Integer(second));
+        public int compare( ProcessingRule r1, ProcessingRule r2 ) {
+          int first = this.fixPriority( r2.getPriority() );
+          int second = this.fixPriority( r1.getPriority() );
+          return new Integer( first ).compareTo( new Integer( second ) );
         }
 
-        private int fixPriority(int prio) {
-          if (prio < 0)
+        private int fixPriority( int prio ) {
+          if ( prio < 0 )
             return 0;
 
-          if (prio > 1000)
+          if ( prio > 1000 )
             return 1000;
 
           return prio;
         }
 
-      });
+      } );
 
     }
 
-    return Collections.unmodifiableList(rules);
+    return Collections.unmodifiableList( rules );
   }
 
   /**
@@ -422,13 +422,13 @@ public abstract class AbstractAdaptor implements Runnable {
     List<ProcessingRule> all = this.getRules();
     List<PostProcessingRule> postrules = new ArrayList<PostProcessingRule>();
 
-    for (ProcessingRule rule : all) {
-      if (rule instanceof PostProcessingRule) {
-        postrules.add((PostProcessingRule) rule);
+    for ( ProcessingRule rule : all ) {
+      if ( rule instanceof PostProcessingRule ) {
+        postrules.add( (PostProcessingRule) rule );
       }
     }
 
-    return Collections.unmodifiableList(postrules);
+    return Collections.unmodifiableList( postrules );
   }
 
   /**
@@ -438,12 +438,12 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param element
    *          the element to post process.
    */
-  private void postProcessElement(Element element) {
-    if (element != null) {
+  private void postProcessElement( Element element ) {
+    if ( element != null ) {
       List<PostProcessingRule> postProcessingRules = getPostProcessingRules();
 
-      for (PostProcessingRule rule : postProcessingRules) {
-        element = rule.process(element);
+      for ( PostProcessingRule rule : postProcessingRules ) {
+        element = rule.process( element );
       }
     }
   }
@@ -455,10 +455,10 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param e
    *          the element to submit to the queue.
    */
-  private final void submitElement(Element e) {
-    synchronized (elementsQueue) {
-      if (e != null) {
-        elementsQueue.add(e);
+  private final void submitElement( Element e ) {
+    synchronized ( elementsQueue ) {
+      if ( e != null ) {
+        elementsQueue.add( e );
         elementsQueue.notify();
       }
     }

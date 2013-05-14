@@ -72,7 +72,7 @@ public class BetweenFilterCondition extends FilterCondition {
    *          the higher bound operator.
    */
   public BetweenFilterCondition(String f, Operator lOp, Object lVal, Operator hOp, Object hVal) {
-    this.setProperty(f);
+    this.setProperty( f );
     this.lOperator = lOp;
     this.hOperator = hOp;
     this.lValue = lVal;
@@ -80,7 +80,7 @@ public class BetweenFilterCondition extends FilterCondition {
 
   }
 
-  public void setLOperator(Operator lOp) {
+  public void setLOperator( Operator lOp ) {
     this.lOperator = lOp;
   }
 
@@ -88,7 +88,7 @@ public class BetweenFilterCondition extends FilterCondition {
     return this.lOperator;
   }
 
-  public void setHOperator(Operator hOp) {
+  public void setHOperator( Operator hOp ) {
     this.hOperator = hOp;
   }
 
@@ -96,7 +96,7 @@ public class BetweenFilterCondition extends FilterCondition {
     return this.hOperator;
   }
 
-  public void setLValue(Object lVal) {
+  public void setLValue( Object lVal ) {
     this.lValue = lVal;
   }
 
@@ -104,7 +104,7 @@ public class BetweenFilterCondition extends FilterCondition {
     return this.lValue;
   }
 
-  public void setHValue(Object hVal) {
+  public void setHValue( Object hVal ) {
     this.hValue = hVal;
   }
 

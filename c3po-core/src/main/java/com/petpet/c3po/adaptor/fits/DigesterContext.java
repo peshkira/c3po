@@ -75,8 +75,8 @@ public class DigesterContext {
    * 
    * @param value
    */
-  public void addValue(MetadataRecord value) {
-    this.getValues().add(value);
+  public void addValue( MetadataRecord value ) {
+    this.getValues().add( value );
   }
 
   /**
@@ -87,8 +87,8 @@ public class DigesterContext {
    * @param uid
    *          the uid of the element.
    */
-  public void createElement(String name, String uid) {
-    this.element = new Element(uid, this.substringPath(name));
+  public void createElement( String name, String uid ) {
+    this.element = new Element( uid, this.substringPath( name ) );
   }
 
   /**
@@ -106,32 +106,32 @@ public class DigesterContext {
    * @param pattern
    *          the pattern (xml path) that was used
    */
-  public void createValue(String value, String status, String toolname, String version, String pattern) {
-    final String propKey = this.substringPath(pattern);
+  public void createValue( String value, String status, String toolname, String version, String pattern ) {
+    final String propKey = this.substringPath( pattern );
 
     boolean shouldContinue = true;
 
-    for (PreProcessingRule r : rules) {
-      if (r.shouldSkip(propKey, value, status, toolname, version)) {
+    for ( PreProcessingRule r : rules ) {
+      if ( r.shouldSkip( propKey, value, status, toolname, version ) ) {
         shouldContinue = false;
         break;
       }
     }
 
-    if (shouldContinue) {
-      final Property property = this.getProperty(propKey);
-      final Source source = this.cache.getSource(toolname, version);
+    if ( shouldContinue ) {
+      final Property property = this.getProperty( propKey );
+      final Source source = this.cache.getSource( toolname, version );
 
       final MetadataRecord r = new MetadataRecord();
-      r.setProperty(property);
-      r.setValue(value);
-      r.getSources().add(source.getId());
+      r.setProperty( property );
+      r.setValue( value );
+      r.getSources().add( source.getId() );
 
-      if (status != null) {
-        r.setStatus(status);
+      if ( status != null ) {
+        r.setStatus( status );
       }
 
-      this.addValue(r);
+      this.addValue( r );
     }
   }
 
@@ -144,12 +144,12 @@ public class DigesterContext {
    * @param mimetype
    *          the mimetype of the FITS file.
    */
-  public void createIdentity(String format, String mimetype) {
-    final Property pf = this.getProperty("format");
-    final Property pm = this.getProperty("mimetype");
+  public void createIdentity( String format, String mimetype ) {
+    final Property pf = this.getProperty( "format" );
+    final Property pm = this.getProperty( "mimetype" );
 
-    this.createIdentityForProperty(pf, format);
-    this.createIdentityForProperty(pm, mimetype);
+    this.createIdentityForProperty( pf, format );
+    this.createIdentityForProperty( pm, mimetype );
 
     this.formatSources.clear();
   }
@@ -163,22 +163,22 @@ public class DigesterContext {
    * @param value
    *          the value for the given property.
    */
-  private void createIdentityForProperty(Property property, String value) {
+  private void createIdentityForProperty( Property property, String value ) {
     boolean shouldContinue = true;
 
-    for (PreProcessingRule r : rules) {
-      if (r.shouldSkip(property.getId(), value, null, null, null)) {
+    for ( PreProcessingRule r : rules ) {
+      if ( r.shouldSkip( property.getId(), value, null, null, null ) ) {
         shouldContinue = false;
         break;
       }
     }
 
-    if (shouldContinue) {
+    if ( shouldContinue ) {
       MetadataRecord rec = new MetadataRecord();
-      rec.setProperty(property);
-      rec.setValue(value);
-      rec.getSources().addAll(this.formatSources);
-      this.addValue(rec);
+      rec.setProperty( property );
+      rec.setValue( value );
+      rec.getSources().addAll( this.formatSources );
+      this.addValue( rec );
     }
   }
 
@@ -190,9 +190,9 @@ public class DigesterContext {
    * @param version
    *          the version of the tool.
    */
-  public void addIdentityTool(String toolname, String version) {
-    final Source s = this.cache.getSource(toolname, version);
-    this.formatSources.add(s.getId());
+  public void addIdentityTool( String toolname, String version ) {
+    final Source s = this.cache.getSource( toolname, version );
+    this.formatSources.add( s.getId() );
   }
 
   /**
@@ -201,14 +201,14 @@ public class DigesterContext {
    * @param status
    *          the status to set.F
    */
-  public void setIdentityStatus(String status) {
-    if (status != null) {
-      if (status.equals(MetadataRecord.Status.SINGLE_RESULT.name())) {
-        this.updateStatusOf("puid", Status.CONFLICT.name());
+  public void setIdentityStatus( String status ) {
+    if ( status != null ) {
+      if ( status.equals( MetadataRecord.Status.SINGLE_RESULT.name() ) ) {
+        this.updateStatusOf( "puid", Status.CONFLICT.name() );
       }
 
-      this.updateStatusOf("format", status);
-      this.updateStatusOf("mimetype", status);
+      this.updateStatusOf( "format", status );
+      this.updateStatusOf( "mimetype", status );
 
     }
   }
@@ -225,20 +225,20 @@ public class DigesterContext {
    * @param version
    *          the version of the tool that reported it.
    */
-  public void createFormatVersion(String value, String status, String toolname, String version) {
-    final Property pf = this.getProperty("format_version");
-    final Source s = this.cache.getSource(toolname, version);
+  public void createFormatVersion( String value, String status, String toolname, String version ) {
+    final Property pf = this.getProperty( "format_version" );
+    final Source s = this.cache.getSource( toolname, version );
     final MetadataRecord fmtv = new MetadataRecord();
 
-    fmtv.setProperty(pf);
-    fmtv.setValue(value);
-    fmtv.getSources().add(s.getId());
+    fmtv.setProperty( pf );
+    fmtv.setValue( value );
+    fmtv.getSources().add( s.getId() );
 
-    if (status != null) {
-      fmtv.setStatus(status);
+    if ( status != null ) {
+      fmtv.setStatus( status );
     }
 
-    this.addValue(fmtv);
+    this.addValue( fmtv );
   }
 
   /**
@@ -251,16 +251,16 @@ public class DigesterContext {
    * @param version
    *          the version of the tool.
    */
-  public void createPuid(String value, String toolname, String version) {
-    final Property pp = this.getProperty("puid");
-    final Source s = this.cache.getSource(toolname, version);
+  public void createPuid( String value, String toolname, String version ) {
+    final Property pp = this.getProperty( "puid" );
+    final Source s = this.cache.getSource( toolname, version );
     final MetadataRecord puid = new MetadataRecord();
 
-    puid.setProperty(pp);
-    puid.setValue(value);
-    puid.getSources().add(s.getId());
+    puid.setProperty( pp );
+    puid.setValue( value );
+    puid.getSources().add( s.getId() );
 
-    this.addValue(puid);
+    this.addValue( puid );
   }
 
   /**
@@ -271,10 +271,10 @@ public class DigesterContext {
    *          the string to chop.
    * @return the new substring.
    */
-  private String substringPath(String str) {
-    if (str != null) {
-      str = str.substring(str.lastIndexOf("/") + 1);
-      str = str.substring(str.lastIndexOf("\\") + 1);
+  private String substringPath( String str ) {
+    if ( str != null ) {
+      str = str.substring( str.lastIndexOf( "/" ) + 1 );
+      str = str.substring( str.lastIndexOf( "\\" ) + 1 );
     }
     return str;
   }
@@ -288,11 +288,11 @@ public class DigesterContext {
    * @param status
    *          the status to set.
    */
-  private void updateStatusOf(String pName, String status) {
-    Property property = this.getProperty(pName);
-    for (MetadataRecord v : this.values) {
-      if (v.getProperty().getId().equals(property.getId())) {
-        v.setStatus(status);
+  private void updateStatusOf( String pName, String status ) {
+    Property property = this.getProperty( pName );
+    for ( MetadataRecord v : this.values ) {
+      if ( v.getProperty().getId().equals( property.getId() ) ) {
+        v.setStatus( status );
       }
     }
   }
@@ -305,9 +305,9 @@ public class DigesterContext {
    *          the name of the FITS property.
    * @return the {@link Property} object.
    */
-  private Property getProperty(String name) {
-    final String prop = FITSHelper.getPropertyKeyByFitsName(name);
-    return this.cache.getProperty(prop);
+  private Property getProperty( String name ) {
+    final String prop = FITSHelper.getPropertyKeyByFitsName( name );
+    return this.cache.getProperty( prop );
   }
 
 }

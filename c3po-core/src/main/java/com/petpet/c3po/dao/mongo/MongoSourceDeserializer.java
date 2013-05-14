@@ -9,21 +9,21 @@ public class MongoSourceDeserializer implements MongoModelDeserializer {
    * Deserializes a {@link DBObject} into a {@link Source} object.
    */
   @Override
-  public Object deserialize(Object object) {
+  public Object deserialize( Object object ) {
 
-    if (object == null || !(object instanceof DBObject)) {
+    if ( object == null || !(object instanceof DBObject) ) {
       return null;
     }
     DBObject dbObject = (DBObject) object;
 
-    String id = (String) dbObject.get("_id");
-    String name = (String) dbObject.get("name");
-    String version = (String) dbObject.get("version");
+    String id = (String) dbObject.get( "_id" );
+    String name = (String) dbObject.get( "name" );
+    String version = (String) dbObject.get( "version" );
 
     Source s = new Source();
-    s.setId(id);
-    s.setName(name);
-    s.setVersion(version);
+    s.setId( id );
+    s.setName( name );
+    s.setVersion( version );
 
     return s;
   }

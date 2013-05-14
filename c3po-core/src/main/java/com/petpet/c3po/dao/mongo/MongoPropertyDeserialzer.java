@@ -15,14 +15,14 @@ public class MongoPropertyDeserialzer implements MongoModelDeserializer {
    * Deserializes the given {@link DBObject} into a property.
    */
   @Override
-  public Property deserialize(Object object) {
-    if (object == null || !(object instanceof DBObject)) {
+  public Property deserialize( Object object ) {
+    if ( object == null || !(object instanceof DBObject) ) {
       return null;
     }
 
     DBObject dbObject = (DBObject) object;
 
-    return this.parseProperty(dbObject);
+    return this.parseProperty( dbObject );
   }
 
   /**
@@ -31,14 +31,14 @@ public class MongoPropertyDeserialzer implements MongoModelDeserializer {
    * @param obj
    * @return
    */
-  private Property parseProperty(DBObject obj) {
+  private Property parseProperty( DBObject obj ) {
     Property result = null;
-    if (obj != null) {
-      String key = (String) obj.get("key");
-      String type = (String) obj.get("type");
+    if ( obj != null ) {
+      String key = (String) obj.get( "key" );
+      String type = (String) obj.get( "type" );
 
-      result = new Property(key);
-      result.setType(type);
+      result = new Property( key );
+      result.setType( type );
     }
 
     return result;

@@ -46,7 +46,7 @@ public class FilterCondition {
     return field;
   }
 
-  public void setProperty(String f) {
+  public void setProperty( String f ) {
     this.field = f;
   }
 
@@ -54,7 +54,7 @@ public class FilterCondition {
     return value;
   }
 
-  public void setValue(Object value) {
+  public void setValue( Object value ) {
     this.value = value;
   }
 
@@ -68,23 +68,23 @@ public class FilterCondition {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals( Object obj ) {
+    if ( this == obj )
       return true;
-    if (obj == null)
+    if ( obj == null )
       return false;
-    if (getClass() != obj.getClass())
+    if ( getClass() != obj.getClass() )
       return false;
     FilterCondition other = (FilterCondition) obj;
-    if (field == null) {
-      if (other.field != null)
+    if ( field == null ) {
+      if ( other.field != null )
         return false;
-    } else if (!field.equals(other.field))
+    } else if ( !field.equals( other.field ) )
       return false;
-    if (value == null) {
-      if (other.value != null)
+    if ( value == null ) {
+      if ( other.value != null )
         return false;
-    } else if (!value.equals(other.value))
+    } else if ( !value.equals( other.value ) )
       return false;
     return true;
   }

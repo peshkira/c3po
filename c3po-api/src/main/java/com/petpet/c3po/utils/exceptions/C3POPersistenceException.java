@@ -28,7 +28,7 @@ public class C3POPersistenceException extends Exception {
    *          the message to supply
    */
   public C3POPersistenceException(String msg) {
-    super(msg);
+    super( msg );
   }
 
   /**
@@ -40,7 +40,7 @@ public class C3POPersistenceException extends Exception {
    *          the cause for this exception.
    */
   public C3POPersistenceException(String msg, Throwable cause) {
-    super(msg, cause);
+    super( msg, cause );
   }
 
   /**
@@ -50,7 +50,7 @@ public class C3POPersistenceException extends Exception {
    *          the cause for this exception.
    */
   public C3POPersistenceException(Throwable cause) {
-    super(cause);
+    super( cause );
   }
 
 }

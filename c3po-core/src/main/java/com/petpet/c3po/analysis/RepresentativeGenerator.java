@@ -50,7 +50,7 @@ public abstract class RepresentativeGenerator {
    *          a max number of sample records to be returned by this method.
    * @return the list of sample object identifiers.
    */
-  public abstract List<String> execute(int limit);
+  public abstract List<String> execute( int limit );
 
   /**
    * Retrieves the type/name of the algorithm used to identify the sample
@@ -64,7 +64,7 @@ public abstract class RepresentativeGenerator {
     return filter;
   }
 
-  public void setFilter(Filter filter) {
+  public void setFilter( Filter filter ) {
     this.filter = filter;
   }
 
@@ -72,7 +72,7 @@ public abstract class RepresentativeGenerator {
     return options;
   }
 
-  public void setOptions(Map<String, Object> options) {
+  public void setOptions( Map<String, Object> options ) {
     this.options = options;
   }
 

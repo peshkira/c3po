@@ -26,7 +26,7 @@ public class Consolidator extends Thread {
   /**
    * A default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(Consolidator.class);
+  private static final Logger LOG = LoggerFactory.getLogger( Consolidator.class );
 
   /**
    * A static instance counter.
@@ -59,7 +59,7 @@ public class Consolidator extends Thread {
   public Consolidator(PersistenceLayer p, Queue<Element> q) {
     persistence = p;
     queue = q;
-    setName("Consolidator[" + instance++ + "]");
+    setName( "Consolidator[" + instance++ + "]" );
   }
 
   /**
@@ -71,15 +71,15 @@ public class Consolidator extends Thread {
   @Override
   public void run() {
     this.running = true;
-    while (this.running || !queue.isEmpty()) {
+    while ( this.running || !queue.isEmpty() ) {
       try {
 
         Element e = null;
-        synchronized (queue) {
+        synchronized ( queue ) {
 
-          while (queue.isEmpty()) {
+          while ( queue.isEmpty() ) {
 
-            if (!this.isRunning()) {
+            if ( !this.isRunning() ) {
               break;
             }
 
@@ -91,21 +91,21 @@ public class Consolidator extends Thread {
 
         }
         // should this be here or outside of the sync block
-        process(e);
+        process( e );
 
-      } catch (InterruptedException e) {
-        LOG.warn("An error occurred in {}: {}", getName(), e.getMessage());
+      } catch ( InterruptedException e ) {
+        LOG.warn( "An error occurred in {}: {}", getName(), e.getMessage() );
         break;
       }
     }
-    LOG.info(getName() + " is stopping");
+    LOG.info( getName() + " is stopping" );
   }
 
   public boolean isRunning() {
     return running;
   }
 
-  public void setRunning(boolean running) {
+  public void setRunning( boolean running ) {
     this.running = running;
   }
 
@@ -117,9 +117,9 @@ public class Consolidator extends Thread {
    * @param element
    *          the element to process.
    */
-  private void process(Element element) {
-    if (element == null) {
-      LOG.debug("Cannot consolidate null element");
+  private void process( Element element ) {
+    if ( element == null ) {
+      LOG.debug( "Cannot consolidate null element" );
 
       return;
     }
@@ -127,26 +127,26 @@ public class Consolidator extends Thread {
     // this can be abstracted into a consolidation strategy
     // e.g. consolidate based on equal ids oder based on
     // equal uids or something else.
-    Filter f = new Filter(new FilterCondition("uid", element.getUid()));
-    Iterator<Element> iter = this.persistence.find(Element.class, f);
+    Filter f = new Filter( new FilterCondition( "uid", element.getUid() ) );
+    Iterator<Element> iter = this.persistence.find( Element.class, f );
 
-    if (iter.hasNext()) {
+    if ( iter.hasNext() ) {
       Element stored = iter.next();
 
-      if (iter.hasNext()) {
+      if ( iter.hasNext() ) {
         // obviously, there are more than
         // one elements matching the filter
         // so we cannot assume that it already exists
         // and we just store it.
-        this.persistence.insert(element);
+        this.persistence.insert( element );
         return;
       }
 
-      consolidate(element, stored);
-      this.persistence.update(stored, f);
+      consolidate( element, stored );
+      this.persistence.update( stored, f );
 
     } else {
-      this.persistence.insert(element);
+      this.persistence.insert( element );
     }
 
   }
@@ -159,15 +159,15 @@ public class Consolidator extends Thread {
    * @param stored
    *          the stored element.
    */
-  private void consolidate(Element element, Element stored) {
+  private void consolidate( Element element, Element stored ) {
     try {
 
-      for (MetadataRecord newMR : element.getMetadata()) {
-        DataHelper.mergeMetadataRecord(stored, newMR);
+      for ( MetadataRecord newMR : element.getMetadata() ) {
+        DataHelper.mergeMetadataRecord( stored, newMR );
       }
 
-    } catch (Exception e) {
-      LOG.warn("An error occurred: {}", e.getMessage());
+    } catch ( Exception e ) {
+      LOG.warn( "An error occurred: {}", e.getMessage() );
     }
 
   }

@@ -18,7 +18,7 @@ public interface MetaDataGatherer extends Runnable {
    * 
    * @param config
    */
-  void setConfig(Map<String, String> config);
+  void setConfig( Map<String, String> config );
 
   /**
    * Gets the next {@link MetadataStream} object.

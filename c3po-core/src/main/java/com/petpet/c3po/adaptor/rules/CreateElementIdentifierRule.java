@@ -30,9 +30,9 @@ public class CreateElementIdentifierRule implements PostProcessingRule {
    * Sets a random uuid if the element has no uid defined.
    */
   @Override
-  public Element process(Element e) {
-    if (e != null && e.getUid() == null) {
-      e.setUid(UUID.randomUUID().toString());
+  public Element process( Element e ) {
+    if ( e != null && e.getUid() == null ) {
+      e.setUid( UUID.randomUUID().toString() );
     }
 
     return e;

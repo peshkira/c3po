@@ -22,12 +22,12 @@ public class FITSHelper {
    */
   public static void init() {
     try {
-      InputStream in = Thread.currentThread().getContextClassLoader()
-          .getResourceAsStream("fits_property_mapping.properties");
+      InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+          "fits_property_mapping.properties" );
       FITS_PROPS = new Properties();
-      FITS_PROPS.load(in);
+      FITS_PROPS.load( in );
       in.close();
-    } catch (IOException e) {
+    } catch ( IOException e ) {
       e.printStackTrace();
     }
   }
@@ -40,8 +40,8 @@ public class FITSHelper {
    *          the fits property name to look for.
    * @return the mapping or the fits name.
    */
-  public static String getPropertyKeyByFitsName(String fitsname) {
-    final String prop = (String) FITS_PROPS.get(fitsname);
+  public static String getPropertyKeyByFitsName( String fitsname ) {
+    final String prop = (String) FITS_PROPS.get( fitsname );
     return (prop == null) ? fitsname : prop;
   }
 }

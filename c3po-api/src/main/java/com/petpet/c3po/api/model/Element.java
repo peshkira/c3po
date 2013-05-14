@@ -64,7 +64,7 @@ public class Element implements Model {
    * @param name
    */
   public Element(String collection, String uid, String name) {
-    this(uid, name);
+    this( uid, name );
     this.collection = collection;
   }
 
@@ -72,7 +72,7 @@ public class Element implements Model {
     return collection;
   }
 
-  public void setCollection(String collection) {
+  public void setCollection( String collection ) {
     this.collection = collection;
   }
 
@@ -80,7 +80,7 @@ public class Element implements Model {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName( String name ) {
     this.name = name;
   }
 
@@ -88,7 +88,7 @@ public class Element implements Model {
     return uid;
   }
 
-  public void setUid(String uid) {
+  public void setUid( String uid ) {
     this.uid = uid;
   }
 
@@ -96,7 +96,7 @@ public class Element implements Model {
     return metadata;
   }
 
-  public void setMetadata(List<MetadataRecord> metadata) {
+  public void setMetadata( List<MetadataRecord> metadata ) {
     this.metadata = metadata;
   }
 
@@ -104,7 +104,7 @@ public class Element implements Model {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId( String id ) {
     this.id = id;
   }
 
@@ -117,14 +117,14 @@ public class Element implements Model {
    * @return returns the records of the element matching this property that were
    *         deleted.
    */
-  public List<MetadataRecord> removeMetadata(String property) {
+  public List<MetadataRecord> removeMetadata( String property ) {
     List<MetadataRecord> result = new ArrayList<MetadataRecord>();
 
     Iterator<MetadataRecord> iterator = this.metadata.iterator();
-    while (iterator.hasNext()) {
+    while ( iterator.hasNext() ) {
       MetadataRecord next = iterator.next();
-      if (next.getProperty().getId().equals(property)) {
-        result.add(next);
+      if ( next.getProperty().getId().equals( property ) ) {
+        result.add( next );
         iterator.remove();
       }
     }

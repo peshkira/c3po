@@ -38,11 +38,11 @@ public class MongoIterator<E extends Model> implements Iterator<E> {
    *           if the desearializer is null.
    */
   public MongoIterator(MongoModelDeserializer deserializer, DBCursor cursor) {
-    if (cursor != null)
+    if ( cursor != null )
       this.iter = cursor.iterator();
 
-    if (deserializer == null) {
-      throw new IllegalArgumentException("Deserializer cannot be null");
+    if ( deserializer == null ) {
+      throw new IllegalArgumentException( "Deserializer cannot be null" );
     }
 
     this.deserializer = deserializer;
@@ -53,7 +53,7 @@ public class MongoIterator<E extends Model> implements Iterator<E> {
    */
   @Override
   public boolean hasNext() {
-    if (this.iter == null) {
+    if ( this.iter == null ) {
       return false;
     }
 
@@ -70,13 +70,13 @@ public class MongoIterator<E extends Model> implements Iterator<E> {
    */
   @Override
   public E next() {
-    if (this.iter == null) {
-      throw new NoSuchElementException("The iterator was null");
+    if ( this.iter == null ) {
+      throw new NoSuchElementException( "The iterator was null" );
     }
 
     DBObject next = this.iter.next();
 
-    return (E) this.deserializer.deserialize(next);
+    return (E) this.deserializer.deserialize( next );
   }
 
   /**

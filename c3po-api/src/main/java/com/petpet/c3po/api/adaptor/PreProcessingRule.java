@@ -31,6 +31,6 @@ public interface PreProcessingRule extends ProcessingRule {
    *          the version of the tool that provides this record.
    * @return true if the record should be skipped, false otherwise.
    */
-  boolean shouldSkip(String property, String value, String status, String tool, String version);
+  boolean shouldSkip( String property, String value, String status, String tool, String version );
 
 }

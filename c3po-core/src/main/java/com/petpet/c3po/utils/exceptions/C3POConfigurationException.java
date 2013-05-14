@@ -19,14 +19,14 @@ public class C3POConfigurationException extends Exception {
   }
 
   public C3POConfigurationException(final String msg) {
-    super(msg);
+    super( msg );
   }
 
   public C3POConfigurationException(final String msg, final Throwable cause) {
-    super(msg, cause);
+    super( msg, cause );
   }
 
   public C3POConfigurationException(final Throwable cause) {
-    super(cause);
+    super( cause );
   }
 }

@@ -70,7 +70,7 @@ public class ActionLog implements Model {
    *          the date when the action was done.
    */
   public ActionLog(String collection, String action, Date date) {
-    this(collection, action);
+    this( collection, action );
     this.date = date;
   }
 
@@ -78,7 +78,7 @@ public class ActionLog implements Model {
     return collection;
   }
 
-  public void setCollection(String collection) {
+  public void setCollection( String collection ) {
     this.collection = collection;
   }
 
@@ -86,7 +86,7 @@ public class ActionLog implements Model {
     return action;
   }
 
-  public void setAction(String action) {
+  public void setAction( String action ) {
     this.action = action;
   }
 
@@ -94,7 +94,7 @@ public class ActionLog implements Model {
     return date;
   }
 
-  public void setDate(Date date) {
+  public void setDate( Date date ) {
     this.date = date;
   }
 }

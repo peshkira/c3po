@@ -42,9 +42,9 @@ public class AssignCollectionToElementRule implements PostProcessingRule {
    * it.
    */
   @Override
-  public Element process(Element e) {
-    if (e != null) {
-      e.setCollection(this.collectionName);
+  public Element process( Element e ) {
+    if ( e != null ) {
+      e.setCollection( this.collectionName );
     }
 
     return e;

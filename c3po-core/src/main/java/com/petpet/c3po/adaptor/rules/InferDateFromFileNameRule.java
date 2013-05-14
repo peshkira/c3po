@@ -39,7 +39,7 @@ public class InferDateFromFileNameRule implements PostProcessingRule {
     this.cache = cache;
   }
 
-  public void setReadOnlyCache(ReadOnlyCache cache) {
+  public void setReadOnlyCache( ReadOnlyCache cache ) {
     this.cache = cache;
   }
 
@@ -56,9 +56,9 @@ public class InferDateFromFileNameRule implements PostProcessingRule {
    * successful, otherwise it returns the unmodified element.
    */
   @Override
-  public Element process(Element e) {
-    if (e != null) {
-      this.extractCreatedMetadataRecord(e, this.cache.getProperty("created"));
+  public Element process( Element e ) {
+    if ( e != null ) {
+      this.extractCreatedMetadataRecord( e, this.cache.getProperty( "created" ) );
     }
 
     return e;
@@ -77,22 +77,22 @@ public class InferDateFromFileNameRule implements PostProcessingRule {
    * @param created
    *          the property for the creation date.
    */
-  private void extractCreatedMetadataRecord(Element e, Property created) {
+  private void extractCreatedMetadataRecord( Element e, Property created ) {
     String name = e.getName();
-    if (name != null) {
+    if ( name != null ) {
 
-      String[] split = name.split("-");
+      String[] split = name.split( "-" );
 
-      if (split.length > 2) {
+      if ( split.length > 2 ) {
         String date = split[2];
 
         try {
-          Long.valueOf(date);
+          Long.valueOf( date );
 
-          MetadataRecord c = new MetadataRecord(created, date);
-          e.getMetadata().add(c);
+          MetadataRecord c = new MetadataRecord( created, date );
+          e.getMetadata().add( c );
 
-        } catch (NumberFormatException nfe) {
+        } catch ( NumberFormatException nfe ) {
           // if the value is not a number then it is something else and not a
           // year, skip the inference.
 

@@ -18,7 +18,7 @@ public interface Cache extends ReadOnlyCache {
    * @param value
    *          the value to cache.
    */
-  void put(Object key, Object value);
+  void put( Object key, Object value );
 
   /**
    * Clears the cache.

@@ -36,7 +36,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
   /**
    * A default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(LocalFileGatherer.class);
+  private static final Logger LOG = LoggerFactory.getLogger( LocalFileGatherer.class );
 
   /**
    * The configuration of the gatherer.
@@ -102,9 +102,9 @@ public class LocalFileGatherer implements MetaDataGatherer {
     boolean recursive = Boolean.valueOf( this.config.get( Constants.OPT_RECURSIVE ) );
 
     this.ready = false;
-    this.traverseFiles(new File(path), recursive, true);
-    System.out.println(this.count + " files were gathered successfully");
-    LOG.info("{} files were gathered successfully", this.count);
+    this.traverseFiles( new File( path ), recursive, true );
+    System.out.println( this.count + " files were gathered successfully" );
+    LOG.info( "{} files were gathered successfully", this.count );
     this.ready = true;
 
     synchronized ( lock ) {
@@ -126,7 +126,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
    * {@inheritDoc}
    */
   @Override
-  public void setConfig(Map<String, String> config) {
+  public void setConfig( Map<String, String> config ) {
     this.config = config;
   }
 
@@ -156,7 +156,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
    *          the input stream to read.
    * @return the string that was read out of the stream.
    */
-  private String readStream(String name, InputStream data) {
+  private String readStream( String name, InputStream data ) {
     String result = null;
     try {
       result = IOUtils.toString( data );
@@ -179,7 +179,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
    * @param firstLevel
    *          denotes whether this is the first level of traversal.
    */
-  private void traverseFiles(File file, boolean recursive, boolean firstLevel) {
+  private void traverseFiles( File file, boolean recursive, boolean firstLevel ) {
 
     if ( file.isDirectory() && (recursive || firstLevel) ) {
 
@@ -201,40 +201,44 @@ public class LocalFileGatherer implements MetaDataGatherer {
       }
     }
 
-      if ((this.count % 1000) == 0) {
-        LOG.info("traversed: {} files", this.count);
-        synchronized (lock) {
-          this.lock.notify();
+    if ( (this.count % 1000) == 0 ) {
+      LOG.info( "traversed: {} files", this.count );
+      synchronized ( lock ) {
+        this.lock.notify();
 
-        }
       }
+    }
 
-      if (this.queue.size() > 10000 && this.count % 1000 == 0) {
-        synchronized (lock) {
-          this.lock.notifyAll();
-        }
+    if ( this.queue.size() > 10000 && this.count % 1000 == 0 ) {
+      synchronized ( lock ) {
+        this.lock.notifyAll();
       }
-      
-      if (this.count % 10000 == 0) {
-        System.out.println(this.count + " files were processed");
-      }
+    }
 
-      
+    if ( this.count % 10000 == 0 ) {
+      System.out.println( this.count + " files were processed" );
+    }
+
   }
 
-  private void traverseArchive( String filePath, FileObject file ) {
+  /**
+   * Traverses an archive recursively and submits all files for processing.
+   * 
+   * @param file
+   *          the archive file to traverse.
+   */
+  private void traverseArchive( FileObject file ) {
     try {
       FileObject[] children = file.getChildren();
       for ( FileObject child : children ) {
         if ( child.getType() == FileType.FOLDER ) {
-          this.traverseArchive( filePath, child );
+          this.traverseArchive( child );
 
         } else {
           String name = child.getName().toString();
           FileContent fc = child.getContent();
-          InputStream zis = fc.getInputStream();
-          String data = this.readStream( name, zis );
-          submitMetadataResult( new MetadataStream( name, data ) );
+          InputStream is = fc.getInputStream();
+          submitMetadataResult( name, is );
         }
       }
     } catch ( FileSystemException e ) {
@@ -243,6 +247,28 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
   }
 
+  /**
+   * Checks if the file denoted by the given name is an archive based on the
+   * extension.
+   * 
+   * @param name
+   *          the name to check.
+   * @return true if it is an archive, false otherwise.
+   */
+  private boolean isArchive( String name ) {
+    return name.endsWith( ".zip" ) || name.endsWith( ".bzip2" ) || name.endsWith( ".bz2" ) || name.endsWith( ".gzip" )
+        || name.endsWith( ".gz" ) || name.endsWith( ".jar" ) || name.endsWith( ".tar" ) || name.endsWith( ".tar.gz" )
+        || name.endsWith( ".tgz" ) || name.endsWith( ".pack" ) || name.endsWith( ".xz" );
+  }
+
+  /**
+   * Retrieves the correct url prefix for the VFS based on the archive denoted
+   * by this file path.
+   * 
+   * @param filePath
+   *          the filepath to analyze.
+   * @return the prefix or file:// if it was not possible to infer it.
+   */
   private String getPrefix( String filePath ) {
     String prefix = filePath.substring( filePath.lastIndexOf( '.' ) + 1 );
     prefix = (prefix.length() > 4) ? "file://" : prefix + "://";
@@ -254,42 +280,55 @@ public class LocalFileGatherer implements MetaDataGatherer {
     return prefix;
   }
 
-  private boolean isArchive( String name ) {
-    return name.endsWith( ".zip" ) || name.endsWith( ".bzip2" ) || name.endsWith( ".bz2" ) || name.endsWith( ".gzip" )
-        || name.endsWith( ".gz" ) || name.endsWith( ".jar" ) || name.endsWith( ".tar" ) || name.endsWith( ".tar.gz" )
-        || name.endsWith( ".tgz" ) || name.endsWith( ".pack" ) || name.endsWith( ".xz" );
-  }
-
-  private InputStream getInputStream( String filePath ) {
-    try {
-      return new BufferedInputStream( new FileInputStream( new File( filePath ) ), 8192 );
-    } catch ( FileNotFoundException e ) {
-      LOG.warn( "File not found: {}. {}", filePath, e.getMessage() );
-      return null;
-    }
-  }
-
-  private void processFile( String filePath ) {
-    InputStream is = this.getInputStream( filePath );
-    String data = readStream( filePath, is );
-    submitMetadataResult( new MetadataStream( filePath, data ) );
-
-  }
-
+  /**
+   * Processes an archive file denoted by the given file path.
+   * 
+   * @param filePath
+   *          the file path to the archive.
+   */
   private void processArchive( String filePath ) {
     try {
       FileSystemManager fsManager = VFS.getManager();
       String prefix = this.getPrefix( filePath );
       FileObject archive = fsManager.resolveFile( prefix + filePath );
 
-      traverseArchive( filePath, archive );
+      traverseArchive( archive );
 
     } catch ( FileSystemException e ) {
       LOG.warn( "Could not resolve file: {}", e.getMessage() );
     }
   }
 
-  private void submitMetadataResult( MetadataStream ms ) {
+  /**
+   * Processes a normal file denoted by the given file path.
+   * 
+   * @param filePath
+   *          the file path to the file.
+   */
+  private void processFile( String filePath ) {
+    try {
+
+      InputStream is = new BufferedInputStream( new FileInputStream( new File( filePath ) ), 8192 );
+      submitMetadataResult( filePath, is );
+
+    } catch ( FileNotFoundException e ) {
+      LOG.warn( "File not found: {}. {}", filePath, e.getMessage() );
+    }
+
+  }
+
+  /**
+   * Submits the stream for processing and increments the processed files
+   * counter.
+   * 
+   * @param filePath
+   *          the file path to the file being processed.
+   * @param is
+   *          the input stream to the file.
+   */
+  private void submitMetadataResult( String filePath, InputStream is ) {
+    String data = readStream( filePath, is );
+    MetadataStream ms = new MetadataStream( filePath, data );
     this.queue.add( ms );
     count++;
   }

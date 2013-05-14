@@ -65,7 +65,7 @@ public class Filter {
    */
   public Filter(FilterCondition fc) {
     this();
-    this.conditions.add(fc);
+    this.conditions.add( fc );
   }
 
   /**
@@ -86,14 +86,14 @@ public class Filter {
    *          the filter to copy.
    */
   public Filter(Filter another) {
-    this.conditions = new ArrayList<FilterCondition>(another.conditions);
+    this.conditions = new ArrayList<FilterCondition>( another.conditions );
   }
 
   public List<FilterCondition> getConditions() {
     return conditions;
   }
 
-  public void setConditions(List<FilterCondition> conditions) {
+  public void setConditions( List<FilterCondition> conditions ) {
     this.conditions = conditions;
   }
 
@@ -103,13 +103,13 @@ public class Filter {
    * @param fc
    *          the filter condition to add.
    */
-  public void addFilterCondition(FilterCondition fc) {
-    if (conditions == null) {
+  public void addFilterCondition( FilterCondition fc ) {
+    if ( conditions == null ) {
       conditions = new ArrayList<FilterCondition>();
     }
 
-    if (fc != null && !conditions.contains(fc))
-      conditions.add(fc);
+    if ( fc != null && !conditions.contains( fc ) )
+      conditions.add( fc );
   }
 
   /**
@@ -121,13 +121,13 @@ public class Filter {
    *          the fields that should remain in the subfilter.
    * @return the new filter or the same if none of the conditions were matching.
    */
-  public Filter subFilter(String... fields) {
+  public Filter subFilter( String... fields ) {
     Filter subFilter = new Filter();
-    List<String> fieldList = Arrays.asList(fields);
+    List<String> fieldList = Arrays.asList( fields );
 
-    for (FilterCondition fc : this.conditions) {
-      if (fieldList.contains(fc.getField())) {
-        subFilter.addFilterCondition(fc);
+    for ( FilterCondition fc : this.conditions ) {
+      if ( fieldList.contains( fc.getField() ) ) {
+        subFilter.addFilterCondition( fc );
       }
     }
 
@@ -142,9 +142,9 @@ public class Filter {
    *          the field to check for.
    * @return true if it contains such a filter condition, false otherwise.
    */
-  public boolean contains(String field) {
-    for (FilterCondition fc : this.conditions) {
-      if (fc.getField().equals(field)) {
+  public boolean contains( String field ) {
+    for ( FilterCondition fc : this.conditions ) {
+      if ( fc.getField().equals( field ) ) {
         return true;
       }
     }
@@ -160,8 +160,8 @@ public class Filter {
    *          the {@link FilterCondition} to check.
    * @return true if it contains this {@link FilterCondition}, false otherwise.
    */
-  public boolean contains(FilterCondition fc) {
-    return this.conditions.contains(fc);
+  public boolean contains( FilterCondition fc ) {
+    return this.conditions.contains( fc );
   }
 
   @Override
@@ -173,18 +173,18 @@ public class Filter {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals( Object obj ) {
+    if ( this == obj )
       return true;
-    if (obj == null)
+    if ( obj == null )
       return false;
-    if (getClass() != obj.getClass())
+    if ( getClass() != obj.getClass() )
       return false;
     Filter other = (Filter) obj;
-    if (conditions == null) {
-      if (other.conditions != null)
+    if ( conditions == null ) {
+      if ( other.conditions != null )
         return false;
-    } else if (!conditions.equals(other.conditions))
+    } else if ( !conditions.equals( other.conditions ) )
       return false;
     return true;
   }

@@ -18,14 +18,14 @@ public class MongoActionLogDeserializer implements MongoModelDeserializer {
    * the passed object is null or not a {@link DBObject} null is returned.
    */
   @Override
-  public ActionLog deserialize(Object object) {
-    if (object == null || !(object instanceof DBObject)) {
+  public ActionLog deserialize( Object object ) {
+    if ( object == null || !(object instanceof DBObject) ) {
       return null;
     }
 
     DBObject dbObject = (DBObject) object;
 
-    return this.parseActionLog(dbObject);
+    return this.parseActionLog( dbObject );
   }
 
   /**
@@ -35,12 +35,12 @@ public class MongoActionLogDeserializer implements MongoModelDeserializer {
    *          the object to parse.
    * @return the action log.
    */
-  private ActionLog parseActionLog(DBObject object) {
-    String c = (String) object.get("collection");
-    String a = (String) object.get("action");
-    Date d = (Date) object.get("date");
+  private ActionLog parseActionLog( DBObject object ) {
+    String c = (String) object.get( "collection" );
+    String a = (String) object.get( "action" );
+    Date d = (Date) object.get( "date" );
 
-    return new ActionLog(c, a, d);
+    return new ActionLog( c, a, d );
   }
 
 }

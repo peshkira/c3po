@@ -20,8 +20,8 @@ public class EmptyValueProcessingRule implements PreProcessingRule {
    * Skips the empty values.
    */
   @Override
-  public boolean shouldSkip(String property, String value, String status, String tool, String version) {
-    if (value == null || value.equals("")) {
+  public boolean shouldSkip( String property, String value, String status, String tool, String version ) {
+    if ( value == null || value.equals( "" ) ) {
       return true;
     }
     return false;

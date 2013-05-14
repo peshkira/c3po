@@ -26,7 +26,7 @@ public class HtmlInfoProcessingRule implements PreProcessingRule {
   /**
    * A default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(HtmlInfoProcessingRule.class);
+  private static final Logger LOG = LoggerFactory.getLogger( HtmlInfoProcessingRule.class );
 
   /**
    * A set of valid html tags.
@@ -43,18 +43,18 @@ public class HtmlInfoProcessingRule implements PreProcessingRule {
    */
   private void readTags() {
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(HtmlInfoProcessingRule.class.getClassLoader()
-          .getResourceAsStream("adaptors/htmltags")));
+      BufferedReader reader = new BufferedReader( new InputStreamReader( HtmlInfoProcessingRule.class.getClassLoader()
+          .getResourceAsStream( "adaptors/htmltags" ) ) );
       String line = reader.readLine();
-      while (line != null) {
+      while ( line != null ) {
 
-        this.tags.add(line);
+        this.tags.add( line );
 
         line = reader.readLine();
       }
-    } catch (FileNotFoundException e) {
+    } catch ( FileNotFoundException e ) {
       e.printStackTrace();
-    } catch (IOException e) {
+    } catch ( IOException e ) {
       e.printStackTrace();
     }
 
@@ -72,21 +72,21 @@ public class HtmlInfoProcessingRule implements PreProcessingRule {
    * Skips the value if the property is not a valid html tag.
    */
   @Override
-  public boolean shouldSkip(String property, String value, String status, String tool, String version) {
+  public boolean shouldSkip( String property, String value, String status, String tool, String version ) {
 
-    if (tool != null && tool.equalsIgnoreCase("HtmlInfo")) {
+    if ( tool != null && tool.equalsIgnoreCase( "HtmlInfo" ) ) {
 
-      if (property.endsWith("rences")) {
-        int tagIndex = property.indexOf("Tag");
+      if ( property.endsWith( "rences" ) ) {
+        int tagIndex = property.indexOf( "Tag" );
 
-        if (tagIndex == -1) {
+        if ( tagIndex == -1 ) {
           return true;
         }
 
-        String tag = property.substring(0, tagIndex);
+        String tag = property.substring( 0, tagIndex );
 
-        if (!this.tags.contains(tag)) {
-          LOG.debug("Property {} seems to be faulty, skip", property);
+        if ( !this.tags.contains( tag ) ) {
+          LOG.debug( "Property {} seems to be faulty, skip", property );
           return true;
         }
       }

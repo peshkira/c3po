@@ -18,23 +18,23 @@ public class MongoSourceSerializer implements MongoModelSerializer {
    * returned.
    */
   @Override
-  public DBObject serialize(Object object) {
+  public DBObject serialize( Object object ) {
     BasicDBObject source = null;
 
-    if (object != null && object instanceof Source) {
+    if ( object != null && object instanceof Source ) {
       Source s = (Source) object;
       source = new BasicDBObject();
 
-      if (s.getId() != null && !s.getId().equals("")) {
-        source.put("_id", s.getId());
+      if ( s.getId() != null && !s.getId().equals( "" ) ) {
+        source.put( "_id", s.getId() );
       }
 
-      if (s.getName() != null && !s.getName().equals("")) {
-        source.put("name", s.getName());
+      if ( s.getName() != null && !s.getName().equals( "" ) ) {
+        source.put( "name", s.getName() );
       }
 
-      if (s.getVersion() != null && !s.getVersion().equals("")) {
-        source.put("version", s.getVersion());
+      if ( s.getVersion() != null && !s.getVersion().equals( "" ) ) {
+        source.put( "version", s.getVersion() );
       }
     }
 

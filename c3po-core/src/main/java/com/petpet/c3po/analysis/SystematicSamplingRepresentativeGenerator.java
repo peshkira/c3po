@@ -22,7 +22,7 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
   /**
    * Default logger.
    */
-  private static final Logger LOG = LoggerFactory.getLogger(SizeRepresentativeGenerator.class);
+  private static final Logger LOG = LoggerFactory.getLogger( SizeRepresentativeGenerator.class );
 
   /**
    * The persistence layer.
@@ -41,42 +41,42 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
    */
   @Override
   public List<String> execute() {
-    return this.execute(10);
+    return this.execute( 10 );
   }
 
   @Override
-  public List<String> execute(int limit) {
-    LOG.info("Applying {} algorithm for representatice selection", this.getType());
+  public List<String> execute( int limit ) {
+    LOG.info( "Applying {} algorithm for representatice selection", this.getType() );
 
     final List<String> result = new ArrayList<String>();
 
-    long count = pl.count(Element.class, this.getFilter());
+    long count = pl.count( Element.class, this.getFilter() );
 
-    if (count <= limit) {
-      final Iterator<Element> cursor = this.pl.find(Element.class, this.getFilter());
-      while (cursor.hasNext()) {
-        result.add(cursor.next().getUid());
+    if ( count <= limit ) {
+      final Iterator<Element> cursor = this.pl.find( Element.class, this.getFilter() );
+      while ( cursor.hasNext() ) {
+        result.add( cursor.next().getUid() );
       }
 
     } else {
-      long skip = Math.round((double) count / limit);
-      LOG.debug("Calculated skip is: {}", skip);
+      long skip = Math.round( (double) count / limit );
+      LOG.debug( "Calculated skip is: {}", skip );
 
-      Iterator<Element> cursor = this.pl.find(Element.class, this.getFilter());
+      Iterator<Element> cursor = this.pl.find( Element.class, this.getFilter() );
 
-      while (result.size() < limit) {
+      while ( result.size() < limit ) {
         int offset = (int) ((skip * result.size() + (int) ((Math.random() * skip) % count)) % count);
-        LOG.debug("offset {}", offset);
+        LOG.debug( "offset {}", offset );
         // skip the offset
         int i = 0;
-        while (i < 0) {
+        while ( i < 0 ) {
           i++;
           cursor.next();
         }
         Element next = cursor.next();
-        result.add(next.getUid());
+        result.add( next.getUid() );
 
-        cursor = this.pl.find(Element.class, this.getFilter());
+        cursor = this.pl.find( Element.class, this.getFilter() );
       }
 
     }

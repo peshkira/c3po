@@ -32,14 +32,14 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
    * Deserializes {@link DBObject}s to elements.
    */
   @Override
-  public Element deserialize(Object object) {
-    if (object == null || !(object instanceof DBObject)) {
+  public Element deserialize( Object object ) {
+    if ( object == null || !(object instanceof DBObject) ) {
       return null;
     }
 
     DBObject dbObject = (DBObject) object;
 
-    return this.parseElement(dbObject);
+    return this.parseElement( dbObject );
 
   }
 
@@ -50,44 +50,44 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
    *          the object to parse.
    * @return the Element.
    */
-  private Element parseElement(final DBObject obj) {
-    String coll = (String) obj.get("collection");
-    String uid = (String) obj.get("uid");
-    String name = (String) obj.get("name");
+  private Element parseElement( final DBObject obj ) {
+    String coll = (String) obj.get( "collection" );
+    String uid = (String) obj.get( "uid" );
+    String name = (String) obj.get( "name" );
 
-    Element e = new Element(coll, uid, name);
-    e.setId(obj.get("_id").toString());
-    e.setMetadata(new ArrayList<MetadataRecord>());
+    Element e = new Element( coll, uid, name );
+    e.setId( obj.get( "_id" ).toString() );
+    e.setMetadata( new ArrayList<MetadataRecord>() );
 
-    DBObject meta = (BasicDBObject) obj.get("metadata");
-    for (String key : meta.keySet()) {
+    DBObject meta = (BasicDBObject) obj.get( "metadata" );
+    for ( String key : meta.keySet() ) {
       MetadataRecord rec = new MetadataRecord();
-      DBObject prop = (DBObject) meta.get(key);
-      Property p = this.persistence.getCache().getProperty(key);
-      rec.setProperty(p);
-      rec.setStatus(prop.get("status").toString());
+      DBObject prop = (DBObject) meta.get( key );
+      Property p = this.persistence.getCache().getProperty( key );
+      rec.setProperty( p );
+      rec.setStatus( prop.get( "status" ).toString() );
 
-      Object value = prop.get("value");
-      if (value != null) {
-        rec.setValue(value.toString());
+      Object value = prop.get( "value" );
+      if ( value != null ) {
+        rec.setValue( value.toString() );
       }
 
       // because of boolean and other type conversions.
-      List<?> tmp = (List) prop.get("values");
-      if (tmp != null) {
+      List<?> tmp = (List) prop.get( "values" );
+      if ( tmp != null ) {
         List<String> values = new ArrayList<String>();
-        for (Object o : tmp) {
-          values.add(o.toString());
+        for ( Object o : tmp ) {
+          values.add( o.toString() );
         }
-        rec.setValues(values);
+        rec.setValues( values );
       }
 
-      List<String> src = (List<String>) prop.get("sources");
-      if (src != null && !src.isEmpty()) {
-        rec.setSources(src);
+      List<String> src = (List<String>) prop.get( "sources" );
+      if ( src != null && !src.isEmpty() ) {
+        rec.setSources( src );
       }
 
-      e.getMetadata().add(rec);
+      e.getMetadata().add( rec );
     }
 
     return e;
