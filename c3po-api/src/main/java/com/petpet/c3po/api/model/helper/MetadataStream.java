@@ -15,6 +15,15 @@
  ******************************************************************************/
 package com.petpet.c3po.api.model.helper;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
+
 /**
  * A simple wrapper around an input stream that holds the fileName (or some
  * human readable identifier) of the stream. Used to output more verbose logs
@@ -35,7 +44,7 @@ public class MetadataStream {
    * The meta data that was read from the file or source stream.
    */
   private String data;
-
+  
   /**
    * Sets the passed variables.
    * 

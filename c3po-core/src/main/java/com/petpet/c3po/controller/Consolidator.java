@@ -147,6 +147,7 @@ public class Consolidator extends Thread {
 
     if ( iter.hasNext() ) {
       Element stored = iter.next();
+      LOG.debug( "Element {} exists already, consolidating", stored.getUid() );
 
       if ( iter.hasNext() ) {
         // obviously, there are more than

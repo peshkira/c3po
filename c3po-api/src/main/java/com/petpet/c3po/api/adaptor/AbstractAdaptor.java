@@ -15,6 +15,12 @@
  ******************************************************************************/
 package com.petpet.c3po.api.adaptor;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,34 +217,51 @@ public abstract class AbstractAdaptor implements Runnable {
    */
   @Override
   public final void run() {
-    while ( !gatherer.isReady() || gatherer.hasNext() ) {
-      try {
+    try {
+      int processed = 0;
+      int sum = 0;
+      while ( !gatherer.isReady() || gatherer.hasNext() ) {
+        try {
 
-        MetadataStream stream = null;
+          MetadataStream stream = null;
+          String name = null;
+          String data = null;
 
-        synchronized ( gatherLock ) {
-          while ( !gatherer.hasNext() ) {
+          synchronized ( gatherLock ) {
+            while ( !gatherer.hasNext() ) {
 
-            if ( gatherer.isReady() ) {
-              break;
+              if ( gatherer.isReady() ) {
+                break;
+              }
+
+              gatherLock.wait();
             }
 
-            gatherLock.wait();
+          }
+          stream = this.gatherer.getNext();
+          if ( stream != null ) {
+            name = stream.getFileName();
+            data = stream.getData();
+
+            if ( data == null ) {
+              try {
+
+                InputStream is = new BufferedInputStream( new FileInputStream( new File( name ) ), 8192 );
+                long start = System.currentTimeMillis();
+                data = readStream( name, is );
+                long end = System.currentTimeMillis();
+                sum += (end - start);
+              } catch ( FileNotFoundException e ) {
+                LOG.warn( "File not found: {}. {}", name, e.getMessage() );
+              }
+            }
           }
 
-          stream = this.gatherer.getNext();
-
-        }
-
-        if ( stream != null ) {
           Element element = null;
           try {
 
-            String name = stream.getFileName();
-            String data = stream.getData();
-
             if ( name != null || data != null ) {
-
+              processed++;
               element = parseElement( name, data );
 
             }
@@ -249,20 +273,27 @@ public abstract class AbstractAdaptor implements Runnable {
           postProcessElement( element );
 
           submitElement( element );
+
+        } catch ( InterruptedException e ) {
+          e.printStackTrace();
+          break;
         }
 
-      } catch ( InterruptedException e ) {
-        e.printStackTrace();
-        break;
       }
 
-    }
+      synchronized ( elementsQueue ) {
+        this.elementsQueue.notifyAll();
+      }
 
-    synchronized ( elementsQueue ) {
-      this.elementsQueue.notifyAll();
+      LOG.info( "Stopping adaptor: {}", Thread.currentThread().getName() );
+      LOG.info( "On average adaptor {} needed {} ms to read a stream", Thread.currentThread().getName(),
+          (sum / processed) );
+      LOG.info( "{} processed {} files", Thread.currentThread().getName(), processed );
+      LOG.info( "{} needed total {}ms", Thread.currentThread().getName(), sum );
+    } catch ( Exception e ) {
+      LOG.error( "Adaptor stopped unexpectedly {}", Thread.currentThread().getName() );
+      e.printStackTrace();
     }
-
-    LOG.info( "Stopping adaptor: {}", Thread.currentThread().getName() );
   }
 
   /**
@@ -477,6 +508,19 @@ public abstract class AbstractAdaptor implements Runnable {
         elementsQueue.notify();
       }
     }
+  }
+
+  private String readStream( String name, InputStream data ) {
+    String result = null;
+    try {
+      result = IOUtils.toString( data );
+    } catch ( IOException e ) {
+      LOG.warn( "An error occurred, while reading the stream for {}: {}", name, e.getMessage() );
+      e.printStackTrace();
+    } finally {
+      IOUtils.closeQuietly( data );
+    }
+    return result;
   }
 
 }

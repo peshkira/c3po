@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 import org.apache.commons.io.IOUtils;
@@ -131,10 +132,16 @@ public class LocalFileGatherer implements MetaDataGatherer {
   /**
    * {@inheritDoc}
    */
-  public MetadataStream getNext() {
-    synchronized ( lock ) {
+  public synchronized MetadataStream getNext() {
+//    synchronized ( lock ) {
+//      MetadataStream stream = null;
+//      try {
       return queue.poll();
-    }
+//      } catch ( Exception e ) {
+//        // do nothing on purpose
+//      }
+//      return stream;
+//    }
   }
 
   /**
@@ -216,19 +223,19 @@ public class LocalFileGatherer implements MetaDataGatherer {
       }
     }
 
-    if ( (this.count % 1000) == 0 ) {
-      LOG.info( "traversed: {} files", this.count );
-      synchronized ( lock ) {
-        this.lock.notify();
-
-      }
-    }
-
-    if ( this.queue.size() > 10000 && this.count % 1000 == 0 ) {
-      synchronized ( lock ) {
-        this.lock.notifyAll();
-      }
-    }
+    // if ( (this.count % 1000) == 0 ) {
+    // LOG.info( "traversed: {} files", this.count );
+    // synchronized ( lock ) {
+    // this.lock.notify();
+    //
+    // }
+    // }
+    //
+    // if ( this.queue.size() > 10000 && this.count % 1000 == 0 ) {
+    // synchronized ( lock ) {
+    // this.lock.notifyAll();
+    // }
+    // }
 
     if ( this.count % 10000 == 0 ) {
       System.out.println( this.count + " files were processed" );
@@ -321,14 +328,15 @@ public class LocalFileGatherer implements MetaDataGatherer {
    *          the file path to the file.
    */
   private void processFile( String filePath ) {
-    try {
+    // try {
 
-      InputStream is = new BufferedInputStream( new FileInputStream( new File( filePath ) ), 8192 );
-      submitMetadataResult( filePath, is );
+    // InputStream is = new BufferedInputStream( new FileInputStream( new File(
+    // filePath ) ), 8192 );
+    submitMetadataResult( filePath );
 
-    } catch ( FileNotFoundException e ) {
-      LOG.warn( "File not found: {}. {}", filePath, e.getMessage() );
-    }
+    // } catch ( FileNotFoundException e ) {
+    // LOG.warn( "File not found: {}. {}", filePath, e.getMessage() );
+    // }
 
   }
 
@@ -344,6 +352,12 @@ public class LocalFileGatherer implements MetaDataGatherer {
   private void submitMetadataResult( String filePath, InputStream is ) {
     String data = readStream( filePath, is );
     MetadataStream ms = new MetadataStream( filePath, data );
+    this.queue.add( ms );
+    count++;
+  }
+
+  private void submitMetadataResult( String filePath ) {
+    MetadataStream ms = new MetadataStream( filePath, null );
     this.queue.add( ms );
     count++;
   }
