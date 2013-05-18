@@ -1,0 +1,9 @@
+.DS_Store
+.project
+.settings/
+c3po-api/
+c3po-cmd/
+c3po-core/
+c3po-webapi/
+standalone/
+target/
