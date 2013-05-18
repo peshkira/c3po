@@ -202,7 +202,7 @@ public abstract class AbstractAdaptor implements Runnable {
    * Starts a loop that runs this thread. The thread checks if the gatherer has
    * a next stream to process. If no, then it sleeps until it is notified by the
    * gatherer. If yes, then it gets the next stream and calls the
-   * {@link AbstractAdaptor#parseElement(FileMetadataStream)} method. Once an
+   * {@link AbstractAdaptor#parseElement(String, String)} method. Once an
    * element is parsed, then all the post processing rules submitted to this
    * adaptor are run on the element. Then the element is submitted for further
    * processing by the next in chain.
