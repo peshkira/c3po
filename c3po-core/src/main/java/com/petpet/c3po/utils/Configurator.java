@@ -89,7 +89,6 @@ public final class Configurator {
    * 3. inits the helper objects.
    */
   public void configure() {
-    LOG.info( "Hello, I am c3po, human content profiling relations" );
     this.loadApplicationConfiguration();
     this.initPersistenceLayer();
     this.initializeHelpers();

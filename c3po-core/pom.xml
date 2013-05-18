@@ -91,9 +91,19 @@
       <classifier>with-deps</classifier>
     </dependency>
     <dependency>
-      <groupId>commons-vfs</groupId>
-      <artifactId>commons-vfs</artifactId>
-      <version>1.0</version>
+      <groupId>de.schlichtherle.truezip</groupId>
+      <artifactId>truezip-file</artifactId>
+      <version>7.7.1</version>
+    </dependency>
+    <dependency>
+      <groupId>de.schlichtherle.truezip</groupId>
+      <artifactId>truezip-driver-zip</artifactId>
+      <version>7.7.1</version>
+    </dependency>
+    <dependency>
+      <groupId>de.schlichtherle.truezip</groupId>
+      <artifactId>truezip-driver-tar</artifactId>
+      <version>7.7.1</version>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>

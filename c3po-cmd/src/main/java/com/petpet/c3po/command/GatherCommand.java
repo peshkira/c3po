@@ -67,8 +67,11 @@ public class GatherCommand extends AbstractCLICommand implements Command {
     final Controller ctrl = new Controller( configurator );
     try {
       ctrl.processMetaData( conf );
+      System.out.println( "I finished translating the data. I am fluent in over six million forms of communication." );
+      System.out.println( "I finished memorizing all the data." );
     } catch ( C3POConfigurationException e ) {
       LOG.error( e.getMessage() );
+      System.err.println("An error occurred: " + e.getMessage());
       return;
 
     } finally {

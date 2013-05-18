@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -420,6 +421,7 @@ public class Controller {
 
     List<Consolidator> consolidators = new ArrayList<Consolidator>();
 
+    LOG.debug( "Initializing consolidators..." );
     for ( int i = 0; i < consThreads; i++ ) {
       Consolidator c = new Consolidator( this.persistence, this.processingQueue );
       consolidators.add( c );
@@ -431,6 +433,7 @@ public class Controller {
 
     List<ProcessingRule> rules = this.getRules( collection );
 
+    LOG.debug( "Initializing adaptors..." );
     for ( int i = 0; i < adaptThreads; i++ ) {
       AbstractAdaptor a = this.getAdaptor( type );
 
@@ -458,10 +461,8 @@ public class Controller {
       boolean adaptorsTerminated = this.adaptorPool.awaitTermination( 2678400, TimeUnit.SECONDS );
 
       if ( adaptorsTerminated ) {
-        System.out.println( "I finished translating the data. I am fluent in over six million forms of communication." );
         this.stopConsoldators( consolidators );
         this.consolidatorPool.awaitTermination( 2678400, TimeUnit.SECONDS );
-        System.out.println( "I finished memorizing all the data." );
 
       } else {
         System.out.println( "Oh my, It seems something went wrong. This process took too long" );
@@ -470,6 +471,9 @@ public class Controller {
 
     } catch ( InterruptedException e ) {
       LOG.error( "An error occurred: {}", e.getMessage() );
+    } finally {
+      String path = FileUtils.getTempDirectory().getPath() + File.separator + "c3poarchives";
+      FileUtils.deleteQuietly( new File( path ) );
     }
 
     ActionLog log = new ActionLog( collection, ActionLog.UPDATED_ACTION );

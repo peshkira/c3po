@@ -15,30 +15,22 @@
  ******************************************************************************/
 package com.petpet.c3po.gatherer;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.vfs.FileContent;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileSystemManager;
-import org.apache.commons.vfs.FileType;
-import org.apache.commons.vfs.VFS;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
+
+import de.schlichtherle.truezip.file.TArchiveDetector;
+import de.schlichtherle.truezip.file.TFile;
 
 /**
  * A gatherer of a local file system. It is a {@link Runnable} class that reads
@@ -55,12 +47,26 @@ public class LocalFileGatherer implements MetaDataGatherer {
   private static final Logger LOG = LoggerFactory.getLogger( LocalFileGatherer.class );
 
   /**
+   * A static integer for tmp folders.
+   */
+  private static int folder = 0;
+
+  /**
+   * A list of supported archive extensions.
+   */
+  private static final String[] ARCHIVE_EXTENSIONS = {
+      ".zip", ".tar", ".bzip2", ".tar.bz2",
+      ".bz2", ".tb2", ".tbz", ".tar.gz",
+      ".tgz", ".gz", ".tar.xz", ".txz", ".xz"
+  };
+
+  /**
    * The configuration of the gatherer.
    */
   private Map<String, String> config;
 
   /**
-   * A queue where the {@link MetadataStream} objects are stored.
+   * A queue where the {@link FileMetadataStream} objects are stored.
    */
   private final Queue<MetadataStream> queue;
 
@@ -119,8 +125,8 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
     this.ready = false;
     this.traverseFiles( new File( path ), recursive, true );
-    System.out.println( this.count + " files were gathered successfully" );
-    LOG.info( "{} files were gathered successfully", this.count );
+    System.out.println( this.count + " files were submitted for processing" );
+    LOG.info( "{} files were submitted for processing successfully", this.count );
     this.ready = true;
 
     synchronized ( lock ) {
@@ -133,15 +139,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
    * {@inheritDoc}
    */
   public synchronized MetadataStream getNext() {
-//    synchronized ( lock ) {
-//      MetadataStream stream = null;
-//      try {
-      return queue.poll();
-//      } catch ( Exception e ) {
-//        // do nothing on purpose
-//      }
-//      return stream;
-//    }
+    return queue.poll();
   }
 
   /**
@@ -169,30 +167,11 @@ public class LocalFileGatherer implements MetaDataGatherer {
   }
 
   /**
-   * Reads the given input stream into memory and returns it. The stream is
-   * closed.
-   * 
-   * @param name
-   *          the name of the file/object holding the stream.
-   * @param data
-   *          the input stream to read.
-   * @return the string that was read out of the stream.
-   */
-  private String readStream( String name, InputStream data ) {
-    String result = null;
-    try {
-      result = IOUtils.toString( data );
-    } catch ( IOException e ) {
-      LOG.warn( "An error occurred, while reading the stream for {}: {}", name, e.getMessage() );
-    } finally {
-      IOUtils.closeQuietly( data );
-    }
-    return result;
-  }
-
-  /**
    * Traverses the file system starting from the given file. If the recursive
-   * flag is true, then the traversal is recursive.
+   * flag is true, then the traversal is recursive. Processes files and
+   * archives. If an archive is encountered, then the it is extracted in a tmp
+   * direcotory, which is then traversed recursively. At the end of the process
+   * the tmp directory is removed.
    * 
    * @param file
    *          the directory to traverse.
@@ -214,92 +193,33 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
       if ( isArchive( filePath ) ) {
 
-        processArchive( filePath );
+        extractArchive( filePath );
 
       } else {
 
-        processFile( filePath );
+        submitMetadataResult( filePath );
 
       }
-    }
-
-    // if ( (this.count % 1000) == 0 ) {
-    // LOG.info( "traversed: {} files", this.count );
-    // synchronized ( lock ) {
-    // this.lock.notify();
-    //
-    // }
-    // }
-    //
-    // if ( this.queue.size() > 10000 && this.count % 1000 == 0 ) {
-    // synchronized ( lock ) {
-    // this.lock.notifyAll();
-    // }
-    // }
-
-    if ( this.count % 10000 == 0 ) {
-      System.out.println( this.count + " files were processed" );
-    }
-
-  }
-
-  /**
-   * Traverses an archive recursively and submits all files for processing.
-   * 
-   * @param file
-   *          the archive file to traverse.
-   */
-  private void traverseArchive( FileObject file ) {
-    try {
-      FileObject[] children = file.getChildren();
-      for ( FileObject child : children ) {
-        if ( child.getType() == FileType.FOLDER ) {
-          this.traverseArchive( child );
-
-        } else {
-          String name = child.getName().toString();
-          FileContent fc = child.getContent();
-          InputStream is = fc.getInputStream();
-          submitMetadataResult( name, is );
-        }
-      }
-    } catch ( FileSystemException e ) {
-      LOG.warn( "Could not resolve file: {}", e.getMessage() );
     }
 
   }
 
   /**
    * Checks if the file denoted by the given name is an archive based on the
-   * extension.
+   * supported extensions.
    * 
    * @param name
    *          the name to check.
    * @return true if it is an archive, false otherwise.
    */
   private boolean isArchive( String name ) {
-    return name.endsWith( ".zip" ) || name.endsWith( ".bzip2" ) || name.endsWith( ".bz2" ) || name.endsWith( ".gzip" )
-        || name.endsWith( ".gz" ) || name.endsWith( ".jar" ) || name.endsWith( ".tar" ) || name.endsWith( ".tar.gz" )
-        || name.endsWith( ".tgz" ) || name.endsWith( ".pack" ) || name.endsWith( ".xz" );
-  }
-
-  /**
-   * Retrieves the correct url prefix for the VFS based on the archive denoted
-   * by this file path.
-   * 
-   * @param filePath
-   *          the filepath to analyze.
-   * @return the prefix or file:// if it was not possible to infer it.
-   */
-  private String getPrefix( String filePath ) {
-    String prefix = filePath.substring( filePath.lastIndexOf( '.' ) + 1 );
-    prefix = (prefix.length() > 4) ? "file://" : prefix + "://";
-
-    if ( filePath.endsWith( ".tar.gz" ) ) {
-      prefix = "tgz://";
+    for ( String ext : ARCHIVE_EXTENSIONS ) {
+      if ( name.endsWith( ext ) ) {
+        return true;
+      }
     }
 
-    return prefix;
+    return false;
   }
 
   /**
@@ -308,57 +228,45 @@ public class LocalFileGatherer implements MetaDataGatherer {
    * @param filePath
    *          the file path to the archive.
    */
-  private void processArchive( String filePath ) {
+  private void extractArchive( String filePath ) {
+    TFile archive = new TFile( filePath );
+    String tmp = FileUtils.getTempDirectory().getPath() + File.separator + "c3poarchives" + File.separator + folder++;
+    File tmpDir = new File( tmp );
+
     try {
-      FileSystemManager fsManager = VFS.getManager();
-      String prefix = this.getPrefix( filePath );
-      FileObject archive = fsManager.resolveFile( prefix + filePath );
 
-      traverseArchive( archive );
+      tmpDir.mkdirs();
+      TFile directory = new TFile( tmpDir );
+      TFile.cp_r( archive, directory, TArchiveDetector.NULL, TArchiveDetector.NULL );
+      traverseFiles( tmpDir, true, true );
 
-    } catch ( FileSystemException e ) {
-      LOG.warn( "Could not resolve file: {}", e.getMessage() );
+    } catch ( IOException e ) {
+      LOG.warn( "An error occurred whule extracting file {}. Error: {}", filePath, e.getMessage() );
     }
   }
 
-  /**
-   * Processes a normal file denoted by the given file path.
-   * 
-   * @param filePath
-   *          the file path to the file.
-   */
-  private void processFile( String filePath ) {
-    // try {
-
-    // InputStream is = new BufferedInputStream( new FileInputStream( new File(
-    // filePath ) ), 8192 );
-    submitMetadataResult( filePath );
-
-    // } catch ( FileNotFoundException e ) {
-    // LOG.warn( "File not found: {}. {}", filePath, e.getMessage() );
-    // }
-
-  }
-
-  /**
-   * Submits the stream for processing and increments the processed files
-   * counter.
-   * 
-   * @param filePath
-   *          the file path to the file being processed.
-   * @param is
-   *          the input stream to the file.
-   */
-  private void submitMetadataResult( String filePath, InputStream is ) {
-    String data = readStream( filePath, is );
-    MetadataStream ms = new MetadataStream( filePath, data );
-    this.queue.add( ms );
-    count++;
-  }
-
   private void submitMetadataResult( String filePath ) {
-    MetadataStream ms = new MetadataStream( filePath, null );
+    FileMetadataStream ms = new FileMetadataStream( filePath );
     this.queue.add( ms );
     count++;
+
+    if ( (this.count % 1000) == 0 ) {
+      LOG.info( "{} files were submitted for processing", this.count );
+      synchronized ( lock ) {
+        this.lock.notify();
+
+      }
+    }
+
+    if ( this.queue.size() > 10000 && this.count % 1000 == 0 ) {
+      synchronized ( lock ) {
+        this.lock.notifyAll();
+      }
+    }
+
+    if ( this.count % 10000 == 0 ) {
+      System.out.println( this.count + " files were submitted for processing" );
+    }
+
   }
 }

@@ -15,12 +15,6 @@
  ******************************************************************************/
 package com.petpet.c3po.api.adaptor;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,7 +202,7 @@ public abstract class AbstractAdaptor implements Runnable {
    * Starts a loop that runs this thread. The thread checks if the gatherer has
    * a next stream to process. If no, then it sleeps until it is notified by the
    * gatherer. If yes, then it gets the next stream and calls the
-   * {@link AbstractAdaptor#parseElement(MetadataStream)} method. Once an
+   * {@link AbstractAdaptor#parseElement(FileMetadataStream)} method. Once an
    * element is parsed, then all the post processing rules submitted to this
    * adaptor are run on the element. Then the element is submitted for further
    * processing by the next in chain.
@@ -218,8 +211,6 @@ public abstract class AbstractAdaptor implements Runnable {
   @Override
   public final void run() {
     try {
-      int processed = 0;
-      int sum = 0;
       while ( !gatherer.isReady() || gatherer.hasNext() ) {
         try {
 
@@ -240,34 +231,20 @@ public abstract class AbstractAdaptor implements Runnable {
           }
           stream = this.gatherer.getNext();
           if ( stream != null ) {
-            name = stream.getFileName();
+            name = stream.getName();
             data = stream.getData();
-
-            if ( data == null ) {
-              try {
-
-                InputStream is = new BufferedInputStream( new FileInputStream( new File( name ) ), 8192 );
-                long start = System.currentTimeMillis();
-                data = readStream( name, is );
-                long end = System.currentTimeMillis();
-                sum += (end - start);
-              } catch ( FileNotFoundException e ) {
-                LOG.warn( "File not found: {}. {}", name, e.getMessage() );
-              }
-            }
           }
 
           Element element = null;
           try {
 
             if ( name != null || data != null ) {
-              processed++;
               element = parseElement( name, data );
 
             }
 
           } catch ( Exception e ) {
-            LOG.warn( "An error occurred while parsing, skipping {}: ", stream.getFileName(), e.getMessage() );
+            LOG.warn( "An error occurred while parsing, skipping {}: ", stream.getName(), e.getMessage() );
           }
 
           postProcessElement( element );
@@ -285,11 +262,6 @@ public abstract class AbstractAdaptor implements Runnable {
         this.elementsQueue.notifyAll();
       }
 
-      LOG.info( "Stopping adaptor: {}", Thread.currentThread().getName() );
-      LOG.info( "On average adaptor {} needed {} ms to read a stream", Thread.currentThread().getName(),
-          (sum / processed) );
-      LOG.info( "{} processed {} files", Thread.currentThread().getName(), processed );
-      LOG.info( "{} needed total {}ms", Thread.currentThread().getName(), sum );
     } catch ( Exception e ) {
       LOG.error( "Adaptor stopped unexpectedly {}", Thread.currentThread().getName() );
       e.printStackTrace();
@@ -509,18 +481,4 @@ public abstract class AbstractAdaptor implements Runnable {
       }
     }
   }
-
-  private String readStream( String name, InputStream data ) {
-    String result = null;
-    try {
-      result = IOUtils.toString( data );
-    } catch ( IOException e ) {
-      LOG.warn( "An error occurred, while reading the stream for {}: {}", name, e.getMessage() );
-      e.printStackTrace();
-    } finally {
-      IOUtils.closeQuietly( data );
-    }
-    return result;
-  }
-
 }

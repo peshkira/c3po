@@ -110,7 +110,7 @@ public class C3PO {
 
     if ( !Arrays.asList( MODES ).contains( mode ) ) {
 
-      System.err.println( "Unknown mode: " + mode );
+      System.err.println( "Oh my, does not compute. Unknown mode: " + mode );
       new HelpCommand( params ).execute();
       System.exit( 1 );
 
@@ -130,6 +130,7 @@ public class C3PO {
         throw new ParameterException( "Unknown mode '" + mode + "'." );
       }
 
+      System.out.println( "Hello, I am c3po, human content profiling relations" );
       command.setParams( params );
       command.execute();
 
