@@ -36,3 +36,16 @@ You can find more information in the following links:
 - [Website](http://ifs.tuwien.ac.at/imp/c3po)
 - [Blog Post](http://www.openplanetsfoundation.org/blogs/2012-11-19-c3po-content-profiling-tool-preservation-analysis)
 - [Screencast](https://vimeo.com/53069664)
+
+Road Map
+------------------------
+* consolidate based on resource name
+* bundle optional! FITS execution in c3po (to make it easier for demo purposes)
+* create a consistent REST API
+* refactor the web app to use the new REST API and the new core
+* read data from memory instead of file system and allow adaptors to skip the 
+memory read 
+* make use of a controlled vocabulary for properties. If nothing better exists, then use FITS as default.
+* implement HBASE backend
+* ...
+* scale to half a billion objects
