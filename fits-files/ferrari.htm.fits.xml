@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.2" timestamp="30.03.13 22:43">
+  <identification status="CONFLICT">
+    <identity format="Hypertext Markup Language" mimetype="text/html" toolname="FITS" toolversion="0.6.2">
+      <tool toolname="Jhove" toolversion="1.5" />
+      <tool toolname="NLNZ Metadata Extractor" toolversion="3.4GA" />
+      <version toolname="NLNZ Metadata Extractor" toolversion="3.4GA">1.0</version>
+    </identity>
+    <identity format="Extensible Hypertext Markup Language" mimetype="application/xhtml+xml" toolname="FITS" toolversion="0.6.2">
+      <tool toolname="Droid" toolversion="3.0" />
+      <version toolname="Droid" toolversion="3.0">1.0</version>
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">fmt/102</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.5">3081</size>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/peter/privat/Archiv/Schule/Kolleg_0203/Projekte/kafka-backup/tokelau-030303/doku/Wochenberichte/kw02/ferrari.htm</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/peter/privat/Archiv/Schule/Kolleg_0203/Projekte/kafka-backup/tokelau-030303/doku/Wochenberichte/kw02/ferrari.htm</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">ba6c1819a4fbad39e63ade37f2be6ac3</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1042664820000</fslastmodified>
+  </fileinfo>
+  <filestatus>
+    <well-formed toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">false</well-formed>
+    <valid toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">false</valid>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">TokenMgrError: Lexical error at line 79, column 12.  Encountered: "\"" (34), after : ""</message>
+  </filestatus>
+  <metadata>
+    <text>
+      <markupBasis toolname="Jhove" toolversion="1.5">HTML</markupBasis>
+      <markupBasisVersion toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">1.0</markupBasisVersion>
+    </text>
+  </metadata>
+</fits>
+
