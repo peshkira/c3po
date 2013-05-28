@@ -28,15 +28,16 @@ public class FITSAdaptor extends AbstractAdaptor {
   private final Digester digester;
 
   /**
-   * Flag taken from configuration
+   * Flag taken from the current configuration
    * 
    * @see com.petpet.c3po.common.Constants#CNF_INFER_DATE
    */
   private boolean inferDate = false;
 
   /**
-   * The collection to which the processed elements will belong to. Taken from
-   * the current configuration.
+   * Taken from the current configuration.
+   * 
+   * @see Constants#CNF_COLLECTION_ID
    */
   private String collection;
 
@@ -75,7 +76,6 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.createFormatRule("fits/identification/identity");
     this.createFormatVersionRule("fits/identification/identity/version");
     this.createPuidRule("fits/identification/identity/externalIdentifier");
-
   }
 
   private void createFileInfoRules() {
@@ -129,7 +129,6 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.digester.addCallMethod(pattern + "/tool", "addIdentityTool", 2);
     this.digester.addCallParam(pattern + "/tool", 0, "toolname");
     this.digester.addCallParam(pattern + "/tool", 1, "toolversion");
-
   }
 
   private void createFormatVersionRule(String pattern) {
@@ -145,7 +144,6 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.digester.addCallParam(pattern, 0);
     this.digester.addCallParam(pattern, 1, "toolname");
     this.digester.addCallParam(pattern, 2, "toolversion");
-
   }
 
   private void createValueRule(String pattern) {
