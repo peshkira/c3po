@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.AbstractAdaptor;
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
+import com.petpet.c3po.adaptor.rules.DroolsConflictResolutionProcessingRule;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
@@ -151,6 +152,7 @@ public class Controller {
     rules.add(new HtmlInfoProcessingRule());
     rules.add(new EmptyValueProcessingRule());
     rules.add(new FormatVersionResolutionRule());
+    rules.add(new DroolsConflictResolutionProcessingRule(this.getPersistence().getCache()));
     return rules;
   }
   

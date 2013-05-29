@@ -1,0 +1,393 @@
+package rules
+
+import java.util.List;
+import java.util.Set;
+import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.datamodel.MetadataRecord;
+import com.petpet.c3po.datamodel.MetadataRecord.Status;
+import com.petpet.c3po.datamodel.Source
+import com.petpet.c3po.api.dao.Cache
+
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.api.dao.Cache cache;
+
+function void debug(String text) {
+	System.out.println(text);
+}
+function void log(String text) {
+	System.out.println(text);
+}
+
+
+/**
+ * This is run every time, once
+ */
+rule "Initialize"
+		salience 1000
+	when 
+	then
+		debug("DR: Running" );	
+end
+
+
+/**
+ * This rule checks if there exist two distinct properties, marked as conflicting, that in fact use the same value. 
+ * If two conflicting properties are found, the two are merged (in fact their sources are merged).
+ *
+ * This rule has a high priority, so whenever we see a property is conflicting, there must be a second property of different value!
+ */
+rule "Same value without Conflict - Resolution"
+		salience 910
+	when 
+		$e : Element()
+
+		$md1 : MetadataRecord(
+			status=="CONFLICT"
+		) from $e.metadata
+
+		$md2 : MetadataRecord(
+			this != $md1, 
+			property.id == $md1.property.id,  
+			value == $md1.value
+		) from $e.metadata
+
+	then
+		debug("DR: "+$e.getUid()+" - conflicting at "+$md1.getProperty().getId() + " with same value ("+$md1.getValue()+")");
+		
+		modify ($e) {
+			mergeMetadata($md1, $md2);
+		}
+		debug("    -> merging!");
+end
+
+/**
+ * This rule checks if there exists a property, marked as conflicting, that has no more other properties that 
+ * provoke the conflict. 
+ * If no conflicting properties are found, the status is set to "SINGLE_RESULT"
+ *
+ * This rule has a high priority, so whenever we see a property is conflicting, there must be a second property.
+ */
+rule "Single value, no more Conflict - Resolution"
+		salience 900
+	when 
+		$e : Element()
+
+		$md1 : MetadataRecord(
+			status=="CONFLICT"
+		) from $e.metadata
+
+		Number( intValue == 0 ) from accumulate( $m : MetadataRecord( 
+				this != $md1, 
+				property.id == $md1.property.id
+			) from $e.metadata;
+				count($m)
+		)
+
+	then
+		debug("DR: "+$e.getUid()+" - no more conflicts on "+$md1.getProperty().getId());
+		
+		$md1.setStatus(Status.SINGLE_RESULT.toString());
+		modify($e) {
+			getId()
+		}
+		debug("    -> set status to Single Result!");
+end
+
+
+/*
+rule "Output Conflicts"
+	when 
+		$e : Element()
+		MetadataRecord( status=="CONFLICT", $conflictingProperty : property.id) from $e.metadata
+		accumulate( $m : MetadataRecord( property.id == $conflictingProperty) from $e.metadata;
+					$conflicts : collectList($m)
+				)
+	then
+		debug("DR: "+$e.getUid()+" has conflict in "+$conflictingProperty+": ");
+		for(Object conflict : $conflicts) {
+			debug("    "+((MetadataRecord)conflict).getValue());			
+		}
+end
+*
+
+rule "Files by JHove 1.5"
+	when 
+		$e : Element()
+		$mdJhove : MetadataRecord(status=="CONFLICT", 
+							property.id == "format",
+							sources contains cache.getSource("Jhove","1.5").id) from $e.metadata							
+	then
+		debug("DR: "+$e.getUid()+" has conflict in format by JHove 1.5 : ");
+		debug("    "+$mdJhove.getValue());			
+end
+*/
+
+
+/**
+ * If Exiftool reports another format than others AND at least 2 times other tools claim it to be "Portable Document Format", 
+ * ignore Exiftool (and the like).
+ */
+rule "Resolve Exiftool PDF format string"
+		salience 100
+	when 
+		$e : Element()
+		$mdBad : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "format", 
+			MetadataUtil.isFromTool(cache, this, "Exiftool") 
+		) from $e.metadata
+		$badSources : List ($toolOpinion : size) from accumulate( $id: String() from $mdBad.sources;
+			collectList( cache.getSource($id) ) 
+		)
+
+		$mdGood : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "format", 
+			! MetadataUtil.isFromTool(cache, this, "Exiftool"), 
+			value == "Portable Document Format"
+		) from $e.metadata
+		$goodSources : List (size >= 2*$toolOpinion) from accumulate( $id: String() from $mdGood.sources;
+			collectList( cache.getSource($id) ) 
+		)
+		
+	then
+		debug("DR: "+$e.getUid()+" - Exiftool PDF format string issue: ");
+		debug("    bad value: "+ $mdBad.getValue());
+		for(Source source : (List<Source>)$badSources) {
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		debug("    good value: "+ $mdGood.getValue());
+		for(Source source : (List<Source>)$goodSources) {
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		
+		modify ($e) {
+			ignoreMetadata($mdBad)
+		}
+		debug("    -> ignore "+$mdBad);
+		
+end
+
+/**
+ * Treat application/rtf mimetypes as text/rtf 
+ */
+rule "set application/rtf mimetypes to text/rtf"
+		salience 160
+	when 
+		$e : Element()
+		$md : MetadataRecord(
+			property.id == "mimetype",
+			value matches ".*application/rtf.*"
+		) from $e.metadata
+
+	then
+		debug("DR: "+$e.getUid()+" - application/rtf issue: ");
+		debug("    mimetype value: "+ $md.getValue());
+		for(String sourceID : $md.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		
+		$md.setValue("text/rtf");
+		modify ($e) {
+			getId()
+		}
+		debug("    -> set mimetype to \"text/rtf\"!");
+		
+end
+
+/**
+ * set RTF format to Richt Text Format 
+ */
+rule "set RTF format to Richt Text Format"
+		salience 160
+	when 
+		$e : Element()
+		$mdFormat : MetadataRecord(
+			property.id == "format",
+			value == "RTF"
+		) from $e.metadata
+		$mdMime : MetadataRecord(
+			property.id == "mimetype",
+			value matches ".*(text|application)/rtf.*"
+		) from $e.metadata
+
+	then
+		debug("DR: "+$e.getUid()+" - RTF format string issue: ");
+		debug("    format: "+ $mdFormat.getValue());
+		for(String sourceID : $mdFormat.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		
+		$mdFormat.setValue("Rich Text Format");
+		modify ($e) {
+			getId()
+		}
+		debug("    -> set format to \"Rich Text Format\"!");
+		
+end
+
+/**
+ * If some tools report a mimetype as "text/plain" (and all those tools report the same format string) 
+ * and some other tools report "text/*" (and all agree on the same format string), ignore the text/plain mimetype and format.
+ */
+rule "ignore text/plain and corresponding format if more precisise text/* available"
+		salience 150
+	when 
+		$e : Element()
+		$mdBadMime : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "mimetype",
+			value == "text/plain"
+		) from $e.metadata
+		$mdBadFormat : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "format",
+			MetadataUtil.haveSameSources(this, $mdBadMime)
+		) from $e.metadata
+		
+		$mdGoodMime : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "mimetype", 
+			value != "text/plain",
+			value str[startsWith] "text/"
+		) from $e.metadata
+		$mdGoodFormat : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "format",
+			MetadataUtil.haveSameSources(this, $mdGoodMime)
+		) from $e.metadata
+		
+	then
+		debug("DR: "+$e.getUid()+" - text/plain issue: ");
+		debug("    mimetype: "+ $mdBadMime.getValue());
+		debug("    format:   "+ $mdBadFormat.getValue());
+		for(String sourceID : $mdBadMime.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		debug("    mimetype: "+ $mdGoodMime.getValue());
+		debug("    format:   "+ $mdGoodFormat.getValue());
+		for(String sourceID : $mdGoodMime.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		
+		modify ($e) {
+			ignoreMetadata($mdBadMime),
+			ignoreMetadata($mdBadFormat)
+		}
+		debug("    -> ignore "+$mdBadMime);
+		debug("    -> ignore "+$mdBadFormat);
+		
+end
+
+/**
+ * If Jhove report a mimetype as "text/html" (and all those tools report the same format string) 
+ * and some other tools report "application/xhtml+xml" (and all agree on the same format string), ignore the text/html mimetype and format.
+ */
+rule "ignore text/html and corresponding format by Jhove (and others) if application/xhtml+xml is available"
+		salience 150
+	when 
+		$e : Element()
+		$mdBadMime : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "mimetype",
+			value == "text/html",
+			MetadataUtil.isFromTool(cache, this, "Jhove") 
+		) from $e.metadata
+		$mdBadFormat : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "format",
+			MetadataUtil.haveSameSources(this, $mdBadMime)
+		) from $e.metadata
+
+		$mdGoodMime : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "mimetype", 
+			value == "application/xhtml+xml"
+		) from $e.metadata
+		$mdGoodFormat : MetadataRecord(
+			status=="CONFLICT",	
+			property.id == "format",
+			MetadataUtil.haveSameSources(this, $mdGoodMime)
+		) from $e.metadata
+		
+	then
+		debug("DR: "+$e.getUid()+" - text/html vs. application/xhtml+xml issue: ");
+		debug("    mimetype value: "+ $mdBadMime.getValue());
+		debug("    format value:   "+ $mdBadFormat.getValue());
+		for(String sourceID : $mdBadMime.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		debug("    mimetype value: "+ $mdGoodMime.getValue());
+		debug("    format value:   "+ $mdGoodFormat.getValue());
+		for(String sourceID : $mdGoodMime.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());			
+		}
+		
+		modify ($e) {
+			ignoreMetadata($mdBadMime),
+			ignoreMetadata($mdBadFormat)
+		}
+		debug("    -> ignore "+$mdBadMime);
+		debug("    -> ignore "+$mdBadFormat);
+end
+
+
+/**
+ * DEBUG Rules
+ */
+
+rule "DEBUG: print conflicting Metadata"
+		salience 0
+	when 
+		$e : Element()
+		MetadataRecord( status=="CONFLICT", $conflictingProperty : property.id) from $e.metadata
+		
+		$conflicts : List() from collect(
+						MetadataRecord(status=="CONFLICT",	property.id == $conflictingProperty) from $e.metadata
+					)
+		
+//		accumulate( MetadataRecord($sources:sources) from $conflictingFormats;
+//						$conflictSourceIDs : unionList( $sources ) 
+//					)
+		
+//		accumulate( $id: String() from $conflictSourceIDs;
+//						$conflictSources : collectList( cache.getSource($id) ) 
+//					)
+		
+	then
+		log("DR: "+$e.getUid()+" has conflict in "+$conflictingProperty+" by: ");
+//		for(Source source : (List<Source>)$conflictSources) {
+//			debug("    "+source.getName()+" "+source.getVersion()+ "["+source.getId()+"]");			
+//		}
+		for(MetadataRecord conflict : (List<MetadataRecord>)$conflicts) {
+			log("    "+conflict.getValue());
+			for(String sourceID : conflict.getSources()) {
+				Source source = cache.getSource(sourceID);
+				log("        "+source.getName()+" "+source.getVersion()+ "["+source.getId()+"]");			
+			}			
+		}
+
+end
+
+rule "DEBUG: print elements without conflict"
+		salience 0
+	when 
+		$e : Element()
+		
+		Number( intValue == 0 ) from accumulate( $m : MetadataRecord( 
+				status=="CONFLICT"
+			) from $e.metadata;
+				count($m)
+		)
+		
+	then
+		log("DR: "+$e.getUid()+" has no conflicts");
+end
+ 
