@@ -14,10 +14,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
-    <plugins>
+    <plugins>    
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
+         <configuration>
           <archive>
             <manifest>
               <mainClass>com.petpet.c3po.C3PO</mainClass>
@@ -26,6 +26,15 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+         <version>3.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
     </plugins>

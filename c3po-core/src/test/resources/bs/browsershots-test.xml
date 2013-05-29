@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Results>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/*/http://www.dti.gov.uk/consumers/buying-selling/distance-selling/index.html"> 
+	  <browser_desc>firefox</browser_desc>
+	  <browser_id>not used</browser_id>
+	  <confronter>
+	    <browser_desc>opera</browser_desc>
+	    <browser_id>not used</browser_id>
+	    <score>-28.929505261148392</score>
+	  </confronter>
+	</comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20090128221550/http://www.the-hutton-inquiry.org.uk/">
+	  <browser_desc>firefox</browser_desc>
+	  <browser_id>not used</browser_id>
+	  <confronter>
+	    <browser_desc>opera</browser_desc>
+	    <browser_id>not used</browser_id>
+	    <score>-4.24534913323703</score>
+	  </confronter>
+	</comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20090315232733/http://www.abni.org.uk"><browser_desc>firefox</browser_desc><browser_id>not used</browser_id><confronter><browser_desc>opera</browser_desc><browser_id>not used</browser_id><score>-1.0</score></confronter></comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20090608182316/standards.dfes.gov.uk/schemes3/">
+	  <browser_desc>firefox</browser_desc>
+	  <browser_id>not used</browser_id>
+	  <confronter>
+	    <browser_desc>opera</browser_desc>
+	    <browser_id>not used</browser_id>
+	    <score>-65.68889750706087</score>
+	  </confronter>
+	</comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20100307172104/http://ofsted.gov.uk/ofsted-home/about-us/faqs"><browser_desc>firefox</browser_desc><browser_id>not used</browser_id><confronter><browser_desc>opera</browser_desc><browser_id>not used</browser_id><score>-1.0</score></confronter></comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20100824180635/http://yourfreedom.hmg.gov.uk/"><browser_desc>firefox</browser_desc><browser_id>not used</browser_id><confronter><browser_desc>opera</browser_desc><browser_id>not used</browser_id><score>-253.42181660506378</score></confronter></comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20110809101133/http://nsonline.org.uk/site_intelligence/selectors/page?H"><browser_desc>firefox</browser_desc><browser_id>not used</browser_id><confronter><browser_desc>opera</browser_desc><browser_id>not used</browser_id><score>1.0663560275979076</score></confronter></comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20120406035308/http://www.coi.gov.uk/"><browser_desc>firefox</browser_desc><browser_id>not used</browser_id><confronter><browser_desc>opera</browser_desc><browser_id>not used</browser_id><score>-1.0</score></confronter></comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20120406182419/blogs.fco.gov.uk/martinuden/"><browser_desc>firefox</browser_desc><browser_id>not used</browser_id><confronter><browser_desc>opera</browser_desc><browser_id>not used</browser_id><score>-72.58688831149139</score></confronter></comparisonResult>
+	<comparisonResult baseurl="http://webarchive.nationalarchives.gov.uk/20120809122112/http://www.sitabus.it"><browser_desc>firefox</browser_desc><browser_id>not used</browser_id><confronter><browser_desc>opera</browser_desc><browser_id>not used</browser_id><score>-20.521211258050084</score></confronter></comparisonResult>
+      </Results>
+

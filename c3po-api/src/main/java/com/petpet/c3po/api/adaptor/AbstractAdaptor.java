@@ -263,7 +263,7 @@ public abstract class AbstractAdaptor implements Runnable {
       }
 
     } catch ( Exception e ) {
-      LOG.error( "Adaptor stopped unexpectedly {}", Thread.currentThread().getName() );
+      LOG.error( "Adaptor stopped unexpectedly {}",Thread.currentThread().getName() );
       e.printStackTrace();
     }
   }

@@ -15,6 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.controller;
 
+import com.petpet.c3po.adaptor.browsershot.BrowserShotAdaptor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
 import com.petpet.c3po.adaptor.rules.InferDateFromFileNameRule;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
+import com.petpet.c3po.adaptor.browsershot.BrowserShotAdaptor;
 import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
@@ -140,6 +142,7 @@ public class Controller {
     // and add them to this map.
     this.knownAdaptors.put( "FITS", FITSAdaptor.class );
     this.knownAdaptors.put( "TIKA", TIKAAdaptor.class );
+    this.knownAdaptors.put("BrowserShot", BrowserShotAdaptor.class);
 
     // TODO detect these automatically from the class path
     // and add them to this map.
@@ -342,8 +345,8 @@ public class Controller {
     }
 
     String inputType = options.get( Constants.OPT_INPUT_TYPE );
-    if ( inputType == null || (!inputType.equals( "TIKA" ) && !inputType.equals( "FITS" )) ) {
-      throw new C3POConfigurationException( "No input type specified. Please use one of FITS or TIKA." );
+    if ( inputType == null || (!inputType.equals( "TIKA" ) && !inputType.equals( "FITS" ) && !inputType.equals( "BrowserShot" )) ) {
+      throw new C3POConfigurationException( "No input type specified. Please use one of FITS, TIKA or BrowserShot." );
     }
 
     String path = options.get( Constants.OPT_COLLECTION_LOCATION );
