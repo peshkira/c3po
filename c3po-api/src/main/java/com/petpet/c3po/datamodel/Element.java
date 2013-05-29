@@ -404,4 +404,22 @@ public class Element {
     return element;
   }
 
+	public void mergeMetadata(MetadataRecord record1, MetadataRecord record2) {
+		if (record1.getProperty().getId().equals(record2.getProperty().getId())
+				&& record1.getValue().equals(record2.getValue())) {
+			if (this.metadata.remove(record2)) {
+				record1.getSources().addAll(record2.getSources());
+
+				// this is necessary to support Drools revert accumulation,
+				// otherwise sources get reverted twice
+				record2.getSources().clear();
+			}
+		}
+	}
+
+	public void ignoreMetadata(MetadataRecord record) {
+		this.metadata.remove(record);
+		// TODO: add removed MDRecord to backlog!
+	}
+
 }
