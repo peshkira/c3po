@@ -31,7 +31,7 @@ public interface Cache {
    * @param name
    *          the name of the source tool.
    * @param version
-   *          the version of the too.
+   *          the version of the tool.
    * @return
    */
   Source getSource(String name, String version);
