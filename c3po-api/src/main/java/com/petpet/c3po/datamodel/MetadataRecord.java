@@ -123,6 +123,12 @@ public class MetadataRecord {
     return status;
   }
 
+  @Override
+  public String toString() {
+	return "MetadataRecord [property=" + property.getId() + ", value=" + value
+			+ ", status=" + status + ", sources=" + sources + "]";
+  }
+
   public void setStatus(String status) {
     this.status = status;
   }
