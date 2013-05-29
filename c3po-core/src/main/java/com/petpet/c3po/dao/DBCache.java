@@ -65,6 +65,16 @@ public class DBCache implements Cache {
   }
 
   @Override
+  public synchronized Source getSource(String id) {
+    DBCursor result = this.findSource(id);
+
+    if (result.count() == 1) {
+      return this.extractSource(result.next());
+    }
+    return null;
+  }
+
+  @Override
   public synchronized Source getSource(String name, String version) {
     Source source = this.sourceCache.get(name + ":" + version);
 
@@ -89,6 +99,13 @@ public class DBCache implements Cache {
   public synchronized void clear() {
     this.propertyCache.clear();
     this.sourceCache.clear();
+  }
+
+  private DBCursor findSource(String id) {
+    BasicDBObject query = new BasicDBObject();
+    query.put("_id", id);
+
+    return this.persistence.find(Constants.TBL_SOURCES, query);
   }
 
   private DBCursor findSource(String name, String version) {
