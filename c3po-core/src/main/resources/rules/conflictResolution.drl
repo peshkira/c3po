@@ -39,7 +39,7 @@ end
  */
 rule "Same value without Conflict - Resolution"
 		salience 910
-	when 
+	when
 		$e : Element()
 
 		$md1 : MetadataRecord(
@@ -198,9 +198,9 @@ rule "set application/rtf mimetypes to text/rtf"
 end
 
 /**
- * set RTF format to Richt Text Format 
+ * set RTF format to Rich Text Format
  */
-rule "set RTF format to Richt Text Format"
+rule "set RTF format to Rich Text Format"
 		salience 160
 	when 
 		$e : Element()
@@ -338,6 +338,57 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
 		debug("    -> ignore "+$mdBadFormat);
 end
 
+rule "if Exiftool and Droid report ppt, ignore others"
+		salience 100
+	when
+		$e : Element()
+		$mdGoodFormat1 : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "format",
+			MetadataUtil.isFromTool(cache, this, "Exiftool"),
+			value == "PPT"
+		) from $e.metadata
+
+		$mdGoodFormat2 : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "format",
+			MetadataUtil.isFromTool(cache, this, "Droid"),
+			value == "Microsoft Powerpoint Presentation"
+		) from $e.metadata
+
+		$mdBadMime : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "mimetype",
+			! MetadataUtil.isFromTool(cache, this, "Exiftool"),
+			! MetadataUtil.isFromTool(cache, this, "Droid")
+		) from $e.metadata
+		$mdBadFormat : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "format",
+			! MetadataUtil.isFromTool(cache, this, "Exiftool"),
+			! MetadataUtil.isFromTool(cache, this, "Droid")
+		) from $e.metadata
+
+
+	then
+		debug("DR: "+$e.getUid()+" - Exiftool+Droid PPT format string issue: ");
+		debug("    mimetype value: "+ $mdBadMime.getValue());
+		debug("    format value:   "+ $mdBadFormat.getValue());
+		for(String sourceID : $mdBadMime.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());
+		}
+		debug("    format1 value: "+ $mdGoodFormat1.getValue());
+		debug("    format2 value:   "+ $mdGoodFormat2.getValue());
+
+		modify ($e) {
+			ignoreMetadata($mdBadFormat),
+			ignoreMetadata($mdBadMime)
+		}
+		debug("    -> ignore "+$mdBadFormat);
+		debug("    -> ignore "+$mdBadMime);
+
+end
 
 /**
  * DEBUG Rules
