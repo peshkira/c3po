@@ -56,7 +56,7 @@ rule "Same value without Conflict - Resolution"
 		debug("DR: "+$e.getUid()+" - conflicting at "+$md1.getProperty().getId() + " with same value ("+$md1.getValue()+")");
 		
 		modify ($e) {
-			mergeMetadata($md1, $md2);
+			mergeMetadata($md1, $md2)
 		}
 		debug("    -> merging!");
 end
@@ -338,6 +338,9 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
 		debug("    -> ignore "+$mdBadFormat);
 end
 
+/**
+  * if Exiftool and Droid both report power point presentation, ignore others, because they are typically right
+ */
 rule "if Exiftool and Droid report ppt, ignore others"
 		salience 100
 	when
@@ -384,6 +387,74 @@ rule "if Exiftool and Droid report ppt, ignore others"
 		modify ($e) {
 			ignoreMetadata($mdBadFormat),
 			ignoreMetadata($mdBadMime)
+		}
+		debug("    -> ignore "+$mdBadFormat);
+		debug("    -> ignore "+$mdBadMime);
+
+end
+
+/**
+  * If Jhove and Droid both report xhmtl, ignore others, because they are typically right
+ */
+rule "if Jhove and Droid report xhtml, ignore others"
+		salience 200
+	when
+		$e : Element()
+		$mdGoodFormat1 : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "format",
+			MetadataUtil.isFromTool(cache, this, "Jhove"),
+			value == "XHTML"
+		) from $e.metadata
+
+		$mdGoodFormat2 : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "format",
+			MetadataUtil.isFromTool(cache, this, "Droid"),
+			value == "Extensible Hypertext Markup Language"
+		) from $e.metadata
+
+		$mdGoodMime1 : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "mimetype",
+			MetadataUtil.haveSameSources(this, $mdGoodFormat1)
+		) from $e.metadata
+
+		$mdGoodMime2 : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "mimetype",
+			MetadataUtil.haveSameSources(this, $mdGoodFormat2)
+		) from $e.metadata
+
+		$mdBadMime : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "mimetype",
+			! MetadataUtil.isFromTool(cache, this, "Jhove"),
+			! MetadataUtil.isFromTool(cache, this, "Droid")
+		) from $e.metadata
+		$mdBadFormat : MetadataRecord(
+			status=="CONFLICT",
+			property.id == "format",
+			MetadataUtil.haveSameSources(this, $mdBadMime)
+		) from $e.metadata
+
+
+	then
+		debug("DR: "+$e.getUid()+" - Jhove+Droid PPT xhtml string issue: ");
+		debug("    mimetype value: "+ $mdBadMime.getValue());
+		debug("    format value:   "+ $mdBadFormat.getValue());
+		for(String sourceID : $mdBadMime.getSources()) {
+			Source source = cache.getSource(sourceID);
+			debug("        Source: "+source.getName()+" "+source.getVersion());
+		}
+		debug("    format1 value: "+ $mdGoodFormat1.getValue());
+		debug("    format2 value:   "+ $mdGoodFormat2.getValue());
+
+		modify ($e) {
+			ignoreMetadata($mdBadFormat),
+			ignoreMetadata($mdBadMime),
+			ignoreMetadata($mdGoodFormat2),
+			ignoreMetadata($mdGoodMime2)
 		}
 		debug("    -> ignore "+$mdBadFormat);
 		debug("    -> ignore "+$mdBadMime);
