@@ -11,4 +11,11 @@ public interface ProcessingRule {
    * @return the priority of this rule.
    */
   int getPriority();
+
+  /**
+   * This method is executed after the command is executed by the controller to
+   * allow execution of arbitrary clean-up tasks or logging of execution
+   * statistics.
+   */
+  void onCommandFinished();
 }

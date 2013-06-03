@@ -123,6 +123,12 @@ public class Controller {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+    
+    // allow every rule to execute its tasks after job handling is done, like
+    // printing statistics or cleaning up
+    for (ProcessingRule processingRule : rules) {
+      processingRule.onCommandFinished();
+    }
   }
 
   public PersistenceLayer getPersistence() {

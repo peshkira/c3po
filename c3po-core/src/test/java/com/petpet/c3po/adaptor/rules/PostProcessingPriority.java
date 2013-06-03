@@ -53,6 +53,11 @@ public class PostProcessingPriority {
       public boolean shouldSkip(String property, String value, String status, String tool, String version) {
         return false;
       }
+      
+      @Override
+      public void onCommandFinished() {
+
+      }
     };
 
     PostProcessingRule ppr2 = new PostProcessingRule() {
@@ -65,6 +70,11 @@ public class PostProcessingPriority {
       @Override
       public Element process(Element e) {
         return e;
+      }
+      
+      @Override
+      public void onCommandFinished() {
+
       }
     };
 
