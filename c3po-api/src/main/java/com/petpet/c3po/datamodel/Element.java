@@ -417,7 +417,8 @@ public class Element {
 
 		  logEntries.put("property", logEntry.getMetadataProperty());
 		  logEntries.put("valueOld", logEntry.getMetadataValueOld());
-		  logEntries.put("change", logEntry.getChange().name());
+		  logEntries.put("changeType", logEntry.getChangeType().name());
+      logEntries.put("ruleName", logEntry.getRuleName());
 	  }
 	  element.put("log", logEntries);
 
@@ -435,12 +436,14 @@ public class Element {
 				record2.getSources().clear();
 			}
 		}
-		this.logEntries.add(new LogEntry(record1.getProperty().getId(), record1.getValue(), LogEntry.Change.MERGED));
 	}
 
 	public void ignoreMetadata(MetadataRecord record) {
 		this.metadata.remove(record);
-		this.logEntries.add(new LogEntry(record.getProperty().getId(), record.getValue(), LogEntry.Change.IGNORED));
+	}
+
+	public void addLog(MetadataRecord record, LogEntry.ChangeType changeType, String ruleName) {
+		this.logEntries.add(new LogEntry(record.getProperty().getId(), record.getValue(), changeType, ruleName));
 	}
 
 }

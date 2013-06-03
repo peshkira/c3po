@@ -1,27 +1,23 @@
 package com.petpet.c3po.datamodel;
 
-/**
- * User: phoenix
- * Date: 31.05.13
- * Time: 20:06
- */
 public class LogEntry {
 
-	public static enum Change {
+	public static enum ChangeType {
 		IGNORED,
 		UPDATED,
-		REMOVED,
 		MERGED
 	}
 
 	private String metadataProperty;
 	private String metadataValueOld;
-	private Change change;
+	private ChangeType changeType;
+  private String ruleName;
 
-	public LogEntry(String metadataProperty, String metadataValueOld, Change change) {
+	public LogEntry(String metadataProperty, String metadataValueOld, ChangeType changeType, String ruleName) {
 		this.metadataProperty = metadataProperty;
 		this.metadataValueOld = metadataValueOld;
-		this.change = change;
+		this.changeType = changeType;
+    this.ruleName = ruleName;
 	}
 
 	public String getMetadataProperty() {
@@ -32,7 +28,11 @@ public class LogEntry {
 		return metadataValueOld;
 	}
 
-	public Change getChange() {
-		return change;
+	public ChangeType getChangeType() {
+		return changeType;
 	}
+
+  public String getRuleName() {
+    return ruleName;
+  }
 }
