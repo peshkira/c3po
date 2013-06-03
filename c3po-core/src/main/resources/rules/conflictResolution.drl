@@ -424,6 +424,7 @@ rule "DEBUG: print conflicting Metadata"
 				log("        "+source.getName()+" "+source.getVersion()+ "["+source.getId()+"]");			
 			}			
 		}
+		retract($e);
 
 end
 
@@ -440,5 +441,6 @@ rule "DEBUG: print elements without conflict"
 		
 	then
 		log("DR: "+$e.getUid()+" has no conflicts");
+		retract($e);
 end
  
