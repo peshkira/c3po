@@ -3,10 +3,7 @@ package com.petpet.c3po.datamodel;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +57,11 @@ public class Element {
    * A list of {@link MetadataRecord} info.
    */
   private List<MetadataRecord> metadata;
+
+	/**
+	 * A list of {@link LogEntry} records
+ 	 */
+	private List<LogEntry> logEntries = new LinkedList<LogEntry>();
 
   /**
    * Creates an element with the given uid and name.
@@ -124,7 +126,15 @@ public class Element {
     this.id = id;
   }
 
-  /**
+	public List<LogEntry> getLogEntries() {
+		return logEntries;
+	}
+
+	public void setLogEntries(List<LogEntry> logEntries) {
+		this.logEntries = logEntries;
+	}
+
+	/**
    * Removes all records for the given property id and returs a 
    * list of all removed metadata records.
    * 
@@ -401,6 +411,17 @@ public class Element {
 
     element.put("metadata", meta);
 
+	  BasicDBObject logEntries = new BasicDBObject();
+
+	  for (LogEntry logEntry : this.getLogEntries()) {
+
+		  logEntries.put("property", logEntry.getMetadataProperty());
+		  logEntries.put("valueOld", logEntry.getMetadataValueOld());
+		  logEntries.put("changeType", logEntry.getChangeType().name());
+      logEntries.put("ruleName", logEntry.getRuleName());
+	  }
+	  element.put("log", logEntries);
+
     return element;
   }
 
@@ -419,7 +440,10 @@ public class Element {
 
 	public void ignoreMetadata(MetadataRecord record) {
 		this.metadata.remove(record);
-		// TODO: add removed MDRecord to backlog!
+	}
+
+	public void addLog(MetadataRecord record, LogEntry.ChangeType changeType, String ruleName) {
+		this.logEntries.add(new LogEntry(record.getProperty().getId(), record.getValue(), changeType, ruleName));
 	}
 
 }
