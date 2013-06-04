@@ -16,62 +16,6 @@ global com.petpet.c3po.adaptor.rules.drools.LogCollector log;
 
 
 /**
- * This is run every time, once, before all others
- *
-rule "Initialize"
-        salience 1000
-    when 
-    then
-        log.debug("DR Running" );   
-end
-/**/
-
-/**
- * This rule checks if there exists a property, marked as conflicting, that has
- * no more other properties that provoke the conflict. 
- * If no conflicting properties are found, the status is set to "SINGLE_RESULT"
- * and all (in fact non-)conflicting records are merged together.
- *
- * This rule has a high priority, so whenever we see a property is conflicting, 
- * there must be at least one property with a conflicting value.
- */
-rule "Single value, no more Conflict - Resolution"
-        salience 990
-    when 
-        $e : Element()
-
-        $md1 : MetadataRecord(
-            status=="CONFLICT"
-        ) from $e.metadata
-
-        Number( intValue == 0 ) from accumulate( $m : MetadataRecord( 
-                property.id == $md1.property.id,
-                value != $md1.value
-            ) from $e.metadata;
-                count($m)
-        )
-
-        $mdsSame : List() from accumulate( $m : MetadataRecord( 
-                this != $md1, 
-                property.id == $md1.property.id,
-                value == $md1.value
-            ) from $e.metadata;
-                collectList($m)
-        )
-
-    then
-        log.debug("no more conflicts on "+$md1.getProperty().getId());
-        
-        $md1.setStatus(Status.SINGLE_RESULT.toString());
-        modify($e) {
-            mergeMetadata($md1, $mdsSame)
-        }
-        log.debug("    -> merge and set status to Single Result!");
-end
-
-
-
-/**
  * If Exiftool reports another format than others AND at least 2 times other tools claim it to be "Portable Document Format", 
  * ignore Exiftool (and the like).
  */
@@ -84,8 +28,8 @@ rule "Resolve Exiftool PDF format string"
             property.id == "format", 
             MetadataUtil.isFromTool(cache, this, "Exiftool") 
         ) from $e.metadata
-        $badSources : List ($toolOpinion : size) from accumulate( $id: String() from $mdBad.sources;
-            collectList( cache.getSource($id) ) 
+        Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
+            count( $id )
         )
 
         $mdGood : MetadataRecord(
@@ -94,25 +38,44 @@ rule "Resolve Exiftool PDF format string"
             ! MetadataUtil.isFromTool(cache, this, "Exiftool"), 
             value == "Portable Document Format"
         ) from $e.metadata
-        $goodSources : List (size >= 2*$toolOpinion) from accumulate( $id: String() from $mdGood.sources;
-            collectList( cache.getSource($id) ) 
+        Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
+            count( $id )
         )
         
     then
         log.debug("Exiftool PDF format string issue: ");
-        log.debug("    bad value: "+ $mdBad.getValue());
-        for(Source source : (List<Source>)$badSources) {
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
-        log.debug("    good value: "+ $mdGood.getValue());
-        for(Source source : (List<Source>)$goodSources) {
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
+        log.debugMetadataRecord($mdBad);
+        log.debugMetadataRecord($mdGood);
         
         modify ($e) {
             ignoreMetadata($mdBad)
         }
         log.debug("    -> ignore "+$mdBad);
+        
+end
+
+/**
+ * Treat format version "HTML x" like "x" from Jhove
+ */
+rule "set html format version to value without prefix"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "format_version",
+            value str[startsWith] "HTML ",
+            MetadataUtil.isFromTool(cache, this, "Jhove")
+        ) from $e.metadata
+
+    then
+        log.debug("Jhove HTML format version issue: ");
+        
+        String newValue = $md.getValue().substring(4).trim();
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        log.debug("    -> set format_version to \""+newValue+"\"!");
         
 end
 
@@ -130,11 +93,7 @@ rule "set application/rtf mimetypes to text/rtf"
 
     then
         log.debug("mimetype=application/rtf issue: ");
-        log.debug("    mimetype value: "+ $md.getValue());
-        for(String sourceID : $md.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
+        log.debugMetadataRecord($md);
         
         $md.setValue("text/rtf");
         modify ($e) {
@@ -162,11 +121,7 @@ rule "set RTF format to Rich Text Format"
 
     then
         log.debug("RTF format string issue: ");
-        log.debug("    format: "+ $mdFormat.getValue());
-        for(String sourceID : $mdFormat.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
+        log.debugMetadataRecord($mdFormat);
         
         $mdFormat.setValue("Rich Text Format");
         modify ($e) {
@@ -209,18 +164,14 @@ rule "ignore text/plain and corresponding format if more precisise text/* availa
         
     then
         log.debug("format/mimetype=text/plain issue: ");
-        log.debug("    mimetype: "+ $mdBadMime.getValue());
-        log.debug("    format:   "+ $mdBadFormat.getValue());
-        for(String sourceID : $mdBadMime.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
-        log.debug("    mimetype: "+ $mdGoodMime.getValue());
-        log.debug("    format:   "+ $mdGoodFormat.getValue());
-        for(String sourceID : $mdGoodMime.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
+        
+        log.debugMetadataRecordValue($mdBadMime);
+        log.debugMetadataRecordValue($mdBadFormat);
+        log.debugMetadataRecordSources($mdBadFormat.getSources());
+
+        log.debugMetadataRecordValue($mdGoodMime);
+        log.debugMetadataRecordValue($mdGoodFormat);
+        log.debugMetadataRecordSources($mdGoodFormat.getSources());
         
         modify ($e) {
             ignoreMetadata($mdBadMime),
@@ -264,23 +215,20 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
         
     then
         log.debug("text/html vs. application/xhtml+xml issue: ");
-        log.debug("    mimetype value: "+ $mdBadMime.getValue());
-        log.debug("    format value:   "+ $mdBadFormat.getValue());
-        for(String sourceID : $mdBadMime.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
-        log.debug("    mimetype value: "+ $mdGoodMime.getValue());
-        log.debug("    format value:   "+ $mdGoodFormat.getValue());
-        for(String sourceID : $mdGoodMime.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());         
-        }
         
+        log.debugMetadataRecordValue($mdBadMime);
+        log.debugMetadataRecordValue($mdBadFormat);
+        log.debugMetadataRecordSources($mdBadFormat.getSources());
+
+        log.debugMetadataRecordValue($mdGoodMime);
+        log.debugMetadataRecordValue($mdGoodFormat);
+        log.debugMetadataRecordSources($mdGoodFormat.getSources());
+                
         modify ($e) {
             ignoreMetadata($mdBadMime),
             ignoreMetadata($mdBadFormat)
         }
+        
         log.debug("    -> ignore "+$mdBadMime);
         log.debug("    -> ignore "+$mdBadFormat);
 end
@@ -322,19 +270,19 @@ rule "if Exiftool and Droid report ppt, ignore others"
 
     then
         log.debug("Exiftool+Droid PPT format string issue: ");
-        log.debug("    mimetype value: "+ $mdBadMime.getValue());
-        log.debug("    format value:   "+ $mdBadFormat.getValue());
-        for(String sourceID : $mdBadMime.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());
-        }
-        log.debug("    format1 value: "+ $mdGoodFormat1.getValue());
-        log.debug("    format2 value:   "+ $mdGoodFormat2.getValue());
+        
+        log.debugMetadataRecordValue($mdBadMime);
+        log.debugMetadataRecordValue($mdBadFormat);
+        log.debugMetadataRecordSources($mdBadFormat.getSources());
+
+        log.debugMetadataRecord($mdGoodFormat1);
+        log.debugMetadataRecord($mdGoodFormat2);
 
         modify ($e) {
             ignoreMetadata($mdBadFormat),
             ignoreMetadata($mdBadMime)
         }
+        
         log.debug("    -> ignore "+$mdBadFormat);
         log.debug("    -> ignore "+$mdBadMime);
 
@@ -388,14 +336,12 @@ rule "if Jhove and Droid report xhtml, ignore others"
 
     then
         log.debug("Jhove+Droid PPT xhtml string issue: ");
-        log.debug("    mimetype value: "+ $mdBadMime.getValue());
-        log.debug("    format value:   "+ $mdBadFormat.getValue());
-        for(String sourceID : $mdBadMime.getSources()) {
-            Source source = cache.getSource(sourceID);
-            log.debug("        Source: "+source.getName()+" "+source.getVersion());
-        }
-        log.debug("    format1 value: "+ $mdGoodFormat1.getValue());
-        log.debug("    format2 value:   "+ $mdGoodFormat2.getValue());
+        log.debugMetadataRecordValue($mdBadMime);
+        log.debugMetadataRecordValue($mdBadFormat);
+        log.debugMetadataRecordSources($mdBadFormat.getSources());
+        
+        log.debugMetadataRecord($mdGoodFormat1);
+        log.debugMetadataRecord($mdGoodFormat2);
 
         modify ($e) {
             ignoreMetadata($mdBadFormat),
@@ -407,59 +353,3 @@ rule "if Jhove and Droid report xhtml, ignore others"
         log.debug("    -> ignore "+$mdBadMime);
 
 end
-
-/**
- * REPORT Rules
- */
-
-rule "REPORT: element with conflicts"
-        salience 0
-    when 
-        $e : Element()
-        MetadataRecord( status=="CONFLICT", $conflictingProperty : property.id) from $e.metadata
-        
-        $conflicts : List() from collect(
-                        MetadataRecord(status=="CONFLICT",  property.id == $conflictingProperty) from $e.metadata
-                    )
-        
-//      accumulate( MetadataRecord($sources:sources) from $conflictingFormats;
-//                      $conflictSourceIDs : unionList( $sources ) 
-//                  )
-        
-//      accumulate( $id: String() from $conflictSourceIDs;
-//                      $conflictSources : collectList( cache.getSource($id) ) 
-//                  )
-        
-    then
-        log.log("Report: "+$e.getUid()+" has conflict in "+$conflictingProperty+" by: ");
-//      for(Source source : (List<Source>)$conflictSources) {
-//          log.debug("    "+source.getName()+" "+source.getVersion()+ "["+source.getId()+"]");         
-//      }
-        for(MetadataRecord conflict : (List<MetadataRecord>)$conflicts) {
-            log.log("    "+conflict.getValue());
-            List<String> sources = conflict.getSources();
-            for(String sourceID : sources) {
-                Source source = cache.getSource(sourceID);
-                log.log("        "+source.getName()+" "+source.getVersion()+ " ["+source.getId()+"]");          
-            }           
-        }
-        retract($e);
-
-end
-
-rule "REPORT: element without conflicts"
-        salience 0
-    when 
-        $e : Element()
-        
-        Number( intValue == 0 ) from accumulate( $m : MetadataRecord( 
-                status=="CONFLICT"
-            ) from $e.metadata;
-                count($m)
-        )
-        
-    then
-        log.log("Report: "+$e.getUid()+" has no conflicts");
-        retract($e);
-end
- 

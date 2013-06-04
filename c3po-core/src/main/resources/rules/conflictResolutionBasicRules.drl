@@ -1,0 +1,114 @@
+package rules
+
+import java.util.List
+
+import com.petpet.c3po.datamodel.Element
+import com.petpet.c3po.datamodel.MetadataRecord
+import com.petpet.c3po.datamodel.MetadataRecord.Status
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector log;
+
+
+/**
+ * This is run every time, once, before all others
+ *
+rule "Initialize"
+        salience 1000
+    when 
+    then
+        log.debug("DR Running" );   
+end
+/**/
+
+/**
+ * This rule checks if there exists a property, marked as conflicting, that has
+ * no more other properties that provoke the conflict. 
+ * If no conflicting properties are found, the status is set to "SINGLE_RESULT"
+ * and all (in fact non-)conflicting records are merged together.
+ *
+ * This rule has a high priority, so whenever we see a property is conflicting, 
+ * there must be at least one property with a conflicting value.
+ */
+rule "Single value, no more Conflict - Resolution"
+        salience 999
+    when 
+        $e : Element()
+
+        $md1 : MetadataRecord(
+            status==Status.CONFLICT.toString()
+        ) from $e.metadata
+
+        Number( intValue == 0 ) from accumulate( $m : MetadataRecord( 
+                property.id == $md1.property.id,
+                value != $md1.value
+            ) from $e.metadata;
+                count($m)
+        )
+
+        $mdsSame : List() from accumulate( $m : MetadataRecord( 
+                this != $md1, 
+                property.id == $md1.property.id,
+                value == $md1.value
+            ) from $e.metadata;
+                collectList($m)
+        )
+
+    then
+        log.debug("no more conflicts on "+$md1.getProperty().getId());
+        
+        $md1.setStatus(Status.SINGLE_RESULT.toString());
+        modify($e) {
+            mergeMetadata($md1, $mdsSame)
+        }
+        log.debug("    -> merge and set status to Single Result!");
+end
+
+
+
+/**
+ * REPORT Rules
+ */
+
+rule "REPORT: element with conflicts"
+        salience 0
+    when 
+        $e : Element()
+
+        MetadataRecord( 
+            status==Status.CONFLICT.toString(),
+            $conflictingProperty : property.id
+        ) from $e.metadata
+        
+        $conflicts : List() from collect(
+            MetadataRecord(
+                status==Status.CONFLICT.toString(),  
+                property.id == $conflictingProperty
+            ) from $e.metadata
+        )
+        
+    then
+        log.log("Report: "+$e.getUid()+" has conflict in "+$conflictingProperty+" by: ");
+        for(MetadataRecord conflict : (List<MetadataRecord>)$conflicts) {
+            log.debugMetadataRecord(conflict);           
+        }
+        retract($e);
+
+end
+
+rule "REPORT: element without conflicts"
+        salience 0
+    when 
+        $e : Element()
+        
+        Number( intValue == 0 ) from accumulate(
+            $m : MetadataRecord( 
+                status==Status.CONFLICT.toString()
+            ) from $e.metadata;
+                count($m)
+        )
+        
+    then
+        log.log("Report: "+$e.getUid()+" has no conflicts");
+        retract($e);
+end
+ 

@@ -1,7 +1,7 @@
 package com.petpet.c3po.adaptor.rules;
 
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -51,8 +51,9 @@ public class DroolsConflictResolutionProcessingRule implements
     this.cache = cache;
 
     // read in the source
-    String filename = "/rules/conflictResolution.drl";
-    List<String> filenames = Arrays.asList(filename);
+    List<String> filenames = new ArrayList<String>();
+    filenames.add("/rules/conflictResolution.drl");
+    filenames.add("/rules/conflictResolutionBasicRules.drl");
 
     this.initKnowledgeBase(filenames);
 
@@ -66,7 +67,8 @@ public class DroolsConflictResolutionProcessingRule implements
     StatelessKnowledgeSession session = this.kbase
         .newStatelessKnowledgeSession();
     session.setGlobal(CACHE, this.cache);
-    session.setGlobal(LOGOUPUTCOLLECTOR, new LogCollector());
+    session.setGlobal(LOGOUPUTCOLLECTOR, new LogCollector(this.cache));
+
     return session;
   }
 
@@ -197,15 +199,15 @@ public class DroolsConflictResolutionProcessingRule implements
             .remove(propertyId);
         if (newPropertyData == null) {
           // data is removed
-          this.logCollector.log("Removed Info: " + propertyId + " - "
+          this.logCollector.log("|Removed Info: " + propertyId + " - "
               + propertyData);
           modifiedElement.addLog(propertyId, propertyData.toString(),
               ChangeType.IGNORED, rule.getName());
         } else if (!propertyData.equals(newPropertyData)) {
           // data is changed
-          this.logCollector.log("changed Info: " + propertyId);
-          this.logCollector.log("   old value:" + propertyData);
-          this.logCollector.log("   new value:" + newPropertyData);
+          this.logCollector.log("|changed Info: " + propertyId);
+          this.logCollector.log("|   old value: " + propertyData);
+          this.logCollector.log("|   new value: " + newPropertyData);
 
           modifiedElement.addLog(propertyId, propertyData.toString(),
               ChangeType.UPDATED, rule.getName());
@@ -220,7 +222,7 @@ public class DroolsConflictResolutionProcessingRule implements
         String propertyId = newMetadataEntry.getKey();
         Object propertyData = newMetadataEntry.getValue();
 
-        this.logCollector.log("Added Info: " + propertyId + " - "
+        this.logCollector.log("|Added Info: " + propertyId + " - "
             + propertyData);
 
         modifiedElement
