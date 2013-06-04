@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
@@ -26,6 +28,7 @@ import org.drools.runtime.StatelessKnowledgeSession;
 import com.mongodb.BasicDBObject;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.datamodel.LogEntry.ChangeType;
 
 public class DroolsConflictResolutionProcessingRule implements
     PostProcessingRule {
@@ -103,6 +106,8 @@ public class DroolsConflictResolutionProcessingRule implements
   public class ElementModificationListener implements
       WorkingMemoryEventListener {
 
+    private Map<Element, BasicDBObject> memory = new ConcurrentHashMap<Element, BasicDBObject>();
+
     @Override
     public void objectInserted(ObjectInsertedEvent event) {
 
@@ -140,18 +145,65 @@ public class DroolsConflictResolutionProcessingRule implements
       }
     }
 
-    private void startTrackingElementChanges(Element element) {
-      BasicDBObject document = element.getDocument();
+    private void startTrackingElementChanges(Element insertedElement) {
+      BasicDBObject document = insertedElement.getDocument();
       BasicDBObject metadata = (BasicDBObject) document.get("metadata");
+
+      this.memory.put(insertedElement, metadata);
     }
 
     private void stopTrackingElement(Element removedElement) {
-
+      this.memory.remove(removedElement);
     }
 
     private void trackElementUpdate(Element modifiedElement, Rule rule) {
       BasicDBObject document = modifiedElement.getDocument();
-      BasicDBObject metadataObject = (BasicDBObject) document.get("metadata");
+      BasicDBObject newMetadata = (BasicDBObject) document.get("metadata");
+      BasicDBObject oldMetadata = this.memory.get(modifiedElement);
+
+      for (Entry<String, Object> oldMetadataEntry : oldMetadata.entrySet()) {
+        String propertyId = oldMetadataEntry.getKey();
+        BasicDBObject propertyData = (BasicDBObject) oldMetadataEntry
+            .getValue();
+
+        BasicDBObject newPropertyData = (BasicDBObject) newMetadata
+            .remove(propertyId);
+        if (newPropertyData == null) {
+          // data is removed
+          System.out.println("Removed Info: " + propertyId + " - "
+              + propertyData);
+          modifiedElement.addLog(propertyId, propertyData.toString(),
+              ChangeType.IGNORED, rule.getName());
+        } else if (!propertyData.equals(newPropertyData)) {
+          // data is changed
+          System.out.println("changed Info: " + propertyId);
+          System.out.println("   old value:" + propertyData);
+          System.out.println("   new value:" + newPropertyData);
+
+          modifiedElement.addLog(propertyId, propertyData.toString(),
+              ChangeType.UPDATED, rule.getName());
+
+        } else {
+          // data is unchanged
+        }
+      }
+
+      for (Entry<String, Object> newMetadataEntry : newMetadata.entrySet()) {
+        // property was added
+        String propertyId = newMetadataEntry.getKey();
+        Object propertyData = newMetadataEntry.getValue();
+
+        System.out.println("Added Info: " + propertyId + " - " + propertyData);
+
+        modifiedElement
+            .addLog(propertyId, "", ChangeType.ADDED, rule.getName());
+      }
+
+      // update memory - recreate new Document
+      document = modifiedElement.getDocument();
+      newMetadata = (BasicDBObject) document.get("metadata");
+      this.memory.put(modifiedElement, newMetadata);
+
     }
 
   }
