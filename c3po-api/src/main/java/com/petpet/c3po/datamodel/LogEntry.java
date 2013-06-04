@@ -2,34 +2,40 @@ package com.petpet.c3po.datamodel;
 
 public class LogEntry {
 
-	private String metadataProperty;
+	public static enum ChangeType {
+		IGNORED,
+		UPDATED,
+		ADDED,
+		MERGED
+	}
 
+	private String metadataProperty;
 	private String metadataValueOld;
 	private ChangeType changeType;
 	private String ruleName;
 
-	public LogEntry(String metadataProperty, String metadataValueOld,
-			ChangeType changeType, String ruleName) {
+	public LogEntry(String metadataProperty, String metadataValueOld, ChangeType changeType, String ruleName) {
 		this.metadataProperty = metadataProperty;
 		this.metadataValueOld = metadataValueOld;
 		this.changeType = changeType;
 		this.ruleName = ruleName;
 	}
 
-	public ChangeType getChangeType() {
-		return this.changeType;
-	}
-
 	public String getMetadataProperty() {
-		return this.metadataProperty;
-	}
+		return metadataProperty;
+    }
 
 	public String getMetadataValueOld() {
-		return this.metadataValueOld;
+		return metadataValueOld;
 	}
 
+	public ChangeType getChangeType() {
+		return changeType;
+	}
+
+
 	public String getRuleName() {
-		return this.ruleName;
+		return ruleName;
 	}
 
 	@Override
@@ -47,7 +53,4 @@ public class LogEntry {
 		return builder.toString();
 	}
 
-	public static enum ChangeType {
-		IGNORED, UPDATED, ADDED, MERGED
-	}
 }
