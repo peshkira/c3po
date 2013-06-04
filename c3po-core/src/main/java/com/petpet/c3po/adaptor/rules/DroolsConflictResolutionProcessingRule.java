@@ -1,5 +1,6 @@
 package com.petpet.c3po.adaptor.rules;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatelessKnowledgeSession;
 
 import com.mongodb.BasicDBObject;
+import com.petpet.c3po.adaptor.rules.drools.LogCollector;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.LogEntry.ChangeType;
@@ -37,11 +39,13 @@ public class DroolsConflictResolutionProcessingRule implements
 
   private static final String CACHE = "cache";
 
+  private static final String LOGOUPUTCOLLECTOR = "log";
+
   private final Cache cache;
-  private StatelessKnowledgeSession session;
+  private Map<Thread, StatelessKnowledgeSession> sessions;
   private RuleActivationListener ruleActivationListener;
 
-  private ElementModificationListener elementModificationListener;
+  private KnowledgeBase kbase;
 
   public DroolsConflictResolutionProcessingRule(Cache cache) {
     this.cache = cache;
@@ -50,8 +54,20 @@ public class DroolsConflictResolutionProcessingRule implements
     String filename = "/rules/conflictResolution.drl";
     List<String> filenames = Arrays.asList(filename);
 
-    this.initSession(filenames);
+    this.initKnowledgeBase(filenames);
 
+    this.ruleActivationListener = this.new RuleActivationListener(
+        this.kbase.getKnowledgePackages());
+
+    this.sessions = new ConcurrentHashMap<Thread, StatelessKnowledgeSession>();
+  }
+
+  public StatelessKnowledgeSession createSession() {
+    StatelessKnowledgeSession session = this.kbase
+        .newStatelessKnowledgeSession();
+    session.setGlobal(CACHE, this.cache);
+    session.setGlobal(LOGOUPUTCOLLECTOR, new LogCollector());
+    return session;
   }
 
   @Override
@@ -61,24 +77,36 @@ public class DroolsConflictResolutionProcessingRule implements
 
   @Override
   public void onCommandFinished() {
-    this.ruleActivationListener.printStatistics();
+    this.ruleActivationListener.printStatistics(System.out);
   }
 
   @Override
   public Element process(Element e) {
 
-    // TODO: this is only to debug the output - remove it when done!
-    synchronized (System.out) {
-      // TODO check this for unsynchronized behaviour!
-      this.session.addEventListener(this.ruleActivationListener);
-      this.session.addEventListener(this.elementModificationListener);
-      this.session.execute(e);
+    StatelessKnowledgeSession session = this.sessions.get(Thread
+        .currentThread());
+    if (session == null) {
+      session = this.createSession();
+      this.sessions.put(Thread.currentThread(), session);
     }
 
+    LogCollector outputCollector = (LogCollector) session.getGlobals().get(
+        LOGOUPUTCOLLECTOR);
+    session.addEventListener(new ElementModificationListener(outputCollector));
+    session.addEventListener(this.ruleActivationListener);
+    session.execute(e);
+
+    synchronized (System.out) {
+      System.out.println("======================================");
+      System.out.println("Drools log of " + e.getUid());
+      System.out.println();
+      System.out.println(outputCollector.reset());
+      System.out.println("======================================");
+    }
     return e;
   }
 
-  private void initSession(List<String> filenames) {
+  private void initKnowledgeBase(List<String> filenames) {
     KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
 
     for (String filename : filenames) {
@@ -91,22 +119,21 @@ public class DroolsConflictResolutionProcessingRule implements
       System.err.println(kbuilder.getErrors().toString());
     }
 
-    KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
-    kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
+    this.kbase = KnowledgeBaseFactory.newKnowledgeBase();
+    this.kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
 
-    this.session = kbase.newStatelessKnowledgeSession();
-
-    this.ruleActivationListener = this.new RuleActivationListener(
-        kbase.getKnowledgePackages());
-    this.elementModificationListener = this.new ElementModificationListener();
-
-    this.session.setGlobal(CACHE, this.cache);
   }
 
   public class ElementModificationListener implements
       WorkingMemoryEventListener {
 
     private Map<Element, BasicDBObject> memory = new ConcurrentHashMap<Element, BasicDBObject>();
+    private LogCollector logCollector;
+
+    protected ElementModificationListener(LogCollector logCollector) {
+      super();
+      this.logCollector = logCollector;
+    }
 
     @Override
     public void objectInserted(ObjectInsertedEvent event) {
@@ -170,15 +197,15 @@ public class DroolsConflictResolutionProcessingRule implements
             .remove(propertyId);
         if (newPropertyData == null) {
           // data is removed
-          System.out.println("Removed Info: " + propertyId + " - "
+          this.logCollector.log("Removed Info: " + propertyId + " - "
               + propertyData);
           modifiedElement.addLog(propertyId, propertyData.toString(),
               ChangeType.IGNORED, rule.getName());
         } else if (!propertyData.equals(newPropertyData)) {
           // data is changed
-          System.out.println("changed Info: " + propertyId);
-          System.out.println("   old value:" + propertyData);
-          System.out.println("   new value:" + newPropertyData);
+          this.logCollector.log("changed Info: " + propertyId);
+          this.logCollector.log("   old value:" + propertyData);
+          this.logCollector.log("   new value:" + newPropertyData);
 
           modifiedElement.addLog(propertyId, propertyData.toString(),
               ChangeType.UPDATED, rule.getName());
@@ -193,7 +220,8 @@ public class DroolsConflictResolutionProcessingRule implements
         String propertyId = newMetadataEntry.getKey();
         Object propertyData = newMetadataEntry.getValue();
 
-        System.out.println("Added Info: " + propertyId + " - " + propertyData);
+        this.logCollector.log("Added Info: " + propertyId + " - "
+            + propertyData);
 
         modifiedElement
             .addLog(propertyId, "", ChangeType.ADDED, rule.getName());
@@ -232,29 +260,27 @@ public class DroolsConflictResolutionProcessingRule implements
         AfterActivationFiredEvent event) {
       Rule firedRule = event.getActivation().getRule();
 
-      System.err.println("after activation: " + firedRule);
-
       Integer counter = this.activations.get(firedRule);
       counter++;
       this.activations.put(firedRule, counter);
 
     }
 
-    public void printStatistics() {
-      System.out.println("======================================");
-      System.out.println("Drools Conflict Resolution Statistics:");
+    public void printStatistics(PrintStream output) {
+      output.println("======================================");
+      output.println("Drools Conflict Resolution Statistics:");
 
       for (KnowledgePackage rulesPackage : this.packages) {
-        System.out.println("--------------------------------------");
-        System.out.println("Package: '" + rulesPackage.getName() + "'");
+        output.println("--------------------------------------");
+        output.println("Package: '" + rulesPackage.getName() + "'");
         for (Rule rule : rulesPackage.getRules()) {
           rule = this.unwrapRule(rule);
-          System.out.println("* '" + rule.getName() + "'");
-          System.out.println("  #:" + this.activations.get(rule));
+          output.println("* '" + rule.getName() + "'");
+          output.println("  #:" + this.activations.get(rule));
         }
       }
 
-      System.out.println("======================================");
+      output.println("======================================");
     }
 
     public Rule unwrapRule(Rule rule) {
