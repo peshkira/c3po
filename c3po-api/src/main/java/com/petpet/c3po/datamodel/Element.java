@@ -296,6 +296,12 @@ public class Element {
 		this.metadata.remove(record);
 	}
 
+	public void mergeMetadata(MetadataRecord record1, List<MetadataRecord> records) {
+		for (MetadataRecord metadataRecord : records) {
+			this.mergeMetadata(record1, metadataRecord);
+		}
+		
+	}
 	public void mergeMetadata(MetadataRecord record1, MetadataRecord record2) {
 		if (record1.getProperty().getId().equals(record2.getProperty().getId())
 				&& record1.getValue().equals(record2.getValue())) {

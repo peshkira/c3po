@@ -36,7 +36,7 @@ end
  * If two conflicting properties are found, the two are merged (in fact their sources are merged).
  *
  * This rule has a high priority, so whenever we see a property is conflicting, there must be a second property of different value!
- */
+ *
 rule "Same value without Conflict - Resolution"
 		salience 910
 	when
@@ -60,13 +60,16 @@ rule "Same value without Conflict - Resolution"
 		}
 		debug("    -> merging!");
 end
+/**/
 
 /**
- * This rule checks if there exists a property, marked as conflicting, that has no more other properties that 
- * provoke the conflict. 
+ * This rule checks if there exists a property, marked as conflicting, that has
+ * no more other properties that provoke the conflict. 
  * If no conflicting properties are found, the status is set to "SINGLE_RESULT"
+ * and all (in fact non-)conflicting records are merged together.
  *
- * This rule has a high priority, so whenever we see a property is conflicting, there must be a second property.
+ * This rule has a high priority, so whenever we see a property is conflicting, 
+ * there must be at least one property with a conflicting value.
  */
 rule "Single value, no more Conflict - Resolution"
 		salience 900
@@ -78,10 +81,18 @@ rule "Single value, no more Conflict - Resolution"
 		) from $e.metadata
 
 		Number( intValue == 0 ) from accumulate( $m : MetadataRecord( 
-				this != $md1, 
-				property.id == $md1.property.id
+				property.id == $md1.property.id,
+				value != $md1.value
 			) from $e.metadata;
 				count($m)
+		)
+
+		$mdsSame : List() from accumulate( $m : MetadataRecord( 
+				this != $md1, 
+				property.id == $md1.property.id,
+				value == $md1.value
+			) from $e.metadata;
+				collectList($m)
 		)
 
 	then
@@ -89,7 +100,7 @@ rule "Single value, no more Conflict - Resolution"
 		
 		$md1.setStatus(Status.SINGLE_RESULT.toString());
 		modify($e) {
-			getId()
+			mergeMetadata($md1, $mdsSame)
 		}
 		debug("    -> set status to Single Result!");
 end
