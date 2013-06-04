@@ -29,6 +29,7 @@ import org.drools.runtime.StatelessKnowledgeSession;
 import com.mongodb.BasicDBObject;
 import com.petpet.c3po.adaptor.rules.drools.LogCollector;
 import com.petpet.c3po.api.dao.Cache;
+import com.petpet.c3po.dao.MetadataUtil;
 import com.petpet.c3po.datamodel.Element;
 import com.petpet.c3po.datamodel.LogEntry.ChangeType;
 
@@ -37,9 +38,9 @@ public class DroolsConflictResolutionProcessingRule implements
 
   public static final int PRIORITY = 500;
 
-  private static final String CACHE = "cache";
-
   private static final String LOGOUPUTCOLLECTOR = "log";
+
+  private static final String METADATAUTIL = "util";
 
   private final Cache cache;
   private Map<Thread, StatelessKnowledgeSession> sessions;
@@ -61,15 +62,6 @@ public class DroolsConflictResolutionProcessingRule implements
         this.kbase.getKnowledgePackages());
 
     this.sessions = new ConcurrentHashMap<Thread, StatelessKnowledgeSession>();
-  }
-
-  public StatelessKnowledgeSession createSession() {
-    StatelessKnowledgeSession session = this.kbase
-        .newStatelessKnowledgeSession();
-    session.setGlobal(CACHE, this.cache);
-    session.setGlobal(LOGOUPUTCOLLECTOR, new LogCollector(this.cache));
-
-    return session;
   }
 
   @Override
@@ -98,14 +90,27 @@ public class DroolsConflictResolutionProcessingRule implements
     session.addEventListener(this.ruleActivationListener);
     session.execute(e);
 
-    synchronized (System.out) {
-      System.out.println("======================================");
-      System.out.println("Drools log of " + e.getUid());
-      System.out.println();
-      System.out.println(outputCollector.reset());
-      System.out.println("======================================");
+    String logOutput = outputCollector.reset();
+
+    if (!logOutput.trim().isEmpty()) {
+      synchronized (System.out) {
+        System.out.println("======================================");
+        System.out.println("Drools log of " + e.getUid());
+        System.out.println();
+        System.out.println(logOutput);
+        System.out.println("======================================");
+      }
     }
     return e;
+  }
+
+  private StatelessKnowledgeSession createSession() {
+    StatelessKnowledgeSession session = this.kbase
+        .newStatelessKnowledgeSession();
+    session.setGlobal(METADATAUTIL, new MetadataUtil(this.cache));
+    session.setGlobal(LOGOUPUTCOLLECTOR, new LogCollector(this.cache));
+
+    return session;
   }
 
   private void initKnowledgeBase(List<String> filenames) {
@@ -199,15 +204,15 @@ public class DroolsConflictResolutionProcessingRule implements
             .remove(propertyId);
         if (newPropertyData == null) {
           // data is removed
-          this.logCollector.log("|Removed Info: " + propertyId + " - "
+          this.logCollector.debug("|Removed Info: " + propertyId + " - "
               + propertyData);
           modifiedElement.addLog(propertyId, propertyData.toString(),
               ChangeType.IGNORED, rule.getName());
         } else if (!propertyData.equals(newPropertyData)) {
           // data is changed
-          this.logCollector.log("|changed Info: " + propertyId);
-          this.logCollector.log("|   old value: " + propertyData);
-          this.logCollector.log("|   new value: " + newPropertyData);
+          this.logCollector.debug("|changed Info: " + propertyId);
+          this.logCollector.debug("|   old value: " + propertyData);
+          this.logCollector.debug("|   new value: " + newPropertyData);
 
           modifiedElement.addLog(propertyId, propertyData.toString(),
               ChangeType.UPDATED, rule.getName());
@@ -222,7 +227,7 @@ public class DroolsConflictResolutionProcessingRule implements
         String propertyId = newMetadataEntry.getKey();
         Object propertyData = newMetadataEntry.getValue();
 
-        this.logCollector.log("|Added Info: " + propertyId + " - "
+        this.logCollector.debug("|Added Info: " + propertyId + " - "
             + propertyData);
 
         modifiedElement

@@ -8,10 +8,8 @@ import com.petpet.c3po.datamodel.Element
 import com.petpet.c3po.datamodel.MetadataRecord
 import com.petpet.c3po.datamodel.MetadataRecord.Status
 import com.petpet.c3po.datamodel.Source
-import com.petpet.c3po.api.dao.Cache
-import com.petpet.c3po.dao.MetadataUtil
 
-global com.petpet.c3po.api.dao.Cache cache;
+global com.petpet.c3po.dao.MetadataUtil util;
 global com.petpet.c3po.adaptor.rules.drools.LogCollector log;
 
 
@@ -26,7 +24,7 @@ rule "Resolve Exiftool PDF format string"
         $mdBad : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format", 
-            MetadataUtil.isFromTool(cache, this, "Exiftool") 
+            util.isFromTool(this, "Exiftool") 
         ) from $e.metadata
         Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
             count( $id )
@@ -35,7 +33,7 @@ rule "Resolve Exiftool PDF format string"
         $mdGood : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format", 
-            ! MetadataUtil.isFromTool(cache, this, "Exiftool"), 
+            ! util.isFromTool(this, "Exiftool"), 
             value == "Portable Document Format"
         ) from $e.metadata
         Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
@@ -57,26 +55,100 @@ end
 /**
  * Treat format version "HTML x" like "x" from Jhove
  */
-rule "set html format version to value without prefix"
+rule "set html format version/markupBasisVersion to value without prefix"
         salience 160
     when 
         $e : Element()
         $md : MetadataRecord(
-            property.id == "format_version",
+            (property.id == "format_version" || property.id == "markupBasisVersion"), 
             value str[startsWith] "HTML ",
-            MetadataUtil.isFromTool(cache, this, "Jhove")
+            util.isFromTool(this, "Jhove")
         ) from $e.metadata
 
     then
-        log.debug("Jhove HTML format version issue: ");
+        log.debug("Jhove HTML format version/markupBasisVersion issue: ");
         
         String newValue = $md.getValue().substring(4).trim();
         $md.setValue(newValue);
         modify ($e) {
             getId()
         }
-        log.debug("    -> set format_version to \""+newValue+"\"!");
+        log.debug("    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+end
+
+/**
+ * Treat format "GZIP" like "GZIP Format" from Exiftool
+ */
+rule "set format GZIP to GZIP Format from Exiftool"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "format", 
+            value == "GZIP",
+            util.isFromTool(this, "Exiftool")
+        ) from $e.metadata
+
+    then
+        log.debug("Exiftool HTML GZIP format naming issue: ");
+        log.log("Exiftool HTML GZIP format naming issue: ");
         
+        String newValue = "GZIP Format";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        log.debug("    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+end
+
+/**
+ * Treat sampling_frequency_unit : 'no absolute unit of measurement' from Jhove as "none"
+ */
+rule "set sampling_frequency_unit : 'no absolute unit of measurement' from Jhove to 'none'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "sampling_frequency_unit",
+            value == "no absolute unit of measurement",
+            util.isFromTool(this, "Jhove")
+        ) from $e.metadata
+
+    then
+        log.debug("Jhove sampling_frequency_unit issue: ");
+        log.debugMetadataRecord($md);
+        
+        String newValue = "None";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        log.debug("    -> set format_version to \""+newValue+"\"!");
+end
+
+/**
+ * Treat sampling_frequency_unit : 'in.' from Jhove as "inches"
+ */
+rule "set sampling_frequency_unit : 'in.' from Jhove to 'inches'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "sampling_frequency_unit",
+            value == "in.",
+            util.isFromTool(this, "Jhove")
+        ) from $e.metadata
+
+    then
+        log.debug("Jhove sampling_frequency_unit issue: ");
+        log.debugMetadataRecord($md);
+        
+        String newValue = "inches";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        log.debug("    -> set format_version to \""+newValue+"\"!");
 end
 
 /**
@@ -147,7 +219,7 @@ rule "ignore text/plain and corresponding format if more precisise text/* availa
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            MetadataUtil.haveSameSources(this, $mdBadMime)
+            util.haveSameSources(this, $mdBadMime)
         ) from $e.metadata
         
         $mdGoodMime : MetadataRecord(
@@ -159,7 +231,7 @@ rule "ignore text/plain and corresponding format if more precisise text/* availa
         $mdGoodFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            MetadataUtil.haveSameSources(this, $mdGoodMime)
+            util.haveSameSources(this, $mdGoodMime)
         ) from $e.metadata
         
     then
@@ -194,12 +266,12 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
             status=="CONFLICT", 
             property.id == "mimetype",
             value == "text/html",
-            MetadataUtil.isFromTool(cache, this, "Jhove") 
+            util.isFromTool(this, "Jhove") 
         ) from $e.metadata
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            MetadataUtil.haveSameSources(this, $mdBadMime)
+            util.haveSameSources(this, $mdBadMime)
         ) from $e.metadata
 
         $mdGoodMime : MetadataRecord(
@@ -210,7 +282,7 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
         $mdGoodFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            MetadataUtil.haveSameSources(this, $mdGoodMime)
+            util.haveSameSources(this, $mdGoodMime)
         ) from $e.metadata
         
     then
@@ -243,28 +315,28 @@ rule "if Exiftool and Droid report ppt, ignore others"
         $mdGoodFormat1 : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            MetadataUtil.isFromTool(cache, this, "Exiftool"),
+            util.isFromTool(this, "Exiftool"),
             value == "PPT"
         ) from $e.metadata
 
         $mdGoodFormat2 : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            MetadataUtil.isFromTool(cache, this, "Droid"),
+            util.isFromTool(this, "Droid"),
             value == "Microsoft Powerpoint Presentation"
         ) from $e.metadata
 
         $mdBadMime : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            ! MetadataUtil.isFromTool(cache, this, "Exiftool"),
-            ! MetadataUtil.isFromTool(cache, this, "Droid")
+            ! util.isFromTool(this, "Exiftool"),
+            ! util.isFromTool(this, "Droid")
         ) from $e.metadata
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            ! MetadataUtil.isFromTool(cache, this, "Exiftool"),
-            ! MetadataUtil.isFromTool(cache, this, "Droid")
+            ! util.isFromTool(this, "Exiftool"),
+            ! util.isFromTool(this, "Droid")
         ) from $e.metadata
 
 
@@ -298,39 +370,39 @@ rule "if Jhove and Droid report xhtml, ignore others"
         $mdGoodFormat1 : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            MetadataUtil.isFromTool(cache, this, "Jhove"),
+            util.isFromTool(this, "Jhove"),
             value == "XHTML"
         ) from $e.metadata
 
         $mdGoodFormat2 : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            MetadataUtil.isFromTool(cache, this, "Droid"),
+            util.isFromTool(this, "Droid"),
             value == "Extensible Hypertext Markup Language"
         ) from $e.metadata
 
         $mdGoodMime1 : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            MetadataUtil.haveSameSources(this, $mdGoodFormat1)
+            util.haveSameSources(this, $mdGoodFormat1)
         ) from $e.metadata
 
         $mdGoodMime2 : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            MetadataUtil.haveSameSources(this, $mdGoodFormat2)
+            util.haveSameSources(this, $mdGoodFormat2)
         ) from $e.metadata
 
         $mdBadMime : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            ! MetadataUtil.isFromTool(cache, this, "Jhove"),
-            ! MetadataUtil.isFromTool(cache, this, "Droid")
+            ! util.isFromTool(this, "Jhove"),
+            ! util.isFromTool(this, "Droid")
         ) from $e.metadata
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            MetadataUtil.haveSameSources(this, $mdBadMime)
+            util.haveSameSources(this, $mdBadMime)
         ) from $e.metadata
 
 

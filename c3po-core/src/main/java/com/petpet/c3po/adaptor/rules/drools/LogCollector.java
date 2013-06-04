@@ -6,6 +6,13 @@ import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.datamodel.MetadataRecord;
 import com.petpet.c3po.datamodel.Source;
 
+/**
+ * TODO: this is quick and dirty: add log level support and get rid of debugX
+ * vs. logX!
+ * 
+ * @author Peter Schmidt (schmidt_peter[at]gmx[dot]at)
+ * 
+ */
 public class LogCollector {
 
   private StringBuilder stringBuilder = new StringBuilder();
@@ -18,8 +25,8 @@ public class LogCollector {
   }
 
   public synchronized void debug(String text) {
-    this.stringBuilder.append(text);
-    this.stringBuilder.append("\n");
+    // this.stringBuilder.append(text);
+    // this.stringBuilder.append("\n");
   }
 
   public synchronized void debugMetadataRecord(MetadataRecord record) {
@@ -31,7 +38,7 @@ public class LogCollector {
   public void debugMetadataRecordSources(List<String> sourceIDs) {
     for (String sourceID : sourceIDs) {
       Source source = this.cache.getSource(sourceID);
-      this.log("        Source: " + source.getName() + " "
+      this.debug("        Source: " + source.getName() + " "
           + source.getVersion() + " [" + source.getId() + "]");
     }
   }
@@ -44,6 +51,25 @@ public class LogCollector {
   public synchronized void log(String text) {
     this.stringBuilder.append(text);
     this.stringBuilder.append("\n");
+  }
+
+  public synchronized void logMetadataRecord(MetadataRecord record) {
+    this.logMetadataRecordValue(record);
+    List<String> sourceIDs = record.getSources();
+    this.logMetadataRecordSources(sourceIDs);
+  }
+
+  public void logMetadataRecordSources(List<String> sourceIDs) {
+    for (String sourceID : sourceIDs) {
+      Source source = this.cache.getSource(sourceID);
+      this.log("        Source: " + source.getName() + " "
+          + source.getVersion() + " [" + source.getId() + "]");
+    }
+  }
+
+  public void logMetadataRecordValue(MetadataRecord record) {
+    this.log("    " + record.getProperty().getId() + " : \'"
+        + record.getValue() + "\'");
   }
 
   public synchronized String reset() {

@@ -62,7 +62,7 @@ rule "Single value, no more Conflict - Resolution"
         }
         log.debug("    -> merge and set status to Single Result!");
 end
-
+/**/
 
 
 /**
@@ -87,9 +87,9 @@ rule "REPORT: element with conflicts"
         )
         
     then
-        log.log("Report: "+$e.getUid()+" has conflict in "+$conflictingProperty+" by: ");
+        log.log("Report: "+$e.getUid()+" has conflicts: ");
         for(MetadataRecord conflict : (List<MetadataRecord>)$conflicts) {
-            log.debugMetadataRecord(conflict);           
+            log.logMetadataRecord(conflict);           
         }
         retract($e);
 
@@ -108,7 +108,7 @@ rule "REPORT: element without conflicts"
         )
         
     then
-        log.log("Report: "+$e.getUid()+" has no conflicts");
+        log.debug("Report: "+$e.getUid()+" has no conflicts");
         retract($e);
 end
  
