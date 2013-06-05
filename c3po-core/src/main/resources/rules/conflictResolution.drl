@@ -1,5 +1,8 @@
 package c3po.custom
 
+import com.petpet.c3po.datamodel.Element
+import com.petpet.c3po.datamodel.MetadataRecord
+
 global com.petpet.c3po.dao.MetadataUtil util;
 global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
 global java.lang.Integer loglevel;

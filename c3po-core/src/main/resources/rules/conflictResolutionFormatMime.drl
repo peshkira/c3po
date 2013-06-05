@@ -180,6 +180,30 @@ rule "ignore text/plain and corresponding format if more precisise text/* availa
         
 end
 
+/**
+ * Treat format "XLS" like "Microsoft Excel Format" from Exiftool
+ */
+rule "set format XLS to Microsoft Excel Format from Exiftool"
+        salience 160
+    when
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "format",
+            value == "XLS",
+            util.isFromTool(this, "Exiftool")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Exiftool Microsoft Excel format naming issue: ");
+
+        String newValue = "Microsoft Excel Format";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+end
+
 
 /*******************************************************************************
  *
@@ -434,3 +458,48 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
         logger.log(loglevel,"    -> ignore "+$mdBadMime);
         logger.log(loglevel,"    -> ignore "+$mdBadFormat);
 end
+
+/**
+ * If Jhove reports HTML Transitional and at least 2 times other tools claim it to be "Hypertext Markup Language",
+ * ignore Droid (and the like).
+ */
+rule "Resolve Jhove HTML Transitional format string"
+        salience 250
+    when
+        $e : Element()
+        $mdBad : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            util.isFromTool(this, "Jhove")
+        ) from $e.metadata
+        Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
+            count( $id )
+        )
+
+        $mdGood : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            ! util.isFromTool(this, "Jhove"),
+            value == "Hypertext Markup Language"
+        ) from $e.metadata
+        Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
+            count( $id )
+        )
+
+    then
+        logger.log(loglevel,"Jhove HTML Transitional format string issue: ");
+        logger.logMetadataRecord(loglevel,$mdBad);
+        logger.logMetadataRecord(loglevel,$mdGood);
+
+        modify ($e) {
+            ignoreMetadata($mdBad)
+        }
+        logger.log(loglevel,"    -> ignore "+$mdBad);
+
+end
+
+/*******************************************************************************
+ *
+ *      Microsoft Excel
+ *
+ ******************************************************************************/
