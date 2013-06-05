@@ -13,6 +13,7 @@ import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatelessKnowledgeSession;
 
+import com.petpet.c3po.adaptor.rules.drools.ConflictCollector;
 import com.petpet.c3po.adaptor.rules.drools.ElementModificationListener;
 import com.petpet.c3po.adaptor.rules.drools.LogCollector;
 import com.petpet.c3po.adaptor.rules.drools.RuleActivationListener;
@@ -25,9 +26,13 @@ public class DroolsConflictResolutionProcessingRule implements
 
   public static final int PRIORITY = 500;
 
-  private static final String LOGOUPUTCOLLECTOR = "log";
+  private static final String G_LOGOUPUTCOLLECTOR = "logger";
+  private static final String G_METADATAUTIL = "util";
+  private static final String G_CONFLICTCOLLECTOR = "conflicts";
+  private static final String G_BASICRULESLOGLEVEL = "loglevel";
 
-  private static final String METADATAUTIL = "util";
+  private static final int MIN_LOGLEVEL = LogCollector.INFO;
+  private static final int RULESLOGLEVEL = LogCollector.DEBUG;
 
   private final Cache cache;
   private Map<Thread, StatelessKnowledgeSession> sessions;
@@ -35,19 +40,26 @@ public class DroolsConflictResolutionProcessingRule implements
 
   private KnowledgeBase kbase;
 
+  private ConflictCollector conflictCollector;
+
+  private MetadataUtil metadataUtil;
+
   public DroolsConflictResolutionProcessingRule(Cache cache) {
     this.cache = cache;
 
     // read in the source
     List<String> filenames = new ArrayList<String>();
-    filenames.add("/rules/conflictResolution.drl");
     filenames.add("/rules/conflictResolutionBasicRules.drl");
+    filenames.add("/rules/conflictResolutionFormatMime.drl");
+    filenames.add("/rules/conflictResolution.drl");
 
     this.initKnowledgeBase(filenames);
 
     this.ruleActivationListener = new RuleActivationListener(
         this.kbase.getKnowledgePackages());
+    this.metadataUtil = new MetadataUtil(this.cache);
 
+    this.conflictCollector = new ConflictCollector(this.metadataUtil);
     this.sessions = new ConcurrentHashMap<Thread, StatelessKnowledgeSession>();
   }
 
@@ -58,7 +70,9 @@ public class DroolsConflictResolutionProcessingRule implements
 
   @Override
   public void onCommandFinished() {
+    // TODO: make the execution of these 2 methods configurable
     this.ruleActivationListener.printStatistics(System.out);
+    this.conflictCollector.printStatistics(System.out);
   }
 
   @Override
@@ -72,8 +86,12 @@ public class DroolsConflictResolutionProcessingRule implements
     }
 
     LogCollector outputCollector = (LogCollector) session.getGlobals().get(
-        LOGOUPUTCOLLECTOR);
-    session.addEventListener(new ElementModificationListener(outputCollector));
+        G_LOGOUPUTCOLLECTOR);
+
+    // we set the output of the modification listener to trace
+    session.addEventListener(new ElementModificationListener(outputCollector,
+        LogCollector.TRACE));
+
     session.addEventListener(this.ruleActivationListener);
     session.execute(e);
 
@@ -94,8 +112,14 @@ public class DroolsConflictResolutionProcessingRule implements
   private StatelessKnowledgeSession createSession() {
     StatelessKnowledgeSession session = this.kbase
         .newStatelessKnowledgeSession();
-    session.setGlobal(METADATAUTIL, new MetadataUtil(this.cache));
-    session.setGlobal(LOGOUPUTCOLLECTOR, new LogCollector(this.cache));
+    session.setGlobal(G_METADATAUTIL, this.metadataUtil);
+    session.setGlobal(G_CONFLICTCOLLECTOR, this.conflictCollector);
+
+    // TODO: make MIN_LOGLEVEL configurable (verbosity level)
+    session.setGlobal(G_LOGOUPUTCOLLECTOR, new LogCollector(this.cache,
+        MIN_LOGLEVEL));
+    // This is the default rule log level (in DRL files: globals loglevel
+    session.setGlobal(G_BASICRULESLOGLEVEL, RULESLOGLEVEL);
 
     return session;
   }

@@ -1,12 +1,17 @@
-package rules
+package c3po.basic
 
 import java.util.List
+import java.util.Set
 
 import com.petpet.c3po.datamodel.Element
 import com.petpet.c3po.datamodel.MetadataRecord
 import com.petpet.c3po.datamodel.MetadataRecord.Status
+import com.petpet.c3po.datamodel.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
 
-global com.petpet.c3po.adaptor.rules.drools.LogCollector log;
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global com.petpet.c3po.adaptor.rules.drools.ConflictCollector conflicts;
+global java.lang.Integer loglevel;
 
 
 /**
@@ -16,7 +21,7 @@ rule "Initialize"
         salience 1000
     when 
     then
-        log.debug("DR Running" );   
+        logger.debug("DR Running" );   
 end
 /**/
 
@@ -54,13 +59,13 @@ rule "Single value, no more Conflict - Resolution"
         )
 
     then
-        log.debug("no more conflicts on "+$md1.getProperty().getId());
+        logger.log(loglevel, "no more conflicts on "+$md1.getProperty().getId());
         
         $md1.setStatus(Status.SINGLE_RESULT.toString());
         modify($e) {
             mergeMetadata($md1, $mdsSame)
         }
-        log.debug("    -> merge and set status to Single Result!");
+        logger.log(loglevel, "    -> merge and set status to Single Result!");
 end
 /**/
 
@@ -74,22 +79,21 @@ rule "REPORT: element with conflicts"
     when 
         $e : Element()
 
-        MetadataRecord( 
-            status==Status.CONFLICT.toString(),
-            $conflictingProperty : property.id
-        ) from $e.metadata
-        
-        $conflicts : List() from collect(
+        $conflicts : Set() from collect(
             MetadataRecord(
-                status==Status.CONFLICT.toString(),  
-                property.id == $conflictingProperty
+                status==Status.CONFLICT.toString()
             ) from $e.metadata
         )
         
     then
-        log.log("Report: "+$e.getUid()+" has conflicts: ");
-        for(MetadataRecord conflict : (List<MetadataRecord>)$conflicts) {
-            log.logMetadataRecord(conflict);           
+        logger.log(LogCollector.INFO, "Report: "+$e.getUid()+" has conflicts: ");
+        
+        java.util.SortedSet<MetadataRecord> sorted = 
+            new java.util.TreeSet<MetadataRecord>(LogCollector.getMetadataSorter());
+        sorted.addAll((Set<MetadataRecord>)$conflicts);
+        for(MetadataRecord conflict : sorted) {
+            logger.logMetadataRecord(LogCollector.INFO, conflict);           
+            conflicts.addConflict(conflict.getProperty().getId(), $e);
         }
         retract($e);
 
@@ -108,7 +112,7 @@ rule "REPORT: element without conflicts"
         )
         
     then
-        log.debug("Report: "+$e.getUid()+" has no conflicts");
+        logger.log(loglevel, "Report: "+$e.getUid()+" has no conflicts");
         retract($e);
 end
  

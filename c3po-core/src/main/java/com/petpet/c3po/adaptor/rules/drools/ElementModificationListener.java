@@ -18,10 +18,12 @@ public class ElementModificationListener implements WorkingMemoryEventListener {
 
   private Map<Element, BasicDBObject> memory = new ConcurrentHashMap<Element, BasicDBObject>();
   private LogCollector logCollector;
+  private int loglevel;
 
-  public ElementModificationListener(LogCollector logCollector) {
+  public ElementModificationListener(LogCollector logCollector, int loglevel) {
     super();
     this.logCollector = logCollector;
+    this.loglevel = loglevel;
   }
 
   @Override
@@ -85,15 +87,16 @@ public class ElementModificationListener implements WorkingMemoryEventListener {
           .remove(propertyId);
       if (newPropertyData == null) {
         // data is removed
-        this.logCollector.debug("|Removed Info: " + propertyId + " - "
-            + propertyData);
+        this.logCollector.log(this.loglevel, "|Removed Info: " + propertyId
+            + " - " + propertyData);
         modifiedElement.addLog(propertyId, propertyData.toString(),
             ChangeType.IGNORED, rule.getName());
       } else if (!propertyData.equals(newPropertyData)) {
         // data is changed
-        this.logCollector.debug("|changed Info: " + propertyId);
-        this.logCollector.debug("|   old value: " + propertyData);
-        this.logCollector.debug("|   new value: " + newPropertyData);
+        this.logCollector.log(this.loglevel, "|changed Info: " + propertyId);
+        this.logCollector.log(this.loglevel, "|   old value: " + propertyData);
+        this.logCollector.log(this.loglevel, "|   new value: "
+            + newPropertyData);
 
         modifiedElement.addLog(propertyId, propertyData.toString(),
             ChangeType.UPDATED, rule.getName());
@@ -108,7 +111,7 @@ public class ElementModificationListener implements WorkingMemoryEventListener {
       String propertyId = newMetadataEntry.getKey();
       Object propertyData = newMetadataEntry.getValue();
 
-      this.logCollector.debug("|Added Info: " + propertyId + " - "
+      this.logCollector.log(this.loglevel, "|Added Info: " + propertyId + " - "
           + propertyData);
 
       modifiedElement.addLog(propertyId, "", ChangeType.ADDED, rule.getName());

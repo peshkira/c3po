@@ -1,56 +1,9 @@
-package rules
-
-import java.util.List
-import java.util.Set
-import java.lang.StringBuilder
-
-import com.petpet.c3po.datamodel.Element
-import com.petpet.c3po.datamodel.MetadataRecord
-import com.petpet.c3po.datamodel.MetadataRecord.Status
-import com.petpet.c3po.datamodel.Source
+package c3po.custom
 
 global com.petpet.c3po.dao.MetadataUtil util;
-global com.petpet.c3po.adaptor.rules.drools.LogCollector log;
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
 
-
-/**
- * If Exiftool reports another format than others AND at least 2 times other tools claim it to be "Portable Document Format", 
- * ignore Exiftool (and the like).
- */
-rule "Resolve Exiftool PDF format string"
-        salience 100
-    when 
-        $e : Element()
-        $mdBad : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "format", 
-            util.isFromTool(this, "Exiftool") 
-        ) from $e.metadata
-        Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
-            count( $id )
-        )
-
-        $mdGood : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "format", 
-            ! util.isFromTool(this, "Exiftool"), 
-            value == "Portable Document Format"
-        ) from $e.metadata
-        Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
-            count( $id )
-        )
-        
-    then
-        log.debug("Exiftool PDF format string issue: ");
-        log.debugMetadataRecord($mdBad);
-        log.debugMetadataRecord($mdGood);
-        
-        modify ($e) {
-            ignoreMetadata($mdBad)
-        }
-        log.debug("    -> ignore "+$mdBad);
-        
-end
 
 /**
  * Treat format version "HTML x" like "x" from Jhove
@@ -66,39 +19,14 @@ rule "set html format version/markupBasisVersion to value without prefix"
         ) from $e.metadata
 
     then
-        log.debug("Jhove HTML format version/markupBasisVersion issue: ");
+        logger.log(loglevel,"Jhove HTML format version/markupBasisVersion issue: ");
         
         String newValue = $md.getValue().substring(4).trim();
         $md.setValue(newValue);
         modify ($e) {
             getId()
         }
-        log.debug("    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
-end
-
-/**
- * Treat format "GZIP" like "GZIP Format" from Exiftool
- */
-rule "set format GZIP to GZIP Format from Exiftool"
-        salience 160
-    when 
-        $e : Element()
-        $md : MetadataRecord(
-            property.id == "format", 
-            value == "GZIP",
-            util.isFromTool(this, "Exiftool")
-        ) from $e.metadata
-
-    then
-        log.debug("Exiftool HTML GZIP format naming issue: ");
-        log.log("Exiftool HTML GZIP format naming issue: ");
-        
-        String newValue = "GZIP Format";
-        $md.setValue(newValue);
-        modify ($e) {
-            getId()
-        }
-        log.debug("    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+        logger.log(loglevel,"    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
 end
 
 /**
@@ -115,313 +43,61 @@ rule "set sampling_frequency_unit : 'no absolute unit of measurement' from Jhove
         ) from $e.metadata
 
     then
-        log.debug("Jhove sampling_frequency_unit issue: ");
-        log.debugMetadataRecord($md);
+        logger.log(loglevel,"Jhove sampling_frequency_unit issue: ");
+        logger.logMetadataRecord(loglevel,$md);
         
         String newValue = "None";
         $md.setValue(newValue);
         modify ($e) {
             getId()
         }
-        log.debug("    -> set format_version to \""+newValue+"\"!");
+        logger.log(loglevel,"    -> set format_version to \""+newValue+"\"!");
 end
 
 /**
- * Treat sampling_frequency_unit : 'in.' from Jhove as "inches"
+ * Treat sampling_frequency_unit : 'in.' from Jhove or NLNZ as "inches"
  */
-rule "set sampling_frequency_unit : 'in.' from Jhove to 'inches'"
+rule "set sampling_frequency_unit : 'in.' from Jhove or NLNZ to 'inches'"
         salience 160
     when 
         $e : Element()
         $md : MetadataRecord(
             property.id == "sampling_frequency_unit",
             value == "in.",
-            util.isFromTool(this, "Jhove")
+            (util.isFromTool(this, "Jhove") || util.isFromTool(this, "NLNZ Metadata Extractor"))
         ) from $e.metadata
 
     then
-        log.debug("Jhove sampling_frequency_unit issue: ");
-        log.debugMetadataRecord($md);
+        logger.log(loglevel,"Jhove/NLNZ sampling_frequency_unit issue: ");
+        logger.logMetadataRecord(loglevel,$md);
         
         String newValue = "inches";
         $md.setValue(newValue);
         modify ($e) {
             getId()
         }
-        log.debug("    -> set format_version to \""+newValue+"\"!");
+        logger.log(loglevel,"    -> set format_version to \""+newValue+"\"!");
 end
 
 /**
- * Treat application/rtf mimetypes as text/rtf 
+ * Ignore fractional exposure_time by NLNZ Metadata Extractor
  */
-rule "set application/rtf mimetypes to text/rtf"
+rule "ignore fractional exposure_time by NLNZ Metadata Extractor'"
         salience 160
     when 
         $e : Element()
         $md : MetadataRecord(
-            property.id == "mimetype",
-            value matches ".*application/rtf.*"
+            property.id == "exposure_time",
+            value matches "[0-9]*\\.[0-9E\\-]*",
+            util.isFromTool(this, "NLNZ Metadata Extractor")
         ) from $e.metadata
 
     then
-        log.debug("mimetype=application/rtf issue: ");
-        log.debugMetadataRecord($md);
-        
-        $md.setValue("text/rtf");
+        logger.log(loglevel,"NLNZ fractional exposure_time issue: ");
+        logger.logMetadataRecord(loglevel,$md);
         modify ($e) {
-            getId()
+            ignoreMetadata($md)
         }
-        log.debug("    -> set mimetype to \"text/rtf\"!");
-        
+        logger.log(loglevel,"    -> ignore "+$md);
 end
 
-/**
- * set RTF format to Rich Text Format
- */
-rule "set RTF format to Rich Text Format"
-        salience 160
-    when 
-        $e : Element()
-        $mdFormat : MetadataRecord(
-            property.id == "format",
-            value == "RTF"
-        ) from $e.metadata
-        $mdMime : MetadataRecord(
-            property.id == "mimetype",
-            value matches ".*(text|application)/rtf.*"
-        ) from $e.metadata
-
-    then
-        log.debug("RTF format string issue: ");
-        log.debugMetadataRecord($mdFormat);
-        
-        $mdFormat.setValue("Rich Text Format");
-        modify ($e) {
-            getId()
-        }
-        log.debug("    -> set format to \"Rich Text Format\"!");
-        
-end
-
-/**
- * If some tools report a mimetype as "text/plain" (and all those tools report the same format string) 
- * and some other tools report "text/*" (and all agree on the same format string), ignore the text/plain mimetype and format.
- */
-rule "ignore text/plain and corresponding format if more precisise text/* available"
-        salience 150
-    when 
-        $e : Element()
-        $mdBadMime : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "mimetype",
-            value == "text/plain"
-        ) from $e.metadata
-        $mdBadFormat : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "format",
-            util.haveSameSources(this, $mdBadMime)
-        ) from $e.metadata
-        
-        $mdGoodMime : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "mimetype", 
-            value != "text/plain",
-            value str[startsWith] "text/"
-        ) from $e.metadata
-        $mdGoodFormat : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "format",
-            util.haveSameSources(this, $mdGoodMime)
-        ) from $e.metadata
-        
-    then
-        log.debug("format/mimetype=text/plain issue: ");
-        
-        log.debugMetadataRecordValue($mdBadMime);
-        log.debugMetadataRecordValue($mdBadFormat);
-        log.debugMetadataRecordSources($mdBadFormat.getSources());
-
-        log.debugMetadataRecordValue($mdGoodMime);
-        log.debugMetadataRecordValue($mdGoodFormat);
-        log.debugMetadataRecordSources($mdGoodFormat.getSources());
-        
-        modify ($e) {
-            ignoreMetadata($mdBadMime),
-            ignoreMetadata($mdBadFormat)
-        }
-        log.debug("    -> ignore "+$mdBadMime);
-        log.debug("    -> ignore "+$mdBadFormat);
-        
-end
-
-/**
- * If Jhove report a mimetype as "text/html" (and all those tools report the same format string) 
- * and some other tools report "application/xhtml+xml" (and all agree on the same format string), ignore the text/html mimetype and format.
- */
-rule "ignore text/html and corresponding format by Jhove (and others) if application/xhtml+xml is available"
-        salience 150
-    when 
-        $e : Element()
-        $mdBadMime : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "mimetype",
-            value == "text/html",
-            util.isFromTool(this, "Jhove") 
-        ) from $e.metadata
-        $mdBadFormat : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "format",
-            util.haveSameSources(this, $mdBadMime)
-        ) from $e.metadata
-
-        $mdGoodMime : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "mimetype", 
-            value == "application/xhtml+xml"
-        ) from $e.metadata
-        $mdGoodFormat : MetadataRecord(
-            status=="CONFLICT", 
-            property.id == "format",
-            util.haveSameSources(this, $mdGoodMime)
-        ) from $e.metadata
-        
-    then
-        log.debug("text/html vs. application/xhtml+xml issue: ");
-        
-        log.debugMetadataRecordValue($mdBadMime);
-        log.debugMetadataRecordValue($mdBadFormat);
-        log.debugMetadataRecordSources($mdBadFormat.getSources());
-
-        log.debugMetadataRecordValue($mdGoodMime);
-        log.debugMetadataRecordValue($mdGoodFormat);
-        log.debugMetadataRecordSources($mdGoodFormat.getSources());
-                
-        modify ($e) {
-            ignoreMetadata($mdBadMime),
-            ignoreMetadata($mdBadFormat)
-        }
-        
-        log.debug("    -> ignore "+$mdBadMime);
-        log.debug("    -> ignore "+$mdBadFormat);
-end
-
-/**
-  * if Exiftool and Droid both report power point presentation, ignore others, because they are typically right
- */
-rule "if Exiftool and Droid report ppt, ignore others"
-        salience 100
-    when
-        $e : Element()
-        $mdGoodFormat1 : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "format",
-            util.isFromTool(this, "Exiftool"),
-            value == "PPT"
-        ) from $e.metadata
-
-        $mdGoodFormat2 : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "format",
-            util.isFromTool(this, "Droid"),
-            value == "Microsoft Powerpoint Presentation"
-        ) from $e.metadata
-
-        $mdBadMime : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "mimetype",
-            ! util.isFromTool(this, "Exiftool"),
-            ! util.isFromTool(this, "Droid")
-        ) from $e.metadata
-        $mdBadFormat : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "format",
-            ! util.isFromTool(this, "Exiftool"),
-            ! util.isFromTool(this, "Droid")
-        ) from $e.metadata
-
-
-    then
-        log.debug("Exiftool+Droid PPT format string issue: ");
-        
-        log.debugMetadataRecordValue($mdBadMime);
-        log.debugMetadataRecordValue($mdBadFormat);
-        log.debugMetadataRecordSources($mdBadFormat.getSources());
-
-        log.debugMetadataRecord($mdGoodFormat1);
-        log.debugMetadataRecord($mdGoodFormat2);
-
-        modify ($e) {
-            ignoreMetadata($mdBadFormat),
-            ignoreMetadata($mdBadMime)
-        }
-        
-        log.debug("    -> ignore "+$mdBadFormat);
-        log.debug("    -> ignore "+$mdBadMime);
-
-end
-
-/**
-  * If Jhove and Droid both report xhmtl, ignore others, because they are typically right
- */
-rule "if Jhove and Droid report xhtml, ignore others"
-        salience 200
-    when
-        $e : Element()
-        $mdGoodFormat1 : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "format",
-            util.isFromTool(this, "Jhove"),
-            value == "XHTML"
-        ) from $e.metadata
-
-        $mdGoodFormat2 : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "format",
-            util.isFromTool(this, "Droid"),
-            value == "Extensible Hypertext Markup Language"
-        ) from $e.metadata
-
-        $mdGoodMime1 : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "mimetype",
-            util.haveSameSources(this, $mdGoodFormat1)
-        ) from $e.metadata
-
-        $mdGoodMime2 : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "mimetype",
-            util.haveSameSources(this, $mdGoodFormat2)
-        ) from $e.metadata
-
-        $mdBadMime : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "mimetype",
-            ! util.isFromTool(this, "Jhove"),
-            ! util.isFromTool(this, "Droid")
-        ) from $e.metadata
-        $mdBadFormat : MetadataRecord(
-            status=="CONFLICT",
-            property.id == "format",
-            util.haveSameSources(this, $mdBadMime)
-        ) from $e.metadata
-
-
-    then
-        log.debug("Jhove+Droid PPT xhtml string issue: ");
-        log.debugMetadataRecordValue($mdBadMime);
-        log.debugMetadataRecordValue($mdBadFormat);
-        log.debugMetadataRecordSources($mdBadFormat.getSources());
-        
-        log.debugMetadataRecord($mdGoodFormat1);
-        log.debugMetadataRecord($mdGoodFormat2);
-
-        modify ($e) {
-            ignoreMetadata($mdBadFormat),
-            ignoreMetadata($mdBadMime),
-            ignoreMetadata($mdGoodFormat2),
-            ignoreMetadata($mdGoodMime2)
-        }
-        log.debug("    -> ignore "+$mdBadFormat);
-        log.debug("    -> ignore "+$mdBadMime);
-
-end

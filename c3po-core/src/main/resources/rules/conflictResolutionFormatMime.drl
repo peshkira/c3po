@@ -1,0 +1,436 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.datamodel.Element
+import com.petpet.c3po.datamodel.MetadataRecord
+import com.petpet.c3po.datamodel.MetadataRecord.Status
+import com.petpet.c3po.datamodel.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+
+global com.petpet.c3po.dao.MetadataUtil util;
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+ * If Exiftool reports another format than others AND at least 2 times other tools claim it to be "Portable Document Format", 
+ * ignore Exiftool (and the like).
+ */
+rule "Resolve Exiftool PDF format string"
+        salience 100
+    when 
+        $e : Element()
+        $mdBad : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format", 
+            util.isFromTool(this, "Exiftool") 
+        ) from $e.metadata
+        Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
+            count( $id )
+        )
+
+        $mdGood : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format", 
+            ! util.isFromTool(this, "Exiftool"), 
+            value == "Portable Document Format"
+        ) from $e.metadata
+        Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
+            count( $id )
+        )
+        
+    then
+        logger.log(loglevel,"Exiftool PDF format string issue: ");
+        logger.logMetadataRecord(loglevel,$mdBad);
+        logger.logMetadataRecord(loglevel,$mdGood);
+        
+        modify ($e) {
+            ignoreMetadata($mdBad)
+        }
+        logger.log(loglevel,"    -> ignore "+$mdBad);
+        
+end
+
+/**
+ * Treat format "GZIP" like "GZIP Format" from Exiftool
+ */
+rule "set format GZIP to GZIP Format from Exiftool"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "format", 
+            value == "GZIP",
+            util.isFromTool(this, "Exiftool")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Exiftool HTML GZIP format naming issue: ");
+        
+        String newValue = "GZIP Format";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+end
+
+/**
+ * Treat application/rtf mimetypes as text/rtf 
+ */
+rule "set application/rtf mimetypes to text/rtf"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "mimetype",
+            value matches ".*application/rtf.*"
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"mimetype=application/rtf issue: ");
+        logger.logMetadataRecord(loglevel,$md);
+        
+        $md.setValue("text/rtf");
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set mimetype to \"text/rtf\"!");
+        
+end
+
+/**
+ * set RTF format to Rich Text Format
+ */
+rule "set RTF format to Rich Text Format"
+        salience 160
+    when 
+        $e : Element()
+        $mdFormat : MetadataRecord(
+            property.id == "format",
+            value == "RTF"
+        ) from $e.metadata
+        $mdMime : MetadataRecord(
+            property.id == "mimetype",
+            value matches ".*(text|application)/rtf.*"
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"RTF format string issue: ");
+        logger.logMetadataRecord(loglevel,$mdFormat);
+        
+        $mdFormat.setValue("Rich Text Format");
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set format to \"Rich Text Format\"!");
+        
+end
+
+/**
+ * If some tools report a mimetype as "text/plain" (and all those tools report the same format string) 
+ * and some other tools report "text/*" (and all agree on the same format string), ignore the text/plain mimetype and format.
+ */
+rule "ignore text/plain and corresponding format if more precisise text/* available"
+        salience 150
+    when 
+        $e : Element()
+        $mdBadMime : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "mimetype",
+            value == "text/plain"
+        ) from $e.metadata
+        $mdBadFormat : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format",
+            util.haveSameSources(this, $mdBadMime)
+        ) from $e.metadata
+        
+        $mdGoodMime : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "mimetype", 
+            value != "text/plain",
+            value str[startsWith] "text/"
+        ) from $e.metadata
+        $mdGoodFormat : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format",
+            util.haveSameSources(this, $mdGoodMime)
+        ) from $e.metadata
+        
+    then
+        logger.log(loglevel,"format/mimetype=text/plain issue: ");
+        
+        logger.logMetadataRecordValue(loglevel,$mdBadMime);
+        logger.logMetadataRecordValue(loglevel,$mdBadFormat);
+        logger.logMetadataRecordSources(loglevel,$mdBadFormat.getSources());
+
+        logger.logMetadataRecordValue(loglevel,$mdGoodMime);
+        logger.logMetadataRecordValue(loglevel,$mdGoodFormat);
+        logger.logMetadataRecordSources(loglevel,$mdGoodFormat.getSources());
+        
+        modify ($e) {
+            ignoreMetadata($mdBadMime),
+            ignoreMetadata($mdBadFormat)
+        }
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+        
+end
+
+
+/*******************************************************************************
+ *
+ *      Microsoft Powerpoint
+ *
+ ******************************************************************************/
+
+
+/**
+  * if Droid reports "Microsoft Powerpoint Presentation", but Exiftool does not report PPT/S, 
+  * ignore it (Droids alone has false positives on "Microsoft Powerpoint Presentation")
+  * 
+  * This is a pre-cleaning step to remove totally wrong mimetypes or formats.
+  *
+  * Make sure that this has a higher priority than the other Droid PPT rules!
+ */
+rule "PPT: ignore Droid Microsoft Powerpoint Presentation false positives format and mimetypes"
+        salience 800
+    when
+        $e : Element()
+        Number (intValue == 0) from accumulate(
+            $md : MetadataRecord( 
+                (value=="PPT" || value=="PPS") && property.id == "format" 
+            ) from $e.metadata;
+            count($md)
+        )
+
+        $mdBadFormat : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            util.isFromTool(this, "Droid"),
+            value == "Microsoft Powerpoint Presentation"
+        ) from $e.metadata
+        $mdBadMime : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            util.haveSameSources(this, $mdBadFormat)
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Droid PPT false positive precleaning: ");
+        
+        logger.logMetadataRecordValue(loglevel,$mdBadMime);
+        logger.logMetadataRecordValue(loglevel,$mdBadFormat);
+        logger.logMetadataRecordSources(loglevel,$mdBadFormat.getSources());
+
+        modify ($e) {
+            ignoreMetadata($mdBadFormat),
+            ignoreMetadata($mdBadMime)
+        }
+        
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+
+end
+
+/**
+  * if Exiftool and Droid both report power point presentation, ignore others, 
+  * (format and mimetype) because if those two agree, they are right.
+  *
+  * (Droids alone has false positives on "Microsoft Powerpoint Presentation")
+  * 
+ */
+rule "PPT: ignore others mimetypes if Droid reports Microsoft Powerpoint Presentation format - after precleaning"
+        salience 799
+    when
+        $e : Element()
+        MetadataRecord(
+            property.id == "format",
+            util.isFromTool(this, "Droid"),
+            value == "Microsoft Powerpoint Presentation"
+        ) from $e.metadata
+        $mdGoodMime : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            util.isFromTool(this, "Droid")
+        ) from $e.metadata;
+
+        $mdBadMime : MetadataRecord(
+            property.id == "mimetype",
+            value != $mdGoodMime.value
+        ) from $e.metadata;
+
+    then
+        logger.log(loglevel,"Droid PPT mimetype cleaning: ");
+        
+        logger.logMetadataRecord(loglevel,$mdGoodMime);
+        logger.logMetadataRecord(loglevel,$mdBadMime);
+
+        modify ($e) {
+            ignoreMetadata($mdBadMime)
+        }
+        
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+end
+
+/**
+  * if Exiftool and Droid both report power point presentation, ignore others, 
+  * (format and mimetype) because if those two agree, they are right.
+  *
+  * (Droids alone has false positives on "Microsoft Powerpoint Presentation")
+  * 
+ */
+rule "PPT: ignore others formats if Droid reports Microsoft Powerpoint Presentation - after precleaning"
+        salience 798
+    when
+        $e : Element()
+        $mdGoodFormat : MetadataRecord(
+            property.id == "format",
+            util.isFromTool(this, "Droid"),
+            value == "Microsoft Powerpoint Presentation"
+        ) from $e.metadata
+
+        $mdBadFormat : MetadataRecord(
+            property.id == "format",
+            value != $mdGoodFormat.value
+        ) from $e.metadata;
+
+    then
+        logger.log(loglevel,"Droid PPT format cleaning: ");
+        
+        logger.logMetadataRecord(loglevel,$mdGoodFormat);
+        logger.logMetadataRecord(loglevel,$mdBadFormat);
+
+        modify ($e) {
+            ignoreMetadata($mdBadFormat)
+        }
+        
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+end
+
+/*******************************************************************************
+ *
+ *      (X)HTML
+ *
+ ******************************************************************************/
+
+
+/**
+  * If Jhove and Droid both report xhmtl, ignore others, because they are typically right
+ */
+rule "if Jhove and Droid report xhtml, ignore others"
+        salience 200
+    when
+        $e : Element()
+        $mdGoodFormat1 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            util.isFromTool(this, "Jhove"),
+            value == "XHTML"
+        ) from $e.metadata
+        $mdGoodMime1 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            util.haveSameSources(this, $mdGoodFormat1)
+        ) from $e.metadata
+
+        $mdGoodFormat2 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            util.isFromTool(this, "Droid"),
+            value == "Extensible Hypertext Markup Language"
+        ) from $e.metadata
+        $mdGoodMime2 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            util.haveSameSources(this, $mdGoodFormat2)
+        ) from $e.metadata
+
+        $mdBadMime : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            ! util.isFromTool(this, "Jhove"),
+            ! util.isFromTool(this, "Droid")
+        ) from $e.metadata
+        $mdBadFormat : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            util.haveSameSources(this, $mdBadMime)
+        ) from $e.metadata
+
+
+    then
+        logger.log(loglevel,"Jhove+Droid xhtml string issue: ");
+        logger.logMetadataRecordValue(loglevel,$mdGoodMime1);
+        logger.logMetadataRecord(loglevel,$mdGoodFormat1);
+        logger.logMetadataRecordValue(loglevel,$mdGoodMime2);
+        logger.logMetadataRecord(loglevel,$mdGoodFormat2);
+
+        logger.logMetadataRecordValue(loglevel,$mdBadMime);
+        logger.logMetadataRecord(loglevel,$mdBadFormat);
+        
+
+        modify ($e) {
+            ignoreMetadata($mdBadFormat),
+            ignoreMetadata($mdBadMime),
+            ignoreMetadata($mdGoodFormat2),
+            ignoreMetadata($mdGoodMime2)
+        }
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+
+end
+
+/**
+ * If Jhove report a mimetype as "text/html" (and all those tools report the same format string) 
+ * and some other tools report "application/xhtml+xml" (and all agree on the same format string), ignore the text/html mimetype and format.
+ */
+rule "ignore text/html and corresponding format by Jhove (and others) if application/xhtml+xml is available"
+        salience 150
+    when 
+        $e : Element()
+        $mdBadMime : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "mimetype",
+            value == "text/html",
+            util.isFromTool(this, "Jhove") 
+        ) from $e.metadata
+        $mdBadFormat : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format",
+            util.haveSameSources(this, $mdBadMime)
+        ) from $e.metadata
+
+        $mdGoodMime : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "mimetype", 
+            value == "application/xhtml+xml"
+        ) from $e.metadata
+        $mdGoodFormat : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format",
+            util.haveSameSources(this, $mdGoodMime)
+        ) from $e.metadata
+        
+    then
+        logger.log(loglevel,"text/html vs. application/xhtml+xml issue: ");
+        
+        logger.logMetadataRecordValue(loglevel,$mdBadMime);
+        logger.logMetadataRecordValue(loglevel,$mdBadFormat);
+        logger.logMetadataRecordSources(loglevel,$mdBadFormat.getSources());
+
+        logger.logMetadataRecordValue(loglevel,$mdGoodMime);
+        logger.logMetadataRecordValue(loglevel,$mdGoodFormat);
+        logger.logMetadataRecordSources(loglevel,$mdGoodFormat.getSources());
+                
+        modify ($e) {
+            ignoreMetadata($mdBadMime),
+            ignoreMetadata($mdBadFormat)
+        }
+        
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+end
