@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -450,6 +451,12 @@ public class Element {
 
   public void ignoreMetadata(MetadataRecord record) {
     this.metadata.remove(record);
+  }
+
+  public void ignoreMetadata(Collection<MetadataRecord> records) {
+    for (MetadataRecord record : records) {
+      this.ignoreMetadata(record);
+    }
   }
 
   public void addLog(MetadataRecord record, LogEntry.ChangeType changeType,
