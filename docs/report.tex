@@ -1,0 +1,154 @@
+\documentclass[a4paper,12pt]{article}
+%\documentclass[a4paper,10pt]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+
+
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=2cm,rmargin=2cm}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks,
+pdfpagelabels,
+pdfstartview = FitH,
+bookmarksopen = true,
+bookmarksnumbered = true,
+linkcolor = blue,
+plainpages = false,
+hypertexnames = false,
+citecolor = black] {hyperref}
+
+\usepackage{multirow}
+
+\usepackage{fancyhdr}
+
+\usepackage{listings}
+
+\pagestyle{fancy}
+
+\lhead{Conflict Reduction by Rulebased Postprocessing in C3PO}
+%\chead{}
+\rhead{}
+
+\lfoot{Lukas Rötzer, Peter Schmidt}
+\cfoot{}
+\rfoot{\thepage}
+
+\title{Conflict Reduction by Rulebased Postprocessing in C3PO\\ \medskip Report}
+\author{Lukas Rötzer, Peter Schmidt}
+\date{05.06.2013}
+
+\pdfinfo{%
+  /Title    (Conflict Reduction by Rulebased Postprocessing in C3PO)
+  /Author   (Lukas Rötzer, Peter Schmidt)
+  /Creator  (Lukas Rötzer, Peter Schmidt)
+  /Producer ()
+  /Subject  ()
+  /Keywords (C3PO, digital preservation, preservation planning, profiling, post processing)
+}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\clearpage
+
+
+
+\section{Introduction}
+
+The goal was to develop and apply post-processing methods and tools to \emph{FITS}\footnote{\url{https://code.google.com/p/fits/}} characterisation files within \emph{C3PO}\footnote{\url{http://ifs.tuwien.ac.at/imp/c3po}} to reduce the problem of "conflicting values" and significantly improve data quality. 
+
+The problem of conflicting values arises from the fact, that \emph{FITS} uses several independent tools to gather information about the inspected files. This is necessary, because different tools retrieve information of different quality on the vast amount of file types and formats. The downside of this is the fact, that the tools sometimes don't agree on the value of metadata properties. Reasons for this disagreement are various and range from different wording (``Portable Document Format'' vs. ``PDF EXIM'') to different format version recognition, or an insufficient mime-type specification (``text/plain'' vs. ``text/rtf''). 
+
+While some of these conflicts are detected correctly and correspond to corrupted or incorrect data in the inspected file, a bigger portion of them could be avoided, if the specific weaknesses of the used tools were known to \emph{C3PO}. To provide this ability, rules need to be defined by human experts, that know about the abilities and flaws of the tools. They then need to be applied automatically while parsing the data provided by \emph{FITS}. 
+
+\emph{C3PO} already provided a way to apply and execute post-processing rules. They are applied either while parsing single properties (pre-processing) or after all information is available (post-processing). We used and adapted these built in mechanisms to apply our conflict resolution framework. The rules can be exchanged and adapted and every user of \emph{C3PO} has the possibility to add his own specific set or remove other rules according to the circumstances of his configuration.
+
+Digital preservation depends strongly on data integrity and authenticity. Traceability of any action taken throughout the whole process is needed not only for testing and quality assurance, but also for provability and justification. To achieve this, we keep track of all rules and changes that were applied to the metadata during conflict resolution. This gives human experts the possibility to evaluate the set of rules used and to redefine them iteratively.
+
+
+\section{Workflow}
+When profiling a file set, the single files need to be analysed using \emph{FITS}, that generates an XML report for every single file. These reports are parsed by \emph{C3PO} by calling its command line interface with the \emph{-g} option to gather information. Upon initialization, the current configuration is loaded and several threads are spawned to parse the input data in parallel. Every thread uses an adaptor to handle the input data, according to its origin.
+
+The \emph{FITS} adaptor uses an Apache Commons Digester to parse the XML files. Therefore certain rules \footnote{\url{http://commons.apache.org/proper/commons-digester/guide/core.html\#doc.Rules}} are defined that are triggered on the occurrence of specific XML tags to copy the data into generated Java objects. To keep track of the objects during traversal of the file, the Digester uses an object stack. The adaptor pushes a \emph{DigesterContext} object onto that stack that holds all collected data.
+
+To parse the data, \emph{C3PO} implements processing rules, that can be either applied to the data of single XML tags while reading the data (pre-processing). Afterwards, when the DigesterContext is completely built from the XML file, the post-processing methods are executed, where:
+\begin{itemize}
+\item the metadata properties are set
+\item the collection name of the database is set
+\item if desired, date values can be obtained from the element name
+\item at last, the post-processing rules are called
+\end{itemize}
+Finally, the generated object is persisted in the database and the next XML file is fetched form the input.
+
+\section{Implementation}
+
+Since there exist a great variety of rule frameworks already, we evaluated these and choose to use the \emph{Drools Framework}\footnote{\url{http://www.jboss.org/drools/}} instead, because it's well documented and has a large community.
+Drools is a rule engine, based on the \emph{Rete algorithm} and tailored for the Java language. Rete was adopted to an object-oriented interface, which allows for more natural expressions of business rules.
+
+We added a new PostProcessingRule called \emph{DroolsConflictResolutionProcessingRule} to the Workflow, which parses the rule definitions and applies them to the current object.
+
+\subsection{Rule Framework}
+
+\subsection{Basic Rules Structure}
+
+A rule consists of of the following parts, but can basically seen as IF-THEN function:
+\begin{itemize}
+\item \emph{name}: identifies a rule
+\item \emph{salience}: ranges from 0 to 1000, where 0 is the maximum priority
+\item \emph{when}: defines, when a rule is triggered
+\item \emph{then}: defines, what to do, when the rule is triggered
+\end{itemize}
+
+A very basic rule looks like
+
+\lstset{xleftmargin=\parindent,basicstyle=\footnotesize\ttfamily,morecomment=[l]{//} }
+\begin{lstlisting}
+
+rule "ignore fractional exposure_time by NLNZ Metadata Extractor'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "exposure_time",
+            value matches "[0-9]*\\.[0-9E\\-]*",
+            util.isFromTool(this, "NLNZ Metadata Extractor")
+        ) from $e.metadata
+
+    then
+        modify ($e) {
+            ignoreMetadata($md)
+        }
+end
+
+\end{lstlisting}
+
+In the context of conflict resolution, a property is not just a key-value pair, but actually a triple consisting of its name, value and defining source (the tool name and its version). The operations support access to these pieces of information, testing for their existence, their values and their relation. Numerical expressions need not only to be tested for equality, but also for their relation. This allows defining rules for certain versions of a tool, not by listing all known versions, but declaring a minimum or maximum version, that this rule applies to. For string values an operator to compare it for occurrence within a list of given strings (e.g. \emph{fileformat IN (``XHTML'', ``XML'')}) will ease the definition of rules and improve readability.
+
+All operators evaluate to boolean values that can be combined with logical expressions like NOT, AND, OR.
+
+If a rules condition eventually evaluates to true, an action needs to be performed. Possible actions are the removal of one or multiple properties, that match a certain criteria (originating from a specific tool or not having a specific value), removing all but one conflicting values or changing of a value in case of naming conflicts (see below). 
+
+
+
+
+
+
+\subsection{Logging}
+
+
+To ensure the traceability of the rules, and to confirm, that no valuable knowledge is lost, each change to an element is logged:
+\begin{itemize}
+\item Which rules has been applied and in which order were they executed
+\item Which values were changed or removed
+\end{itemize}
+
+This information will be stored in the database, along with a copy of the representation of the rule for reference. This is necessary, because the original definition of the rule in the XML file could be changed or removed on the file system. Keeping the original values further gives the option to revert the changes applied to one or all objects by this rule. Also, applying rules to objects in the database after parsing \emph{FITS} input would be possible, but these features are most likely out of the scope of this project.
+
+
+\section{Analysis}
+
+
+\end{document}
