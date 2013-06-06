@@ -70,7 +70,7 @@ While some of these conflicts are detected correctly and correspond to corrupted
 Digital preservation depends strongly on data integrity and authenticity. Traceability of any action taken throughout the whole process is needed not only for testing and quality assurance, but also for provability and justification. To achieve this, we keep track of all rules and changes that were applied to the metadata during conflict resolution. This gives human experts the possibility to evaluate the set of rules used and to redefine them iteratively.
 
 \section{Preliminaries}
-When development startet, the current stable version of \emph{C3PO} was 0.3 and our concept and implementation was based on that code. In the meantime, \emph{C3PO} 0.4 was released, introducing some redesign especially about parsing and handling command line parameters and configuration. We therefore did not implement configurability of our rule based conflict resolution because that code would have been subject to many changes anyway when porting to the new version.
+When development started, the current stable version of \emph{C3PO} was 0.3 and our concept and implementation was based on that code. In the meantime, \emph{C3PO} 0.4 was released, introducing some redesign especially about parsing and handling command line parameters and configuration. We therefore did not implement configurability of our rule based conflict resolution because that code would have been subject to many changes anyway when porting to the new version.
 
 \section{Workflow}
 When profiling a file set, the single files need to be analysed using \emph{FITS}, that generates an XML report for every single file. These reports are parsed by \emph{C3PO} by calling its command line interface with the \emph{-g} option to gather information. Upon initialization, the current configuration is loaded and several threads are spawned to parse the input data in parallel. Every thread uses an adaptor to handle the input data, according to its origin.
@@ -87,11 +87,11 @@ Afterwards, when the element is completely built from the XML file, the post-pro
 
 \section{Rule Framework}
 
-First we considered implementing a special rule engine with its own rule definition language, that would have allowed rather simple ruledefinitions but would on the other hand be very restrictive and changes to it would result in adaption of the code. Since there exist a great variety of rule frameworks already, we evaluated these and chose to use the \emph{Drools Framework}\footnote{\url{http://www.jboss.org/drools/}} instead, because it's well documented, widely known and has a large community.
+First we considered implementing a special rule engine with its own rule definition language, that would have allowed rather simple rule definitions but would on the other hand be very restrictive and changes to it would result in adoption of the code. Since there exist a great variety of rule frameworks already, we evaluated these and chose to use the \emph{Drools Framework}\footnote{\url{http://www.jboss.org/drools/}} instead, because it's well documented, widely known and has a large community.
 
-Drools is a rule engine, based on the \emph{Rete algorithm} and tailored for the Java language. Rete was adopted to an object-oriented interface, which allows for more natural expressions of business rules.
+Drools is a rule engine, based on the \emph{Rete algorithm} and tailored for the Java language. Rete was adopted to an object-oriented interface, which allows for more natural expressions of business rules.construct
 
-We added a new PostProcessingRule called \emph{DroolsConflictResolutionProcessingRule} to the workflow, which takes a single element for processing and puts it into working memory of the Drools engine. We used Drools in a stateless way, so that from the outside it acts like a black box, that modifies the inserted element directly. Every element is handled seperately. Because of the parallel nature of the processing mechanism of \emph{C3PO}, every thread uses its own seperated working memory. Drools now investivates the provided element and tries to find rules with matching left-hand-sides (LHS) and executes the imperative right-hand-side code. If a rule marks an element as modified - dispite of changing any values - the rules are reevaluated according to their priority (or ``salience''). When no more matching rules are found, Drools stops processing and the (possibly modified) element is returned to the adaptor.
+We added a new PostProcessingRule called \emph{DroolsConflictResolutionProcessingRule} to the workflow, which takes a single element for processing and puts it into working memory of the Drools engine. We used Drools in a stateless way, so that from the outside it acts like a black box, that modifies the inserted element directly. Every element is handled separately. Because of the parallel nature of the processing mechanism of \emph{C3PO}, every thread uses its own separated working memory. Drools now investigates the provided element and tries to find rules with matching left-hand-sides (LHS) and executes the imperative right-hand-side code. If a rule marks an element as modified - despite of changing any values - the rules are re-evaluated according to their priority (or ``salience''). When no more matching rules are found, Drools stops processing and the (possibly modified) element is returned to the adaptor.
 
 \subsection{Rules}
 
@@ -104,7 +104,7 @@ A rule consists of of the following parts, but can basically seen as an IF-THEN 
 \item \emph{name}: identifies a rule
 \item \emph{salience}: ranges from 0 to 1000, where 1000 is the maximum priority
 \item \emph{when}: a list of (implicitly conjunctive) combined patterns defines, when a rule is triggered
-\item \emph{then}: java-like imperative code defines, what to do, when the rule is triggered
+\item \emph{then}: Java-like imperative code defines, what to do, when the rule is triggered
 \end{itemize}
 
 LHS patterns allow variable binding, access to nested properties and some aggregation functions.
@@ -132,12 +132,24 @@ rule "set format GZIP to GZIP Format from Exiftool"
 end
 \end{lstlisting}
 
-This rule triggers, when the element has a MetadataRecord ``format`` with a value ``GZIP``, which was derived from ``Exiftool``. If this the case, the value is set ``GZIP Format`` to match the typical value derived from other tools.
-The modify function is called, to signalise a change of the element.
+This rule triggers, when
+\begin{enumerate}
+ \item an element exists (and binds it to $\$e$)
+ \item if this $\$e$ has a MetadataRecord in its $metadata$ property, that suffices the following conditions:
+    \begin{enumerate}
+      \item its property ID is equal to ``format'' and
+      \item its value is equal to ``GZIP'' and
+      \item the execution of the external Java method $isFromTool$ on the (global) variable $util$ returns true for the given MetadataRecord and the parameter ``Exiftool''.
+    \end{enumerate}
+\end{enumerate}
+
+The used global variable is used to provide a utility object to the rules engine that offers some useful methods and reduce the complexity of the rules LHS. This specific method checks if a metadata record was generated by a tool named ``Exiftool'', regardless of other sources or its version.
+
+If an element suffices these conditions, the RHS is executed which sets the metadata records value to ``GZIP Format'' and finally marks the element $\$e$ as modified. The \emph{modify} block can only be used on variables that are known to the working memory. Because it only contains the elements and has no direct knowledge about their nested properties, the modify block cannot be called on the metadata record directly. But not notifying Drools about a change of the elements state would not trigger a re-evaluation of other rules. Therefore this ``empty'' modify block needs to be used to signalise a change of the element.
 
 \subsubsection{Strategies}
 
-There exist several different strategies on how a conflict can be resovled. This mainly depends on the type of conflict, e.g. is it just a naming conflict or does one or several tools report a false value.
+There exist several different strategies on how a conflict can be resolved. This mainly depends on the type of conflict, e.g. is it just a naming conflict or does one or several tools report a false value.
 
 \begin{itemize}
 \item \textbf{Merge}: When several tools agree on a value of a metadata element, but just have different string representation, the values can be merged. For example, Exiftool reports ``XLS`` and all other tools report ``Microsoft Excel Format``, then the value is set to ``Microsoft Excel Format``
