@@ -156,11 +156,21 @@ There exist several different strategies on how a conflict can be resolved. This
 \begin{itemize}
 \item \textbf{Update}: When a tool is known to report an unusual string representation for a fact, this difference causes conflicts (e.g. Jhove or NLNZ report the sampling\_frequency\_unit as ``in.'' while other tools use ``inches'' - although they mean the same fact, it is a conflict for \emph{C3PO}). By simply changing these values, conflicts can be resolved.
 \item \textbf{Ignore}: When it's known, that a tool sometimes reports false values on a specific metadata element (especially when other tools report different values), then these false values can just be ignored. (For example, if Exiftool reports some format string, and at least two others claim it to be ``Portable Document Format``, Exiftool can be ignored because its known to have errors detecting PDFs.)
-\item \textbf{Merge (and Resolve)}: When several tools agree on a value of a metadata element, but are marked as conflicting (maybe from the initial FITS information or after conflicting values have been changed by prior updates), the values can be merged. If no differing records are left, the conflict has been resolved.
+\item \textbf{Merge (and Resolve)}: When several tools agree on a value of a metadata element, but are marked as conflicting (maybe from the initial FITS information or after conflicting values have been changed by prior updates), the values can be merged. Merging records simply means adding all sources of one record to another and removing the first one. If no differing records are left, the conflict has been resolved.
 
 \end{itemize}
 
-\subsubsection{General Strategies}
+\subsubsection{Basic C3PO Rule Framework}
+Drools supports separation of rules in multiple files. Therefore we provide basic rules that are necessary for the conflict resolution to work without resolving conflicts on its own in a separated file. Exemplary extensions for conflict resolution rules are provided in two further files. In the future this set of additional files can be partly provided as a standard or default resolution strategy and can be extended by expert users on demand by adding user generated rule files.
+
+The basic rule set consists of five rules:
+\begin{enumerate}
+ \item \textbf{Update resolved conflicts}: If all metadata records for a given property are marked as conflicting, but all values are equal, merge them to a single record and update the status to ''SINGLE_VALUE``. This rule has the highest priority of 999, so it is always applied first after an element got changed.
+ \item \textbf{Merge conflicting records of equal value}: If not all but some conflicts on some property could be resolved, the records reporting the same value are merged together. This is a convenience rule to ensure that distinct conflicting records have distinct values. It has the second highest priority of 998.
+ \item \textbf{Split conflicting record with multiple sources}: If no more matching rules are found, this rule (priority 1) takes any metadata record that is conflicting and has more than one source. This metadata record is then split up into several records, one for each source. This is the inverse operation of the merge rule and is necessary, because the \emph{C3PO} backend datastructure is not able to persist more than one source per record if that record is conflicting. The splitting is not only necessary because of prior merging, but also because the intially parsed FITS files sometimes contain such merged conflicting results (see Analysis below). It is important that this rule is does not mark the element as modified to avoid loops between the merge and the split rule.
+ \item \textbf{Report conflicts}: At the very end of rules processing (priority 0), an element that has metadata records is reported for later analysis.
+ \item \textbf{Report non conflicting elements}: If the element has no conflicts, this rule (priority 0) is triggered which is mostly used for debugging and analysis.
+\end{enumerate}
 
 
 \subsection{Modification Logging}
