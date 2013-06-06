@@ -21,7 +21,7 @@
 \title{Conflict Reduction by Rulebased Postprocessing in C3PO
 }
 
-\author[P. Schmidt]{
+\author[P. Schmidt, L. Rötzer]{
 	Peter Schmidt\\ 
 	Lukas Rötzer
 }
@@ -161,6 +161,42 @@ end
 }
 \end{frame}
 
+\begin{frame}{Basic Drools rules}
+
+   \begin{itemize}
+   \item \textbf{update resolved conflicts}
+   \begin{itemize}
+	   \item merges all metadata records for a property, that are marked as conflicting, but have the same value
+	   \item highest priority (999)
+   \end{itemize}
+   \item \textbf{merge conflicting records of equal value}
+   \begin{itemize}
+   		\item some metadata records report the same values
+   		\item merge them
+   		\item second highest priority (998)
+   \end{itemize}
+   \item \textbf{split conflicting record with multiple sources} 
+   \begin{itemize}
+   		\item splits up conflicted metadata records, that has more then one source
+   		\item should not mark an element as modifies, to avoid infinite loops
+   		\item priority 1
+   \end{itemize}
+   \item \textbf{report conflicts} 
+      \begin{itemize}
+      		\item at the end, report conflicts (lowest priority)
+      \end{itemize}
+   \item \textbf{report non-conflicting elements} 
+      \begin{itemize}
+      		\item if the element has no (more) conflicts
+      		\item for debugging and analysis
+      \end{itemize}
+   \end{itemize}
+  
+\note{
+
+}
+\end{frame}
+
 \begin{frame}{Modification Logging}
 
    \begin{itemize}
@@ -171,7 +207,8 @@ end
    \end{itemize}
    \item \textbf{Implementation}
    \begin{itemize}
-   		\item RuleActivationListener: prints when a rule has been activated
+   		\item RuleActivationListener: analyse rule performance
+   		\item Conflict Collector : reports remaining conflicts
    		\item ElementModificationListener: adds log entries to an element
    \end{itemize}
    \end{itemize}
@@ -189,19 +226,20 @@ end
 \begin{center}
 
 \begin{tabular}[h]{l||r|r|r|r|r||r}
-Files &  \multicolumn{5}{c}{Datasets} \\
+ &  \multicolumn{5}{c}{Datasets} \\
         & 0 & 1 & 2 & 3 & 4 & Total \\
 \hline
-Total & 998 & 998 & 997 & 997 & 996 & 4986\\ 
+Total Files & 998 & 998 & 997 & 997 & 996 & 4986\\ 
 \hline
 with conflicts (pre) & 477 &	492 & 485 & 482	& 502 &	2438\\ 
 with conflicts (post) & 249	& 243 &	240 & 253 &	259 & 1244\\
 \hline
-resolved & 228 & 249 & 245 & 229 & 243 & 1194
+resolved files & 228 & 249 & 245 & 229 & 243 & 1194 \\
+individual conflicts & 533 & 563 & 565 & 515 & 565 & 2741 \\
+
 
 \end{tabular}
 \end{center}
-\label{tab:files}
 \end{table}
 
   \note{
