@@ -93,6 +93,8 @@ We added a new PostProcessingRule called \emph{DroolsConflictResolutionProcessin
 
 \subsection{Rule Framework}
 
+With the Drools rule framework one can write a variety of rules, from very simple to large and complicated ones. Detailed instructions can be found in the Drools expert documentation\footnote{\url{http://docs.jboss.org/drools/release/5.5.0.Final/drools-expert-docs/html_single/index.html}}.
+
 \subsubsection{Basic Rules Structure}
 
 A rule consists of of the following parts, but can basically seen as IF-THEN function:
@@ -104,8 +106,7 @@ A rule consists of of the following parts, but can basically seen as IF-THEN fun
 \end{itemize}
 
 
-
-\newpage
+A very basic rule looks like the following:
 \lstset{xleftmargin=\parindent,basicstyle=\footnotesize\ttfamily,morecomment=[l]{//} }
 \begin{lstlisting}
 
@@ -126,14 +127,10 @@ rule "set format GZIP to GZIP Format from Exiftool"
             getId()
         }
 end
-
 \end{lstlisting}
 
-In the context of conflict resolution, a property is not just a key-value pair, but actually a triple consisting of its name, value and defining source (the tool name and its version). The operations support access to these pieces of information, testing for their existence, their values and their relation. Numerical expressions need not only to be tested for equality, but also for their relation. This allows defining rules for certain versions of a tool, not by listing all known versions, but declaring a minimum or maximum version, that this rule applies to. For string values an operator to compare it for occurrence within a list of given strings (e.g. \emph{fileformat IN (``XHTML'', ``XML'')}) will ease the definition of rules and improve readability.
-
-All operators evaluate to boolean values that can be combined with logical expressions like NOT, AND, OR.
-
-If a rules condition eventually evaluates to true, an action needs to be performed. Possible actions are the removal of one or multiple properties, that match a certain criteria (originating from a specific tool or not having a specific value), removing all but one conflicting values or changing of a value in case of naming conflicts (see below). 
+This rule triggers, when the element has a MetadataRecord ``format`` with a value ``GZIP``, which was derived from ``Exiftool``. If this the case, the value is set ``GZIP Format`` to match the typical value derived from other tools.
+The modify function is called, to signalise a change of the element.
 
 \subsubsection{Strategies}
 
