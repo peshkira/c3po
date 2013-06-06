@@ -149,23 +149,25 @@ If an element suffices these conditions, the RHS is executed which sets the reco
 
 This example further shows a problem when using Drools in this way: The \emph{modify} block can only be used on variables that are known to the working memory. Because it only contains the current element and has no direct knowledge about its nested properties, the modify block cannot be called on the metadata record directly. But not notifying Drools about a change of the elements state would not trigger a re-evaluation of other rules. Therefore this ``empty'' modify block needs to be used to signalise a change of the element.
 
-\subsubsection{Strategies}
+\subsubsection{General Strategies}
 
 There exist several different strategies on how a conflict can be resolved. This mainly depends on the type of conflict, e.g. is it just a naming conflict or does one or several tools report a false value.
 
 \begin{itemize}
-\item \textbf{Update}: When a tool is known to report an unusual string representation for a fact, this difference causes conflicts (e.g. Jhove or NLNZ report the sampling_frequency_unit as ``in.`` while other tools use ''inches'' - although they mean the same fact, it is a conflict for \emph{C3PO}). By simply changing these values, conflicts can be resolved.
+\item \textbf{Update}: When a tool is known to report an unusual string representation for a fact, this difference causes conflicts (e.g. Jhove or NLNZ report the sampling\_frequency\_unit as ``in.'' while other tools use ``inches'' - although they mean the same fact, it is a conflict for \emph{C3PO}). By simply changing these values, conflicts can be resolved.
 \item \textbf{Ignore}: When it's known, that a tool sometimes reports false values on a specific metadata element (especially when other tools report different values), then these false values can just be ignored. (For example, if Exiftool reports some format string, and at least two others claim it to be ``Portable Document Format``, Exiftool can be ignored because its known to have errors detecting PDFs.)
 \item \textbf{Merge (and Resolve)}: When several tools agree on a value of a metadata element, but are marked as conflicting (maybe from the initial FITS information or after conflicting values have been changed by prior updates), the values can be merged. If no differing records are left, the conflict has been resolved.
 
 \end{itemize}
+
+\subsubsection{General Strategies}
 
 
 \subsection{Modification Logging}
 
 To ensure the traceability of the rules, and to confirm, that no valuable knowledge is lost, each change to an element is logged:
 \begin{itemize}
-\item Which rules has been applied and in which order were they executed
+\item Which rules has been applied (by name) and in which order were they executed
 \item Which values were changed or removed
 \end{itemize}
 
