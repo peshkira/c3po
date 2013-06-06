@@ -146,13 +146,13 @@ end
    \item \textbf{ignore}
    \begin{itemize}
    		\item ignores a reported value, if it's known to be faulty
-   		\item example: Exiftool reports ``XY``, while all others report "Portable Document Format``
+   		\item example: Exiftool reports ``XY``, while all others report ``Portable Document Format``
    \end{itemize}
    \item \textbf{merge (and resolve)} 
    \begin{itemize}
    		\item used, when several tools agree on a value, but are marked as conflicting
    		\item the values are merged
-   		\item if no differing records left,the conflict has been resolved
+   		\item if no differing records left, the conflict has been resolved
    \end{itemize}
    \end{itemize}
   
@@ -166,24 +166,23 @@ end
    \begin{itemize}
    \item \textbf{update resolved conflicts}
    \begin{itemize}
-	   \item merges all metadata records for a property, that are marked as conflicting, but have the same value
+	   \item merges metadata records, that are marked as conflicting, but have the same value; update status
 	   \item highest priority (999)
    \end{itemize}
    \item \textbf{merge conflicting records of equal value}
    \begin{itemize}
-   		\item some metadata records report the same values
-   		\item merge them
+   		\item merge metadata records with the same values
    		\item second highest priority (998)
    \end{itemize}
    \item \textbf{split conflicting record with multiple sources} 
    \begin{itemize}
-   		\item splits up conflicted metadata records, that has more then one source
-   		\item should not mark an element as modifies, to avoid infinite loops
-   		\item priority 1
+   		\item splits up conflicted metadata records with multiple sources
+   		\item should not mark an element as modified, to avoid infinite loops
+   		\item second lowest priority (1)
    \end{itemize}
    \item \textbf{report conflicts} 
       \begin{itemize}
-      		\item at the end, report conflicts (lowest priority)
+      		\item report conflicts (lowest priority)
       \end{itemize}
    \item \textbf{report non-conflicting elements} 
       \begin{itemize}
@@ -197,14 +196,23 @@ end
 }
 \end{frame}
 
-\begin{frame}{Modification Logging}
+\begin{frame}{Modification Logging and Analysis Tools}
 
    \begin{itemize}
    \item \textbf{Traceability}
    \begin{itemize}
-	   \item which rules has been applied and in which order were they executed?
+	   \item which rules has been applied?
+	   \item in which order were they executed?
 	   \item which values were changed or removed?
    \end{itemize}
+
+   \item \textbf{Analysis}
+   \begin{itemize}
+	   \item Basic logging/tracing of rule execution/application
+	   \item rule activation statistics?
+	   \item conflict statistics?
+   \end{itemize}
+
    \item \textbf{Implementation}
    \begin{itemize}
    		\item RuleActivationListener: analyse rule performance
@@ -221,6 +229,8 @@ end
 \section{Analysis}
 
 \begin{frame}{Analysis - File Improvements}
+
+Reducing conflicted files by almost 49 \%
 
 \begin{table}[ht]
 \begin{center}
@@ -250,7 +260,7 @@ individual conflicts & 533 & 563 & 565 & 515 & 565 & 2741 \\
 
 \begin{frame}{Analysis - Conflict Improvements}
 
-Resolving over 53\% of conflicts.
+Reducing conflicted properties by over 53 \%
 
 \begin{table}[ht]
 \begin{center}
@@ -273,5 +283,20 @@ remaining conflicts & 483 &	447	& 472 &	479	& 496 &	2377
 
 \end{frame}
 
+\begin{frame}{Future Work/Improvements}
+
+\begin{itemize}
+ \item Migration to \emph{C3PO} 0.4
+ \item Adding CLI support
+    \begin{itemize}
+     \item Configurability
+     \item Loading custom rules from filesystem
+     \item Setting debug levels for analysis
+    \end{itemize}
+ \item Better rules for further conflict reduction
+\end{itemize}
+
+
+\end{frame}
 
 \end{document}
