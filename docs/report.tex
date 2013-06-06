@@ -19,11 +19,10 @@ hypertexnames = false,
 citecolor = black] {hyperref}
 
 \usepackage{multirow}
-
 \usepackage{fancyhdr}
-
 \usepackage{listings}
 \usepackage{tabularx}
+\usepackage{float}
 
 \pagestyle{fancy}
 
@@ -199,6 +198,7 @@ As can bee seen in \ref{tab:files}, from 4986 files in total, 2438 had conflicts
 
 Since one element can have multiple conflicts, we also analysed the impact of our implementation and rule set on the total number of conflicts.
 After an initial run of \emph{C3PO}, 5118 conflicting metadata properties were reported, where multiple conflicts on the same metadata property of the same element are counted only once. This number was reduced to 2377, which is a decrease of over 53\%.
+
 A detailed itemization of the different rules and how much conflicts they resolved can be seen in table \ref{tab:conflicts}.
 
 \begin{table}[ht]
@@ -223,7 +223,7 @@ individual conflicts & 533 & 563 & 565 & 515 & 565 & 2741 \\
 \label{tab:files}
 \end{table}
 
-\begin{table}[ht]
+\begin{table}[H]
 \begin{center}
 \begin{tabular}[h]{l||r|r|r|r|r||r}
 rule activations &  \multicolumn{5}{c}{Datasets} \\
@@ -253,6 +253,37 @@ remaining conflicts & 483 &	447	& 472 &	479	& 496 &	2377
 \end{center}
 \caption{Analysis of improvements in conflict resolution}
 \label{tab:conflicts}
+\end{table}
+
+\subsection{Detected Flaws in C3PO/FITS}
+During analysis of the used dataset and the impact of our rules on it, we recognized some fundamental flaws, that were mentioned before and shall be explained here.
+
+First, we analysed the dataset by only applying our reporting rules to get an overview of the dataset. Further by only applying our basic rule for updating the status if a reported conflict was no longer existent, the number of conflicts dropped by 15 to 20 \% (17 \% on the datasets 0 to 4). So obviously FITS and/or \emph{C3PO} reported conflicts where no differing values were present. 
+
+This is mainly (but not solely) because FITS treats the format, mimetype and format version as a triple. If one of these properties is conflicting, the others are marked as conflicting as well. After parsing the files provided by FITS, \emph{C3PO} flattens the datastructure and breaks up the triple, but does not update the status. Beside this phenomenon, also plain text properties like 'author' were marked as conflicting, while the provided values were identical.
+
+Further, beside the unresolved initial conflicts, a more severe flaw of \emph{C3PO} was detected during code analysis: The backend datastructure stores a list of values and a list of sources per metadata record. If the record has a single value, only one value is stored and with it a list of sources that reported the value. On the other hand, if a conflict is present, values and sources are stored in two lists and are only ''linked`` by preserving their respective order. This introduces the problem, that if a conflicting record has multiple sources, only the first of them can be stored. While during processing of the elements in \emph{C3PO} all information is available in memory, essential data (additional sources on conflicting records) is lost as soon as the elements are persisted.
+
+This problem was even aggravated by our merging rule described earlier. To counter this problem we added the rule to split up conflicting metadata records if they were based on multiple rules.
+
+The following table shows the impact of the problems stated above:
+
+\begin{table}[ht]
+\begin{center}
+
+\begin{tabular}[h]{l||r|r|r|r|r||r}
+ &  \multicolumn{5}{c}{Datasets} \\
+        & 0 & 1 & 2 & 3 & 4 & Total \\
+\hline
+Total Files & 998 & 998 & 997 & 997 & 996 & 4986\\ 
+\hline
+conflicts on equal values & 160 & 196 & 181 & 158 & 190 & 885 \\
+conflicting records, multiple sources & 184 & 246 & 248 & 234 & 234 & 1146\\
+
+\end{tabular}
+\end{center}
+\caption{Impact of flaws in FITS/\emph{C3PO} on the initial dataset }
+\label{tab:files}
 \end{table}
 
 
