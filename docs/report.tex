@@ -165,7 +165,7 @@ Drools supports separation of rules in multiple files. Therefore we provide basi
 
 The basic rule set consists of five rules:
 \begin{enumerate}
- \item \textbf{Update resolved conflicts}: If all metadata records for a given property are marked as conflicting, but all values are equal, merge them to a single record and update the status to ''SINGLE_VALUE``. This rule has the highest priority of 999, so it is always applied first after an element got changed.
+ \item \textbf{Update resolved conflicts}: If all metadata records for a given property are marked as conflicting, but all values are equal, merge them to a single record and update the status to ''SINGLE\_VALUE``. This rule has the highest priority of 999, so it is always applied first after an element got changed.
  \item \textbf{Merge conflicting records of equal value}: If not all but some conflicts on some property could be resolved, the records reporting the same value are merged together. This is a convenience rule to ensure that distinct conflicting records have distinct values. It has the second highest priority of 998.
  \item \textbf{Split conflicting record with multiple sources}: If no more matching rules are found, this rule (priority 1) takes any metadata record that is conflicting and has more than one source. This metadata record is then split up into several records, one for each source. This is the inverse operation of the merge rule and is necessary, because the \emph{C3PO} backend datastructure is not able to persist more than one source per record if that record is conflicting. The splitting is not only necessary because of prior merging, but also because the intially parsed FITS files sometimes contain such merged conflicting results (see Analysis below). It is important that this rule is does not mark the element as modified to avoid loops between the merge and the split rule.
  \item \textbf{Report conflicts}: At the very end of rules processing (priority 0), an element that has metadata records is reported for later analysis.
@@ -177,37 +177,45 @@ The basic rule set consists of five rules:
 
 To ensure the traceability of the rules, and to confirm, that no valuable knowledge is lost, each change to an element is logged:
 \begin{itemize}
-\item Which rules has been applied (by name) and in which order were they executed
-\item Which values were changed or removed
+\item Which rules has been applied (by name) and in which order were they executed.
+\item What was the original value, before it got changed by the rule.
 \end{itemize}
 
-To achieve this, we extended the datamodel of an element by adding a list of log-entries. We also implemented two listeners called ``ElementModificationListener`` and ``RuleActivationListener``. The RuleActivationListener helps keeping track of activated rules by printing the statistics to the debug output.
-The ElementModificationListener instead watches elements and adds modifications to the list of log-entries, which will finally be stored in database, when the element is persisted.
+To achieve this, we extended the datamodel of an element by adding a list of log-entries and implemented a listener that reacts on changes made to data in the working memory (indicated by the use of the $modify$ block on the RHS of a rule). This ElementModificationListener adds log entries to the modified element, which are finally stored in database with the element.
 
+\subsection{Rule Activation, Conflict Logging and Activity Tracing}
+
+A listener was implemented that monitors activation of rules and increments a counter for every rule on activation. This is helpful for analysing the rules performance and the quality of the parsed FITS files.
+
+Further, a conflict collector is used to collect data about unresolved conflicts that are reported by the final rule mentioned above. It maintains a map of conflicting properties associated with the corresponding elements. This data is essential when creating new rules or updating existing ones because it allows a deeper inspection of remaining conflicts.
+
+Because the elements are processed by several threads in parallel, tracing rule activation and modifications with a simple logger is hardly possible. We therefore provided a log collector that takes log messages from the rules RHS and modification listener. These messages are then forwarded to the applications logging system (currently Sysout) at once to keep relevant data together. The messages are passed to the log collector with a numerical log level that allows filtering the output beforehand.
 
 \section{Analysis}
 
 For deriving and analysing our rules, we used the 10 subsets of govdocs\footnote{\url{http://digitalcorpora.org/corp/nps/files/govdocs1/zipfiles/}}.
 Since the distribution of triggered rules regarding the various conflicts is similar, we only consider the subsets zero to four in our analysis.
-As can bee seen in \ref{tab:files}, from 4986 files in total, 2438 had conflicts after an initial run of C3PO. After implementing and activating our rules, 1244 files remaind in conflict, which corresponds to a decrease of nearly 49\%.
+As can bee seen in \ref{tab:files}, from 4986 files in total, 2438 had conflicts after an initial run of \emph{C3PO}. After implementing and activating our rules, 1244 files remained in conflict, which corresponds to a decrease of nearly 49\%. The number of remaining conflicts could of course been reduced further by adding new rules to the system.
 
-Since one file can have multiple conflicts, we also analysed the impact of our implementation and rule-set on the total number of conflicts.
-After an initial run of C3PO we had 5118 conflicts. This number was reduced to 2377, which is a decrease of over 53\%.
+Since one element can have multiple conflicts, we also analysed the impact of our implementation and rule set on the total number of conflicts.
+After an initial run of \emph{C3PO}, 5118 conflicting metadata properties were reported, where multiple conflicts on the same metadata property of the same element are counted only once. This number was reduced to 2377, which is a decrease of over 53\%.
 A detailed itemization of the different rules and how much conflicts they resolved can be seen in table \ref{tab:conflicts}.
 
 \begin{table}[ht]
 \begin{center}
 
 \begin{tabular}[h]{l||r|r|r|r|r||r}
-Files &  \multicolumn{5}{c}{Datasets} \\
+ &  \multicolumn{5}{c}{Datasets} \\
         & 0 & 1 & 2 & 3 & 4 & Total \\
 \hline
-Total & 998 & 998 & 997 & 997 & 996 & 4986\\ 
+Total Files & 998 & 998 & 997 & 997 & 996 & 4986\\ 
 \hline
 with conflicts (pre) & 477 &	492 & 485 & 482	& 502 &	2438\\ 
 with conflicts (post) & 249	& 243 &	240 & 253 &	259 & 1244\\
 \hline
-resolved & 228 & 249 & 245 & 229 & 243 & 1194
+resolved files & 228 & 249 & 245 & 229 & 243 & 1194 \\
+individual conflicts & 533 & 563 & 565 & 515 & 565 & 2741 \\
+
 
 \end{tabular}
 \end{center}
@@ -218,26 +226,26 @@ resolved & 228 & 249 & 245 & 229 & 243 & 1194
 \begin{table}[ht]
 \begin{center}
 \begin{tabular}[h]{l||r|r|r|r|r||r}
-conflicts / improvements &  \multicolumn{5}{c}{Datasets} \\
+rule activations &  \multicolumn{5}{c}{Datasets} \\
         & 0 & 1 & 2 & 3 & 4 & Total \\
 \hline
-conflicts & 1016 & 1010	& 1037 & 994 &1061 & 5118 \\
-\hline
-GZIP to GZIP Format & 7 & 14 & 13 & 18 & 14 & 66\\
-set application/rtf mimetypes to text/rtf & 1 & 1 & 0 & 3 & 0 & 5\\
-set RTF format to Rich Text Format & 1 & 1 & 0 & 3 & 0 & 5\\
-ignore text/plain if more precisise text/* available & 18 & 22 & 20 & 23 & 14 & 97\\
-set format XLS to Microsoft Excel Format & 57 & 57 & 54 & 55 & 58 & 281\\
-ignore Droid PPT false positives & 0 & 1 & 0 & 0 & 1 & 2\\
+set 'GZIP' to 'GZIP Format' & 7 & 14 & 13 & 18 & 14 & 66\\
+set 'application/rtf' mimetype to 'text/rtf' & 1 & 1 & 0 & 3 & 0 & 5\\
+set 'RTF' format to 'Rich Text Format' & 1 & 1 & 0 & 3 & 0 & 5\\
+ignore 'text/plain' if more precisise 'text/*' available & 18 & 22 & 20 & 23 & 14 & 97\\
+set format 'XLS' to 'Microsoft Excel Format' & 57 & 57 & 54 & 55 & 58 & 281\\
+ignore Droid 'PPT' false positives & 0 & 1 & 0 & 0 & 1 & 2\\
 ignore others mimetypes if Droid reports PPT & 7 & 2 & 3 & 2 & 3 & 17\\
 ignore others formats if Droid reports PPT & 63 & 58 & 48 & 46 & 60 & 275\\
 if Jhove and Droid report xhtml, ignore others & 1 & 5 & 6 & 4 & 7 & 23\\
-ignore Jhove text/html if application/xhtml+xml & 24 & 22 & 20 & 21 & 22 & 109\\
-Resolve Jhove HTML Transitional format string & 40 & 38 & 46 & 32 & 37 & 193\\
+ignore Jhove 'text/html' if 'application/xhtml+xml' & 24 & 22 & 20 & 21 & 22 & 109\\
+Resolve Jhove 'HTML Transitional' format string & 40 & 38 & 46 & 32 & 37 & 193\\
 html format version (etc) to value without prefix & 92 & 86 & 110 & 78 & 78 & 444\\
-set sampling frequency unit Jhove & 32 & 29 & 34 & 40 & 39 & 174\\
-set sampling frequency unit NLNZ & 72 & 62 & 70 & 68 & 72 & 344\\
+set sampling frequency unit by Jhove & 32 & 29 & 34 & 40 & 39 & 174\\
+set sampling frequency unit by NLNZ & 72 & 62 & 70 & 68 & 72 & 344\\
 ignore fractional exposure time by NLNZ & 14 & 7 & 12 & 10 & 10 & 53\\
+\hline
+initial conflicts & 1016 & 1010	& 1037 & 994 &1061 & 5118 \\
 \hline
 remaining conflicts & 483 &	447	& 472 &	479	& 496 &	2377
 
