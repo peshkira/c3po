@@ -23,6 +23,7 @@ citecolor = black] {hyperref}
 \usepackage{fancyhdr}
 
 \usepackage{listings}
+\usepackage{tabularx}
 
 \pagestyle{fancy}
 
@@ -92,34 +93,37 @@ We added a new PostProcessingRule called \emph{DroolsConflictResolutionProcessin
 
 \subsection{Rule Framework}
 
-\subsection{Basic Rules Structure}
+\subsubsection{Basic Rules Structure}
 
 A rule consists of of the following parts, but can basically seen as IF-THEN function:
 \begin{itemize}
 \item \emph{name}: identifies a rule
-\item \emph{salience}: ranges from 0 to 1000, where 0 is the maximum priority
+\item \emph{salience}: ranges from 0 to 1000, where 1000 is the maximum priority
 \item \emph{when}: defines, when a rule is triggered
 \item \emph{then}: defines, what to do, when the rule is triggered
 \end{itemize}
 
-A very basic rule looks like
 
+
+\newpage
 \lstset{xleftmargin=\parindent,basicstyle=\footnotesize\ttfamily,morecomment=[l]{//} }
 \begin{lstlisting}
 
-rule "ignore fractional exposure_time by NLNZ Metadata Extractor'"
+rule "set format GZIP to GZIP Format from Exiftool"
         salience 160
     when 
         $e : Element()
         $md : MetadataRecord(
-            property.id == "exposure_time",
-            value matches "[0-9]*\\.[0-9E\\-]*",
-            util.isFromTool(this, "NLNZ Metadata Extractor")
+            property.id == "format", 
+            value == "GZIP",
+            util.isFromTool(this, "Exiftool")
         ) from $e.metadata
 
     then
+        String newValue = "GZIP Format";
+        $md.setValue(newValue);
         modify ($e) {
-            ignoreMetadata($md)
+            getId()
         }
 end
 
@@ -131,13 +135,18 @@ All operators evaluate to boolean values that can be combined with logical expre
 
 If a rules condition eventually evaluates to true, an action needs to be performed. Possible actions are the removal of one or multiple properties, that match a certain criteria (originating from a specific tool or not having a specific value), removing all but one conflicting values or changing of a value in case of naming conflicts (see below). 
 
+\subsubsection{Strategies}
 
+There exist several different strategies on how a conflict can be resovled. This mainly depends on the type of conflict, e.g. is it just a naming conflict or does one or several tools report a false value.
 
+\begin{itemize}
+\item \textbf{Merge}: When several tools agree on a value of a metadata element, but just have different string representation, the values can be merged. For example, Exiftool reports ``XLS`` and all other tools report ``Microsoft Excel Format``, then the value is set to ``Microsoft Excel Format``
+\item \textbf{Ignore}: When it's known, that a tool sometimes reports false values on a specific metadata element, but other tools typically generate the correct value, then these false values can just be ignored. For example, if Exiftool reports some format string, and at least to others claim it to be ``Portable Document Format``, Exiftool can be ignored.
 
+\end{itemize}
 
 
 \subsection{Logging}
-
 
 To ensure the traceability of the rules, and to confirm, that no valuable knowledge is lost, each change to an element is logged:
 \begin{itemize}
@@ -145,10 +154,71 @@ To ensure the traceability of the rules, and to confirm, that no valuable knowle
 \item Which values were changed or removed
 \end{itemize}
 
-This information will be stored in the database, along with a copy of the representation of the rule for reference. This is necessary, because the original definition of the rule in the XML file could be changed or removed on the file system. Keeping the original values further gives the option to revert the changes applied to one or all objects by this rule. Also, applying rules to objects in the database after parsing \emph{FITS} input would be possible, but these features are most likely out of the scope of this project.
+To achieve this, we extended the datamodel of an element by adding a list of log-entries. We also implemented two listeners called ``ElementModificationListener`` and ``RuleActivationListener``. The RuleActivationListener helps keeping track of activated rules by printing the statistics to the debug output.
+The ElementModificationListener instead watches elements and adds modifications to the list of log-entries, which will finally be stored in database, when the element is persisted.
 
 
 \section{Analysis}
+
+For deriving and analysing our rules, we used the 10 subsets of govdocs\footnote{\url{http://digitalcorpora.org/corp/nps/files/govdocs1/zipfiles/}}.
+Since the distribution of triggered rules regarding the various conflicts is similar, we only consider the subsets zero to four in our analysis.
+As can bee seen in \ref{tab:files}, from 4986 files in total, 2438 had conflicts after an initial run of C3PO. After implementing and activating our rules, 1244 files remaind in conflict, which corresponds to a decrease of nearly 49\%.
+
+Since one file can have multiple conflicts, we also analysed the impact of our implementation and rule-set on the total number of conflicts.
+After an initial run of C3PO we had 5118 conflicts. This number was reduced to 2377, which is a decrease of over 53\%.
+A detailed itemization of the different rules and how much conflicts they resolved can be seen in table \ref{tab:conflicts}.
+
+\begin{table}[ht]
+\begin{center}
+
+\begin{tabular}[h]{l||r|r|r|r|r||r}
+Files &  \multicolumn{5}{c}{Datasets} \\
+        & 0 & 1 & 2 & 3 & 4 & Total \\
+\hline
+Total & 998 & 998 & 997 & 997 & 996 & 4986\\ 
+\hline
+with conflicts (pre) & 477 &	492 & 485 & 482	& 502 &	2438\\ 
+with conflicts (post) & 249	& 243 &	240 & 253 &	259 & 1244\\
+\hline
+resolved & 228 & 249 & 245 & 229 & 243 & 1194
+
+\end{tabular}
+\end{center}
+\caption{Analysis of improvements in files}
+\label{tab:files}
+\end{table}
+
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}[h]{l||r|r|r|r|r||r}
+conflicts / improvements &  \multicolumn{5}{c}{Datasets} \\
+        & 0 & 1 & 2 & 3 & 4 & Total \\
+\hline
+conflicts & 1016 & 1010	& 1037 & 994 &1061 & 5118 \\
+\hline
+GZIP to GZIP Format & 7 & 14 & 13 & 18 & 14 & 66\\
+set application/rtf mimetypes to text/rtf & 1 & 1 & 0 & 3 & 0 & 5\\
+set RTF format to Rich Text Format & 1 & 1 & 0 & 3 & 0 & 5\\
+ignore text/plain if more precisise text/* available & 18 & 22 & 20 & 23 & 14 & 97\\
+set format XLS to Microsoft Excel Format & 57 & 57 & 54 & 55 & 58 & 281\\
+ignore Droid PPT false positives & 0 & 1 & 0 & 0 & 1 & 2\\
+ignore others mimetypes if Droid reports PPT & 7 & 2 & 3 & 2 & 3 & 17\\
+ignore others formats if Droid reports PPT & 63 & 58 & 48 & 46 & 60 & 275\\
+if Jhove and Droid report xhtml, ignore others & 1 & 5 & 6 & 4 & 7 & 23\\
+ignore Jhove text/html if application/xhtml+xml & 24 & 22 & 20 & 21 & 22 & 109\\
+Resolve Jhove HTML Transitional format string & 40 & 38 & 46 & 32 & 37 & 193\\
+html format version (etc) to value without prefix & 92 & 86 & 110 & 78 & 78 & 444\\
+set sampling frequency unit Jhove & 32 & 29 & 34 & 40 & 39 & 174\\
+set sampling frequency unit NLNZ & 72 & 62 & 70 & 68 & 72 & 344\\
+ignore fractional exposure time by NLNZ & 14 & 7 & 12 & 10 & 10 & 53\\
+\hline
+remaining conflicts & 483 &	447	& 472 &	479	& 496 &	2377
+
+\end{tabular}
+\end{center}
+\caption{Analysis of improvements in conflict resolution}
+\label{tab:conflicts}
+\end{table}
 
 
 \end{document}
