@@ -155,7 +155,7 @@ There exist several different strategies on how a conflict can be resolved. This
 \begin{itemize}
 \item \textbf{Update}: When a tool is known to report an unusual string representation for a fact, this difference causes conflicts (e.g. Jhove or NLNZ report the sampling\_frequency\_unit as ``in.'' while other tools use ``inches'' - although they mean the same fact, it is a conflict for \emph{C3PO}). By simply changing these values, conflicts can be resolved.
 \item \textbf{Ignore}: When it's known, that a tool sometimes reports false values on a specific metadata element (especially when other tools report different values), then these false values can just be ignored. (For example, if Exiftool reports some format string, and at least two others claim it to be ``Portable Document Format``, Exiftool can be ignored because its known to have errors detecting PDFs.)
-\item \textbf{Merge (and Resolve)}: When several tools agree on a value of a metadata element, but are marked as conflicting (maybe from the initial FITS information or after conflicting values have been changed by prior updates), the values can be merged. Merging records simply means adding all sources of one record to another and removing the first one. If no differing records are left, the conflict has been resolved.
+\item \textbf{Merge (and Resolve)}: When several tools agree on a value of a metadata element, but are marked as conflicting (maybe from the initial \emph{FITS} information or after conflicting values have been changed by prior updates), the values can be merged. Merging records simply means adding all sources of one record to another and removing the first one. If no differing records are left, the conflict has been resolved.
 
 \end{itemize}
 
@@ -166,7 +166,7 @@ The basic rule set consists of five rules:
 \begin{enumerate}
  \item \textbf{Update resolved conflicts}: If all metadata records for a given property are marked as conflicting, but all values are equal, merge them to a single record and update the status to ''SINGLE\_VALUE``. This rule has the highest priority of 999, so it is always applied first after an element got changed.
  \item \textbf{Merge conflicting records of equal value}: If not all but some conflicts on some property could be resolved, the records reporting the same value are merged together. This is a convenience rule to ensure that distinct conflicting records have distinct values. It has the second highest priority of 998.
- \item \textbf{Split conflicting record with multiple sources}: If no more matching rules are found, this rule (priority 1) takes any metadata record that is conflicting and has more than one source. This metadata record is then split up into several records, one for each source. This is the inverse operation of the merge rule and is necessary, because the \emph{C3PO} backend datastructure is not able to persist more than one source per record if that record is conflicting. The splitting is not only necessary because of prior merging, but also because the intially parsed FITS files sometimes contain such merged conflicting results (see analysis below). It is important that this rule is does not mark the element as modified to avoid loops between the merge and the split rule.
+ \item \textbf{Split conflicting record with multiple sources}: If no more matching rules are found, this rule (priority 1) takes any metadata record that is conflicting and has more than one source. This metadata record is then split up into several records, one for each source. This is the inverse operation of the merge rule and is necessary, because the \emph{C3PO} backend datastructure is not able to persist more than one source per record if that record is conflicting. The splitting is not only necessary because of prior merging, but also because the intially parsed \emph{FITS} files sometimes contain such merged conflicting results (see analysis below). It is important that this rule is does not mark the element as modified to avoid loops between the merge and the split rule.
  \item \textbf{Report conflicts}: At the very end of rules processing (priority 0), an element that has metadata records is reported for later analysis.
  \item \textbf{Report non conflicting elements}: If the element has no conflicts, this rule (priority 0) is triggered which is mostly used for debugging and analysis.
 \end{enumerate}
@@ -184,7 +184,7 @@ To achieve this, we extended the datamodel of an element by adding a list of log
 
 \subsection{Rule Activation, Conflict Logging and Activity Tracing}
 
-A listener was implemented that monitors activation of rules and increments a counter for every rule on activation. This is helpful for analysing the rules performance and the quality of the parsed FITS files.
+A listener was implemented that monitors activation of rules and increments a counter for every rule on activation. This is helpful for analysing the rules performance and the quality of the parsed \emph{FITS} files.
 
 Further, a conflict collector is used to collect data about unresolved conflicts that are reported by the final rule mentioned above. It maintains a map of conflicting properties associated with the corresponding elements. This data is essential when creating new rules or updating existing ones because it allows a deeper inspection of remaining conflicts.
 
@@ -255,12 +255,12 @@ remaining conflicts & 483 &	447	& 472 &	479	& 496 &	2377
 \label{tab:conflicts}
 \end{table}
 
-\subsection{Detected Flaws in C3PO/FITS}
+\subsection{Detected Flaws in \emph{C3PO}/\emph{FITS}}
 During analysis of the used dataset and the impact of our rules on it, we recognized some fundamental flaws, that were mentioned before and shall be explained here.
 
-First, we analysed the dataset by only applying our reporting rules to get an overview of the dataset. Further by only applying our basic rule for updating the status if a reported conflict was no longer existent, the number of conflicts dropped by 15 to 20 \% (17 \% on the datasets 0 to 4). So obviously FITS and/or \emph{C3PO} reported conflicts where no differing values were present. 
+First, we analysed the dataset by only applying our reporting rules to get an overview of the dataset. Further by only applying our basic rule for updating the status if a reported conflict was no longer existent, the number of conflicts dropped by 15 to 20 \% (17 \% on the datasets 0 to 4). So obviously \emph{FITS} and/or \emph{C3PO} reported conflicts where no differing values were present. 
 
-This is mainly (but not solely) because FITS treats the format, mimetype and format version as a triple. If one of these properties is conflicting, the others are marked as conflicting as well. After parsing the files provided by FITS, \emph{C3PO} flattens the datastructure and breaks up the triple, but does not update the status. Beside this phenomenon, also plain text properties like 'author' were marked as conflicting, while the provided values were identical.
+This is mainly (but not solely) because \emph{FITS} treats the format, mimetype and format version as a triple. If one of these properties is conflicting, the others are marked as conflicting as well. After parsing the files provided by \emph{FITS}, \emph{C3PO} flattens the datastructure and breaks up the triple, but does not update the status. Beside this phenomenon, also plain text properties like 'author' were marked as conflicting, while the provided values were identical.
 
 Further, beside the unresolved initial conflicts, a more severe flaw of \emph{C3PO} was detected during code analysis: The backend datastructure stores a list of values and a list of sources per metadata record. If the record has a single value, only one value is stored and with it a list of sources that reported the value. On the other hand, if a conflict is present, values and sources are stored in two lists and are only ''linked`` by preserving their respective order. This introduces the problem, that if a conflicting record has multiple sources, only the first of them can be stored. While during processing of the elements in \emph{C3PO} all information is available in memory, essential data (additional sources on conflicting records) is lost as soon as the elements are persisted.
 
@@ -282,7 +282,7 @@ conflicting records, multiple sources & 184 & 246 & 248 & 234 & 234 & 1146\\
 
 \end{tabular}
 \end{center}
-\caption{Impact of flaws in FITS/\emph{C3PO} on the initial dataset }
+\caption{Impact of flaws in \emph{FITS}/\emph{C3PO} on the initial dataset }
 \label{tab:files}
 \end{table}
 
