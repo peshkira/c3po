@@ -180,6 +180,12 @@ rule "ignore text/plain and corresponding format if more precisise text/* availa
         
 end
 
+/*******************************************************************************
+ *
+ *      Microsoft Excel
+ *
+ ******************************************************************************/
+ 
 /**
  * Treat format "XLS" like "Microsoft Excel Format" from Exiftool
  */
@@ -279,7 +285,8 @@ rule "PPT: ignore others mimetypes if Droid reports Microsoft Powerpoint Present
         $mdGoodMime : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            util.isFromTool(this, "Droid")
+            util.isFromTool(this, "Droid"),
+            value matches ".*powerpoint.*"
         ) from $e.metadata;
 
         $mdBadMime : MetadataRecord(
@@ -470,6 +477,7 @@ rule "Resolve Jhove HTML Transitional format string"
         $mdBad : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
+            value == "HTML Transitional",
             util.isFromTool(this, "Jhove")
         ) from $e.metadata
         Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
@@ -479,7 +487,6 @@ rule "Resolve Jhove HTML Transitional format string"
         $mdGood : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            ! util.isFromTool(this, "Jhove"),
             value == "Hypertext Markup Language"
         ) from $e.metadata
         Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
@@ -498,8 +505,3 @@ rule "Resolve Jhove HTML Transitional format string"
 
 end
 
-/*******************************************************************************
- *
- *      Microsoft Excel
- *
- ******************************************************************************/
