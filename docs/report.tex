@@ -65,46 +65,49 @@ The problem of conflicting values arises from the fact, that \emph{FITS} uses se
 
 While some of these conflicts are detected correctly and correspond to corrupted or incorrect data in the inspected file, a bigger portion of them could be avoided, if the specific weaknesses of the used tools were known to \emph{C3PO}. To provide this ability, rules need to be defined by human experts, that know about the abilities and flaws of the tools. They then need to be applied automatically while parsing the data provided by \emph{FITS}. 
 
-\emph{C3PO} already provided a way to apply and execute post-processing rules. They are applied either while parsing single properties (pre-processing) or after all information is available (post-processing). We used and adapted these built in mechanisms to apply our conflict resolution framework. The rules can be exchanged and adapted and every user of \emph{C3PO} has the possibility to add his own specific set or remove other rules according to the circumstances of his configuration.
+\emph{C3PO} already provided a way to refine parsed data with the use of post-processing rules. They are applied either while parsing single properties (pre-processing) or after all information is available (post-processing). We used and adapted these built in mechanisms to apply our conflict resolution framework. The rules can be exchanged and adapted and every user of \emph{C3PO} has the possibility to add his own specific set or remove other rules according to the circumstances of his configuration.
 
 Digital preservation depends strongly on data integrity and authenticity. Traceability of any action taken throughout the whole process is needed not only for testing and quality assurance, but also for provability and justification. To achieve this, we keep track of all rules and changes that were applied to the metadata during conflict resolution. This gives human experts the possibility to evaluate the set of rules used and to redefine them iteratively.
 
+\section{Preliminaries}
+When development startet, the current stable version of \emph{C3PO} was 0.3 and our concept and implementation was based on that code. In the meantime, \emph{C3PO} 0.4 was released, introducing some redesign especially about parsing and handling command line parameters and configuration. We therefore did not implement configurability of our rule based conflict resolution because that code would have been subject to many changes anyway when porting to the new version.
 
 \section{Workflow}
 When profiling a file set, the single files need to be analysed using \emph{FITS}, that generates an XML report for every single file. These reports are parsed by \emph{C3PO} by calling its command line interface with the \emph{-g} option to gather information. Upon initialization, the current configuration is loaded and several threads are spawned to parse the input data in parallel. Every thread uses an adaptor to handle the input data, according to its origin.
 
-The \emph{FITS} adaptor uses an Apache Commons Digester to parse the XML files. Therefore certain rules \footnote{\url{http://commons.apache.org/proper/commons-digester/guide/core.html\#doc.Rules}} are defined that are triggered on the occurrence of specific XML tags to copy the data into generated Java objects. To keep track of the objects during traversal of the file, the Digester uses an object stack. The adaptor pushes a \emph{DigesterContext} object onto that stack that holds all collected data.
+To parse the data, \emph{C3PO} implements processing rules, that can be either applied to the data of single XML tags while reading the data (pre-processing) or afterwards, when all data is available in memory.
 
-To parse the data, \emph{C3PO} implements processing rules, that can be either applied to the data of single XML tags while reading the data (pre-processing). Afterwards, when the DigesterContext is completely built from the XML file, the post-processing methods are executed, where:
+During pre-processing, 
 \begin{itemize}
 \item the metadata properties are set
 \item the collection name of the database is set
 \item if desired, date values can be obtained from the element name
-\item at last, the post-processing rules are called
 \end{itemize}
-Finally, the generated object is persisted in the database and the next XML file is fetched form the input.
+Afterwards, when the element is completely built from the XML file, the post-processing methods are executed. At this point, the tree-structured XML representation has been transformed to a flat set of key-value pairs. Finally, the generated object is persisted in the database and the next XML file is fetched form the input.
 
-\section{Implementation}
+\section{Rule Framework}
 
-Since there exist a great variety of rule frameworks already, we evaluated these and choose to use the \emph{Drools Framework}\footnote{\url{http://www.jboss.org/drools/}} instead, because it's well documented and has a large community.
+First we considered implementing a special rule engine with its own rule definition language, that would have allowed rather simple ruledefinitions but would on the other hand be very restrictive and changes to it would result in adaption of the code. Since there exist a great variety of rule frameworks already, we evaluated these and chose to use the \emph{Drools Framework}\footnote{\url{http://www.jboss.org/drools/}} instead, because it's well documented, widely known and has a large community.
+
 Drools is a rule engine, based on the \emph{Rete algorithm} and tailored for the Java language. Rete was adopted to an object-oriented interface, which allows for more natural expressions of business rules.
 
-We added a new PostProcessingRule called \emph{DroolsConflictResolutionProcessingRule} to the Workflow, which parses the rule definitions and applies them to the current object.
+We added a new PostProcessingRule called \emph{DroolsConflictResolutionProcessingRule} to the workflow, which takes a single element for processing and puts it into working memory of the Drools engine. We used Drools in a stateless way, so that from the outside it acts like a black box, that modifies the inserted element directly. Every element is handled seperately. Because of the parallel nature of the processing mechanism of \emph{C3PO}, every thread uses its own seperated working memory. Drools now investivates the provided element and tries to find rules with matching left-hand-sides (LHS) and executes the imperative right-hand-side code. If a rule marks an element as modified - dispite of changing any values - the rules are reevaluated according to their priority (or ``salience''). When no more matching rules are found, Drools stops processing and the (possibly modified) element is returned to the adaptor.
 
-\subsection{Rule Framework}
+\subsection{Rules}
 
 With the Drools rule framework one can write a variety of rules, from very simple to large and complicated ones. Detailed instructions can be found in the Drools expert documentation\footnote{\url{http://docs.jboss.org/drools/release/5.5.0.Final/drools-expert-docs/html_single/index.html}}.
 
 \subsubsection{Basic Rules Structure}
 
-A rule consists of of the following parts, but can basically seen as IF-THEN function:
+A rule consists of of the following parts, but can basically seen as an IF-THEN conditional construct:
 \begin{itemize}
 \item \emph{name}: identifies a rule
 \item \emph{salience}: ranges from 0 to 1000, where 1000 is the maximum priority
-\item \emph{when}: defines, when a rule is triggered
-\item \emph{then}: defines, what to do, when the rule is triggered
+\item \emph{when}: a list of (implicitly conjunctive) combined patterns defines, when a rule is triggered
+\item \emph{then}: java-like imperative code defines, what to do, when the rule is triggered
 \end{itemize}
 
+LHS patterns allow variable binding, access to nested properties and some aggregation functions.
 
 A very basic rule looks like the following:
 \lstset{xleftmargin=\parindent,basicstyle=\footnotesize\ttfamily,morecomment=[l]{//} }
