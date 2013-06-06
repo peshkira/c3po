@@ -430,6 +430,27 @@ public class Element {
     return element;
   }
 
+  public void splitMetadata(MetadataRecord record) {
+    if (record.getSources().size() > 1) {
+      Iterator<String> iterator = record.getSources().iterator();
+      iterator.next(); // the first source will stay in "record"
+      while (iterator.hasNext()) {
+        String sourceID = iterator.next();
+        iterator.remove();
+
+        MetadataRecord newRecord = new MetadataRecord();
+        newRecord.setProperty(record.getProperty());
+        newRecord.setStatus(record.getStatus());
+        newRecord.setValue(record.getValue());
+        newRecord.setValues(record.getValues());
+        newRecord.setSources(new ArrayList<String>(1));
+        newRecord.getSources().add(sourceID);
+
+        this.getMetadata().add(newRecord);
+      }
+    }
+  }
+
   public void mergeMetadata(MetadataRecord record1, MetadataRecord record2) {
     if (record1.getProperty().getId().equals(record2.getProperty().getId())
         && record1.getValue().equals(record2.getValue())) {
