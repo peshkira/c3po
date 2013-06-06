@@ -31,7 +31,7 @@ public class DroolsConflictResolutionProcessingRule implements
   private static final String G_CONFLICTCOLLECTOR = "conflicts";
   private static final String G_BASICRULESLOGLEVEL = "loglevel";
 
-  private static final int MIN_LOGLEVEL = LogCollector.INFO;
+  private static final int MIN_LOGLEVEL = LogCollector.INFO + 1;
   private static final int RULESLOGLEVEL = LogCollector.DEBUG;
 
   private final Cache cache;
@@ -71,8 +71,9 @@ public class DroolsConflictResolutionProcessingRule implements
   @Override
   public void onCommandFinished() {
     // TODO: make the execution of these 2 methods configurable
-    this.ruleActivationListener.printStatistics(System.out);
-    this.conflictCollector.printStatistics(System.out);
+    this.ruleActivationListener.printStatistics(System.out, true);
+    this.conflictCollector.printAccumulatedStatistics(System.out, true);
+    // this.conflictCollector.printStatistics(System.out);
   }
 
   @Override

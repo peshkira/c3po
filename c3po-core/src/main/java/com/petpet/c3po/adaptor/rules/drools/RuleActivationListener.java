@@ -31,8 +31,7 @@ public class RuleActivationListener extends DefaultAgendaEventListener {
   }
 
   @Override
-  public synchronized void afterActivationFired(
-      AfterActivationFiredEvent event) {
+  public synchronized void afterActivationFired(AfterActivationFiredEvent event) {
     Rule firedRule = event.getActivation().getRule();
 
     Integer counter = this.activations.get(firedRule);
@@ -41,21 +40,32 @@ public class RuleActivationListener extends DefaultAgendaEventListener {
 
   }
 
-  public void printStatistics(PrintStream output) {
-    output.println("======================================");
+  public void printStatistics(PrintStream output, boolean csvStyle) {
+    if (!csvStyle) {
+      output.println("======================================");
+    }
     output.println("Drools Conflict Resolution Statistics:");
 
     for (KnowledgePackage rulesPackage : this.packages) {
-      output.println("--------------------------------------");
-      output.println("Package: '" + rulesPackage.getName() + "'");
+      if (!csvStyle) {
+        output.println("--------------------------------------");
+        output.println("Package: '" + rulesPackage.getName() + "'");
+      }
       for (Rule rule : rulesPackage.getRules()) {
         rule = this.unwrapRule(rule);
-        output.println("* '" + rule.getName() + "'");
-        output.println("  #:" + this.activations.get(rule));
+        if (!csvStyle) {
+          output.println("* '" + rule.getName() + "'");
+          output.println("  #:" + this.activations.get(rule));
+        } else {
+          output.println(rule.getName() + ";" + this.activations.get(rule));
+        }
+
       }
     }
 
-    output.println("======================================");
+    if (!csvStyle) {
+      output.println("======================================");
+    }
   }
 
   public Rule unwrapRule(Rule rule) {
