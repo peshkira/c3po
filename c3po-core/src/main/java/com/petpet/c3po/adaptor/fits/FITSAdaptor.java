@@ -28,6 +28,8 @@ import org.xml.sax.SAXException;
 
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 
 /**
@@ -82,7 +84,7 @@ public class FITSAdaptor extends AbstractAdaptor {
     }
     try {
 
-      DigesterContext context = new DigesterContext( this.getCache(), this.getPreProcessingRules() );
+      DigesterContext context = new DigesterContext( this, this.getPreProcessingRules() );
       this.digester.push( context );
 
       context = (DigesterContext) this.digester.parse( new StringReader( data ) );
@@ -110,6 +112,20 @@ public class FITSAdaptor extends AbstractAdaptor {
   @Override
   public String getAdaptorPrefix() {
     return "fits";
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public Property getProperty( String key ) {
+    return super.getProperty( key );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public Source getSource( String name, String version ) {
+    return super.getSource( name, version );
   }
 
   /**

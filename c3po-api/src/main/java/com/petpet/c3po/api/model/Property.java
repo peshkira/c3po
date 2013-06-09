@@ -62,13 +62,14 @@ public class Property implements Model {
 
   /**
    * Creates a property with the given key as key and id and sets the type to
-   * the given type.
+   * the given type. If the type is null, then STRING is used.
    * 
    * @param key
    * @param type
    */
   public Property(String key, PropertyType type) {
     this( key );
+    type = (type == null) ? PropertyType.STRING : type;
     this.type = type.name();
   }
 

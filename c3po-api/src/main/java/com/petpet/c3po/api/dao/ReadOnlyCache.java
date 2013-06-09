@@ -17,6 +17,7 @@ package com.petpet.c3po.api.dao;
 
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.PropertyType;
 
 /**
  * A simple Read Only cache for {@link Property}, {@link Source} and any kind of
@@ -37,7 +38,7 @@ public interface ReadOnlyCache {
    * @return the cached property.
    */
   Property getProperty( String key );
-
+  
   /**
    * Retrieves the source designated by the given name and version. Depending on
    * the implementation it might return null or a new source if there was no
