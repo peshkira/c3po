@@ -55,7 +55,7 @@ public class C3PO {
   /**
    * The version of the command line interface.
    */
-  public static final String VERSION = "0.4.0-SNAPSHOT";
+  public static final String VERSION = "0.5.0-SNAPSHOT";
 
   /**
    * A map of the supported commands for this CLI.
