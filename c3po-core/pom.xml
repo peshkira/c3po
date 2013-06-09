@@ -91,19 +91,9 @@
       <classifier>with-deps</classifier>
     </dependency>
     <dependency>
-      <groupId>de.schlichtherle.truezip</groupId>
-      <artifactId>truezip-file</artifactId>
-      <version>7.7.1</version>
-    </dependency>
-    <dependency>
-      <groupId>de.schlichtherle.truezip</groupId>
-      <artifactId>truezip-driver-zip</artifactId>
-      <version>7.7.1</version>
-    </dependency>
-    <dependency>
-      <groupId>de.schlichtherle.truezip</groupId>
-      <artifactId>truezip-driver-tar</artifactId>
-      <version>7.7.1</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
