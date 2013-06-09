@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.commons.digester3.Digester;
 
 import com.petpet.c3po.api.adaptor.PreProcessingRule;
-import com.petpet.c3po.api.dao.ReadOnlyCache;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
@@ -38,9 +37,9 @@ import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 public class DigesterContext {
 
   /**
-   * The read only cache of C3PO to read the properties and sources.
+   * The adaptor with the getProperty and getSource helper methods.
    */
-  private ReadOnlyCache cache;
+  private FITSAdaptor adaptor;
 
   /**
    * The current element that is parsed.
@@ -70,8 +69,8 @@ public class DigesterContext {
    * @param rules
    *          the list of pre processing rules to apply.
    */
-  public DigesterContext(ReadOnlyCache cache, List<PreProcessingRule> rules) {
-    this.cache = cache;
+  public DigesterContext(FITSAdaptor adaptor, List<PreProcessingRule> rules) {
+    this.adaptor = adaptor;
     this.values = new ArrayList<MetadataRecord>();
     this.formatSources = new ArrayList<String>();
     this.rules = rules;
@@ -135,7 +134,7 @@ public class DigesterContext {
 
     if ( shouldContinue ) {
       final Property property = this.getProperty( propKey );
-      final Source source = this.cache.getSource( toolname, version );
+      final Source source = this.adaptor.getSource( toolname, version );
 
       final MetadataRecord r = new MetadataRecord();
       r.setProperty( property );
@@ -206,7 +205,7 @@ public class DigesterContext {
    *          the version of the tool.
    */
   public void addIdentityTool( String toolname, String version ) {
-    final Source s = this.cache.getSource( toolname, version );
+    final Source s = this.adaptor.getSource( toolname, version );
     this.formatSources.add( s.getId() );
   }
 
@@ -242,7 +241,7 @@ public class DigesterContext {
    */
   public void createFormatVersion( String value, String status, String toolname, String version ) {
     final Property pf = this.getProperty( "format_version" );
-    final Source s = this.cache.getSource( toolname, version );
+    final Source s = this.adaptor.getSource( toolname, version );
     final MetadataRecord fmtv = new MetadataRecord();
 
     fmtv.setProperty( pf );
@@ -268,7 +267,7 @@ public class DigesterContext {
    */
   public void createPuid( String value, String toolname, String version ) {
     final Property pp = this.getProperty( "puid" );
-    final Source s = this.cache.getSource( toolname, version );
+    final Source s = this.adaptor.getSource( toolname, version );
     final MetadataRecord puid = new MetadataRecord();
 
     puid.setProperty( pp );
@@ -322,7 +321,7 @@ public class DigesterContext {
    */
   private Property getProperty( String name ) {
     final String prop = FITSHelper.getPropertyKeyByFitsName( name );
-    return this.cache.getProperty( prop );
+    return this.adaptor.getProperty( prop );
   }
 
 }

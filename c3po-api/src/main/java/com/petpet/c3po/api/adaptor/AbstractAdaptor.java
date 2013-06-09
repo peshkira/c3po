@@ -25,12 +25,14 @@ import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.ReadOnlyCache;
 import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataStream;
+import com.petpet.c3po.api.model.helper.PropertyType;
 
 /**
  * The abstract adaptor class provides an encapsulation of a meta data adaptor.
@@ -68,7 +70,7 @@ public abstract class AbstractAdaptor implements Runnable {
    * A read only instance to the applications cache, so that the adaptor can
    * obtain {@link Property} and {@link Source} objects.
    */
-  private ReadOnlyCache cache;
+  private Cache cache;
 
   /**
    * An internally managed queue that will store the parsed Elements for further
@@ -121,13 +123,13 @@ public abstract class AbstractAdaptor implements Runnable {
   public abstract Element parseElement( String name, String data );
 
   /**
-   * Sets the cache to the passed {@link ReadOnlyCache} iff it is not null and
-   * the current cache is not set yet.
+   * Sets the cache to the passed {@link Cache} iff it is not null and the
+   * current cache is not set yet.
    * 
    * @param cache
    *          the cache to set.
    */
-  public final void setCache( ReadOnlyCache cache ) {
+  public final void setCache( Cache cache ) {
     if ( cache != null && this.cache == null ) {
       this.cache = cache;
     }
@@ -268,14 +270,62 @@ public abstract class AbstractAdaptor implements Runnable {
     }
   }
 
+  /*
+   * TODO remove in version 0.6
+   */
   /**
+   * <b>Deprecated</b> This method will be removed in version 0.6<br/>
+   * Use one of the <i>getProperty</i> or <i>getSource</i> methods to obtain a
+   * new object.
+   * 
    * Gets a read only instance of the application cache. Can be used to obtain
    * {@link Property} and {@link Source} objects.
    * 
    * @return the {@link ReadOnlyCache}
    */
+  @Deprecated
   protected ReadOnlyCache getCache() {
     return cache;
+  }
+
+  /**
+   * Retrieves the property with the given key. If the property does not exist a
+   * new property with the default property type is created (STRING).
+   * 
+   * @param key
+   *          the key to look for.
+   * @return the property.
+   */
+  protected Property getProperty( String key ) {
+    return this.cache.getProperty( key );
+  }
+
+  /**
+   * Retrieves the property with the given key. If the property does not exists
+   * a new property with the given key and type is created. If the property
+   * exists but the types do not match, it will be returned anyway.
+   * 
+   * @param key
+   *          the key of the property.
+   * @param type
+   *          the type of the property.
+   * @return the property witht the given key.
+   */
+  protected Property getProperty( String key, PropertyType type ) {
+    return this.cache.getProperty( key, type );
+  }
+
+  /**
+   * Retrieves a source with the given name and version.
+   * 
+   * @param name
+   *          the name of the source
+   * @param version
+   *          the version of the source.
+   * @return the source.
+   */
+  protected Source getSource( String name, String version ) {
+    return this.cache.getSource( name, version );
   }
 
   /**

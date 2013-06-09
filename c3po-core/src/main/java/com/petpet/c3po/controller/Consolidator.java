@@ -21,11 +21,14 @@ import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.DataHelper;
 
 /**
@@ -154,7 +157,7 @@ public class Consolidator extends Thread {
         // one elements matching the filter
         // so we cannot assume that it already exists
         // and we just store it.
-        this.persistence.insert( element );
+        this.storeElement( element );
         return;
       }
 
@@ -162,7 +165,7 @@ public class Consolidator extends Thread {
       this.persistence.update( stored, f );
 
     } else {
-      this.persistence.insert( element );
+      this.storeElement( element );
     }
 
   }
@@ -182,8 +185,36 @@ public class Consolidator extends Thread {
         DataHelper.mergeMetadataRecord( stored, newMR );
       }
 
+      this.storeProperties( stored ); // TODO remove in version 0.6
     } catch ( Exception e ) {
       LOG.warn( "An error occurred: {}", e.getMessage() );
+    }
+
+  }
+
+  /**
+   * Inserts the given element into the db.
+   * 
+   * @param element
+   *          the element to insert.
+   */
+  private void storeElement( Element element ) {
+    this.storeProperties( element ); // TODO remove in version 0.6
+    this.persistence.insert( element );
+  }
+
+  /*
+   * TODO remove this method in version 0.6 It is here to just make sure that
+   * adaptors that created their own properties and sources , not via the get
+   * property and get source methods are still stored.
+   */
+  private void storeProperties( Element element ) {
+    Cache cache = this.persistence.getCache();
+    for ( MetadataRecord mr : element.getMetadata() ) {
+      Property p = mr.getProperty();
+      PropertyType type = PropertyType.valueOf( p.getType() );
+      cache.getProperty( p.getKey(), type ); // make sure it is stored
+
     }
 
   }
