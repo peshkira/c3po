@@ -16,7 +16,6 @@
 package com.petpet.c3po.gatherer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -28,9 +27,6 @@ import org.slf4j.LoggerFactory;
 import com.petpet.c3po.api.gatherer.MetaDataGatherer;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
-
-import de.schlichtherle.truezip.file.TArchiveDetector;
-import de.schlichtherle.truezip.file.TFile;
 
 /**
  * A gatherer of a local file system. It is a {@link Runnable} class that reads
@@ -54,11 +50,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
   /**
    * A list of supported archive extensions.
    */
-  private static final String[] ARCHIVE_EXTENSIONS = {
-      ".zip", ".tar", ".bzip2", ".tar.bz2",
-      ".bz2", ".tb2", ".tbz", ".tar.gz",
-      ".tgz", ".gz", ".tar.xz", ".txz", ".xz"
-  };
+  private static final String[] ARCHIVE_EXTENSIONS = { ".zip", ".tar", ".tar.gz", ".tgz", ".gz" };
 
   /**
    * The configuration of the gatherer.
@@ -229,20 +221,14 @@ public class LocalFileGatherer implements MetaDataGatherer {
    *          the file path to the archive.
    */
   private void extractArchive( String filePath ) {
-    TFile archive = new TFile( filePath );
     String tmp = FileUtils.getTempDirectory().getPath() + File.separator + "c3poarchives" + File.separator + folder++;
+
     File tmpDir = new File( tmp );
+    tmpDir.mkdirs();
 
-    try {
+    FileExtractor.extract( filePath, tmp );
+    traverseFiles( tmpDir, true, true );
 
-      tmpDir.mkdirs();
-      TFile directory = new TFile( tmpDir );
-      TFile.cp_r( archive, directory, TArchiveDetector.NULL, TArchiveDetector.NULL );
-      traverseFiles( tmpDir, true, true );
-
-    } catch ( IOException e ) {
-      LOG.warn( "An error occurred whule extracting file {}. Error: {}", filePath, e.getMessage() );
-    }
   }
 
   private void submitMetadataResult( String filePath ) {
