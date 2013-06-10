@@ -79,9 +79,12 @@ public class BrowserShotParser {
       for (int i = 0; i < nodes.getLength(); i++) {
         tmprecords.addAll(processNode(nodes.item(i)));
       }
-      Property p = new Property(tmprecords.get(0).getValue(), PropertyType.STRING);
+      Property p = new Property(tmprecords.get(0).getValue(), PropertyType.FLOAT);
       MetadataRecord record = new MetadataRecord(p, tmprecords.get(2).getValue());
       records.add(record);
+      
+      
+      
     }
     return records;
   }

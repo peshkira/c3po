@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
+import com.petpet.c3po.adaptor.rules.BrowsershotDissimilarityCountRule;
 import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
@@ -152,6 +153,7 @@ public class Controller {
     this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
     this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
     this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
+    this.knownRules.put(Constants.CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE, BrowsershotDissimilarityCountRule.class);
   }
 
   /**

@@ -191,7 +191,7 @@ public final class Configurator {
       LOG.error( "Default config file not found! {}", e.getMessage() );
     }
 
-    LOG.info( "Lookig for user defined config file: {}", USER_PROPERTIES );
+    LOG.info( "Looking for user defined config file: {}", USER_PROPERTIES );
 
     final File f = new File( USER_PROPERTIES );
 

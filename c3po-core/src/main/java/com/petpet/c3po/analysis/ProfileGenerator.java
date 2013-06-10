@@ -67,7 +67,7 @@ public class ProfileGenerator {
    */
   private static final String[] PROPERTIES = { "format", "format_version", "puid", "mimetype", "charset", "linebreak",
       "compressionscheme", "creating_os", "byteorder", "compression_scheme", "colorspace", "icc_profile_name",
-      "icc_profile_version", "created", "creating.application.name" };
+      "icc_profile_version", "created", "creating.application.name", "dissimilarities" };
 
   /**
    * The persistence layer.
