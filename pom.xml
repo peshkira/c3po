@@ -33,6 +33,14 @@
       <url>http://repository.jboss.org/nexus/content/groups/public-jboss/</url>
     </repository>
   </repositories>
+  
+  <distributionManagement>
+    <repository>
+      <id>bintray-peshkira-c3po-maven</id>
+      <name>peshkira-c3po-maven-c3po</name>
+      <url>https://api.bintray.com/maven/peshkira/c3po-maven/c3po</url>
+    </repository>
+  </distributionManagement>
 
   <build>
     <plugins>

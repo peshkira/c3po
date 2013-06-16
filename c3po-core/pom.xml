@@ -15,6 +15,14 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  
+  <distributionManagement>
+    <repository>
+      <id>bintray-peshkira-c3po-maven</id>
+      <name>peshkira-c3po-maven-c3po-core</name>
+      <url>https://api.bintray.com/maven/peshkira/c3po-maven/c3po-core</url>
+    </repository>
+  </distributionManagement>
 
   <build>
     <plugins>
