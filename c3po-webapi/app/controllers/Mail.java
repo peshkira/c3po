@@ -17,15 +17,18 @@ package controllers;
 
 import play.Logger;
 import play.Play;
+import play.data.Form;
 import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
-import com.typesafe.plugin.*;
+
+import com.typesafe.plugin.MailerAPI;
+import com.typesafe.plugin.MailerPlugin;
 
 public class Mail extends Controller {
 
   public static Result send() {
-    DynamicForm form = form().bindFromRequest();
+    DynamicForm form = Form.form().bindFromRequest();
     String email = form.get("email");
     String message = form.get("message");
 

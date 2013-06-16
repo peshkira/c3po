@@ -6,37 +6,37 @@
 #TODO remove the first in production...
 GET     /                                      controllers.Application.index()
 GET     /c3po                                  controllers.Application.index()
-GET     /c3po/clear                            controllers.Application.clear()
-GET     /c3po/collections                      controllers.Application.getCollections()
-POST    /c3po/collections                      controllers.Application.setCollection(name: String)
-GET     /c3po/properties                       controllers.Application.getProperties()
-GET     /c3po/property                         controllers.Application.getProperty(name: String)
-POST    /c3po/settings                         controllers.Application.setSetting()
-GET     /c3po/settings                         controllers.Application.getSetting(key: String)
+#GET     /c3po/clear                            controllers.Application.clear()
+#GET     /c3po/collections                      controllers.Application.getCollections()
+#POST    /c3po/collections                      controllers.Application.setCollection(name: String)
+#GET     /c3po/properties                       controllers.Application.getProperties()
+#GET     /c3po/property                         controllers.Application.getProperty(name: String)
+#POST    /c3po/settings                         controllers.Application.setSetting()
+#GET     /c3po/settings                         controllers.Application.getSetting(key: String)
 
 # Filter
-GET     /c3po/filters                          controllers.FilterController.getAll()
-DELETE  /c3po/filter                           controllers.FilterController.remove(property: String)
-POST    /c3po/filter                           controllers.FilterController.add()
-GET     /c3po/filter/values                    controllers.FilterController.getValues()
+#GET     /c3po/filters                          controllers.FilterController.getAll()
+#DELETE  /c3po/filter                           controllers.FilterController.remove(property: String)
+#POST    /c3po/filter                           controllers.FilterController.add()
+#GET     /c3po/filter/values                    controllers.FilterController.getValues()
 
 # Collection Overview
-GET     /c3po/overview                         controllers.Overview.index()
-GET     /c3po/overview/graph                   controllers.Overview.getGraph(property: String)
+#GET     /c3po/overview                         controllers.Overview.index()
+#GET     /c3po/overview/graph                   controllers.Overview.getGraph(property: String)
 
 # Elements Page
-GET     /c3po/objects                          controllers.Elements.index()
-GET     /c3po/objects/:id                      controllers.Elements.show(id: String)
+#GET     /c3po/objects                          controllers.Elements.index()
+#GET     /c3po/objects/:id                      controllers.Elements.show(id: String)
 
 # Samples Page
-GET     /c3po/samples                          controllers.Samples.index()
-GET     /c3po/samples/get                      controllers.Samples.getSamples(alg: String, size: Int, props: String ?= "")
+#GET     /c3po/samples                          controllers.Samples.index()
+#GET     /c3po/samples/get                      controllers.Samples.getSamples(alg: String, size: Int, props: String ?= "")
 
 # Export Page
-GET     /c3po/export                           controllers.Export.index()
-GET     /c3po/export/profile                   controllers.Export.profile()
-GET     /c3po/export/csv/all                   controllers.Export.exportAllToCSV()
-GET     /c3po/export/csv/filter                controllers.Export.exportFilterToCSV()
+#GET     /c3po/export                           controllers.Export.index()
+#GET     /c3po/export/profile                   controllers.Export.profile()
+#GET     /c3po/export/csv/all                   controllers.Export.exportAllToCSV()
+#GET     /c3po/export/csv/filter                controllers.Export.exportFilterToCSV()
 
 # Mail
 POST    /c3po/feedback                         controllers.Mail.send()
