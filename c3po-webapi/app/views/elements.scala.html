@@ -1,11 +1,11 @@
-@(collections: List[String], elements: List[com.petpet.c3po.api.model.Element])
+@(elements: List[com.petpet.c3po.api.model.Element])
 @import helper._
 
 @scripts = {
 <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
 }
 
-@main("c3po - objects", collections, scripts){
+@main("c3po - objects", null, scripts){
 <script type="text/javascript">
 
        $(function(){
@@ -24,7 +24,7 @@
            }
             
             var c_offset = url_query("offset", 0);
-            var c_batch = url_query("batch", 25);
+            var c_batch = url_query("limit", 25);
            
             $('#prev').click(function() {
                 var diff = parseInt(c_offset) - c_batch;

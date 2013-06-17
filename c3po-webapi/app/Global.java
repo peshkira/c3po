@@ -17,37 +17,39 @@ import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 
+import com.petpet.c3po.utils.Configurator;
+
 public class Global extends GlobalSettings {
 
   @Override
-  public void onStart(Application app) {
-    Logger.info("Starting c3po web app");
-    super.onStart(app);
+  public void onStart( Application app ) {
+    Logger.info( "Starting c3po web app" );
+    super.onStart( app );
 
-    //Configurator.getDefaultConfigurator().configure();
-//    this.calculateCollectionStatistics();
-//    this.calculateHistogramms();
+    Configurator.getDefaultConfigurator().configure();
+    // this.calculateCollectionStatistics();
+    // this.calculateHistogramms();
   }
 
   // TODO think of a better way to decide when to drop the
   // mapreduce results.
   @Override
-  public void onStop(Application app) {
-    Logger.info("Stopping c3po web app");
-    super.onStop(app);
+  public void onStop( Application app ) {
+    Logger.info( "Stopping c3po web app" );
+    super.onStop( app );
   }
-  
-//  @Override
-//  public Result onBadRequest(String uri, String error){
-//    Logger.error("Bad Request: " + uri + " " + error);
-//    return badRequest(uri, error);
-//  }
-//  
-//  public Result onHandlerNotFound(String uri) {
-//    Logger.error("Handler not found: " + uri);
-//    return notFound();
-//  }
 
-// `
+  // @Override
+  // public Result onBadRequest(String uri, String error){
+  // Logger.error("Bad Request: " + uri + " " + error);
+  // return badRequest(uri, error);
+  // }
+  //
+  // public Result onHandlerNotFound(String uri) {
+  // Logger.error("Handler not found: " + uri);
+  // return notFound();
+  // }
+
+  // `
 
 }

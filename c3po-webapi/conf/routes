@@ -4,8 +4,8 @@
 
 # Home page
 #TODO remove the first in production...
-GET     /                                      controllers.Application.index()
-GET     /c3po                                  controllers.Application.index()
+GET      /                                      controllers.Application.index()
+GET      /c3po                                  controllers.Application.index()
 #GET     /c3po/clear                            controllers.Application.clear()
 #GET     /c3po/collections                      controllers.Application.getCollections()
 #POST    /c3po/collections                      controllers.Application.setCollection(name: String)
@@ -25,7 +25,7 @@ GET     /c3po                                  controllers.Application.index()
 #GET     /c3po/overview/graph                   controllers.Overview.getGraph(property: String)
 
 # Elements Page
-#GET     /c3po/objects                          controllers.Elements.index()
+GET     /c3po/objects                           controllers.Elements.index()
 #GET     /c3po/objects/:id                      controllers.Elements.show(id: String)
 
 # Samples Page
@@ -40,7 +40,10 @@ GET     /c3po                                  controllers.Application.index()
 
 # Mail
 POST    /c3po/feedback                         controllers.Mail.send()
-    
+
+
+# API v1
+GET     /c3po/api/v1/objects                    controllers.Elements.indexAsJson()
 
 
 # Profile page
