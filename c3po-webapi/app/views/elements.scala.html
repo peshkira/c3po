@@ -9,7 +9,8 @@
 <script type="text/javascript">
 
        $(function(){
-
+          // gets the value of the given query parameter or the default value
+          // if it is not present.
            function url_query( query, dflt ) {
                query = query.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
                var expr = "[\\?&]"+query+"=([^&#]*)";
@@ -22,6 +23,19 @@
                    return dflt;
                }
            }
+
+          // replaces the value for the given key in the given uri.
+          // if the key does not exist, it is appended. 
+           function updateQueryStringParameter(uri, key, value) {
+        	   var re = new RegExp("([?|&])" + key + "=.*?(&|$)", "i");
+        	   separator = uri.indexOf('?') !== -1 ? "&" : "?";
+        	   if (uri.match(re)) {
+        	     return uri.replace(re, '$1' + key + "=" + value + '$2');
+        	   }
+        	   else {
+        	     return uri + separator + key + "=" + value;
+        	   }
+        	 }
             
             var c_offset = url_query("offset", 0);
             var c_batch = url_query("limit", 25);
@@ -29,12 +43,15 @@
             $('#prev').click(function() {
                 var diff = parseInt(c_offset) - c_batch;
                 var offset = (diff > 0) ? diff : 0;
-                window.location.search = 'offset='+offset;
+                new_url = updateQueryStringParameter(window.location.href, "offset", offset);
+                window.location.href = new_url;
             });   
 
             $('#next').click(function(){
-                window.location.search = 'offset='+ (parseInt(c_offset) + parseInt(c_batch));
-              });   
+                var next = parseInt(c_offset) + parseInt(c_batch);
+                new_url = updateQueryStringParameter(window.location.href, "offset", next);
+                window.location.href = new_url;
+            });   
        });
 </script>  
   

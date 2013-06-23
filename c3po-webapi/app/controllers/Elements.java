@@ -17,6 +17,7 @@ package controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import views.html.elements;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.Configurator;
 
 /**
@@ -103,15 +105,19 @@ public class Elements extends Controller {
     int offset = 0;
     int limit = 25;
 
-    String[] offsetParameters = query.get( "offset" );
-    String[] limitParameters = query.get( "limit" );
+    Map<String, String[]> urlQuery = new HashMap<String, String[]>();
+    urlQuery.putAll( query );
+    
+    String[] offsetParameters = urlQuery.remove( "offset" );
+    String[] limitParameters = urlQuery.remove( "limit" );
+    Filter filter = getFilterFromQuery( urlQuery );
 
     offset = readFirstIntegerFromParameterArray( offsetParameters, offset );
     limit = readFirstIntegerFromParameterArray( limitParameters, limit );
 
     ArrayList<Element> elements = new ArrayList<Element>();
     PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-    Iterator<Element> elementsIterator = persistence.find( Element.class, new Filter() );
+    Iterator<Element> elementsIterator = persistence.find( Element.class, filter );
 
     while ( offset > 0 ) {
       if ( elementsIterator.hasNext() ) {
@@ -163,6 +169,20 @@ public class Elements extends Controller {
     }
 
     return res;
+  }
+
+  private static Filter getFilterFromQuery( Map<String, String[]> query ) {
+    Filter filter = new Filter();
+    
+    for (String key : query.keySet()) {
+      String[] values = query.get( key );
+      
+      for (String val : values) {
+        filter.addFilterCondition( new FilterCondition( key, val ) );
+      }
+    }
+
+    return filter;
   }
 
   // public static Result show( String id ) {
