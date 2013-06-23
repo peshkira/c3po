@@ -22,10 +22,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.bson.types.ObjectId;
+
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Http.Request;
 import play.mvc.Result;
+import views.html.element;
 import views.html.elements;
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -92,6 +95,63 @@ public class Elements extends Controller {
     return ok( elements.render( elmnts ) );
   }
 
+  public static Result show( String id ) {
+
+    if ( request().accepts( "text/html" ) ) {
+
+      return showAsHtml( id );
+
+    } else if ( request().accepts( "application/json" ) ) {
+
+      return showAsJson( id );
+
+    } else {
+
+      return badRequest( "Accept Header not supported. Use one of text/html or application/json" );
+
+    }
+
+  }
+
+  // TODO this id filter should be done differently and should be translated
+  // by the mongo filter serializer.
+  // TODO this is incompatible and should be fixed within the backend provider.
+  private static Result showAsHtml( String id ) {
+    Filter filter = new Filter( new FilterCondition( "_id", new ObjectId(id) ) );
+    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+    Iterator<Element> elements = persistence.find( Element.class, filter );
+    
+    if (elements.hasNext()) {
+      Element result = elements.next();
+      if (elements.hasNext()) {
+        return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+      }
+      
+      return ok( element.render( result ) );
+      
+    } else {
+      return notFound( element.render( null ) );
+    }
+  }
+  
+  public static Result showAsJson( String id ) {
+    Filter filter = new Filter( new FilterCondition( "_id", id ) );
+    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+    Iterator<Element> elements = persistence.find( Element.class, filter );
+    
+    if (elements.hasNext()) {
+      Element result = elements.next();
+      if (elements.hasNext()) {
+        return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+      }
+      
+      return ok( play.libs.Json.toJson( result ) );
+      
+    } else {
+      return notFound( "{error: \"Element not found\"}" ) ;
+    }
+  }
+
   /**
    * Retrieves the correct number of elements matching the query. Reads the
    * passed query for 'offset' and 'limit' parameters and sets them accordingly.
@@ -107,7 +167,7 @@ public class Elements extends Controller {
 
     Map<String, String[]> urlQuery = new HashMap<String, String[]>();
     urlQuery.putAll( query );
-    
+
     String[] offsetParameters = urlQuery.remove( "offset" );
     String[] limitParameters = urlQuery.remove( "limit" );
     Filter filter = getFilterFromQuery( urlQuery );
@@ -173,40 +233,16 @@ public class Elements extends Controller {
 
   private static Filter getFilterFromQuery( Map<String, String[]> query ) {
     Filter filter = new Filter();
-    
-    for (String key : query.keySet()) {
+
+    for ( String key : query.keySet() ) {
       String[] values = query.get( key );
-      
-      for (String val : values) {
+
+      for ( String val : values ) {
         filter.addFilterCondition( new FilterCondition( key, val ) );
       }
     }
 
     return filter;
   }
-
-  // public static Result show( String id ) {
-  // Logger.info( "Select element with id: " + id );
-  // final List<String> names = Application.getCollectionNames();
-  // final PersistenceLayer pl =
-  // Configurator.getDefaultConfigurator().getPersistence();
-  // DBCursor cursor = pl.find( Constants.TBL_ELEMENTS, new BasicDBObject(
-  // "_id",
-  // new ObjectId( id ) ) );
-  //
-  // if ( cursor.count() == 0 ) {
-  // Logger.info( "Cursor selected " + cursor.count() );
-  // return notFound( "No such element exists in the db." );
-  // } else if ( cursor.count() > 1 ) {
-  // Logger.info( "Cursor selected " + cursor.count() );
-  // return notFound( "One or more objects with this id exist" );
-  // } else {
-  //
-  // Element elmnt = DataHelper.parseElement( cursor.next(), pl );
-  //
-  // return ok( element.render( names, elmnt ) );
-  // }
-  //
-  // }
 
 }

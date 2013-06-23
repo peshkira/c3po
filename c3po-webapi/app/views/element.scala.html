@@ -1,4 +1,4 @@
-@(collections: List[String], element: com.petpet.c3po.api.model.Element)
+@(element: com.petpet.c3po.api.model.Element)
 @import helper._
 
 @scripts = {
@@ -6,10 +6,10 @@
 }
 
 
-@main("c3po", collections, scripts){
+@main("c3po", null, scripts){
+     <div id="objects" class="content">     
  @if(element != null) {
      
-     <div id="objects" class="content">     
         <h2>@element.getName()</h2>
         <div class="element_general">
         <p>
@@ -36,6 +36,8 @@
             }
           </ul>
          </div>
+} else {
+    <h2>The Element was not found!</h2>
+}
      </div>
-}
-}
+    } 

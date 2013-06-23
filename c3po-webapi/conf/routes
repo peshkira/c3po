@@ -26,7 +26,7 @@ GET      /c3po                                  controllers.Application.index()
 
 # Elements Page
 GET     /c3po/objects                           controllers.Elements.index()
-#GET     /c3po/objects/:id                      controllers.Elements.show(id: String)
+GET     /c3po/objects/:id                       controllers.Elements.show(id: String)
 
 # Samples Page
 #GET     /c3po/samples                          controllers.Samples.index()
@@ -44,6 +44,7 @@ POST    /c3po/feedback                         controllers.Mail.send()
 
 # API v1
 GET     /c3po/api/v1/objects                    controllers.Elements.indexAsJson()
+GET     /c3po/api/v1/objects/:id                controllers.Elements.showAsJson(id: String)
 
 
 # Profile page
