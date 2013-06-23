@@ -135,6 +135,7 @@ public class Elements extends Controller {
   }
   
   public static Result showAsJson( String id ) {
+    response().setContentType( "application/json" );
     Filter filter = new Filter( new FilterCondition( "_id", id ) );
     PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
     Iterator<Element> elements = persistence.find( Element.class, filter );
@@ -170,7 +171,7 @@ public class Elements extends Controller {
 
     String[] offsetParameters = urlQuery.remove( "offset" );
     String[] limitParameters = urlQuery.remove( "limit" );
-    Filter filter = getFilterFromQuery( urlQuery );
+    Filter filter = Application.getFilterFromQuery( urlQuery );
 
     offset = readFirstIntegerFromParameterArray( offsetParameters, offset );
     limit = readFirstIntegerFromParameterArray( limitParameters, limit );
@@ -229,20 +230,6 @@ public class Elements extends Controller {
     }
 
     return res;
-  }
-
-  private static Filter getFilterFromQuery( Map<String, String[]> query ) {
-    Filter filter = new Filter();
-
-    for ( String key : query.keySet() ) {
-      String[] values = query.get( key );
-
-      for ( String val : values ) {
-        filter.addFilterCondition( new FilterCondition( key, val ) );
-      }
-    }
-
-    return filter;
   }
 
 }

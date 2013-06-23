@@ -1,11 +1,11 @@
-@(collections: List[String])
+@(samples: List[com.petpet.c3po.api.model.Element], error: String)
 @import helper._ 
 
 @scripts = {
 <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
 }
 
-@main("c3po - samples", collections, scripts) {
+@main("c3po - samples", null, scripts) {
 <div id="samples" class="content">
   <div id="more">
     <a id="btn_samples" href="#" class="green_button">Get Samples</a>
@@ -53,7 +53,7 @@
       function showAlgOptionsDialog() {
           $("#overlay").addClass('activeoverlay');
           var algorithms = [
-                            {'key':'size', 'name':'Size\'o\'Matic'},
+                            {'key':'sizesampling', 'name':'Size\'o\'Matic'},
                             {'key':'syssampling', 'name': 'Sys Sampling'},
                             {'key': 'distsampling', 'name':'Dist Sampling'}
                            ];
@@ -110,14 +110,25 @@
                       }
                     }
 
+                    var search = "?" + 'alg=' + alg + '&count=' + size;
                     var options = [];
                     if (alg == "distsampling") {
                         options = $('.popupconfig select:last').val();
+                        $.each(options, function(i, value) {
+                            search += '&property=' + value
+                        });
                     }
                     
                     hidePopupDialog();
                     startSpinner();
-                    getSamples(alg, size, options);
+                    setTimeout(
+                      function() {
+                    	  url = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + window.location.pathname + search
+                          window.location = url
+                          stopSpinner();          
+                      },
+                      200);
+                    
                 });
               }
           });
@@ -126,36 +137,30 @@
 
          
       };
-
-      function getSamples(alg, size, options) {
-        $.ajax ({
-              headers: { 
-                   Accept : "application/json; charset=utf-8",
-               },
-              type:     'GET',
-              url:      '/c3po/samples/get?alg=' + alg + '&size=' + size + '&props=' + options,
-              timeout:  5000,
-              success:  function (oData) {
-                showSamples(oData);  
-                stopSpinner();
-              },
-              error: function(oData) {
-                stopSpinner();
-              }
-          });
-      };
-
-      function showSamples(samples) {
-          var objects = $('div#objects');
-          objects.fadeOut('normal', function(){
-              $(this).children().remove();
-              $.each(samples, function(i, sample){
-                  objects.append('<a href="/c3po/objects/' + sample.id +'">' + sample.name + '</a><br />');
-              });
-              objects.fadeIn('normal');
-          });
-      }; 
    });
    
    </script>
+   
+    @if(samples != null) {
+     <div id="objects" class="content">     
+     <h2>Samples</h2>
+     
+       @if(samples.isEmpty()) {
+          The given samples query did not return any samples. There can be numerous reasons for this.
+          For example, the filter did not have any objects, or there weren't any objects within the data base.          
+       } else {
+          
+          @for(s <- samples) {
+              <a href="/c3po/objects/@s.getId()">@s.getName()</a><br/>
+          }
+       }
+     </div>
+   } else {
+    @if(error != null){
+    <div id="objects" class="content">
+    <h2>An error occurred</h2>
+    @error
+    </div>
+    }
+   }
 }
