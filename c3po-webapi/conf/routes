@@ -33,9 +33,9 @@ GET     /c3po/samples                           controllers.Samples.index()
 #GET     /c3po/samples/get                      controllers.Samples.getSamples(alg: String, size: Int, props: String ?= "")
 
 # Export Page
-#GET     /c3po/export                           controllers.Export.index()
+GET     /c3po/export                            controllers.Export.index()
 #GET     /c3po/export/profile                   controllers.Export.profile()
-#GET     /c3po/export/csv/all                   controllers.Export.exportAllToCSV()
+GET     /c3po/export/csv                        controllers.Export.exportToCSV()
 #GET     /c3po/export/csv/filter                controllers.Export.exportFilterToCSV()
 
 # Mail
@@ -47,6 +47,8 @@ GET     /c3po/api/v1/objects                    controllers.Elements.indexAsJson
 GET     /c3po/api/v1/objects/:id                controllers.Elements.showAsJson(id: String)
 
 GET     /c3po/api/v1/samples                    controllers.Samples.indexAsJson()
+
+GET     /c3po/api/v1/export/csv                 controllers.Export.exportToCSV()
 
 
 # Profile page
