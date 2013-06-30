@@ -34,7 +34,7 @@ GET     /c3po/samples                           controllers.Samples.index()
 
 # Export Page
 GET     /c3po/export                            controllers.Export.index()
-#GET     /c3po/export/profile                   controllers.Export.profile()
+GET     /c3po/export/profile                    controllers.Export.profileToXML()
 GET     /c3po/export/csv                        controllers.Export.exportToCSV()
 #GET     /c3po/export/csv/filter                controllers.Export.exportFilterToCSV()
 

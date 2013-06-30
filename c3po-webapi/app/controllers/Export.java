@@ -20,16 +20,22 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.dom4j.Document;
 
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.export;
 
 import com.petpet.c3po.analysis.CSVGenerator;
+import com.petpet.c3po.analysis.ProfileGenerator;
+import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
+import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
@@ -41,8 +47,8 @@ public class Export extends Controller {
     return ok( export.render() );
   }
 
-  //TODO add analysis action log
-  //TODO check if last action log is analysis
+  // TODO add analysis action log
+  // TODO check if last action log is analysis
   // and if yes, check if the export file already exists.
   // For this the name should be changed by the hash of filter or similar.
   // If it exists, then return the file and if not regenerate...
@@ -54,6 +60,7 @@ public class Export extends Controller {
       String[] properties = query.remove( "property" );
       Filter filter = Application.getFilterFromQuery( query );
 
+      // TODO this should be done via the controller
       PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
       CSVGenerator gen = new CSVGenerator( persistence );
 
@@ -84,6 +91,74 @@ public class Export extends Controller {
     }
   }
 
+  public static Result profileToXML() {
+    if ( request().accepts( "text/xml" ) ) {
+      Map<String, String[]> queryString = request().queryString();
+      Map<String, String[]> query = new HashMap<String, String[]>( queryString );
+
+      String[] properties = query.remove( "property" );
+      String[] sproperties = query.remove( "sproperty" );
+      String[] algArray = query.remove( "alg" );
+      String[] countArray = query.remove( "count" );
+      String[] includeArray = query.remove( "include" );
+
+      if ( sproperties == null ) {
+        sproperties = new String[0];
+      }
+
+      if ( algArray == null || algArray.length == 0 ) {
+        return TODO;
+      }
+
+      if ( countArray == null || countArray.length == 0 ) {
+        return TODO;
+      }
+
+      boolean include = false;
+
+      if ( includeArray != null && includeArray.length == 1 ) {
+        include = Boolean.valueOf( includeArray[0] );
+      }
+
+      String alg = algArray[0];
+      int count = Integer.valueOf( countArray[0] );
+
+      Filter filter = Application.getFilterFromQuery( query );
+
+      // TODO do this via controller
+      PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+      RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm( alg );
+      Map<String, Object> samplesOptions = new HashMap<String, Object>();
+      samplesOptions.put( "properties", Arrays.asList( sproperties ) );
+      samplesGen.setOptions( samplesOptions );
+
+      ProfileGenerator gen = new ProfileGenerator( persistence, samplesGen );
+
+      // int hash = filter.hashCode();
+
+      Document profile = gen.generateProfile( filter, count, include );
+      String fileName = "profiles" + File.separator + "c3po-profile_" + filter.hashCode() + ".xml";
+      gen.write( profile, fileName);
+
+      File f = new File( fileName );
+      if ( f.exists() ) {
+        response().setContentType( "application/force-download" );
+        response().setHeader( "Content-Transfer-Encoding", "binary" );
+        response().setHeader( "Content-Disposition", "attachment; filename=\"" + fileName + "\"" );
+        try {
+          return ok( new FileInputStream( f ) );
+        } catch ( FileNotFoundException e ) {
+          e.printStackTrace();
+          return internalServerError( e.getMessage() );
+        }
+      }
+
+    } else {
+      return badRequest( "The provided accept header is not supported: " + request().getHeader( "Accept" ) );
+    }
+
+    return ok();
+  }
   //
   // public static Result profile() {
   // Logger.debug("Received a profile generation call");
