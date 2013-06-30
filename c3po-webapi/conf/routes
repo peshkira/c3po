@@ -21,7 +21,7 @@ GET     /c3po/properties                       controllers.Application.getProper
 #GET     /c3po/filter/values                    controllers.FilterController.getValues()
 
 # Collection Overview
-#GET     /c3po/overview                         controllers.Overview.index()
+GET     /c3po/overview                          controllers.Overview.index()
 #GET     /c3po/overview/graph                   controllers.Overview.getGraph(property: String)
 
 # Elements Page

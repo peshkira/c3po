@@ -1,11 +1,10 @@
-@(collections: List[String], graphs: helpers.GraphData, stats: helpers.Statistics)
+@(graphs: helpers.GraphData, stats: helpers.Statistics)
 @import helper._
 
 @scripts = {
 <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/excanvas.js")"></script><![endif]-->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.barRenderer.min.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pieRenderer.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.categoryAxisRenderer.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.canvasAxisTickRenderer.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.canvasTextRenderer.min.js")"></script>
@@ -14,12 +13,70 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.highlighter.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/overview.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/humanize.js")"></script>
 }
 
 @main("c3po - overview", scripts) {
-<div id="overview">
-@if(graphs != null) {
-<script type="text/javascript">
+<div class="green-background">
+  <div class="container">
+    @if(stats != null) {
+    <script type="text/javascript">
+         $(document).ready(function(){
+
+        	 $($('.nav').children()[0]).children('a').addClass('active');
+
+              var stats = {
+                  count: [Humanize.intword('@stats.getCount()'), '@stats.getCount() objects'],
+                  size: [Humanize.filesizeformat('@stats.getSize()'), '@stats.getSize() bytes'],
+                  min: [Humanize.filesizeformat('@stats.getMin()'), '@stats.getMin() bytes'],
+                  max: [Humanize.filesizeformat('@stats.getMax()'), '@stats.getMax() bytes'],
+                  avg: [Humanize.filesizeformat('@stats.getAvg()'), '@stats.getAvg() bytes'],
+                  sd: [Humanize.filesizeformat('@stats.getSd()'), '@stats.getSd() bytes'],
+              };
+
+              for (var key in stats) {
+            	  if (stats.hasOwnProperty(key)) {
+                    var id = "#"+key;
+            		$(id).html(stats[key][0])
+                    $(id).parent().attr("title", stats[key][1])
+                     
+            	  }
+            	}
+         });
+         </script>
+    <div id="statistics">
+      <div class="stat-column">
+        <div class="stat">
+          Count: <span class="stat-value" id="count"></span>
+        </div>
+        <div class="stat">
+          Size: <span class="stat-value" id="size"></span>
+        </div>
+      </div>
+      <div class="stat-column">
+        <div class="stat">
+          Min: <span class="stat-value" id="min"></span>
+        </div>
+        <div class="stat">
+          Max: <span class="stat-value" id="max"></span>
+        </div>
+      </div>
+      <div class="stat-column">
+        <div class="stat">
+          Average: <span class="stat-value" id="avg"></span>
+        </div>
+        <div class="stat">
+          SD: <span class="stat-value" id="sd"></span>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  <div class="white-background">
+  <div class="container">
+    <div id="overview">
+      @if(graphs != null) {
+      <script type="text/javascript">
 $(document).ready(function(){
 
   var data = {
@@ -34,38 +91,24 @@ $(document).ready(function(){
 });
 
 </script>
-   
-}
-<div class="content span-24">
-    <div class="span-16">
-        <div class="span-12">
-            @if(session.get("current.collection") == null) {
-               <h2>Please select a collection</h2>
-            } else {
-              <h2>Overview of '@session.get("current.collection")'</h2>
-            }
-        </div>
-        @if(graphs != null) {
-        <div id="graphs">
-       
-        </div>
-        }
-   </div>
-    @if(stats != null) {
-        <div id="more"></div>
-        <div id="statistics" class="">
-            <h4>Size Stats</h4><br/>
-            Count : @stats.getCount()<br />
-            Size : @stats.getSize() <br />
-            Min :  @stats.getMin() <br />
-            Max :  @stats.getMax() <br />
-            Average :  @stats.getAvg() <br />
-            SD :  @stats.getSd() <br />
-            Var :  @stats.getVar() <br />
-            
-         </div>
-          }
-</div>
-</div>    
-}
 
+      }
+      <div class="content span-24">
+        @if(graphs != null) {
+        <div id="graphs" class="span-18"></div>
+        }else {
+        <div class="push-18"></div>
+        }
+        <div class="span-6 last">
+            <div id="more"></div>
+            <div id="filterbox">
+                Filter <span id="addfilter">+</span>
+                <div id="filters"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+    }
+</div>
+  </div>
+</div>

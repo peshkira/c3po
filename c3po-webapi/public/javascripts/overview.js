@@ -17,6 +17,10 @@ $(document).ready(
 					}
 				});
 			});
+			
+			$('#addfilter').click(function() {
+				//TODO show popup...
+			});
 
 		});
 
@@ -113,8 +117,16 @@ function applyIntegerHistogramSelection() {
 
 function getBarChart(ttl) {
 	var options = {
-		title : ttl,
+		title: {
+		  text: ttl,
+		  show: true,
+		  color: '#34495e',
+		  fontSize: '18pt',
+		  fontWeight: 'bold',
+		  fontFamily: 'Montserrat', 
+		},
 		seriesDefaults : {
+			shadow: false,
 			renderer : $.jqplot.BarRenderer,
 			// Show point labels to the right ('e'ast) of each bar.
 			// edgeTolerance of -15 allows labels flow outside the grid
@@ -125,14 +137,12 @@ function getBarChart(ttl) {
 				location : 'n',
 				edgeTolerance : -15
 			},
-			// Rotate the bar shadow as if bar is lit from top right.
-			shadowAngle : 70,
 			// Here's where we tell the chart it is oriented horizontally.
 			rendererOptions : {
 				barDirection : 'vertical',
-				barWidth : '12'
+				barWidth : '15'
 			},
-			color : '#639B00'
+			color : '#2DCC70'
 		},
 		axesDefaults : {
 			tickRenderer : $.jqplot.CanvasAxisTickRenderer,
@@ -153,7 +163,8 @@ function getBarChart(ttl) {
 
 						// val = (val.replace(/\.0/g, ""));
 						return val;
-					}
+					},
+					showGridline: false
 				}
 			},
 			// Pad the y axis just a little so bars can get close to, but
@@ -162,6 +173,7 @@ function getBarChart(ttl) {
 				pad : 1.05,
 				tickOptions : {
 					formatString : '%d',
+					showGridline: false
 				}
 			}
 		},
@@ -184,6 +196,12 @@ function getBarChart(ttl) {
 										// formatStrings
 		// as used by the axes, or to use the formatString
 		// specified on the cursor with sprintf.
+		},
+		
+		grid : {
+			background: '#ffffff',
+			shadow: false,
+			borderWidth: 0
 		}
 
 	};
@@ -222,19 +240,19 @@ function drawGraphs(data, options) {
 	$.each(data, function(i, d) {
 		var container;
 		var clazz;
-		if (idx % 2 == 0) {
-			container = $('<div class="span-24">').appendTo(graphsdiv);
-			clazz = "dia_left";
-		} else if (idx % 2 == 1) {
-			container = graphsdiv.children('.span-24:last');
-			clazz = "dia_right";
-		}
+//		if (idx % 2 == 0) {
+//			container = $('<div class="span-24">').appendTo(graphsdiv);
+//			clazz = "dia_left";
+//		} else if (idx % 2 == 1) {
+//			container = graphsdiv.children('.span-24:last');
+//			clazz = "dia_right";
+//		}
 
-		if (d.length > 30) {
-			container = $('<div class="span-24">').appendTo(graphsdiv);
+//		if (d.length > 30) {
+			container = $('<div class="span-18">').appendTo(graphsdiv);
 			clazz = "dia_full";
 			idx++; // if full length skip to next row left
-		}
+		//}
 
 		container.append('<div id="' + i + '" class="' + clazz + '">');
 		$('#' + i).bind(
