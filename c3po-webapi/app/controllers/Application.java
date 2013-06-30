@@ -22,6 +22,7 @@ import java.util.Map;
 
 import play.mvc.Controller;
 import play.mvc.Result;
+import views.html.index;
 
 import com.mongodb.BasicDBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -38,10 +39,7 @@ public class Application extends Controller {
 
   public static Result index() {
 
-    // buildSession();
-    //
-    // return ok(index.render("c3po", getCollectionNames()));
-    return ok();
+    return ok(index.render( "c3po - Clever, Crafty Content Profiling of Objects" ));
   }
 
   public static Filter getFilterFromQuery( Map<String, String[]> query ) {

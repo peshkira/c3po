@@ -1,5 +1,4 @@
-@(title: String, collections: List[String], scripts: Html = Html(""))(content: Html)
-@import helper._
+@(title: String, scripts: Html = Html(""))(content: Html) @import helper._
 
 <!DOCTYPE html>
 
@@ -7,36 +6,17 @@
 <head>
 <title>@title</title>
 <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-<link rel="stylesheet" href="@routes.Assets.at("stylesheets/navbar.css")">
-<link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.jqplot.min.css")" />
-<link href='http://fonts.googleapis.com/css?family=Sanchez' rel='stylesheet' type='text/css'>
-<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-<script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
-<script src="@routes.Assets.at("javascripts/jquery-ui-1.8.21.min.js")" type="text/javascript"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/spin.min.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/main.js")"></script>
+<link rel="stylesheet" type="text/css" href='@routes.Assets.at("stylesheets/jquery.jqplot.min.css")' />
+<!-- TODO move to overview -->
+<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+<link rel="shortcut icon" type="image/png" href='@routes.Assets.at("images/favicon.png")'>
+<script src='@routes.Assets.at("javascripts/jquery-1.7.1.min.js")' type="text/javascript"></script>
+<script src='@routes.Assets.at("javascripts/jquery-ui-1.8.21.min.js")' type="text/javascript"></script>
+<script type="text/javascript" src='@routes.Assets.at("javascripts/spin.min.js")'></script>
+<script type="text/javascript" src='@routes.Assets.at("javascripts/main.js")'></script>
 @scripts
 <script type="text/javascript">
 
-// determine the position of the filter and collection bars 
-// from the session and display accordingly 
-$(document).ready(function() {
-@if(session.get("client.collections.show") != null) {
-    @if(session.get("client.collections.show").equals("true")) {
-        $('#collections').css('display', 'block');
-    } else {
-        $('#collections').css('display', 'none');
-    }
- }
-
- @if(session.get("client.filter.show") != null){
-   @if(session.get("client.filter.show").equals("true")) {
-      $('#filter').css('display', 'block');
-   } else {
-	    $('#filter').css('display', 'none');
-   }
- }
-});
 
 </script>
 
@@ -44,60 +24,23 @@ $(document).ready(function() {
 <body>
   <div id="overlay"></div>
   <div class="header">
-    <a href="/c3po"><img class="logo" src="@routes.Assets.at("images/c3po.png")" alt="c3po logo"/></a>
-    <h1>
-      Clever, Crafty Content Profiling of Objects
-    </h1>
-  </div>
-  <div class="navbar">
-    <nav class="green">
-      <ul class="clear">
-        <li><a href="/c3po">Home</a>
-        </li>
-        <li><a href="/c3po/overview">Overview</a>
-        </li>
-        <li><a href="/c3po/objects">Objects</a>
-        </li>
-        <li><a href="/c3po/samples">Samples</a>
-        </li>
-        <li><a href="/c3po/export">Export</a>
-        </li>
-        <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" />
-        </li>
-        <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" />
-        </li>
-      </ul>
-    </nav>
-  </div>
-<!--@*  
- <div id="collections">
-    <h2>
-      Current collection: <span id="ajax_collection">@session.get("current.collection")</span>
-    </h2>
-    Other collections: <select> @for(c <- collections) {
-      <option value="@c">@c</option> }
-    </select>
-  </div>
-   *@-->
-  <div id="filter">
-    @if(session.get("current.filter")) {
-    <div id="addfilter">
-      <a class="green_button" href="javascript:addNewFilter()">+</a>
-    </div>
-    <h2>Filter</h2>
-    } else {
-    <h2>No collection selected</h2>
-    }
+    <a href="/c3po"><img class="logo" src='@routes.Assets.at("images/c3po.png")' alt="c3po logo" /></a>
+    <ul class="nav">
+      <li><a href="/c3po/overview">OVERVIEW</a></li>
+      <li><a href="/c3po/objects">OBJECTS</a></li>
+      <li><a href="/c3po/samples">SAMPLES</a></li>
+      <li><a href="/c3po/export">EXPORT</a></li>
+    </ul>
   </div>
   <div id="filterpopup">
     <div class="close">
-      <img src="@routes.Assets.at("images/close.png")" />
+      <img src='@routes.Assets.at("images/close.png")' />
     </div>
     <div class="popupreason">The property you selected requires special settings. Please configure:</div>
     <div class="popupconfig"></div>
   </div>
-  <div class="container">@content</div>
+  @content
   <div id="spinner"></div>
-  <div id="feedback">feedback</div>
+  <div id="feedback">Feedback</div>
 </body>
 </html>

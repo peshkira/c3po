@@ -1,30 +1,26 @@
-@(title: String, collections: List[String])
-
-@scripts = {
+@(title: String) @scripts = {
 <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
-}
+} @main(title, scripts){
+<div class="github">
+  <a href="https://github.com/peshkira/c3po" target="_blank"> <img
+    src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"> </a>
+</div>
+<div class="green-background">
+  <div class="container">
+    <div class="content span-24">
+      <h2>What is c3po?</h2>
+      <p>c3po is a content profiling tool used during preservation planning. It uses the meta data extracted from
+        digital objects and aggregates it in order to support the analysis during preservation planning activities.
+        Furthermore, c3po provides representative samples from collections and it offers different data export
+        facilities, so that planners can analyze the content even more and obtain deeper knowledge of the objects they
+        are trying to preserve.</p>
+      <p>
+        If you want to find out more, please navigate <a href="http://peshkira.github.io/c3po">here</a>.
+      </p>
 
-@main(title, collections, scripts){
-        <div class="github">
-            <a href="https://github.com/peshkira/c3po" target="_blank">
-                <img src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
-            </a>
-        </div>
-        <div class="content">
-            <h2>What is c3po?</h2>
-            <p>
-              c3po is a content profiling tool used during preservation planning. It uses the meta data extracted from digital objects and aggregates it in order
-              to support the analysis during preservation planning activities. Furthermore, c3po provides representative samples
-              from collections and it offers different data export facilities, so that planners can analyze the content even more and obtain deeper knowledge
-              of the objects they are trying to preserve.
-            </p>
-            <p>
-              If you want to find out more, please navigate <a href="http://ifs.tuwien.ac.at/imp/c3po">here</a>. And if you want to provide us feedback, please don't hesitate contacting
-              us at <a href="mailto:petrov@@ifs.tuwien.ac.at">c3po@@ifs.tuwien.ac.at</a>
-            </p>
-            
-            <h3>Usage</h3>
-            <p>
+      <h3>Usage</h3>
+      TBD
+      <!--  <p>
             Navigate to the overview tab and choose a collection by clicking on the first image button in the menu bar.
             This will present you some diagrams and basic overview of the selected collection. By clicking on 
             the desired values of the diagrams, you will start filtering the collection. The filter is conveniently
@@ -50,7 +46,10 @@
             Exporting data allows you to take dive even deeper into your data. There are a few export facilities that allow you to export your data
             (based on the current filter) and analyze it even more with other tools. 
             </p>
-            
-            <div id="slogan" class="prepend-18 span-6">May the Force be with you!</div>
-        </div>
+            -->
+
+      <div id="slogan" class="prepend-18 span-6">May the Force be with you!</div>
+    </div>
+  </div>
+</div>
 }

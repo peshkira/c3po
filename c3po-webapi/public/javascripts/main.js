@@ -68,17 +68,17 @@ $(document).ready(function(){
 	//###############################
 
 	// build the current filter elements.
-	$.get('/c3po/filters', function(data) {
-		$.each(data, function(i, pvf) {
-			addNewFilter();
-			var div = $('.propertyfilter')[i];
-			$(div).children('select').val(pvf.property);
-			$(div).attr('oldValue', pvf.property);
-			showValuesSelect(div, pvf);
-			$(div).children('select:last').val(pvf.selected); 
-		});
-
-	});
+//	$.get('/c3po/filters', function(data) {
+//		$.each(data, function(i, pvf) {
+//			addNewFilter();
+//			var div = $('.propertyfilter')[i];
+//			$(div).children('select').val(pvf.property);
+//			$(div).attr('oldValue', pvf.property);
+//			showValuesSelect(div, pvf);
+//			$(div).children('select:last').val(pvf.selected); 
+//		});
+//
+//	});
 
 
 	//###############################
@@ -96,12 +96,12 @@ $(document).ready(function(){
 	// add feedback animation
 	$('#feedback').hover(function() {
 		$(this).animate({
-			right: '+=10',
+			left: '+=10',
 		}, 200, function() {}
 		);
 	}, function() {
 		$(this).animate({
-			right: '-=10',
+			left: '-=10',
 		}, 200, function() {}
 		);
 	});
