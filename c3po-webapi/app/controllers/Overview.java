@@ -31,6 +31,7 @@ import views.html.overview;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.utils.Configurator;
 

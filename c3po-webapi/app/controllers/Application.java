@@ -31,6 +31,7 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.DataHelper;
 
 public class Application extends Controller {
 
@@ -39,7 +40,7 @@ public class Application extends Controller {
 
   public static Result index() {
 
-    return ok(index.render( "c3po - Clever, Crafty Content Profiling of Objects" ));
+    return ok( index.render( "c3po - Clever, Crafty Content Profiling of Objects" ) );
   }
 
   public static Filter getFilterFromQuery( Map<String, String[]> query ) {
@@ -49,11 +50,31 @@ public class Application extends Controller {
       String[] values = query.get( key );
 
       for ( String val : values ) {
-        filter.addFilterCondition( new FilterCondition( key, val ) );
+        Object typedValue = getTypedValue( val );
+        filter.addFilterCondition( new FilterCondition( key, typedValue ) );
       }
     }
 
     return filter;
+  }
+
+  private static Object getTypedValue( String val ) {
+    Object value = null;
+    try {
+      value = Long.parseLong( val );
+    } catch ( NumberFormatException e ) {
+    }
+
+    if ( val.equalsIgnoreCase( "yes" ) || val.equalsIgnoreCase( "true" ) ) {
+      value = new Boolean( true );
+    } else if ( val.equalsIgnoreCase( "no" ) || val.equalsIgnoreCase( "false" ) ) {
+      value = new Boolean( false );
+    }
+
+    if ( value == null ) {
+      value = val;
+    }
+    return value;
   }
 
   //
@@ -132,26 +153,27 @@ public class Application extends Controller {
 
     return ok( play.libs.Json.toJson( properties ) );
   }
+
   //
   // return badRequest("The accept header is not supported");
   // }
   //
-  // public static Result getProperty(String name) {
-  // Logger.debug("Received a get property call");
-  // final String accept = request().getHeader("Accept");
-  // if (accept.contains("*/*") || accept.contains("application/json")) {
-  // return propertyAsJson(name);
-  // } else {
-  // return TODO;
-  // }
-  // }
-  //
-  // private static Result propertyAsJson(String name) {
-  // PersistenceLayer p =
-  // Configurator.getDefaultConfigurator().getPersistence();
-  // Property property = p.getCache().getProperty(name);
-  // return ok(play.libs.Json.toJson(property));
-  // }
+  public static Result getProperty( String name ) {
+    final String accept = request().getHeader( "Accept" );
+    if ( accept.contains( "application/json" ) ) {
+      return propertyAsJson( name );
+    } else {
+      return badRequest( "The provided accept header is not supported" );
+    }
+  }
+
+  private static Result propertyAsJson( String name ) {
+    PersistenceLayer p =
+        Configurator.getDefaultConfigurator().getPersistence();
+    Property property = p.getCache().getProperty( name );
+    return ok( play.libs.Json.toJson( property ) );
+  }
+
   //
   // private static Result propertiesAsJson() {
   // PersistenceLayer p =

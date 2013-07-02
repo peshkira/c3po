@@ -45,6 +45,8 @@ function showPopup(properties) {
 	$('.popupconfig select').change(function() {
 		$.ajax({
 			type : 'GET',
+			contentType: "application/json; charset=utf-8",
+			dataType:"json",
 			url : '/c3po/property?name=' + $(this).val(),
 			timeout : 5000,
 			success : function(oData) {
@@ -55,32 +57,37 @@ function showPopup(properties) {
 };
 
 function showOptions(type) {
-	if (type == "STRING" || type == "BOOL" || type == "DATE") {
+	//TODO make the differentiation between property types...
+//	if (type == "STRING" || type == "BOOL" || type == "DATE") {
 		var property = $('.popupconfig select').val();
 		hidePopupDialog();
 		startSpinner();
-		$.ajax({
-			type : 'GET',
-			url : '/c3po/overview/graph?property=' + property,
-			timeout : 5000,
-			success : function(oData) {
-				stopSpinner();
-				var hist = [];
-				$.each(oData.keys, function(i, k) {
-					hist.push([ oData.keys[i], parseInt(oData.values[i]) ]);
-				});
-				var id = oData.property;
-				var data = {};
-				data[id] = hist;
-				drawGraphs(data);
-				//scroll to bottom of page.
+		var parameters = window.location.search + '&hist=' + property;
+		//TODO implement the api for the overview and do this via ajax
+		// instead of window reload.
+		window.location.search = parameters;
+//		$.ajax({
+//			type : 'GET',
+//			url : '/c3po/overview/' + parameters + '&hist=' + property,
+//			timeout : 5000,
+//			success : function(oData) {
+//				stopSpinner();
+//				var hist = [];
+//				$.each(oData.keys, function(i, k) {
+//					hist.push([ oData.keys[i], parseInt(oData.values[i]) ]);
+//				});
+//				var id = oData.property;
+//				var data = {};
+//				data[id] = hist;
+//				drawGraphs(data);
+//				//scroll to bottom of page.
+//
+//			}
+//		});
 
-			}
-		});
-
-	} else {
-		showIntegerPropertyDialog('applyIntegerHistogramSelection()');
-	}
+//	} else {
+//		showIntegerPropertyDialog('applyIntegerHistogramSelection()');
+//	}
 }
 
 function applyIntegerHistogramSelection() {
