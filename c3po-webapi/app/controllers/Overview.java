@@ -20,7 +20,6 @@ import helpers.GraphData;
 import helpers.Statistics;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +44,20 @@ public class Overview extends Controller {
     Map<String, String[]> queryString = request().queryString();
     Map<String, String[]> query = new HashMap<String, String[]>( queryString );
 
+    List<Property> graphProperties = new ArrayList<Property>();
+    graphProperties.add( mimetype );
+
+    String[] histograms = query.remove( "hist" );
+    if ( histograms != null && histograms.length != 0 ) {
+      List<String> propertyNames = getPropertyNames();
+      for ( String h : histograms ) {
+        if ( propertyNames.contains( h ) && !h.equals( "mimetype" )) {
+          Property property = persistence.getCache().getProperty( h );
+          graphProperties.add( property );
+        }
+      }
+    }
+
     Filter filter = Application.getFilterFromQuery( query );
 
     NumericStatistics statistics = persistence.getNumericStatistics( size, filter );
@@ -57,19 +70,30 @@ public class Overview extends Controller {
     stats.setSize( statistics.getSum() + "" );
     stats.setVar( statistics.getVariance() + "" );
 
-    Map<String, Long> hist = persistence.getValueHistogramFor( mimetype, filter );
+    List<Graph> graphs = new ArrayList<Graph>();
 
-    List<String> keys = new ArrayList<String>();
-    List<String> values = new ArrayList<String>();
-    for ( String k : hist.keySet() ) {
-      keys.add( k );
-      values.add( hist.get( k ) + "" );
+    for ( Property p : graphProperties ) {
+      Map<String, Long> hist = persistence.getValueHistogramFor( p, filter );
+
+      List<String> keys = new ArrayList<String>();
+      List<String> values = new ArrayList<String>();
+      for ( String k : hist.keySet() ) {
+        keys.add( k.replace( "\\", "/" ) );
+        values.add( hist.get( k ) + "" );
+      }
+
+      Graph g = new Graph( p.getKey(), keys, values );
+      g.sort();
+      graphs.add( g );
     }
 
-    Graph g = new Graph( "mimetype", keys, values );
-    g.sort();
+    return ok( overview.render( new GraphData( graphs ), stats ) );
+  }
 
-    return ok( overview.render( new GraphData( Arrays.asList( g ) ), stats ) );
+  private static List<String> getPropertyNames() {
+    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+    List<String> names = persistence.distinct( Property.class, "_id", null );
+    return names;
   }
 
   // public static Result index() {

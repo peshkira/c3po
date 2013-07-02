@@ -632,9 +632,10 @@ display: none;
 }
 
 .dia_full {
+	margin-bottom: 30px;
 	margin-left: 10px;
     height:300px;
-    width:700px;
+    overflow-y: scroll;
 }
 
 .export ul {

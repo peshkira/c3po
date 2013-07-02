@@ -140,7 +140,7 @@ function getBarChart(ttl) {
 			// Here's where we tell the chart it is oriented horizontally.
 			rendererOptions : {
 				barDirection : 'vertical',
-				barWidth : '15'
+				barWidth : 15
 			},
 			color : '#2DCC70'
 		},
@@ -170,7 +170,7 @@ function getBarChart(ttl) {
 			// Pad the y axis just a little so bars can get close to, but
 			// not touch, the grid boundaries. 1.2 is the default padding.
 			yaxis : {
-				pad : 1.05,
+				pad : 1.0,
 				tickOptions : {
 					formatString : '%d',
 					showGridline: false
@@ -235,55 +235,43 @@ function prettifyTitle(title) {
 };
 
 function drawGraphs(data, options) {
-	var idx = 0;
 	var graphsdiv = $('#graphs');
 	$.each(data, function(i, d) {
 		var container;
 		var clazz;
-//		if (idx % 2 == 0) {
-//			container = $('<div class="span-24">').appendTo(graphsdiv);
-//			clazz = "dia_left";
-//		} else if (idx % 2 == 1) {
-//			container = graphsdiv.children('.span-24:last');
-//			clazz = "dia_right";
-//		}
-
-//		if (d.length > 30) {
-			container = $('<div class="span-18">').appendTo(graphsdiv);
-			clazz = "dia_full";
-			idx++; // if full length skip to next row left
-		//}
-
-		container.append('<div id="' + i + '" class="' + clazz + '">');
+		container = $('<div class="span-18">').appendTo(graphsdiv);
+		clazz = "dia_full";
+		var width = d.length * 25;
+		if (width < 700) {
+			width = 700;
+		}
+		container.append('<div id="' + i + '" class="' + clazz + '" style="width: ' + width + 'px">');
 		$('#' + i).bind(
 				'jqplotDataClick',
 				function(ev, seriesIndex, pointIndex, data) {
-					startSpinner();
-					var url = '/c3po/filter?filter=' + i + '&value='
-							+ pointIndex + '&type=graph';
-
-					if (options) {
-						var type = options['type'];
-						var alg = options['alg'];
-						var width = options['width'];
-
-						if (type == 'INTEGER') {
-							url += '&alg=' + alg;
-
-							if (width) {
-								url += '&width=' + width;
-							}
-						}
-					}
-					$.post(url, function(data) {
-						window.location = '/c3po/overview';
-					});
+//					startSpinner();
+//					var url = '/c3po/filter?filter=' + i + '&value='
+//							+ pointIndex + '&type=graph';
+//
+//					if (options) {
+//						var type = options['type'];
+//						var alg = options['alg'];
+//						var width = options['width'];
+//
+//						if (type == 'INTEGER') {
+//							url += '&alg=' + alg;
+//
+//							if (width) {
+//								url += '&width=' + width;
+//							}
+//						}
+//					}
+//					$.post(url, function(data) {
+//						window.location = '/c3po/overview';
+//					});
 				});
 		$.jqplot(i, [ d ], getBarChart(prettifyTitle(i)));
-
-		if (idx == 0) {
-			idx++; // if first row skip the right and go to next row...
-		}
-		idx++;
+		$('#' + i).css({'width' : '700px'})
+		$('#' + i + " > .jqplot-title").css({"width": "700px"})
 	})
 };
