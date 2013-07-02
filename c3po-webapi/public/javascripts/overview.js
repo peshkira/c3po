@@ -62,7 +62,14 @@ function showOptions(type) {
 		var property = $('.popupconfig select').val();
 		hidePopupDialog();
 		startSpinner();
-		var parameters = window.location.search + '&hist=' + property;
+		var parameters = window.location.search;
+		if (parameters == "") {
+			parameters += "?"
+		} else {
+			parameters +="&"
+		}
+		
+		parameters += 'hist=' + property
 		//TODO implement the api for the overview and do this via ajax
 		// instead of window reload.
 		window.location.search = parameters;

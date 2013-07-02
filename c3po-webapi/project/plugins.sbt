@@ -9,4 +9,4 @@ resolvers += "Play2war plugins release" at "http://repository-play-war.forge.clo
 // Use the Play sbt plugin for Play projects
 addSbtPlugin("play" % "sbt-plugin" % "2.1.1")
 
-addSbtPlugin("com.github.play2war" % "play2-war-plugin" % "0.9")
+addSbtPlugin("com.github.play2war" % "play2-war-plugin" % "1.0")
