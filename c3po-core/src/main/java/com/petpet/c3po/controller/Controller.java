@@ -145,6 +145,7 @@ public class Controller {
     // TODO detect these automatically from the class path
     // and add them to this map.
     // TODO the InferDateFromFileNameRule needs a setter for the cache.
+    // TODO - answer by Peter: The cache can be retrieved statically from the Configurator!
     this.knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
     this.knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
     this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
