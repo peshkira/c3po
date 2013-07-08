@@ -265,12 +265,6 @@ public class Element implements Model {
     }
   }
 
-  public void addLog(MetadataRecord record, LogEntry.ChangeType changeType,
-                     String ruleName) {
-    this.addLog(record.getProperty().getId(), record
-        .getValue(), changeType, ruleName);
-  }
-
   public void addLog(String metadataProperty, String metadataValueOld,
                      LogEntry.ChangeType changeType, String ruleName) {
     this.logEntries.add(new LogEntry(metadataProperty, metadataValueOld,
