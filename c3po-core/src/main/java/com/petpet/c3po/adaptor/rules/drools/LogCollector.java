@@ -3,10 +3,9 @@ package com.petpet.c3po.adaptor.rules.drools;
 import java.util.Comparator;
 import java.util.List;
 
-import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.dao.MetadataUtil;
 
 public class LogCollector {
 
@@ -18,13 +17,10 @@ public class LogCollector {
 
   private StringBuilder stringBuilder = new StringBuilder();
 
-  private Cache cache;
-
   private int minimumLoglevel;
 
   public LogCollector(int minimumLoglevel) {
     super();
-    this.cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
     this.minimumLoglevel = minimumLoglevel;
   }
 
@@ -69,7 +65,7 @@ public class LogCollector {
 
   public synchronized void logMetadataRecordSources(int loglevel, List<String> sourceIDs) {
     for (String sourceID : sourceIDs) {
-      Source source = this.cache.getSource(sourceID);
+      Source source = MetadataUtil.resolveSourceID(sourceID);
       this.log(loglevel,
           "        Source: " + source.getName() + " " + source.getVersion()
               + " [" + source.getId() + "]");

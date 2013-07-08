@@ -8,8 +8,8 @@ import com.petpet.c3po.api.model.helper.MetadataRecord
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status
 import com.petpet.c3po.api.model.Source
 import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
 
-global com.petpet.c3po.dao.MetadataUtil util;
 global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
 global java.lang.Integer loglevel;
 
@@ -25,7 +25,7 @@ rule "Resolve Exiftool PDF format string"
         $mdBad : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format", 
-            util.isFromTool(this, "Exiftool") 
+            MetadataUtil.isFromTool(this, "Exiftool") 
         ) from $e.metadata
         Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
             count( $id )
@@ -34,7 +34,7 @@ rule "Resolve Exiftool PDF format string"
         $mdGood : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format", 
-            ! util.isFromTool(this, "Exiftool"), 
+            ! MetadataUtil.isFromTool(this, "Exiftool"), 
             value == "Portable Document Format"
         ) from $e.metadata
         Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
@@ -63,7 +63,7 @@ rule "set format GZIP to GZIP Format from Exiftool"
         $md : MetadataRecord(
             property.id == "format", 
             value == "GZIP",
-            util.isFromTool(this, "Exiftool")
+            MetadataUtil.isFromTool(this, "Exiftool")
         ) from $e.metadata
 
     then
@@ -145,7 +145,7 @@ rule "ignore text/plain and corresponding format if more precisise text/* availa
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            util.haveSameSources(this, $mdBadMime)
+            MetadataUtil.haveSameSources(this, $mdBadMime)
         ) from $e.metadata
         
         $mdGoodMime : MetadataRecord(
@@ -157,7 +157,7 @@ rule "ignore text/plain and corresponding format if more precisise text/* availa
         $mdGoodFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            util.haveSameSources(this, $mdGoodMime)
+            MetadataUtil.haveSameSources(this, $mdGoodMime)
         ) from $e.metadata
         
     then
@@ -196,7 +196,7 @@ rule "set format XLS to Microsoft Excel Format from Exiftool"
         $md : MetadataRecord(
             property.id == "format",
             value == "XLS",
-            util.isFromTool(this, "Exiftool")
+            MetadataUtil.isFromTool(this, "Exiftool")
         ) from $e.metadata
 
     then
@@ -240,13 +240,13 @@ rule "PPT: ignore Droid Microsoft Powerpoint Presentation false positives format
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            util.isFromTool(this, "Droid"),
+            MetadataUtil.isFromTool(this, "Droid"),
             value == "Microsoft Powerpoint Presentation"
         ) from $e.metadata
         $mdBadMime : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            util.haveSameSources(this, $mdBadFormat)
+            MetadataUtil.haveSameSources(this, $mdBadFormat)
         ) from $e.metadata
 
     then
@@ -279,13 +279,13 @@ rule "PPT: ignore others mimetypes if Droid reports Microsoft Powerpoint Present
         $e : Element()
         MetadataRecord(
             property.id == "format",
-            util.isFromTool(this, "Droid"),
+            MetadataUtil.isFromTool(this, "Droid"),
             value == "Microsoft Powerpoint Presentation"
         ) from $e.metadata
         $mdGoodMime : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            util.isFromTool(this, "Droid"),
+            MetadataUtil.isFromTool(this, "Droid"),
             value matches ".*powerpoint.*"
         ) from $e.metadata;
 
@@ -320,7 +320,7 @@ rule "PPT: ignore others formats if Droid reports Microsoft Powerpoint Presentat
         $e : Element()
         $mdGoodFormat : MetadataRecord(
             property.id == "format",
-            util.isFromTool(this, "Droid"),
+            MetadataUtil.isFromTool(this, "Droid"),
             value == "Microsoft Powerpoint Presentation"
         ) from $e.metadata
 
@@ -359,37 +359,37 @@ rule "if Jhove and Droid report xhtml, ignore others"
         $mdGoodFormat1 : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            util.isFromTool(this, "Jhove"),
+            MetadataUtil.isFromTool(this, "Jhove"),
             value == "XHTML"
         ) from $e.metadata
         $mdGoodMime1 : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            util.haveSameSources(this, $mdGoodFormat1)
+            MetadataUtil.haveSameSources(this, $mdGoodFormat1)
         ) from $e.metadata
 
         $mdGoodFormat2 : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            util.isFromTool(this, "Droid"),
+            MetadataUtil.isFromTool(this, "Droid"),
             value == "Extensible Hypertext Markup Language"
         ) from $e.metadata
         $mdGoodMime2 : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            util.haveSameSources(this, $mdGoodFormat2)
+            MetadataUtil.haveSameSources(this, $mdGoodFormat2)
         ) from $e.metadata
 
         $mdBadMime : MetadataRecord(
             status=="CONFLICT",
             property.id == "mimetype",
-            ! util.isFromTool(this, "Jhove"),
-            ! util.isFromTool(this, "Droid")
+            ! MetadataUtil.isFromTool(this, "Jhove"),
+            ! MetadataUtil.isFromTool(this, "Droid")
         ) from $e.metadata
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT",
             property.id == "format",
-            util.haveSameSources(this, $mdBadMime)
+            MetadataUtil.haveSameSources(this, $mdBadMime)
         ) from $e.metadata
 
 
@@ -427,12 +427,12 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
             status=="CONFLICT", 
             property.id == "mimetype",
             value == "text/html",
-            util.isFromTool(this, "Jhove") 
+            MetadataUtil.isFromTool(this, "Jhove") 
         ) from $e.metadata
         $mdBadFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            util.haveSameSources(this, $mdBadMime)
+            MetadataUtil.haveSameSources(this, $mdBadMime)
         ) from $e.metadata
 
         $mdGoodMime : MetadataRecord(
@@ -443,7 +443,7 @@ rule "ignore text/html and corresponding format by Jhove (and others) if applica
         $mdGoodFormat : MetadataRecord(
             status=="CONFLICT", 
             property.id == "format",
-            util.haveSameSources(this, $mdGoodMime)
+            MetadataUtil.haveSameSources(this, $mdGoodMime)
         ) from $e.metadata
         
     then
@@ -478,7 +478,7 @@ rule "Resolve Jhove HTML Transitional format string"
             status=="CONFLICT",
             property.id == "format",
             value == "HTML Transitional",
-            util.isFromTool(this, "Jhove")
+            MetadataUtil.isFromTool(this, "Jhove")
         ) from $e.metadata
         Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
             count( $id )

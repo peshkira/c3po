@@ -18,7 +18,6 @@ import com.petpet.c3po.adaptor.rules.drools.ConflictCollector;
 import com.petpet.c3po.adaptor.rules.drools.ElementModificationListener;
 import com.petpet.c3po.adaptor.rules.drools.LogCollector;
 import com.petpet.c3po.adaptor.rules.drools.RuleActivationListener;
-import com.petpet.c3po.dao.MetadataUtil;
 import com.petpet.c3po.api.model.Element;
 
 public class DroolsConflictResolutionProcessingRule implements
@@ -27,7 +26,6 @@ public class DroolsConflictResolutionProcessingRule implements
   public static final int PRIORITY = 500;
 
   private static final String G_LOGOUPUTCOLLECTOR = "logger";
-  private static final String G_METADATAUTIL = "util";
   private static final String G_CONFLICTCOLLECTOR = "conflicts";
   private static final String G_BASICRULESLOGLEVEL = "loglevel";
 
@@ -43,8 +41,6 @@ public class DroolsConflictResolutionProcessingRule implements
 
   private ConflictCollector conflictCollector;
 
-  private MetadataUtil metadataUtil;
-
   public DroolsConflictResolutionProcessingRule() {
     
     // read in the source
@@ -57,9 +53,8 @@ public class DroolsConflictResolutionProcessingRule implements
 
     this.ruleActivationListener = new RuleActivationListener(
         this.kbase.getKnowledgePackages());
-    this.metadataUtil = new MetadataUtil();
 
-    this.conflictCollector = new ConflictCollector(this.metadataUtil);
+    this.conflictCollector = new ConflictCollector();
     this.sessions = new ConcurrentHashMap<Thread, StatelessKnowledgeSession>();
   }
 
@@ -113,7 +108,6 @@ public class DroolsConflictResolutionProcessingRule implements
   private StatelessKnowledgeSession createSession() {
     StatelessKnowledgeSession session = this.kbase
         .newStatelessKnowledgeSession();
-    session.setGlobal(G_METADATAUTIL, this.metadataUtil);
     session.setGlobal(G_CONFLICTCOLLECTOR, this.conflictCollector);
 
     // TODO: make MIN_LOGLEVEL configurable (verbosity level)

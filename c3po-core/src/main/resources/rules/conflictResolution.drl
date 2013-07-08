@@ -2,8 +2,8 @@ package c3po.custom
 
 import com.petpet.c3po.api.model.Element
 import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.dao.MetadataUtil
 
-global com.petpet.c3po.dao.MetadataUtil util;
 global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
 global java.lang.Integer loglevel;
 
@@ -18,7 +18,7 @@ rule "set html format version/markupBasisVersion to value without prefix"
         $md : MetadataRecord(
             (property.id == "format_version" || property.id == "markupBasisVersion"), 
             value str[startsWith] "HTML ",
-            util.isFromTool(this, "Jhove")
+            MetadataUtil.isFromTool(this, "Jhove")
         ) from $e.metadata
 
     then
@@ -42,7 +42,7 @@ rule "set sampling_frequency_unit : 'no absolute unit of measurement' from Jhove
         $md : MetadataRecord(
             property.id == "sampling_frequency_unit",
             value == "no absolute unit of measurement",
-            util.isFromTool(this, "Jhove")
+            MetadataUtil.isFromTool(this, "Jhove")
         ) from $e.metadata
 
     then
@@ -67,7 +67,7 @@ rule "set sampling_frequency_unit : 'in.' from Jhove or NLNZ to 'inches'"
         $md : MetadataRecord(
             property.id == "sampling_frequency_unit",
             value == "in.",
-            (util.isFromTool(this, "Jhove") || util.isFromTool(this, "NLNZ Metadata Extractor"))
+            (MetadataUtil.isFromTool(this, "Jhove") || MetadataUtil.isFromTool(this, "NLNZ Metadata Extractor"))
         ) from $e.metadata
 
     then
@@ -92,7 +92,7 @@ rule "ignore fractional exposure_time by NLNZ Metadata Extractor'"
         $md : MetadataRecord(
             property.id == "exposure_time",
             value matches "[0-9]*\\.[0-9E\\-]*",
-            util.isFromTool(this, "NLNZ Metadata Extractor")
+            MetadataUtil.isFromTool(this, "NLNZ Metadata Extractor")
         ) from $e.metadata
 
     then

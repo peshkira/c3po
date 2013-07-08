@@ -10,24 +10,20 @@ import com.petpet.c3po.utils.Configurator;
 
 public class MetadataUtil {
 
-  private Cache cache;
-  private Map<String, Source> sourceIDCache;
+  private static Cache cache;
+  private static Map<String, Source> sourceIDCache;
 
-  public MetadataUtil() {
-    super();
-    this.cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
-
-    this.sourceIDCache = new ConcurrentHashMap<String, Source>();
+  private MetadataUtil() {
   }
 
-  public boolean haveSameSources(MetadataRecord record1, MetadataRecord record2) {
+  public static boolean haveSameSources(MetadataRecord record1, MetadataRecord record2) {
     return record1.getSources().containsAll(record2.getSources())
         && record2.getSources().containsAll(record1.getSources());
   }
 
-  public boolean isFromTool(MetadataRecord record, String toolName) {
+  public static boolean isFromTool(MetadataRecord record, String toolName) {
     for (String sourceID : record.getSources()) {
-      Source source = this.resolveSourceID(sourceID);
+      Source source = resolveSourceID(sourceID);
       if (source.getName().equals(toolName)) {
         return true;
       }
@@ -35,10 +31,10 @@ public class MetadataUtil {
     return false;
   }
 
-  public boolean isFromTool(MetadataRecord record, String toolName,
+  public static boolean isFromTool(MetadataRecord record, String toolName,
       String toolVersion) {
     for (String sourceID : record.getSources()) {
-      Source source = this.resolveSourceID(sourceID);
+      Source source = resolveSourceID(sourceID);
       if (source.getName().equals(toolName)
           && source.getVersion().equals(toolVersion)) {
         return true;
@@ -47,15 +43,26 @@ public class MetadataUtil {
     return false;
   }
 
-  public Source resolveSourceID(String sourceID) {
-
-    Source source = this.sourceIDCache.get(sourceID);
+  public static Source resolveSourceID(String sourceID) {
+    
+    if(sourceIDCache == null || cache == null) {
+      initialize();
+    }
+    
+    Source source = sourceIDCache.get(sourceID);
 
     if (source == null) {
-      source = this.cache.getSource(sourceID);
-      this.sourceIDCache.put(sourceID, source);
+      synchronized (sourceIDCache) {
+        source = cache.getSource(sourceID);
+        sourceIDCache.put(sourceID, source);
+      }
     }
 
     return source;
+  }
+  
+  private static void initialize() {
+    cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+    sourceIDCache = new ConcurrentHashMap<String, Source>();
   }
 }

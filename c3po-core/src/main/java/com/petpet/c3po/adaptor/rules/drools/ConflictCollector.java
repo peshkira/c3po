@@ -17,11 +17,9 @@ public class ConflictCollector {
 
   private Map<String, Set<Element>> conflicts = Collections
       .synchronizedMap(new TreeMap<String, Set<Element>>());
-  private MetadataUtil metadataUtil;
 
-  public ConflictCollector(MetadataUtil metadataUtil) {
+  public ConflictCollector() {
     super();
-    this.metadataUtil = metadataUtil;
   }
 
   public void addConflict(String propertyName, Element element) {
@@ -78,7 +76,7 @@ public class ConflictCollector {
             if (metadataRecord.getProperty().getId().equals(property)) {
               output.println("    " + metadataRecord.getValue());
               for (String sourceID : metadataRecord.getSources()) {
-                Source source = this.metadataUtil.resolveSourceID(sourceID);
+                Source source = MetadataUtil.resolveSourceID(sourceID);
                 output.println("        Source: " + source.getName() + " "
                     + source.getVersion() + " [" + source.getId() + "]");
               }
