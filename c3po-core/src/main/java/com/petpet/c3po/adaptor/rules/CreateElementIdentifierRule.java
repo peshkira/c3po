@@ -43,7 +43,7 @@ public class CreateElementIdentifierRule implements PostProcessingRule {
 
   @Override
   public void onCommandFinished() {
-    //To change body of implemented methods use File | Settings | File Templates.
+    // do nothing
   }
 
   /**
