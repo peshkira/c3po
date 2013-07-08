@@ -26,13 +26,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import com.petpet.c3po.adaptor.rules.*;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
+import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
+import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
+import com.petpet.c3po.adaptor.rules.DroolsConflictResolutionProcessingRule;
+import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
+import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
+import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
+import com.petpet.c3po.adaptor.rules.InferDateFromFileNameRule;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
 import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
