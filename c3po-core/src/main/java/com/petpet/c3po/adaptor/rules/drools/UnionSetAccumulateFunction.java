@@ -9,15 +9,19 @@ public class UnionSetAccumulateFunction extends CollectSetAccumulateFunction {
 
   @Override
   public void accumulate(Serializable context, Object value) {
-    for (Object item : (Collection<Object>) value) {
-      super.accumulate(context, item);
+    if (value instanceof Collection<?>) {
+      for (Object item : (Collection<?>) value) {
+        super.accumulate(context, item);
+      }
     }
   }
 
   @Override
   public void reverse(Serializable context, Object value) throws Exception {
-    for (Object item : (Collection<Object>) value) {
-      super.reverse(context, item);
+    if (value instanceof Collection<?>) {
+      for (Object item : (Collection<?>) value) {
+        super.reverse(context, item);
+      }
     }
   }
 }
