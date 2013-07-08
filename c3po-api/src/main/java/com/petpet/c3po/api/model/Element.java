@@ -22,7 +22,6 @@ import java.util.List;
 
 import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.sun.xml.internal.ws.api.wsdl.parser.MetaDataResolver;
 
 /**
  * A domain object class that encapsulates a digital object and its meta data.
