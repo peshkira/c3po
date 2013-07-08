@@ -5,6 +5,17 @@ import java.util.Collection;
 
 import org.drools.base.accumulators.CollectListAccumulateFunction;
 
+/**
+ * <p>
+ * This is a custom drools accumulation function, that allow to union lists of
+ * objects into one list. It simply calls the
+ * {@link CollectListAccumulateFunction} on every single element.
+ * </p>
+ * 
+ * <p>
+ * It needs to be defined in the drools.packagebuilder.conf configuration file.
+ * </p>
+ */
 public class UnionListAccumulateFunction extends CollectListAccumulateFunction {
 
   @Override

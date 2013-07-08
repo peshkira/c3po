@@ -5,6 +5,17 @@ import java.util.Collection;
 
 import org.drools.base.accumulators.CollectSetAccumulateFunction;
 
+/**
+ * <p>
+ * This is a custom drools accumulation function, that allow to union sets of
+ * objects into one set. It simply calls the
+ * {@link CollectSetAccumulateFunction} on every single element.
+ * </p>
+ * 
+ * <p>
+ * It needs to be defined in the drools.packagebuilder.conf configuration file.
+ * </p>
+ */
 public class UnionSetAccumulateFunction extends CollectSetAccumulateFunction {
 
   @Override

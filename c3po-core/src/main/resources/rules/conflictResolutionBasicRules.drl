@@ -8,9 +8,10 @@ import com.petpet.c3po.api.model.helper.MetadataRecord
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status
 import com.petpet.c3po.api.model.Source
 import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.adaptor.rules.drools.MetadataSorter
 
-global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
 global com.petpet.c3po.adaptor.rules.drools.ConflictCollector conflictcollector;
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
 global java.lang.Integer loglevel;
 
 
@@ -151,7 +152,7 @@ rule "REPORT: element with conflicts"
         logger.log(LogCollector.INFO, "Report: "+$e.getUid()+" has conflicts: ");
         
         java.util.SortedSet<MetadataRecord> sorted = 
-            new java.util.TreeSet<MetadataRecord>(LogCollector.getMetadataSorter());
+            new java.util.TreeSet<MetadataRecord>(MetadataSorter.getInstance());
         sorted.addAll((Set<MetadataRecord>)$conflicts);
         for(MetadataRecord conflict : sorted) {
             logger.logMetadataRecord(LogCollector.INFO, conflict);           

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.petpet.c3po.api.adaptor.PostProcessingRule;
+
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
 import org.drools.builder.KnowledgeBuilder;
@@ -25,25 +26,45 @@ public class DroolsConflictResolutionProcessingRule implements
 
   public static final int PRIORITY = 500;
 
+  /**
+   * The name of the global variable containing the {@link LogCollector}.
+   */
   private static final String G_LOGOUPUTCOLLECTOR = "logger";
+
+  /**
+   * The name of the global variable containing the {@link ConflictCollector}.
+   */
   private static final String G_CONFLICTCOLLECTOR = "conflictcollector";
+
+  /**
+   * The name of the global variable containing the log level.
+   * 
+   * @see LogCollector#log(int, String)
+   */
   private static final String G_BASICRULESLOGLEVEL = "loglevel";
 
-//  private static final int MIN_LOGLEVEL = LogCollector.INFO + 1;
+  /**
+   * TODO: find a better logging mechanism that fits to the rest of C3PO
+   */
+  // private static final int MIN_LOGLEVEL = LogCollector.INFO + 1;
   private static final int MIN_LOGLEVEL = LogCollector.DEBUG;
   private static final int RULESLOGLEVEL = LogCollector.DEBUG;
 
-//  private final Cache cache;
+  /**
+   * Hold a stateless session for each thread to allow multithreading without
+   * side-effects between threads.
+   */
   private Map<Thread, StatelessKnowledgeSession> sessions;
-  private RuleActivationListener ruleActivationListener;
 
+  /**
+   * The {@link KnowledgeBase} holding all compiled rules.
+   */
   private KnowledgeBase kbase;
 
-  private ConflictCollector conflictCollector;
-
   public DroolsConflictResolutionProcessingRule() {
-    
+
     // read in the source
+    // TODO: make this configurable/extendable by the user via commandline parameters
     List<String> filenames = new ArrayList<String>();
     filenames.add("/rules/conflictResolutionBasicRules.drl");
     filenames.add("/rules/conflictResolutionFormatMime.drl");
@@ -51,10 +72,9 @@ public class DroolsConflictResolutionProcessingRule implements
 
     this.initKnowledgeBase(filenames);
 
-    this.ruleActivationListener = new RuleActivationListener(
+    RuleActivationListener.getInstance().initialize(
         this.kbase.getKnowledgePackages());
 
-    this.conflictCollector = new ConflictCollector();
     this.sessions = new ConcurrentHashMap<Thread, StatelessKnowledgeSession>();
   }
 
@@ -65,10 +85,10 @@ public class DroolsConflictResolutionProcessingRule implements
 
   @Override
   public void onCommandFinished() {
-    // TODO: make the execution of these 2 methods configurable
-    this.ruleActivationListener.printStatistics(System.out, false);
-    this.conflictCollector.printAccumulatedStatistics(System.out, false);
-    this.conflictCollector.printStatistics(System.out);
+    // TODO: make the execution of these methods configurable
+    RuleActivationListener.getInstance().printStatistics(System.out, false);
+    ConflictCollector.getInstance().printAccumulatedStatistics(System.out, false);
+    ConflictCollector.getInstance().printStatistics(System.out, false);
   }
 
   @Override
@@ -84,15 +104,18 @@ public class DroolsConflictResolutionProcessingRule implements
     LogCollector outputCollector = (LogCollector) session.getGlobals().get(
         G_LOGOUPUTCOLLECTOR);
 
-    // we set the output of the modification listener to trace
+    // listeners need to be re-added before every execution
     session.addEventListener(new ElementModificationListener(outputCollector,
         LogCollector.TRACE));
-
-    session.addEventListener(this.ruleActivationListener);
+    session.addEventListener(RuleActivationListener.getInstance());
+    
     session.execute(e);
 
     String logOutput = outputCollector.reset();
 
+    /** 
+     * TODO: use proper logging, not stdout
+     **/
     if (!logOutput.trim().isEmpty()) {
       synchronized (System.out) {
         System.out.println("======================================");
@@ -108,11 +131,11 @@ public class DroolsConflictResolutionProcessingRule implements
   private StatelessKnowledgeSession createSession() {
     StatelessKnowledgeSession session = this.kbase
         .newStatelessKnowledgeSession();
-    session.setGlobal(G_CONFLICTCOLLECTOR, this.conflictCollector);
+    session.setGlobal(G_CONFLICTCOLLECTOR, ConflictCollector.getInstance());
 
     // TODO: make MIN_LOGLEVEL configurable (verbosity level)
     session.setGlobal(G_LOGOUPUTCOLLECTOR, new LogCollector(MIN_LOGLEVEL));
-    // This is the default rule log level (in DRL files: globals loglevel
+    // This is the default rule log level (in DRL files: globals loglevel)
     session.setGlobal(G_BASICRULESLOGLEVEL, RULESLOGLEVEL);
 
     return session;
@@ -128,6 +151,7 @@ public class DroolsConflictResolutionProcessingRule implements
     }
 
     if (kbuilder.hasErrors()) {
+      /*TODO: proper handling/logging of errors! */
       System.err.println(kbuilder.getErrors().toString());
     }
 
