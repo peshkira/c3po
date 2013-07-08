@@ -1,7 +1,7 @@
 package c3po.custom
 
-import com.petpet.c3po.datamodel.Element
-import com.petpet.c3po.datamodel.MetadataRecord
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
 
 global com.petpet.c3po.dao.MetadataUtil util;
 global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
