@@ -20,6 +20,7 @@ import com.petpet.c3po.adaptor.rules.drools.LogCollector;
 import com.petpet.c3po.adaptor.rules.drools.RuleActivationListener;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.dao.MetadataUtil;
+import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.api.model.Element;
 
 public class DroolsConflictResolutionProcessingRule implements
@@ -46,8 +47,9 @@ public class DroolsConflictResolutionProcessingRule implements
 
   private MetadataUtil metadataUtil;
 
-  public DroolsConflictResolutionProcessingRule(Cache cache) {
-    this.cache = cache;
+  public DroolsConflictResolutionProcessingRule() {
+    
+    this.cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
 
     // read in the source
     List<String> filenames = new ArrayList<String>();
