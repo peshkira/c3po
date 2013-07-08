@@ -103,4 +103,3 @@ rule "ignore fractional exposure_time by NLNZ Metadata Extractor'"
         }
         logger.log(loglevel,"    -> ignore "+$md);
 end
-

@@ -178,4 +178,3 @@ rule "REPORT: element without conflicts"
         logger.log(loglevel, "Report: "+$e.getUid()+" has no conflicts");
         retract($e);
 end
- 

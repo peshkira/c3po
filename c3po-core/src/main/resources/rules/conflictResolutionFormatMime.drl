@@ -504,4 +504,3 @@ rule "Resolve Jhove HTML Transitional format string"
         logger.log(loglevel,"    -> ignore "+$mdBad);
 
 end
-
