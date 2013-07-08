@@ -18,9 +18,7 @@ import com.petpet.c3po.adaptor.rules.drools.ConflictCollector;
 import com.petpet.c3po.adaptor.rules.drools.ElementModificationListener;
 import com.petpet.c3po.adaptor.rules.drools.LogCollector;
 import com.petpet.c3po.adaptor.rules.drools.RuleActivationListener;
-import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.dao.MetadataUtil;
-import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.api.model.Element;
 
 public class DroolsConflictResolutionProcessingRule implements
@@ -37,7 +35,7 @@ public class DroolsConflictResolutionProcessingRule implements
   private static final int MIN_LOGLEVEL = LogCollector.DEBUG;
   private static final int RULESLOGLEVEL = LogCollector.DEBUG;
 
-  private final Cache cache;
+//  private final Cache cache;
   private Map<Thread, StatelessKnowledgeSession> sessions;
   private RuleActivationListener ruleActivationListener;
 
@@ -49,8 +47,6 @@ public class DroolsConflictResolutionProcessingRule implements
 
   public DroolsConflictResolutionProcessingRule() {
     
-    this.cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
-
     // read in the source
     List<String> filenames = new ArrayList<String>();
     filenames.add("/rules/conflictResolutionBasicRules.drl");
@@ -61,7 +57,7 @@ public class DroolsConflictResolutionProcessingRule implements
 
     this.ruleActivationListener = new RuleActivationListener(
         this.kbase.getKnowledgePackages());
-    this.metadataUtil = new MetadataUtil(this.cache);
+    this.metadataUtil = new MetadataUtil();
 
     this.conflictCollector = new ConflictCollector(this.metadataUtil);
     this.sessions = new ConcurrentHashMap<Thread, StatelessKnowledgeSession>();
@@ -121,8 +117,7 @@ public class DroolsConflictResolutionProcessingRule implements
     session.setGlobal(G_CONFLICTCOLLECTOR, this.conflictCollector);
 
     // TODO: make MIN_LOGLEVEL configurable (verbosity level)
-    session.setGlobal(G_LOGOUPUTCOLLECTOR, new LogCollector(this.cache,
-        MIN_LOGLEVEL));
+    session.setGlobal(G_LOGOUPUTCOLLECTOR, new LogCollector(MIN_LOGLEVEL));
     // This is the default rule log level (in DRL files: globals loglevel
     session.setGlobal(G_BASICRULESLOGLEVEL, RULESLOGLEVEL);
 

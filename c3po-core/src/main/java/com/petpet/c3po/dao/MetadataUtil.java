@@ -6,15 +6,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.utils.Configurator;
 
 public class MetadataUtil {
 
   private Cache cache;
   private Map<String, Source> sourceIDCache;
 
-  public MetadataUtil(Cache cache) {
+  public MetadataUtil() {
     super();
-    this.cache = cache;
+    this.cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+
     this.sourceIDCache = new ConcurrentHashMap<String, Source>();
   }
 
