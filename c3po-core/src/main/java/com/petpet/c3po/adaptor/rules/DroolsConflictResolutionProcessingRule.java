@@ -26,7 +26,7 @@ public class DroolsConflictResolutionProcessingRule implements
   public static final int PRIORITY = 500;
 
   private static final String G_LOGOUPUTCOLLECTOR = "logger";
-  private static final String G_CONFLICTCOLLECTOR = "conflicts";
+  private static final String G_CONFLICTCOLLECTOR = "conflictcollector";
   private static final String G_BASICRULESLOGLEVEL = "loglevel";
 
 //  private static final int MIN_LOGLEVEL = LogCollector.INFO + 1;

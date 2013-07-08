@@ -10,20 +10,9 @@ import com.petpet.c3po.api.model.Source
 import com.petpet.c3po.adaptor.rules.drools.LogCollector
 
 global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
-global com.petpet.c3po.adaptor.rules.drools.ConflictCollector conflicts;
+global com.petpet.c3po.adaptor.rules.drools.ConflictCollector conflictcollector;
 global java.lang.Integer loglevel;
 
-
-/**
- * This is run every time, once, before all others
- *
-rule "Initialize"
-        salience 1000
-    when 
-    then
-        logger.debug("DR Running" );   
-end
-/**/
 
 /**
  * This rule checks if there exists a property, marked as conflicting, that has
@@ -67,7 +56,6 @@ rule "Single value, no more Conflict - Resolution"
         }
         logger.log(loglevel, "    -> merge and set status to Single Result!");
 end
-/**/
 
 /**
  * ATTENTION: This rule is "dangerous": It would be great to have, because it would/could make other rules easier, 
@@ -89,7 +77,7 @@ rule "Same value without Conflict - Merging"
         $e : Element()
 
         $md1 : MetadataRecord(
-            status=="CONFLICT"
+            status==Status.CONFLICT.toString()
         ) from $e.metadata
 
         $mdsSame : List(size > 0) from accumulate( $m : MetadataRecord( 
@@ -123,7 +111,7 @@ rule "Record in conflict with several sources"
         $e : Element()
 
         $md : MetadataRecord(
-            status=="CONFLICT"
+            status==Status.CONFLICT.toString()
         ) from $e.metadata
         
         Number( intValue > 1) from accumulate( 
@@ -167,7 +155,7 @@ rule "REPORT: element with conflicts"
         sorted.addAll((Set<MetadataRecord>)$conflicts);
         for(MetadataRecord conflict : sorted) {
             logger.logMetadataRecord(LogCollector.INFO, conflict);           
-            conflicts.addConflict(conflict.getProperty().getId(), $e);
+            conflictcollector.addConflict(conflict.getProperty().getId(), $e);
         }
         retract($e);
 
