@@ -1,5 +1,5 @@
 #APP Properties
-c3po.thread.count = 42
+c3po.controller.adaptors.count = 42
 
 #DB Default Properties
 db.host=localhost

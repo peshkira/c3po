@@ -1,32 +1,54 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po.command;
 
-import java.io.File;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.commons.cli.Option;
-import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.analysis.ProfileGenerator;
-import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
-import com.petpet.c3po.analysis.RepresentativeGenerator;
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.controller.Controller;
+import com.petpet.c3po.parameters.Params;
+import com.petpet.c3po.parameters.ProfileParams;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.exceptions.C3POConfigurationException;
 
-public class ProfileCommand implements Command {
+/**
+ * Submits a profile request to the controller based on the passed parameters.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
+public class ProfileCommand extends AbstractCLICommand implements Command {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ProfileCommand.class);
+  /**
+   * Default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger( ProfileCommand.class );
 
-  private Option[] options;
-  private PersistenceLayer pLayer;
-  private long time = -1L;
+  /**
+   * The profile parameter passed on the command line.
+   */
+  private ProfileParams params;
 
-  public ProfileCommand(Option[] options) {
-    this.options = options;
-  }
-
+  /**
+   * Submits a profile request to the controller.
+   */
   @Override
   public void execute() {
     final long start = System.currentTimeMillis();
@@ -34,66 +56,36 @@ public class ProfileCommand implements Command {
     final Configurator configurator = Configurator.getDefaultConfigurator();
     configurator.configure();
 
-    this.pLayer = configurator.getPersistence();
-    final String alg = configurator.getStringProperty("c3po.samples.algorithm");
-    final RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
-    final ProfileGenerator profileGen = new ProfileGenerator(this.pLayer, samplesGen);
+    Map<String, Object> options = new HashMap<String, Object>();
+    options.put( Constants.OPT_COLLECTION_NAME, this.params.getCollection() );
+    options.put( Constants.OPT_OUTPUT_LOCATION, this.params.getLocation() );
+    options.put( Constants.OPT_SAMPLING_ALGORITHM, this.params.getAlgorithm() );
+    options.put( Constants.OPT_SAMPLING_SIZE, this.params.getSize() );
+    options.put( Constants.OPT_SAMPLING_PROPERTIES, this.params.getProperties() );
+    options.put( Constants.OPT_INCLUDE_ELEMENTS, this.params.isIncludeElements() );
 
-    final String name = this.getCollectionName();
-    final boolean include = this.getIncludeElements();
-    final Filter f = new Filter(name, null, null);
-    f.setDescriminator(UUID.randomUUID().toString());
-    
-    final Document profile = profileGen.generateProfile(f, include);
+    Controller ctrl = new Controller( configurator );
 
-    profileGen.write(profile, this.getOutputFile(name));
+    try {
+      ctrl.profile( options );
+    } catch ( C3POConfigurationException e ) {
+      LOG.error( e.getMessage() );
+      return;
+
+    } finally {
+      cleanup();
+    }
 
     final long end = System.currentTimeMillis();
-    this.time = end - start;
-  }
-
-  private String getOutputFile(String name) {
-    final String extension = ".xml";
-    String result = null;
-
-    for (Option o : this.options) {
-      if (o.getArgName().equals(CommandConstants.PROFILE_FILEPATH_ARGUMENT)) {
-        result = o.getValue();
-      }
-    }
-
-    if (result != null) {
-      return result + File.separator + name + extension;
-    }
-
-    LOG.debug("No output filepath was specified, using default");
-    return name + ".xml";
-  }
-
-  private String getCollectionName() {
-    for (Option o : this.options) {
-      if (o.getArgName().equals(CommandConstants.COLLECTION_ID_ARGUMENT)) {
-        return o.getValue();
-      }
-    }
-
-    LOG.warn("No collection identifier found, using DefaultCollection");
-    return "DefaultCollection";
-  }
-  
-  private boolean getIncludeElements() {
-    for (Option o : this.options) {
-      if (o.getLongOpt().equals(CommandConstants.PROFILE_INCLUDE_ELEMENT_IDENTIFIERS)) {
-        return true;
-      }
-    }
-    
-    return false;
+    this.setTime( end - start );
   }
 
   @Override
-  public long getTime() {
-    return this.time;
+  public void setParams( Params params ) {
+    if ( params != null && params instanceof ProfileParams ) {
+      this.params = (ProfileParams) params;
+    }
+
   }
 
 }

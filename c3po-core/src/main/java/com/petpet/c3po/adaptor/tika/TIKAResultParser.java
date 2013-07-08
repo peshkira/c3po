@@ -1,9 +1,23 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po.adaptor.tika;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -17,18 +31,18 @@ import java.util.Map;
 public class TIKAResultParser {
 
   /* join a String array with a delimiter */
-  public static String join(String r[], String d) {
-    if (r.length == 0)
+  public static String join( String r[], String d ) {
+    if ( r.length == 0 )
       return "";
     StringBuilder sb = new StringBuilder();
     int i;
-    for (i = 0; i < r.length - 1; i++)
-      sb.append(r[i] + d);
+    for ( i = 0; i < r.length - 1; i++ )
+      sb.append( r[i] + d );
     return sb.toString() + r[i];
   }
 
-  public static String[] tail(String s[]) {
-    return Arrays.copyOfRange(s, 1, s.length);
+  public static String[] tail( String s[] ) {
+    return Arrays.copyOfRange( s, 1, s.length );
   }
 
   /**
@@ -40,31 +54,30 @@ public class TIKAResultParser {
    * @throws IOException
    *           if an io problem occurs.
    */
-  public static Map<String, String> getKeyValueMap(InputStream input) throws IOException {
-    InputStreamReader streamReader = new InputStreamReader(input, "UTF-8");
-    BufferedReader bufferedReader = new BufferedReader(streamReader);
+  public static Map<String, String> getKeyValueMap( String data ) throws IOException {
+    BufferedReader bufferedReader = new BufferedReader( new StringReader( data ) );
 
     Map<String, String> map = new LinkedHashMap<String, String>();
 
     String line = bufferedReader.readLine();
-    while (line != null) {
+    while ( line != null ) {
       // Regex to scan for 1 or more ": " colon- whitespace occurrences
-      String[] tokens = line.split(": ", -1);
-      if (tokens.length >= 2) {
+      String[] tokens = line.split( ": ", -1 );
+      if ( tokens.length >= 2 ) {
         // remove ':' from head if it is the last character
         String head = "";
-        for (int i = 0; i < tokens.length - 1; i++) {
+        for ( int i = 0; i < tokens.length - 1; i++ ) {
           head += tokens[i];
         }
 
-        if (head.length() > 0 && head.charAt(head.length() - 1) == ':') {
-          head = head.substring(0, head.length() - 1);
+        if ( head.length() > 0 && head.charAt( head.length() - 1 ) == ':' ) {
+          head = head.substring( 0, head.length() - 1 );
         }
 
-        map.put(head, join(tail(tokens), " "));
+        map.put( head, join( tail( tokens ), " " ) );
 
-        if (head.equals("Content-Type")) {
-          processtMimetype(map, join(tail(tokens), " "));
+        if ( head.equals( "Content-Type" ) ) {
+          processtMimetype( map, join( tail( tokens ), " " ) );
         }
 
       }
@@ -87,11 +100,11 @@ public class TIKAResultParser {
    *          the the actual value of the original Content-Type as delivered by
    *          Tika.
    */
-  private static void processtMimetype(Map<String, String> map, String value) {
-    String[] split = value.split("; ");
-    if (split.length > 1) {
-      map.put("Content-Type", split[0]);
-      map.put("charset", split[1].substring(8)); // 8 because of 'charset='
+  private static void processtMimetype( Map<String, String> map, String value ) {
+    String[] split = value.split( "; " );
+    if ( split.length > 1 ) {
+      map.put( "Content-Type", split[0] );
+      map.put( "charset", split[1].substring( 8 ) ); // 8 because of 'charset='
     }
   }
 }

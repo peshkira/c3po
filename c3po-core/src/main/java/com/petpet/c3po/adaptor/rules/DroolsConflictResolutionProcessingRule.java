@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.petpet.c3po.api.adaptor.PostProcessingRule;
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
 import org.drools.builder.KnowledgeBuilder;
@@ -19,7 +20,7 @@ import com.petpet.c3po.adaptor.rules.drools.LogCollector;
 import com.petpet.c3po.adaptor.rules.drools.RuleActivationListener;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.dao.MetadataUtil;
-import com.petpet.c3po.datamodel.Element;
+import com.petpet.c3po.api.model.Element;
 
 public class DroolsConflictResolutionProcessingRule implements
     PostProcessingRule {
@@ -31,7 +32,8 @@ public class DroolsConflictResolutionProcessingRule implements
   private static final String G_CONFLICTCOLLECTOR = "conflicts";
   private static final String G_BASICRULESLOGLEVEL = "loglevel";
 
-  private static final int MIN_LOGLEVEL = LogCollector.INFO + 1;
+//  private static final int MIN_LOGLEVEL = LogCollector.INFO + 1;
+  private static final int MIN_LOGLEVEL = LogCollector.DEBUG;
   private static final int RULESLOGLEVEL = LogCollector.DEBUG;
 
   private final Cache cache;
@@ -71,9 +73,9 @@ public class DroolsConflictResolutionProcessingRule implements
   @Override
   public void onCommandFinished() {
     // TODO: make the execution of these 2 methods configurable
-    this.ruleActivationListener.printStatistics(System.out, true);
-    this.conflictCollector.printAccumulatedStatistics(System.out, true);
-    // this.conflictCollector.printStatistics(System.out);
+    this.ruleActivationListener.printStatistics(System.out, false);
+    this.conflictCollector.printAccumulatedStatistics(System.out, false);
+    this.conflictCollector.printStatistics(System.out);
   }
 
   @Override

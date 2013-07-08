@@ -1,149 +1,170 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po;
 
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.petpet.c3po.command.AnonymizeCommand;
-import com.petpet.c3po.command.CSVExportCommand;
-import com.petpet.c3po.command.CommandConstants;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+import com.petpet.c3po.command.Command;
+import com.petpet.c3po.command.ExportCommand;
 import com.petpet.c3po.command.GatherCommand;
 import com.petpet.c3po.command.HelpCommand;
 import com.petpet.c3po.command.ProfileCommand;
+import com.petpet.c3po.command.RemoveCommand;
+import com.petpet.c3po.command.SamplesCommand;
 import com.petpet.c3po.command.VersionCommand;
-import com.petpet.c3po.command.WrongArgumentCommand;
+import com.petpet.c3po.parameters.ExportParams;
+import com.petpet.c3po.parameters.GatherParams;
+import com.petpet.c3po.parameters.Params;
+import com.petpet.c3po.parameters.ProfileParams;
+import com.petpet.c3po.parameters.RemoveParams;
+import com.petpet.c3po.parameters.SamplesParams;
 
+/**
+ * This is the entry point for the command line interface.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class C3PO {
 
-  private static final Logger LOG = LoggerFactory.getLogger(C3PO.class);
+  /**
+   * Default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger( C3PO.class );
 
-  public static final String VERSION = "0.3.0";
+  /**
+   * The version of the command line interface.
+   */
+  public static final String VERSION = "0.4.0-SNAPSHOT";
 
-  private Options getOptions() {
+  /**
+   * A map of the supported commands for this CLI.
+   */
+  private Map<String, Command> commands;
 
-    final Option gather = OptionBuilder.hasArgs(1).withArgName(CommandConstants.GATHER_DIR_ARGUMENT)
-        .withDescription(CommandConstants.GATHER_DESCRIPTION).isRequired(true)
-        .withLongOpt(CommandConstants.GATHER_OPTION).create("g");
+  /**
+   * A map of parameter objects for each CLI.
+   */
+  private Map<String, Params> params;
 
-    final Option profile = OptionBuilder.hasOptionalArgs(1).withArgName(CommandConstants.PROFILE_FILEPATH_ARGUMENT)
-        .withDescription(CommandConstants.PROFILE_DESCRIPTION).isRequired(true)
-        .withLongOpt(CommandConstants.PROFILE_OPTION).create("p");
+  /**
+   * An array of CLI modes. These are the higher level features/commands that
+   * the application supports. Most of them have then a combination of different
+   * parameters.
+   */
+  private static final String[] MODES = { "help", "version", "gather", "profile", "samples", "export", "remove" };
 
-    final Option export = OptionBuilder.hasOptionalArgs(2).withArgName(CommandConstants.EXPORT_OUTPUT_PATH)
-        .withDescription(CommandConstants.EXPORT_DESCRIPTION).isRequired(true)
-        // .withArgName(CommandConstants.EXPORT_MIME).withDescription(CommandConstants.EXPORT_MIME_DESCRIPTION)
-        .withLongOpt(CommandConstants.EXPORT_OPTION).create("e");
+  /**
+   * Creates the CLI and initializes the maps with all commands and parameters.
+   */
+  public C3PO() {
+    params = new HashMap<String, Params>();
+    params.put( MODES[0], new Params() {} );
+    params.put( MODES[1], new Params() {} );
+    params.put( MODES[2], new GatherParams() );
+    params.put( MODES[3], new ProfileParams() );
+    params.put( MODES[4], new SamplesParams() );
+    params.put( MODES[5], new ExportParams() );
+    params.put( MODES[6], new RemoveParams() );
 
-//    final Option anonymize = OptionBuilder.withDescription(CommandConstants.ANONYMIZE_DESCRIPTION).isRequired(true)
-//        .withLongOpt(CommandConstants.ANONYMIZE_OPTION).create("a");
-
-    final Option collection = OptionBuilder.hasArgs(1).withArgName(CommandConstants.COLLECTION_ID_ARGUMENT)
-        .withDescription(CommandConstants.COLLECTION_DESCRIPTION).isRequired(true)
-        .withLongOpt(CommandConstants.COLLECTION_OPTION).create("c");
-
-    final Option recursive = new Option("r", CommandConstants.RECURSIVE_OPTION, false,
-        CommandConstants.RECURSIVE_DESCRIPTION);
-
-    final Option includeelements = new Option("ie", CommandConstants.PROFILE_INCLUDE_ELEMENT_IDENTIFIERS, false,
-        CommandConstants.PROFILE_INCLUDE_ELEMENTS_DESCRIPTION);
-    
-    final Option inputtype = OptionBuilder.hasArgs(1).withArgName(CommandConstants.GATHER_INPUT_TYPE_ARGUMENT)
-        .withDescription(CommandConstants.GATHER_INPUT_TYPE_DESCRIPTION).isRequired(false)
-        .withLongOpt(CommandConstants.GATHER_INPUT_TYPE_OPTION).create("i");
-
-    final Option help = new Option("h", CommandConstants.HELP_OPTION, false, CommandConstants.HELP_DESCRIPTION);
-
-    final Option version = new Option("v", CommandConstants.VERSION_OPTION, false, CommandConstants.VERSION_DESCRIPTION);
-
-    final OptionGroup exclusive = new OptionGroup();
-    exclusive.setRequired(false);
-    exclusive.addOption(gather);
-    exclusive.addOption(profile);
-    exclusive.addOption(export);
-//    exclusive.addOption(anonymize);
-
-    final OptionGroup exclusive2 = new OptionGroup();
-    exclusive2.setRequired(true);
-    exclusive2.addOption(help);
-    exclusive2.addOption(version);
-    exclusive2.addOption(collection);
-    
-    final OptionGroup exclusive3 = new OptionGroup();
-    exclusive3.addOption(recursive);
-    exclusive3.addOption(includeelements);
-    
-    final OptionGroup exclusive4 = new OptionGroup();
-    exclusive4.setRequired(false);
-    exclusive4.addOption(inputtype);
-
-    final Options options = new Options();
-    options.addOptionGroup(exclusive);
-    options.addOptionGroup(exclusive2);
-    options.addOptionGroup(exclusive3);
-    options.addOptionGroup(exclusive4);
-    
-    return options;
+    commands = new HashMap<String, Command>();
+    commands.put( MODES[0], new HelpCommand( params ) );
+    commands.put( MODES[1], new VersionCommand() );
+    commands.put( MODES[2], new GatherCommand() );
+    commands.put( MODES[3], new ProfileCommand() );
+    commands.put( MODES[4], new SamplesCommand() );
+    commands.put( MODES[5], new ExportCommand() );
+    commands.put( MODES[6], new RemoveCommand() );
   }
 
-  private void compute(Options o, String[] args) {
-    final CommandLineParser parser = new BasicParser();
+  /**
+   * Runs a command that is inferred from the given mode and passes all the
+   * arguments as parameters.
+   * 
+   * @param mode
+   *          the mode in which the CLI should run
+   * @param args
+   *          the parameters for the command.
+   */
+  private void compute( String mode, String[] args ) {
+
+    if ( !Arrays.asList( MODES ).contains( mode ) ) {
+
+      System.err.println( "Oh my, does not compute. Unknown mode: " + mode );
+      new HelpCommand( params ).execute();
+      System.exit( 1 );
+
+    }
+
+    Params params = this.params.get( mode );
+    JCommander jc = new JCommander( params );
+    jc.setProgramName( "c3po " + mode );
 
     try {
-      final CommandLine line = parser.parse(o, args);
 
-      if (line.hasOption(CommandConstants.HELP_OPTION)) {
+      jc.parse( Arrays.copyOfRange( args, 1, args.length ) );
 
-        new HelpCommand(o).execute();
+      Command command = this.commands.get( mode );
 
-      } else if (line.hasOption(CommandConstants.VERSION_OPTION)) {
-
-        new VersionCommand().execute();
-
-      } else if (line.hasOption(CommandConstants.GATHER_OPTION)) {
-
-        final GatherCommand cmd = new GatherCommand(line.getOptions());
-        cmd.execute();
-        LOG.info("Execution time: {}ms", cmd.getTime());
-
-      } else if (line.hasOption(CommandConstants.PROFILE_OPTION)) {
-
-        final ProfileCommand cmd = new ProfileCommand(line.getOptions());
-        cmd.execute();
-        LOG.info("Execution time: {}ms", cmd.getTime());
-
-      } else if (line.hasOption(CommandConstants.ANONYMIZE_OPTION)) {
-
-        final AnonymizeCommand cmd = new AnonymizeCommand(line.getOptions());
-        cmd.execute();
-        LOG.info("Execution time: {}ms", cmd.getTime());
-
-      } else if (line.hasOption(CommandConstants.EXPORT_OPTION)) {
-
-        final CSVExportCommand cmd = new CSVExportCommand(line.getOptions());
-        cmd.execute();
-        LOG.info("Execution time: {}ms", cmd.getTime());
-
+      if ( command == null ) {
+        throw new ParameterException( "Unknown mode '" + mode + "'." );
       }
 
-    } catch (final ParseException e) {
-      new WrongArgumentCommand(e.getMessage(), o).execute();
+      System.out.println( "Hello, I am c3po, human content profiling relations" );
+      command.setParams( params );
+      command.execute();
+
+      long time = command.getTime();
+
+      if ( time != -1 ) {
+        System.out.println( "Success. Execution Time: " + time + "ms" );
+      }
+
+    } catch ( ParameterException e ) {
+
+      LOG.warn( "{}", e.getMessage() );
+      System.err.println( e.getMessage() );
+      jc.usage();
+
     }
   }
 
   /**
+   * The entry point for this command line interfaces. If no arguments are
+   * submitted a help message is printed and the program exits.
+   * 
    * @param args
+   *          the arguments to pass to the CLI.
    */
-  public static void main(String[] args) {
-    final C3PO c3po = new C3PO();
-    final Options options = c3po.getOptions();
-    c3po.compute(options, args);
+  public static void main( String[] args ) {
+
+    if ( args.length == 0 ) {
+      System.err.println( "Please use one of the following arguments: " + Arrays.deepToString( MODES ) );
+      System.exit( 1 );
+    }
+
+    C3PO c3po = new C3PO();
+    c3po.compute( args[0], args );
   }
 
 }

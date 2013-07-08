@@ -4,8 +4,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.petpet.c3po.api.dao.Cache;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 
 public class LogCollector {
 

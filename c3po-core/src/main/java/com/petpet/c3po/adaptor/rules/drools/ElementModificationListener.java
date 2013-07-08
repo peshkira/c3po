@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.mongodb.DBObject;
+import com.petpet.c3po.dao.mongo.MongoElementSerializer;
 import org.drools.definition.rule.Rule;
 import org.drools.event.rule.ObjectInsertedEvent;
 import org.drools.event.rule.ObjectRetractedEvent;
@@ -11,8 +13,8 @@ import org.drools.event.rule.ObjectUpdatedEvent;
 import org.drools.event.rule.WorkingMemoryEventListener;
 
 import com.mongodb.BasicDBObject;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.LogEntry.ChangeType;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.LogEntry.ChangeType;
 
 public class ElementModificationListener implements WorkingMemoryEventListener {
 
@@ -64,7 +66,7 @@ public class ElementModificationListener implements WorkingMemoryEventListener {
   }
 
   private void startTrackingElementChanges(Element insertedElement) {
-    BasicDBObject document = insertedElement.getDocument();
+    DBObject document = new MongoElementSerializer().serialize(insertedElement);
     BasicDBObject metadata = (BasicDBObject) document.get("metadata");
 
     this.memory.put(insertedElement, metadata);
@@ -75,7 +77,7 @@ public class ElementModificationListener implements WorkingMemoryEventListener {
   }
 
   private void trackElementUpdate(Element modifiedElement, Rule rule) {
-    BasicDBObject document = modifiedElement.getDocument();
+    DBObject document = new MongoElementSerializer().serialize(modifiedElement);
     BasicDBObject newMetadata = (BasicDBObject) document.get("metadata");
     BasicDBObject oldMetadata = this.memory.get(modifiedElement);
 
@@ -118,7 +120,7 @@ public class ElementModificationListener implements WorkingMemoryEventListener {
     }
 
     // update memory - recreate new Document
-    document = modifiedElement.getDocument();
+    document = new MongoElementSerializer().serialize(modifiedElement);
     newMetadata = (BasicDBObject) document.get("metadata");
     this.memory.put(modifiedElement, newMetadata);
 

@@ -8,10 +8,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.dao.MetadataUtil;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Source;
 
 public class ConflictCollector {
 
