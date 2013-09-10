@@ -8,7 +8,7 @@ import com.petpet.c3po.api.model.helper.MetadataRecord
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status
 import com.petpet.c3po.api.model.Source
 import com.petpet.c3po.adaptor.rules.drools.LogCollector
-import com.petpet.c3po.adaptor.rules.drools.MetadataSorter
+import com.petpet.c3po.dao.MetadataSorter
 
 global com.petpet.c3po.adaptor.rules.drools.ConflictCollector conflictcollector;
 global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
