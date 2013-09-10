@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.petpet.c3po.adaptor.rules.drools.MetadataSorter;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
@@ -32,7 +31,12 @@ public class MetadataUtil {
   private MetadataUtil() {
   }
 
-  public static boolean haveSameSources(MetadataRecord record1, MetadataRecord record2) {
+  public static Comparator<MetadataRecord> getMetadataSorter() {
+    return MetadataSorter.getInstance();
+  }
+
+  public static boolean haveSameSources(MetadataRecord record1,
+      MetadataRecord record2) {
     return record1.getSources().containsAll(record2.getSources())
         && record2.getSources().containsAll(record1.getSources());
   }
@@ -76,15 +80,6 @@ public class MetadataUtil {
     }
 
     return source;
-  }
-  
-  public static Comparator<MetadataRecord> getMetadataSorter() {
-    if (sorter == null) {
-
-      sorter = new MetadataSorter
-          ();
-    }
-    return sorter;
   }
 
 }
