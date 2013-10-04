@@ -1,17 +1,17 @@
 package com.petpet.c3po.adaptor.rules.drools;
 
-import java.io.PrintStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.drools.definition.KnowledgePackage;
 import org.drools.definition.rule.Rule;
 import org.drools.definitions.rule.impl.RuleImpl;
 import org.drools.event.rule.AfterActivationFiredEvent;
 import org.drools.event.rule.DefaultAgendaEventListener;
-
-import com.petpet.c3po.utils.Configurator;
 
 /**
  * <p>
@@ -25,20 +25,11 @@ import com.petpet.c3po.utils.Configurator;
  */
 public class RuleActivationListener extends DefaultAgendaEventListener {
 
-  /**
-   * TODO: this could be done via {@link Configurator}
-   */
-  private static final Character CSV_SEPERATOR = ';';
-
-  /**
-   * TODO: this could be done via {@link Configurator}
-   */
-  private static final Character CSV_LIMITER = '\"';
-
   private static RuleActivationListener SINGLETON = null;
 
-  private Map<Rule, Integer> activations;
-  private Collection<KnowledgePackage> packages;
+  private Map<KnowledgePackage, Map<Rule, Integer>> activations;
+
+  private HashMap<String, KnowledgePackage> knowledgePackages;
 
   private RuleActivationListener() {
   }
@@ -53,6 +44,46 @@ public class RuleActivationListener extends DefaultAgendaEventListener {
     return SINGLETON;
   }
 
+  private static Rule unwrapRule(Rule rule) {
+    if (rule instanceof RuleImpl) {
+      rule = ((RuleImpl) rule).getRule();
+    }
+    return rule;
+  }
+
+  @Override
+  public void afterActivationFired(AfterActivationFiredEvent event) {
+    Rule firedRule = event.getActivation().getRule();
+
+    KnowledgePackage knowledgePackage = this.knowledgePackages.get(firedRule
+        .getPackageName());
+
+    synchronized (this.activations) {
+      Map<Rule, Integer> rulesActivations = this.activations
+          .get(knowledgePackage);
+      Integer counter = rulesActivations.get(firedRule);
+      counter++;
+      rulesActivations.put(firedRule, counter + 1);
+    }
+  }
+
+  public Map<KnowledgePackage, Map<Rule, Integer>> getActivations() {
+
+    Map<KnowledgePackage, Map<Rule, Integer>> activationsCopy = new LinkedHashMap<KnowledgePackage, Map<Rule, Integer>>(
+        this.activations.size());
+
+    synchronized (this.activations) {
+      for (Entry<KnowledgePackage, Map<Rule, Integer>> packageEntry : this.activations
+          .entrySet()) {
+        Map<Rule, Integer> packageActivationsCopy = new LinkedHashMap<Rule, Integer>(
+            packageEntry.getValue());
+        activationsCopy.put(packageEntry.getKey(), packageActivationsCopy);
+      }
+    }
+
+    return activationsCopy;
+  }
+
   /**
    * Initialize the {@link RuleActivationListener} by telling it what packages
    * and rules are present in the knowledge base.
@@ -60,71 +91,24 @@ public class RuleActivationListener extends DefaultAgendaEventListener {
    * @param knowledgePackages
    */
   public void initialize(Collection<KnowledgePackage> knowledgePackages) {
-    this.packages = knowledgePackages;
-    this.activations = new HashMap<Rule, Integer>();
+    this.activations = Collections
+        .synchronizedMap(new LinkedHashMap<KnowledgePackage, Map<Rule, Integer>>());
+    this.knowledgePackages = new HashMap<String, KnowledgePackage>(
+        knowledgePackages.size());
 
     for (KnowledgePackage knowledgePackage : knowledgePackages) {
+      Map<Rule, Integer> ruleActivations = Collections
+          .synchronizedMap(new LinkedHashMap<Rule, Integer>());
+      this.knowledgePackages.put(knowledgePackage.getName(), knowledgePackage);
+
+      this.activations.put(knowledgePackage, ruleActivations);
       for (Rule rule : knowledgePackage.getRules()) {
         // get the REAL rule object from the wrapper
-        rule = this.unwrapRule(rule);
+        rule = unwrapRule(rule);
 
-        this.activations.put(rule, 0);
+        ruleActivations.put(rule, 0);
       }
     }
-  }
-
-  @Override
-  public synchronized void afterActivationFired(AfterActivationFiredEvent event) {
-    Rule firedRule = event.getActivation().getRule();
-
-    Integer counter = this.activations.get(firedRule);
-    counter++;
-    this.activations.put(firedRule, counter+1);
-
-  }
-
-  /**
-   * Print, how often every rule was activated to the provided {@link PrintStream}.
-   * 
-   * @param output
-   * @param csvStyle
-   */
-  public void printStatistics(PrintStream output, boolean csvStyle) {
-    if (!csvStyle) {
-      output.println("======================================");
-      output.println("Invoked Rules Statistics");
-    } else {
-      output.println("Invoked Rules Statistics");
-      output.println(CSVParser.prepareLine(CSV_SEPERATOR, CSV_LIMITER, "Package Name", "Rule Name", "Activations"));
-    }
-
-    for (KnowledgePackage rulesPackage : this.packages) {
-      if (!csvStyle) {
-        output.println("--------------------------------------");
-        output.println("Package: '" + rulesPackage.getName() + "'");
-      }
-      for (Rule rule : rulesPackage.getRules()) {
-        rule = this.unwrapRule(rule);
-        if (!csvStyle) {
-          output.println("* '" + rule.getName() + "'");
-          output.println("  activations:" + this.activations.get(rule));
-        } else {
-          output.println(CSVParser.prepareLine(CSV_SEPERATOR, CSV_LIMITER, rulesPackage.getName(), rule.getName(),
-              String.valueOf(this.activations.get(rule))));
-        }
-      }
-    }
-
-    if (!csvStyle) {
-      output.println("======================================");
-    }
-  }
-
-  private Rule unwrapRule(Rule rule) {
-    if (rule instanceof RuleImpl) {
-      rule = ((RuleImpl) rule).getRule();
-    }
-    return rule;
   }
 
 }

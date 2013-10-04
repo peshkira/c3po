@@ -6,10 +6,9 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.petpet.c3po.adaptor.rules.drools.ConflictCollector;
+import com.petpet.c3po.adaptor.rules.drools.DroolsResolutionStatisticsPrinter;
 import com.petpet.c3po.adaptor.rules.drools.DroolsResolutionWorker;
 import com.petpet.c3po.adaptor.rules.drools.DroolsResolutionWorkerFactory;
-import com.petpet.c3po.adaptor.rules.drools.RuleActivationListener;
 import com.petpet.c3po.api.adaptor.PostProcessingRule;
 import com.petpet.c3po.api.model.Element;
 
@@ -19,8 +18,8 @@ public class DroolsConflictResolutionProcessingRule implements
   public static final int PRIORITY = 500;
 
   /**
-   * Hold a stateless session for each thread to allow multithreading without
-   * side-effects between threads.
+   * Hold a {@link DroolsResolutionWorker} for each thread to allow
+   * multithreading without side-effects between threads.
    */
   private Map<Thread, DroolsResolutionWorker> workers;
 
@@ -55,10 +54,12 @@ public class DroolsConflictResolutionProcessingRule implements
   @Override
   public void onCommandFinished() {
     // TODO: make the execution of these methods configurable
-    RuleActivationListener.getInstance().printStatistics(System.out, false);
-    ConflictCollector.getInstance().printAccumulatedStatistics(System.out,
+    // RuleActivationListener.getInstance().printStatistics(System.out, false);
+    DroolsResolutionStatisticsPrinter.printRuleActivation(System.out, false);
+
+    DroolsResolutionStatisticsPrinter.printConflictsAccumulated(System.out,
         false);
-    ConflictCollector.getInstance().printStatistics(System.out, false);
+    // DroolsResolutionStatisticsPrinter.printConflicts(System.out, false);
   }
 
   @Override
