@@ -59,6 +59,12 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.ifs</groupId>
+      <artifactId>DirectProfiler</artifactId>
+      <version>0.8</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 
 </project>
