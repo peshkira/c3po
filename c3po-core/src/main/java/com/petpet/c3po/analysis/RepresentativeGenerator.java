@@ -1,10 +1,34 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po.analysis;
 
 import java.util.List;
 import java.util.Map;
 
-import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.api.model.helper.Filter;
 
+/**
+ * A representative generator is a class that can select a set of sample objects
+ * that are somehow representative to a collection or a super set of elements.
+ * There are different implementation strategies for finding representative
+ * samples.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public abstract class RepresentativeGenerator {
 
   /**
@@ -41,7 +65,7 @@ public abstract class RepresentativeGenerator {
    *          a max number of sample records to be returned by this method.
    * @return the list of sample object identifiers.
    */
-  public abstract List<String> execute(int limit);
+  public abstract List<String> execute( int limit );
 
   /**
    * Retrieves the type/name of the algorithm used to identify the sample
@@ -55,7 +79,7 @@ public abstract class RepresentativeGenerator {
     return filter;
   }
 
-  public void setFilter(Filter filter) {
+  public void setFilter( Filter filter ) {
     this.filter = filter;
   }
 
@@ -63,7 +87,7 @@ public abstract class RepresentativeGenerator {
     return options;
   }
 
-  public void setOptions(Map<String, Object> options) {
+  public void setOptions( Map<String, Object> options ) {
     this.options = options;
   }
 

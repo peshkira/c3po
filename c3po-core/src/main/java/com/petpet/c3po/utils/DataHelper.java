@@ -1,9 +1,25 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Calendar;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -11,199 +27,377 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.ActionLog;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.datamodel.MetadataRecord;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Property.PropertyType;
-import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
+import com.petpet.c3po.api.model.helper.PropertyType;
 
+/**
+ * The data helper class offers some data manipulation methods.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public final class DataHelper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DataHelper.class);
+  /**
+   * Default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger( DataHelper.class );
 
+  /**
+   * The types of known properties.
+   */
   private static Properties TYPES;
 
+  /**
+   * Some date patterns used for date parsing.
+   */
+  private static final String[] PATTERNS = { "yyyy:MM:dd HH:mm:ss", "MM/dd/yyyy HH:mm:ss", "dd MMM yyyy HH:mm",
+      "EEE dd MMM yyyy HH:mm", "EEE, MMM dd, yyyy hh:mm:ss a", "EEE, MMM dd, yyyy hh:mm a", "EEE dd MMM yyyy HH.mm",
+      "HH:mm MM/dd/yyyy", "yyyyMMddHHmmss", "yyyy-MM-dd'T'HH:mm:ss" };
+
+  /**
+   * Loads the types of known properties into the TYPES {@link Properties}
+   * object.
+   */
   public static void init() {
     try {
-      InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("datatypes.properties");
+      InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream( "datatypes.properties" );
       TYPES = new Properties();
-      TYPES.load(in);
+      TYPES.load( in );
       in.close();
-    } catch (IOException e) {
+    } catch ( IOException e ) {
       e.printStackTrace();
     }
   }
 
-  public static String getPropertyType(String key) {
-    return TYPES.getProperty(key, "STRING");
+  /**
+   * Gets the type of the property defined by the given key. If it is not found,
+   * STRING is returned.
+   * 
+   * @param key
+   *          the key to look for.
+   * @return the type of the property.
+   */
+  public static String getPropertyType( String key ) {
+    return TYPES.getProperty( key, "STRING" );
   }
 
   /**
-   * Parses the element from a db object returned by the db.
+   * Removes a trailing zero (.0) from a string.
    * 
-   * @param obj
-   *          the object to parse.
-   * @return the Element.
+   * @param str
+   *          the string to chop.
+   * @return the string without the trailing .0.
    */
-  public static Element parseElement(final DBObject obj, final PersistenceLayer pl) {
-    String coll = (String) obj.get("collection");
-    String uid = (String) obj.get("uid");
-    String name = (String) obj.get("name");
-
-    Element e = new Element(coll, uid, name);
-    e.setId(obj.get("_id").toString());
-    e.setMetadata(new ArrayList<MetadataRecord>());
-
-    DBObject meta = (BasicDBObject) obj.get("metadata");
-    for (String key : meta.keySet()) {
-      MetadataRecord rec = new MetadataRecord();
-      DBObject prop = (DBObject) meta.get(key);
-      Property p = pl.getCache().getProperty(key);
-      rec.setProperty(p);
-      rec.setStatus(prop.get("status").toString());
-
-      Object value = prop.get("value");
-      if (value != null) {
-        rec.setValue(value.toString());
-      }
-
-      // because of boolean and other type conversions.
-      List<?> tmp = (List) prop.get("values");
-      if (tmp != null) {
-        List<String> values = new ArrayList<String>();
-        for (Object o : tmp) {
-          values.add(o.toString());
-        }
-        rec.setValues(values);
-      }
-
-      List<String> src = (List<String>) prop.get("sources");
-      if (src != null) {
-        List<String> sources = new ArrayList<String>();
-        for (String s : src) {
-          DBObject next = pl.find(Constants.TBL_SOURCES, new BasicDBObject("_id", s), new BasicDBObject()).next();
-          String source = (String) next.get("name") + " " + next.get("version");
-          sources.add(source);
-        }
-        rec.setSources(sources);
-      }
-
-      e.getMetadata().add(rec);
+  public static String removeTrailingZero( final String str ) {
+    if ( str != null && str.endsWith( ".0" ) ) {
+      return str.substring( 0, str.length() - 2 );
     }
 
-    return e;
+    return str;
   }
 
-  public static Source parseSource(DBObject object) {
-    String id = (String) object.get("_id");
-    String name = (String) object.get("name");
-    String version = (String) object.get("version");
+  /**
+   * Merges the given metadata record within the given element. If a value for
+   * this record already exists, then a proper merge is done, where Conflicts
+   * are set if necessary.
+   * 
+   * @param e
+   *          the element to use for merging.
+   * @param mr
+   *          the record to merge.
+   */
+  public static void mergeMetadataRecord( Element e, MetadataRecord mr ) {
 
-    Source s = new Source();
-    s.setId(id);
-    s.setName(name);
-    s.setVersion(version);
+    if ( e == null || mr == null ) {
+      return;
+    }
 
-    return s;
-  }
+    List<MetadataRecord> oldMetadata = e.removeMetadata( mr.getProperty().getId() );
+    if ( oldMetadata.size() == 0 ) {
 
-  public static Filter parseFilter(DBObject object) {
-    String d = (String) object.get("descriminator");
-    String c = (String) object.get("collection");
-    String p = (String) object.get("property");
-    String v = (String) object.get("value");
+      e.getMetadata().add( mr );
 
-    Filter f = new Filter(c, p, v);
-    f.setDescriminator(d);
+    } else if ( oldMetadata.size() == 1 ) {
 
-    return f;
-  }
+      MetadataRecord oldMR = oldMetadata.get( 0 );
+      if ( oldMR.getStatus().equals( Status.CONFLICT.name() ) ) {
 
-  public static ActionLog parseActionLog(DBObject object) {
-    String c = (String) object.get("collection");
-    String a = (String) object.get("action");
-    Date d = (Date) object.get("date");
-
-    return new ActionLog(c, a, d);
-  }
-
-  public static BasicDBObject getFilterQuery(Filter filter) {
-    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
-    ref.put("collection", filter.getCollection());
-    DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
-
-    BasicDBObject query = new BasicDBObject("collection", filter.getCollection());
-
-    Filter tmp;
-    while (cursor.hasNext()) {
-      DBObject next = cursor.next();
-      tmp = DataHelper.parseFilter(next);
-      if (tmp.getValue() != null) {
-
-        Property property = pl.getCache().getProperty(tmp.getProperty());
-
-        if (tmp.getValue().equals("Unknown")) {
-          query.put("metadata." + tmp.getProperty() + ".values", new BasicDBObject("$exists", false));
-          query.put("metadata." + tmp.getProperty() + ".value", new BasicDBObject("$exists", false));
-          
-        } else if (tmp.getValue().equals("Conflicted")) {
-          query.put("metadata." + tmp.getProperty() + ".status", MetadataRecord.Status.CONFLICT.toString());
-
-        } else if (property.getType().equals(PropertyType.DATE.toString())) {
-
-          Calendar cal = Calendar.getInstance();
-          cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
-          Date start = cal.getTime();
-          cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
-          Date end = cal.getTime();
-
-          BasicDBObject date = new BasicDBObject();
-          date.put("$lte", end);
-          date.put("$gte", start);
-
-          query.put("metadata." + tmp.getProperty() + ".value", date);
-
-        } else if (property.getType().equals(PropertyType.INTEGER.toString())) {
-          String val = tmp.getValue();
-          String[] constraints = val.split(" - ");
-          String low = constraints[0];
-          String high = constraints[1];
-          
-          BasicDBObject range = new BasicDBObject();
-          range.put("$lte", Long.parseLong(high));
-          range.put("$gte", Long.parseLong(low));
-          
-          query.put("metadata." + tmp.getProperty() + ".value", range);
-          
-        } else {
-          query.put("metadata." + tmp.getProperty() + ".value", inferValue(tmp.getValue()));
+        String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
+        if ( !oldMR.getValues().contains( newVal ) ) {
+          mr.setStatus( Status.CONFLICT.name() );
+          oldMetadata.add( mr );
         }
+
+      } else {
+        String oldVal = getTypedValue( oldMR.getProperty().getType(), oldMR.getValue() ).toString();
+        String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
+
+        if ( !oldVal.equals( newVal ) ) {
+          oldMR.setStatus( Status.CONFLICT.name() );
+          mr.setStatus( Status.CONFLICT.name() );
+          oldMetadata.add( mr );
+        }
+      }
+    } else {
+
+      boolean exists = false;
+      for ( MetadataRecord old : oldMetadata ) {
+        String oldVal = getTypedValue( old.getProperty().getType(), old.getValue() ).toString();
+        String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
+        if ( oldVal.equals( newVal ) ) {
+          exists = true;
+        }
+      }
+
+      if ( !exists ) {
+        mr.setStatus( Status.CONFLICT.name() );
+        oldMetadata.add( mr );
       }
     }
 
-    LOG.debug("FILTER QUERY: {}", query.toString());
-    return query;
+    e.getMetadata().addAll( oldMetadata );
   }
 
-  private static Object inferValue(String value) {
-    Object result = value;
-    if (value.equalsIgnoreCase("true")) {
-      result = new Boolean(true);
+  // @Deprecated
+  // public static BasicDBObject getFilterQuery(Filter filter) {
+  // PersistenceLayer pl =
+  // Configurator.getDefaultConfigurator().getPersistence();
+  // BasicDBObject ref = new BasicDBObject("descriminator",
+  // filter.getDescriminator());
+  // ref.put("collection", filter.getCollection());
+  // DBCursor cursor = pl.find(Constants.TBL_FILTERS, ref);
+  //
+  // BasicDBObject query = new BasicDBObject("collection",
+  // filter.getCollection());
+  //
+  // Filter tmp;
+  // while (cursor.hasNext()) {
+  // DBObject next = cursor.next();
+  // tmp = DataHelper.parseFilter(next);
+  // if (tmp.getValue() != null) {
+  //
+  // Property property = pl.getCache().getProperty(tmp.getProperty());
+  //
+  // if (tmp.getValue().equals("Unknown")) {
+  // query.put("metadata." + tmp.getProperty() + ".values", new
+  // BasicDBObject("$exists", false));
+  // query.put("metadata." + tmp.getProperty() + ".value", new
+  // BasicDBObject("$exists", false));
+  //
+  // } else if (tmp.getValue().equals("Conflicted")) {
+  // query.put("metadata." + tmp.getProperty() + ".status",
+  // MetadataRecord.Status.CONFLICT.toString());
+  //
+  // } else if (property.getType().equals(PropertyType.DATE.toString())) {
+  //
+  // Calendar cal = Calendar.getInstance();
+  // cal.set(Integer.parseInt(tmp.getValue()), Calendar.JANUARY, 1);
+  // Date start = cal.getTime();
+  // cal.set(Integer.parseInt(tmp.getValue()), Calendar.DECEMBER, 31);
+  // Date end = cal.getTime();
+  //
+  // BasicDBObject date = new BasicDBObject();
+  // date.put("$lte", end);
+  // date.put("$gte", start);
+  //
+  // query.put("metadata." + tmp.getProperty() + ".value", date);
+  //
+  // } else if (property.getType().equals(PropertyType.INTEGER.toString())) {
+  // String val = tmp.getValue();
+  // String[] constraints = val.split(" - ");
+  // String low = constraints[0];
+  // String high = constraints[1];
+  //
+  // BasicDBObject range = new BasicDBObject();
+  // range.put("$lte", Long.parseLong(high));
+  // range.put("$gte", Long.parseLong(low));
+  //
+  // query.put("metadata." + tmp.getProperty() + ".value", range);
+  //
+  // } else {
+  // query.put("metadata." + tmp.getProperty() + ".value",
+  // inferValue(tmp.getValue()));
+  // }
+  // }
+  // }
+  //
+  // LOG.debug("FILTER QUERY: {}", query.toString());
+  // return query;
+  // }
+
+  // private static Object inferValue(String value) {
+  // Object result = value;
+  // if (value.equalsIgnoreCase("true")) {
+  // result = new Boolean(true);
+  // }
+  //
+  // if (value.equalsIgnoreCase("false")) {
+  // result = new Boolean(false);
+  // }
+  //
+  // return result;
+  // }
+
+  /**
+   * Tries to infer the type of the value based on the property type and
+   * converts the value. Otherwise it leaves the string representation. This is
+   * valuable as the underlying persistence layer can store the native type
+   * instead of strings which makes some aggregation functions easier.
+   * 
+   * @param t
+   *          the type of the property @see {@link PropertyType}
+   * @param value
+   *          the value to convert
+   * @return an object with the specific type, or the original value. If the
+   *         passed value was null, an empty string is returned.
+   */
+  public static Object getTypedValue( String t, String value ) {
+
+    if ( value == null ) {
+      return "";
     }
 
-    if (value.equalsIgnoreCase("false")) {
-      result = new Boolean(false);
+    PropertyType type = PropertyType.valueOf( t );
+    Object result = null;
+    switch ( type ) {
+      case STRING:
+        result = value;
+        break;
+      case BOOL:
+        result = getBooleanValue( value );
+        break;
+      case INTEGER:
+        result = getIntegerValue( value );
+        break;
+      case FLOAT:
+        result = getDoubleValue( value );
+        break;
+      case DATE:
+        result = getDateValue( value );
+        break;
+      case ARRAY:
+        break;
+    }
+
+    return (result == null) ? value : result;
+
+  }
+
+  /**
+   * Tries to convert to a date object. First the method tries to match the
+   * value based on some predefined patterns. If no pattern matches the the
+   * method checks if the value is a long. If nothing succeeds then null is
+   * returned.
+   * 
+   * @param value
+   *          the value to convert
+   * @return a date if successful, null otherwise.
+   */
+  private static Date getDateValue( String value ) {
+    LOG.trace( "parsing value {} as date", value );
+
+    final SimpleDateFormat fmt = new SimpleDateFormat();
+
+    Date result = null;
+    for ( String p : PATTERNS ) {
+
+      fmt.applyPattern( p );
+      result = parseDate( fmt, value );
+
+      if ( result != null ) {
+        break;
+      }
+    }
+
+    if ( result == null ) {
+      LOG.trace( "No pattern matching for value {}, try to parse as long", value );
+    }
+
+    try {
+
+      if ( value.length() != 14 ) {
+        LOG.trace( "value is not 14 characters long, probably a long representation" );
+        result = new Date( Long.valueOf( value ) );
+      }
+
+    } catch ( NumberFormatException e ) {
+      LOG.trace( "date is not in long representation, trying pattern matching: {}", e.getMessage() );
     }
 
     return result;
+  }
+
+  /**
+   * Gets a double out of the passed value.
+   * 
+   * @param value
+   *          the value to convert
+   * @return null if not a floating point string.
+   */
+  private static Double getDoubleValue( String value ) {
+    try {
+      return Double.parseDouble( value );
+    } catch ( NumberFormatException e ) {
+      LOG.warn( "Value {} is not an float", value );
+      return null;
+    }
+  }
+
+  /**
+   * Converts to integer.
+   * 
+   * @param value
+   *          the value to convert.
+   * @return the integer object or null if not a numeric value.
+   */
+  private static Long getIntegerValue( String value ) {
+    try {
+      return Long.parseLong( value );
+    } catch ( NumberFormatException e ) {
+      LOG.warn( "Value {} is not an integer", value );
+      return null;
+    }
+  }
+
+  /**
+   * A boolean representation of the passed string. If the string equals one of
+   * 'yes', 'true' or 'no', 'false' then the value is converted to the
+   * corresponding boolean. Otherwise null is returned
+   * 
+   * @param value
+   *          the value to convert
+   * @return the boolean representation of the value, or null if not a boolean.
+   */
+  private static Boolean getBooleanValue( String value ) {
+    if ( value.equalsIgnoreCase( "yes" ) || value.equalsIgnoreCase( "true" ) ) {
+      return new Boolean( true );
+    } else if ( value.equalsIgnoreCase( "no" ) || value.equalsIgnoreCase( "false" ) ) {
+      return new Boolean( false );
+    } else {
+      LOG.warn( "Value {} is not a boolean", value );
+      return null;
+    }
+  }
+
+  /**
+   * Parses a date with the given dateformat.
+   * 
+   * @param fmt
+   *          the dateformat object to parse the date with.
+   * @param d
+   *          the string to parse.
+   * @return the date or null if parsing was not successful.
+   */
+  private static Date parseDate( DateFormat fmt, String d ) {
+    try {
+      return fmt.parse( d );
+    } catch ( ParseException e ) {
+      LOG.trace( "date could not be parsed: {}", e.getMessage() );
+      return null;
+    }
   }
 
   private DataHelper() {

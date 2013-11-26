@@ -213,7 +213,7 @@ function addNewFilter() {
 		timeout:  5000,
 		async: false,
 		success:  function (oData) {
-			addNewPropertiesSelect(oData); 
+			addNewPropertiesSelect(oData);
 
 		}
 	});
@@ -243,12 +243,14 @@ function addNewPropertiesSelect(properties) {
 		// append delete button and install delete handler
 		var deletediv = $('<div class="delete"><a class="red_button" href="#">x</a></div>').appendTo($(div));
 		$(deletediv).click(function() {
+			startSpinner();
 			var property = $(this).siblings('select:first').val();
 			$.ajax({
 				type:     'DELETE',
 				url:      '/c3po/filter?property=' + property,
 				timeout:  5000,
 				success:  function(oData) {
+					stopSpinner();
 					window.location.reload();
 				}
 			});

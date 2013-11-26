@@ -1,10 +1,23 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po.adaptor.fits;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.RegexRules;
@@ -13,37 +26,111 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.petpet.c3po.adaptor.AbstractAdaptor;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.MetadataRecord;
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 
+/**
+ * An adaptor for FITS <url>https://github.com/harvard-lts/fits</url> meta data.
+ * It makes use of the Apache Commons Digester to parse the files.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class FITSAdaptor extends AbstractAdaptor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(FITSAdaptor.class);
+  /**
+   * A default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger( FITSAdaptor.class );
 
-  private InputStream metadata;
-
+  /**
+   * The apache digester to process the fits xml meta data.
+   */
   private Digester digester;
 
-  private boolean inferDate = false;
-
-  private String collection;
-
+  /**
+   * A default constructor that initialises the digester and sets up the parsing
+   * rules.
+   */
   public FITSAdaptor() {
     this.digester = new Digester(); // not thread safe
-    this.digester.setRules(new RegexRules(new SimpleRegexMatcher()));
+    this.digester.setRules( new RegexRules( new SimpleRegexMatcher() ) );
     this.createParsingRules();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public void configure(Map<String, Object> config) {
-    this.setConfig(config);
-
-    this.inferDate = this.getBooleanConfig(Constants.CNF_INFER_DATE, false);
-    this.collection = this.getStringConfig(Constants.CNF_COLLECTION_ID, AbstractAdaptor.UNKNOWN_COLLECTION_ID);
+  public void configure() {
+    // nothing to do...
   }
 
+  /**
+   * Parses the meta data and retrieves it. This method makes use of a
+   * {@link DigesterContext} object that is pushed upon the digester stack. This
+   * helper object has some methods for handling some special cases.
+   */
+  @Override
+  public Element parseElement( String name, String data ) {
+    Element element = null;
+
+    if ( data == null ) {
+      return element;
+
+    }
+    try {
+
+      DigesterContext context = new DigesterContext( this, this.getPreProcessingRules() );
+      this.digester.push( context );
+
+      context = (DigesterContext) this.digester.parse( new StringReader( data ) );
+      element = context.getElement();
+      List<MetadataRecord> values = context.getValues();
+
+      if ( element != null ) {
+        element.setMetadata( values );
+      }
+
+    } catch ( IOException e ) {
+      LOG.warn( "An exception occurred while processing {}: {}", name, e.getMessage() );
+    } catch ( SAXException e ) {
+      LOG.warn( "An exception occurred while parsing {}: {}", name, e.getMessage() );
+    } catch ( Exception e ) {
+      LOG.warn( "An exception occurred while parsing {}: {}", name, e.getMessage() );
+    }
+
+    return element;
+  }
+
+  /**
+   * Returns the prefix of this adaptor ('fits').
+   */
+  @Override
+  public String getAdaptorPrefix() {
+    return "fits";
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public Property getProperty( String key ) {
+    return super.getProperty( key );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public Source getSource( String name, String version ) {
+    return super.getSource( name, version );
+  }
+
+  /**
+   * Creates SAX based rules.
+   */
   private void createParsingRules() {
     this.createElementRules();
     this.createIdentityRules();
@@ -53,177 +140,145 @@ public class FITSAdaptor extends AbstractAdaptor {
     this.createMetaDataRules();
   }
 
+  /**
+   * Creates rules for the creation of the Element object.
+   */
   private void createElementRules() {
-    this.digester.addCallMethod("fits", "createElement", 2);
-    this.digester.addCallParam("fits/fileinfo/filename", 0);
-    this.digester.addCallParam("fits/fileinfo/filepath", 1);
+    this.digester.addCallMethod( "fits", "createElement", 2 );
+    this.digester.addCallParam( "fits/fileinfo/filename", 0 );
+    this.digester.addCallParam( "fits/fileinfo/filepath", 1 );
   }
 
+  /**
+   * Creates rules for the parsing of the identification data within a FITS
+   * file.
+   */
   private void createIdentityRules() {
     this.createIdentityStatusRules();
 
-    this.createFormatRule("fits/identification/identity");
-    this.createFormatVersionRule("fits/identification/identity/version");
-    this.createPuidRule("fits/identification/identity/externalIdentifier");
+    this.createFormatRule( "fits/identification/identity" );
+    this.createFormatVersionRule( "fits/identification/identity/version" );
+    this.createPuidRule( "fits/identification/identity/externalIdentifier" );
 
   }
 
+  /**
+   * Creates rules for parsing the identity status data within a FITS file.
+   */
+  private void createIdentityStatusRules() {
+    this.digester.addCallMethod( "fits/identification", "setIdentityStatus", 1 );
+    this.digester.addCallParam( "fits/identification", 0, "status" );
+  }
+
+  /**
+   * Creates rules for parsing the format data within a FITS file.
+   * 
+   * @param pattern
+   *          the xpath to the format identity.
+   */
+  private void createFormatRule( String pattern ) {
+    this.digester.addCallMethod( pattern, "createIdentity", 2 );
+    this.digester.addCallParam( pattern, 0, "format" );
+    this.digester.addCallParam( pattern, 1, "mimetype" );
+
+    this.digester.addCallMethod( pattern + "/tool", "addIdentityTool", 2 );
+    this.digester.addCallParam( pattern + "/tool", 0, "toolname" );
+    this.digester.addCallParam( pattern + "/tool", 1, "toolversion" );
+
+  }
+
+  /**
+   * Creates rules for parsing the format version data within a FITS file.
+   * 
+   * @param pattern
+   *          the xpath to the format version identity.
+   */
+  private void createFormatVersionRule( String pattern ) {
+    this.digester.addCallMethod( pattern, "createFormatVersion", 4 );
+    this.digester.addCallParam( pattern, 0 );
+    this.digester.addCallParam( pattern, 1, "status" );
+    this.digester.addCallParam( pattern, 2, "toolname" );
+    this.digester.addCallParam( pattern, 3, "toolversion" );
+  }
+
+  /**
+   * Creates rules for parsing the pronom identifier data within a FITS file.
+   * 
+   * @param pattern
+   *          the xpath to the external identifier.
+   */
+  private void createPuidRule( String pattern ) {
+    this.digester.addCallMethod( pattern, "createPuid", 3 );
+    this.digester.addCallParam( pattern, 0 );
+    this.digester.addCallParam( pattern, 1, "toolname" );
+    this.digester.addCallParam( pattern, 2, "toolversion" );
+
+  }
+
+  /**
+   * Creates rules for the parsing of the file information data within a FITS
+   * file.
+   */
   private void createFileInfoRules() {
-    this.createValueRule("fits/fileinfo/size");
-    this.createValueRule("fits/fileinfo/md5checksum");
-    this.createValueRule("fits/fileinfo/lastmodified");
-    this.createValueRule("fits/fileinfo/fslastmodified");
-    this.createValueRule("fits/fileinfo/created");
-    this.createValueRule("fits/fileinfo/creatingApplicationName");
-    this.createValueRule("fits/fileinfo/creatingApplicationVersion");
-    this.createValueRule("fits/fileinfo/inhibitorType");
-    this.createValueRule("fits/fileinfo/inhibitorTarget");
-    this.createValueRule("fits/fileinfo/rightsBasis");
-    this.createValueRule("fits/fileinfo/copyrightBasis");
-    this.createValueRule("fits/fileinfo/copyrightNote");
-    this.createValueRule("fits/fileinfo/creatingos");
+    this.createValueRule( "fits/fileinfo/size" );
+    this.createValueRule( "fits/fileinfo/md5checksum" );
+    this.createValueRule( "fits/fileinfo/lastmodified" );
+    this.createValueRule( "fits/fileinfo/fslastmodified" );
+    this.createValueRule( "fits/fileinfo/created" );
+    this.createValueRule( "fits/fileinfo/creatingApplicationName" );
+    this.createValueRule( "fits/fileinfo/creatingApplicationVersion" );
+    this.createValueRule( "fits/fileinfo/inhibitorType" );
+    this.createValueRule( "fits/fileinfo/inhibitorTarget" );
+    this.createValueRule( "fits/fileinfo/rightsBasis" );
+    this.createValueRule( "fits/fileinfo/copyrightBasis" );
+    this.createValueRule( "fits/fileinfo/copyrightNote" );
+    this.createValueRule( "fits/fileinfo/creatingos" );
   }
 
+  /*
+   * Experimental
+   */
   /**
    * This is not part of the original FITS specification, but it is reading out
    * representation information out of RODA, if the FITS was provided by RODA.
    */
   private void createRepresentationInfoRules() {
-    this.createValueRule("fits/representationinfo/original");
+    this.createValueRule( "fits/representationinfo/original" );
   }
 
+  /**
+   * Creates rules for parsing the file status data within a FITS file.
+   */
   private void createFileStatusRules() {
-    this.createValueRule("fits/filestatus/well-formed");
-    this.createValueRule("fits/filestatus/valid");
-    this.createValueRule("fits/filestatus/message");
+    this.createValueRule( "fits/filestatus/well-formed" );
+    this.createValueRule( "fits/filestatus/valid" );
+    this.createValueRule( "fits/filestatus/message" );
   }
 
+  /**
+   * Creates rules for parsing the meta data section of a FITS file.
+   */
   private void createMetaDataRules() {
-    this.createValueRule("fits/metadata/image/*");
-    this.createValueRule("fits/metadata/text/*");
-    this.createValueRule("fits/metadata/document/*");
-    this.createValueRule("fits/metadata/audio/*");
-    this.createValueRule("fits/metadata/video/*");
+    this.createValueRule( "fits/metadata/image/*" );
+    this.createValueRule( "fits/metadata/text/*" );
+    this.createValueRule( "fits/metadata/document/*" );
+    this.createValueRule( "fits/metadata/audio/*" );
+    this.createValueRule( "fits/metadata/video/*" );
   }
 
-  private void createIdentityStatusRules() {
-    this.digester.addCallMethod("fits/identification", "setIdentityStatus", 1);
-    this.digester.addCallParam("fits/identification", 0, "status");
+  /**
+   * Creates rule for parsing generic values from FITS files.
+   * 
+   * @param pattern
+   *          the xpath to the generic meta data node.
+   */
+  private void createValueRule( String pattern ) {
+    this.digester.addCallMethod( pattern, "createValue", 5 );
+    this.digester.addCallParam( pattern, 0 );
+    this.digester.addCallParam( pattern, 1, "status" );
+    this.digester.addCallParam( pattern, 2, "toolname" );
+    this.digester.addCallParam( pattern, 3, "toolversion" );
+    this.digester.addCallParamPath( pattern, 4 );
   }
 
-  private void createFormatRule(String pattern) {
-    this.digester.addCallMethod(pattern, "createIdentity", 2);
-    this.digester.addCallParam(pattern, 0, "format");
-    this.digester.addCallParam(pattern, 1, "mimetype");
-
-    this.digester.addCallMethod(pattern + "/tool", "addIdentityTool", 2);
-    this.digester.addCallParam(pattern + "/tool", 0, "toolname");
-    this.digester.addCallParam(pattern + "/tool", 1, "toolversion");
-
-  }
-
-  private void createFormatVersionRule(String pattern) {
-    this.digester.addCallMethod(pattern, "createFormatVersion", 4);
-    this.digester.addCallParam(pattern, 0);
-    this.digester.addCallParam(pattern, 1, "status");
-    this.digester.addCallParam(pattern, 2, "toolname");
-    this.digester.addCallParam(pattern, 3, "toolversion");
-  }
-
-  private void createPuidRule(String pattern) {
-    this.digester.addCallMethod(pattern, "createPuid", 3);
-    this.digester.addCallParam(pattern, 0);
-    this.digester.addCallParam(pattern, 1, "toolname");
-    this.digester.addCallParam(pattern, 2, "toolversion");
-
-  }
-
-  private void createValueRule(String pattern) {
-    this.digester.addCallMethod(pattern, "createValue", 5);
-    this.digester.addCallParam(pattern, 0);
-    this.digester.addCallParam(pattern, 1, "status");
-    this.digester.addCallParam(pattern, 2, "toolname");
-    this.digester.addCallParam(pattern, 3, "toolversion");
-    this.digester.addCallParamPath(pattern, 4);
-  }
-
-  public Element getElement() {
-    if (this.metadata == null) {
-      LOG.warn("The input stream is not set, skipping.");
-      return null;
-    }
-
-    try {
-      DigesterContext context = new DigesterContext(this.getController().getPersistence().getCache(),
-          this.getPreProcessingRules());
-      this.digester.push(context);
-      context = (DigesterContext) this.digester.parse(this.metadata);
-      final Element element = this.postProcess(context);
-
-      return element;
-
-    } catch (IOException e) {
-      LOG.error("An exception occurred while processing {}: {}", this.metadata, e.getMessage());
-    } catch (SAXException e) {
-      LOG.error("An exception occurred while parsing {}: {}", this.metadata, e.getMessage());
-    } finally {
-      try {
-        this.metadata.close();
-      } catch (IOException ioe) {
-        LOG.error("An exception occurred while closing {}: {}", this.metadata, ioe.getMessage());
-      }
-    }
-
-    return null;
-  }
-
-  private Element postProcess(DigesterContext context) {
-    final Element element = context.getElement();
-    final List<MetadataRecord> values = context.getValues();
-
-    if (element != null) {
-      element.setMetadata(values);
-      element.setCollection(this.collection);
-
-      if (this.inferDate) {
-        element.extractCreatedMetadataRecord(this.getController().getPersistence().getCache().getProperty("created"));
-      }
-
-      // if for some reason there was no uid, set a random one.
-      if (element.getUid() == null) {
-        element.setUid(UUID.randomUUID().toString());
-      }
-
-    }
-
-    return element;
-  }
-
-  @Override
-  public void run() {
-    InputStream next = this.getController().getNext();
-
-    while (next != null) {
-      try {
-        this.metadata = next;
-
-        final Element element = this.getElement();
-
-        if (element != null) {
-          this.getController().getPersistence().insert(Constants.TBL_ELEMENTS, element.getDocument());
-
-        } else {
-          LOG.warn("No element could be extracted for file {}", metadata);
-          // potentially move file to some place for further investigation.
-        }
-
-      } catch (Exception e) {
-        // save thread from dying due to processing error...
-        LOG.warn("An exception occurred while parsing input {}: {}", e.getClass().getName(), e.getMessage());
-        e.printStackTrace();
-      }
-
-      next = this.getController().getNext();
-    }
-  }
 }

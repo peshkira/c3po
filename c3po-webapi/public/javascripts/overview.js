@@ -53,12 +53,14 @@ function showPopup(properties) {
 function showOptions(type) {
 	if (type == "STRING" || type == "BOOL" || type == "DATE") {
 		var property = $('.popupconfig select').val();
+		hidePopupDialog();
+		startSpinner();
 		$.ajax({
 			type : 'GET',
 			url : '/c3po/overview/graph?property=' + property,
 			timeout : 5000,
 			success : function(oData) {
-				hidePopupDialog();
+				stopSpinner();
 				var hist = [];
 				$.each(oData.keys, function(i, k) {
 					hist.push([ oData.keys[i], parseInt(oData.values[i]) ]);
@@ -67,6 +69,7 @@ function showOptions(type) {
 				var data = {};
 				data[id] = hist;
 				drawGraphs(data);
+				//scroll to bottom of page.
 
 			}
 		});
@@ -85,6 +88,8 @@ function applyIntegerHistogramSelection() {
 		width = $('.popupconfig input:first').val();
 	}
 
+	hidePopupDialog();
+	startSpinner();
 	$.ajax({
 		type : 'GET',
 		url : '/c3po/overview/graph?property=' + property + "&alg=" + alg
@@ -100,7 +105,8 @@ function applyIntegerHistogramSelection() {
 			data[id] = hist;
 			$('#' + id).remove(); // remove the old graph if exist
 			drawGraphs(data, oData.options);
-			hidePopupDialog();
+			stopSpinner();
+			//scroll to bottom of page.
 		}
 	});
 };

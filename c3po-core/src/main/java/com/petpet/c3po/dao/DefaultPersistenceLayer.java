@@ -1,135 +1,190 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po.dao;
 
-import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MapReduceCommand;
-import com.mongodb.MapReduceOutput;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.api.model.Model;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.NumericStatistics;
+import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
+import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 
+/**
+ * This default persistence layer just wraps a real implementation and is used
+ * by the {@link Configurator} if no persistence is specified. Currently Mongo
+ * is the default backend, as it is the only implementation.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class DefaultPersistenceLayer implements PersistenceLayer {
 
-  private Mongo mongo;
+  /**
+   * A default logger.
+   */
+  private static final Logger LOG = LoggerFactory.getLogger( DefaultPersistenceLayer.class );
 
-  private DB db;
+  /**
+   * The wrapped persistence layer of this class.
+   */
+  private PersistenceLayer persistence;
 
-  private Cache dBCache;
-
-  private boolean connected;
-
+  /**
+   * The default constructor initialised the default persistence layer.
+   * Currently with the MongoDB implementation.
+   */
   public DefaultPersistenceLayer() {
-    this.connected = false;
+    persistence = new MongoPersistenceLayer();
   }
 
-  @Override
-  public DB getDB() {
-    return this.db;
-  }
-
-  @Override
-  public DB connect(Map<Object, Object> config) {
-    this.close();
-
-    try {
-      this.mongo = new Mongo((String) config.get(Constants.CNF_DB_HOST), Integer.parseInt((String) config.get(Constants.CBF_DB_PORT)));
-      this.db = this.mongo.getDB((String) config.get(Constants.CNF_DB_NAME));
-      
-      this.db.getCollection(Constants.TBL_ELEMENTS).ensureIndex(new BasicDBObject("uid", 1), new BasicDBObject("unique", true));
-      this.db.getCollection(Constants.TBL_PROEPRTIES).ensureIndex("_id");
-      this.db.getCollection(Constants.TBL_PROEPRTIES).ensureIndex("key");
-      
-      this.connected = true;
-
-    } catch (NumberFormatException e) {
-      e.printStackTrace();
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    } catch (MongoException e) {
-      e.printStackTrace();
-    }
-
-    return this.db;
-  }
-
-  @Override
-  public boolean isConnected() {
-    return this.connected;
-  }
-
-  @Override
-  public void close() {
-    if (this.isConnected() && this.mongo != null) {
-      this.mongo.close();
-      this.db = null;
-      this.connected = false;
-    }
-  }
-
-  @Override
-  public Cache getCache() {
-    return this.dBCache;
-  }
-
-  public void setCache(Cache c) {
-    this.dBCache = c;
-  }
-
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void clearCache() {
-    this.dBCache.clear();
+    this.persistence.clearCache();
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public DBCursor findAll(String collection) {
-    return this.db.getCollection(collection).find();
+  public void close() {
+    try {
+      this.persistence.close();
+    } catch ( C3POPersistenceException e ) {
+      LOG.error( "An error occurred: {}", e.getMessage() );
+    }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public DBCursor find(String collection, DBObject ref) {
-    return this.db.getCollection(collection).find(ref);
+  public <T extends Model> long count( Class<T> clazz, Filter filter ) {
+    return this.persistence.count( clazz, filter );
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public DBCursor find(String collection, DBObject ref, DBObject keys) {
-    return this.db.getCollection(collection).find(ref, keys);
-  }
-  
-  @Override
-  public List distinct(String collection, String key) {
-    return this.db.getCollection(collection).distinct(key);
-  }
-  
-  public List distinct(String collection, String key, DBObject query) {
-    return this.db.getCollection(collection).distinct(key, query);
+  public void establishConnection( Map<String, String> config ) throws C3POPersistenceException {
+    this.persistence.establishConnection( config );
+
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public void insert(String collection, DBObject data) {
-    this.db.getCollection(collection).insert(data);
+  public <T extends Model> Iterator<T> find( Class<T> clazz, Filter filter ) {
+    return this.persistence.find( clazz, filter );
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public long count(String collection) {
-    return this.db.getCollection(collection).getCount();
+  public <T extends Model> List<String> distinct( Class<T> clazz, String f, Filter filter ) {
+    return this.persistence.distinct( clazz, f, filter );
   }
-  
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public long count(String collection, DBObject query) {
-    return this.db.getCollection(collection).count(query);
+  public Cache getCache() {
+    return this.persistence.getCache();
   }
-  
-  public MapReduceOutput mapreduce(String collection, MapReduceCommand cmd) {
-    return this.db.getCollection(collection).mapReduce(cmd);
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public NumericStatistics getNumericStatistics( Property p, Filter filter ) throws UnsupportedOperationException {
+    return this.persistence.getNumericStatistics( p, filter );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T extends Model> Map<String, Long> getValueHistogramFor( Property p, Filter filter )
+      throws UnsupportedOperationException {
+
+    return this.persistence.getValueHistogramFor( p, filter );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T extends Model> void insert( T object ) {
+    this.persistence.insert( object );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isConnected() {
+    return this.persistence.isConnected();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T extends Model> void remove( T object ) {
+    this.persistence.remove( object );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T extends Model> void remove( Class<T> clazz, Filter filter ) {
+    this.persistence.remove( clazz, filter );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public void setCache( Cache c ) {
+    this.persistence.setCache( c );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T extends Model> void update( T object, Filter f ) {
+    this.persistence.update( object, f );
   }
 
 }

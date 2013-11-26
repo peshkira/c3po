@@ -1,33 +1,79 @@
+/*******************************************************************************
+ * Copyright 2013 Petar Petrov <me@petarpetrov.org>
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package com.petpet.c3po.dao;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.datamodel.Source;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.DataHelper;
 
+/**
+ * Implements the {@link Cache} interface.
+ * 
+ * @author Petar Petrov <me@petarpetrov.org>
+ * 
+ */
 public class DBCache implements Cache {
 
+  /**
+   * A map of {@link Property} objects.
+   */
   private Map<String, Property> propertyCache;
 
+  /**
+   * A map of {@link Source} objects.
+   */
   private Map<String, Source> sourceCache;
 
+  /**
+   * A map of arbitrary objects.
+   */
+  private Map<Object, Object> misc;
+
+  /**
+   * The persistence layer to use.
+   */
   private PersistenceLayer persistence;
 
+  /**
+   * Creates a new cache with synchronized empty maps.
+   */
   public DBCache() {
-    this.propertyCache = Collections.synchronizedMap(new HashMap<String, Property>());
-    this.sourceCache = Collections.synchronizedMap(new HashMap<String, Source>());
+    this.propertyCache = Collections.synchronizedMap( new HashMap<String, Property>() );
+    this.sourceCache = Collections.synchronizedMap( new HashMap<String, Source>() );
+    this.misc = Collections.synchronizedMap( new HashMap<Object, Object>() );
   }
 
-  public void setPersistence(PersistenceLayer persistence) {
+  /**
+   * Sets the persistence layer
+   * 
+   * @param persistence
+   *          the persitence to use.
+   */
+  public void setPersistence( PersistenceLayer persistence ) {
     this.persistence = persistence;
   }
 
@@ -44,124 +90,196 @@ public class DBCache implements Cache {
    * @return the property.
    */
   @Override
-  public synchronized Property getProperty(String key) {
-    Property property = this.propertyCache.get(key);
+  public synchronized Property getProperty( String key ) {
+    Property property = this.propertyCache.get( key );
 
-    if (property == null) {
-      DBCursor result = this.findProperty(key);
+    if ( property == null ) {
+      Iterator<Property> result = this.findProperty( key );
 
-      if (result.count() == 0) {
-        property = this.createProperty(key);
+      if ( result.hasNext() ) {
+        property = result.next();
+        this.propertyCache.put( key, property );
 
-      } else if (result.count() == 1) {
-        property = this.extractProperty(result.next());
+        if ( result.hasNext() ) {
+          throw new RuntimeException( "More than one properties found for key: " + key );
+        }
 
       } else {
-        throw new RuntimeException("More than one properties found for key: " + key);
+        property = this.putProperty( key, null );
+
       }
     }
 
     return property;
   }
 
+  /**
+   * Looks in the cache for a property with the given key. If the property is
+   * found in the cache it is retrieved (no matter if the type matches), if it
+   * is not found in the cache, the db is queried. Supposedly the property is
+   * found in the db, then it is loaded into the cache and it is returned (no
+   * matter if the type matches). If no property with the given key is found in
+   * the db, then a new property with the given key and type is created, stored
+   * into the db, added to the cache and then it is returned.
+   * 
+   * @param key
+   *          the name of the property.
+   * @return the property.
+   */
   @Override
-  public synchronized Source getSource(String name, String version) {
-    Source source = this.sourceCache.get(name + ":" + version);
+  public Property getProperty( String key, PropertyType type ) {
+    Property property = this.propertyCache.get( key );
 
-    if (source == null) {
-      DBCursor result = this.findSource(name, version);
+    if ( property == null ) {
+      Iterator<Property> result = this.findProperty( key );
 
-      if (result.count() == 0) {
-        source = this.createSource(name, version);
+      if ( result.hasNext() ) {
+        property = result.next();
+        this.propertyCache.put( key, property );
 
-      } else if (result.count() == 1) {
-        source = this.extractSource(result.next());
+        if ( result.hasNext() ) {
+          throw new RuntimeException( "More than one properties found for key: " + key );
+        }
+      } else {
+        property = this.putProperty( key, type );
+      }
+    }
+
+    return property;
+  }
+
+  /**
+   * Looks in the cache for a source with the given name and version. If the
+   * source is found in the cache it is retrieved, if it is not found in the
+   * cache, the db is queried. Supposedly the source is found in the db, then it
+   * is loaded into the cache and it is returned. If no source with the given
+   * name and version is found in the db, then a new source is created, stored
+   * into the db, added to the cache and then it is returned.
+   * 
+   * @param name
+   *          the name of the source.
+   * @param version
+   *          the version of the source.
+   * @return the source.
+   */
+  @Override
+  public synchronized Source getSource( String name, String version ) {
+    Source source = this.sourceCache.get( name + ":" + version );
+
+    if ( source == null ) {
+      Iterator<Source> result = this.findSource( name, version );
+
+      if ( result.hasNext() ) {
+        source = result.next();
+        this.sourceCache.put( name + ":" + version, source );
+
+        if ( result.hasNext() ) {
+          throw new RuntimeException( "More than one sources found for name: " + name + " and version: " + version );
+        }
 
       } else {
-        throw new RuntimeException("More than one sources found for name: " + name + " and version: " + version);
+        source = this.createSource( name, version );
+
       }
     }
 
     return source;
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Object getObject( Object key ) {
+    return this.misc.get( key );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void put( Object key, Object value ) {
+    this.misc.put( key, value );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public synchronized void clear() {
     this.propertyCache.clear();
     this.sourceCache.clear();
+    this.misc.clear();
   }
 
-  private DBCursor findSource(String name, String version) {
-    BasicDBObject query = new BasicDBObject();
-    query.put("name", name);
-    query.put("version", version);
+  /**
+   * Looks for the given source within the DB.
+   * 
+   * @param name
+   *          the name to look for.
+   * @param version
+   *          the version to look for.
+   * @return the Sources that matched the query.
+   */
+  private Iterator<Source> findSource( String name, String version ) {
 
-    return this.persistence.find(Constants.TBL_SOURCES, query);
+    FilterCondition fc1 = new FilterCondition( "name", name );
+    FilterCondition fc2 = new FilterCondition( "version", version );
+    Filter f = new Filter( Arrays.asList( fc1, fc2 ) );
+
+    return this.persistence.find( Source.class, f );
+
   }
 
-  private DBCursor findProperty(String key) {
-    BasicDBObject query = new BasicDBObject();
-    query.put("key", key);
+  /**
+   * Looks for the given property with the given key in the db.
+   * 
+   * @param key
+   *          the key to look for.
+   * @return the property.
+   */
+  private Iterator<Property> findProperty( String key ) {
 
-    return this.persistence.find(Constants.TBL_PROEPRTIES, query);
+    FilterCondition fc = new FilterCondition( "key", key );
+    Filter f = new Filter( fc );
+
+    return this.persistence.find( Property.class, f );
+
   }
 
-  private Property extractProperty(DBObject obj) {
-    Property result = null;
+  /**
+   * Creates a new source and inserts it within the db and the cache.
+   * 
+   * @param name
+   *          the name of the source
+   * @param version
+   *          the version of the source.
+   * @return the new source.
+   */
+  private Source createSource( String name, String version ) {
+    Source s = new Source( name, version );
 
-    if (obj != null) {
-      String id = (String) obj.get("_id");
-      String key = (String) obj.get("key");
-      String name = (String) obj.get("name");
-      String desc = (String) obj.get("description");
-      String type = (String) obj.get("type");
-
-      result = new Property();
-      result.setId(id);
-      result.setKey(key);
-      result.setName(name);
-      result.setDescription(desc);
-      result.setType(type);
-
-      this.propertyCache.put(key, result);
-    }
-
-    return result;
-  }
-
-  private Source extractSource(DBObject obj) {
-    Source result = null;
-
-    if (obj != null) {
-      String id = (String) obj.get("_id");
-      String name = (String) obj.get("name");
-      String version = (String) obj.get("version");
-
-      result = new Source();
-      result.setId(id);
-      result.setName(name);
-      result.setVersion(version);
-
-      this.sourceCache.put(name + ":" + version, result);
-    }
-
-    return result;
-  }
-
-  private Source createSource(String name, String version) {
-    Source s = new Source(name, version);
-    this.persistence.insert(Constants.TBL_SOURCES, s.getDocument());
-    this.sourceCache.put(name + ":" + version, s);
+    this.persistence.insert( s );
+    this.sourceCache.put( name + ":" + version, s );
 
     return s;
   }
 
-  private Property createProperty(String key) {
-    Property p = new Property(key, key);
-    p.setType(DataHelper.getPropertyType(key));
+  /**
+   * Creates a new property and inserts it within the db and the cache.
+   * 
+   * @param key
+   *          the key of the prop.
+   * @param type
+   *          the type of the prop.
+   * @return the new source.
+   */
+  private Property putProperty( String key, PropertyType type ) {
+    Property p = new Property( key, type );
+    p.setType( DataHelper.getPropertyType( key ) );
 
-    this.persistence.insert(Constants.TBL_PROEPRTIES, p.getDocument());
-    this.propertyCache.put(key, p);
+    this.persistence.insert( p );
+    this.propertyCache.put( key, p );
 
     return p;
   }
