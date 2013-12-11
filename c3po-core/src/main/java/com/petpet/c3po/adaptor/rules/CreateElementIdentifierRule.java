@@ -41,6 +41,11 @@ public class CreateElementIdentifierRule implements PostProcessingRule {
     return 10;
   }
 
+  @Override
+  public void onCommandFinished() {
+    // do nothing
+  }
+
   /**
    * Sets a random uuid if the element has no uid defined.
    */

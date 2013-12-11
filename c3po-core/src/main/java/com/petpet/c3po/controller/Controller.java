@@ -36,6 +36,7 @@ import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
 import com.petpet.c3po.adaptor.rules.BrowsershotDissimilarityCountRule;
 import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
+import com.petpet.c3po.adaptor.rules.DroolsConflictResolutionProcessingRule;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
 import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
@@ -148,12 +149,14 @@ public class Controller {
     // TODO detect these automatically from the class path
     // and add them to this map.
     // TODO the InferDateFromFileNameRule needs a setter for the cache.
+    // TODO - answer by Peter: The cache can be retrieved statically from the Configurator!
     this.knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
     this.knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
     this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
     this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
     this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
     this.knownRules.put(Constants.CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE, BrowsershotDissimilarityCountRule.class);
+    this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
   }
 
   /**
@@ -479,6 +482,12 @@ public class Controller {
     } finally {
       String path = FileUtils.getTempDirectory().getPath() + File.separator + "c3poarchives";
       FileUtils.deleteQuietly( new File( path ) );
+    }
+
+    // allow every rule to execute its tasks after job handling is done, like
+    // printing statistics or cleaning up
+    for (ProcessingRule processingRule : rules) {
+      processingRule.onCommandFinished();
     }
 
     ActionLog log = new ActionLog( collection, ActionLog.UPDATED_ACTION );

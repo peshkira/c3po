@@ -66,6 +66,11 @@ public class InferDateFromFileNameRule implements PostProcessingRule {
     return 10;
   }
 
+  @Override
+  public void onCommandFinished() {
+    // do nothing
+  }
+
   /**
    * Tries to extract the meta data for the created property and sets it if
    * successful, otherwise it returns the unmodified element.

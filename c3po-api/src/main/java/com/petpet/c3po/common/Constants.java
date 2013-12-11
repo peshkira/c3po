@@ -123,10 +123,15 @@ public final class Constants {
   public static final String CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE = "c3po.rule.browsershot_dissimilarity_count";
 
   /**
+   * The key for the drools conflict resolution processing rule.
+   */
+  public static final String CNF_DROOLS_CONFLICT_RESOLUTION_RULE = "c3po.rule.drools_conflict_resolution_processing";
+
+  /**
    * An array of the configurable processing rule keys.
    */
   public static final String[] RULE_KEYS = { CNF_ELEMENT_IDENTIFIER_RULE, CNF_VERSION_RESOLUTION_RULE,
-      CNF_EMPTY_VALUE_RULE, CNF_INFER_DATE_RULE, CNF_HTML_INFO_RULE,  CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE };
+      CNF_EMPTY_VALUE_RULE, CNF_INFER_DATE_RULE, CNF_HTML_INFO_RULE,  CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE , CNF_DROOLS_CONFLICT_RESOLUTION_RULE};
 
   /**
    * The version of the core module.

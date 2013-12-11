@@ -1,0 +1,105 @@
+package c3po.custom
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+ * Treat format version "HTML x" like "x" from Jhove
+ */
+rule "set html format version/markupBasisVersion to value without prefix"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            (property.id == "format_version" || property.id == "markupBasisVersion"), 
+            value str[startsWith] "HTML ",
+            MetadataUtil.isFromTool(this, "Jhove")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Jhove HTML format version/markupBasisVersion issue: ");
+        
+        String newValue = $md.getValue().substring(4).trim();
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+end
+
+/**
+ * Treat sampling_frequency_unit : 'no absolute unit of measurement' from Jhove as "none"
+ */
+rule "set sampling_frequency_unit : 'no absolute unit of measurement' from Jhove to 'none'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "sampling_frequency_unit",
+            value == "no absolute unit of measurement",
+            MetadataUtil.isFromTool(this, "Jhove")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Jhove sampling_frequency_unit issue: ");
+        logger.logMetadataRecord(loglevel,$md);
+        
+        String newValue = "None";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set format_version to \""+newValue+"\"!");
+end
+
+/**
+ * Treat sampling_frequency_unit : 'in.' from Jhove or NLNZ as "inches"
+ */
+rule "set sampling_frequency_unit : 'in.' from Jhove or NLNZ to 'inches'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "sampling_frequency_unit",
+            value == "in.",
+            (MetadataUtil.isFromTool(this, "Jhove") || MetadataUtil.isFromTool(this, "NLNZ Metadata Extractor"))
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Jhove/NLNZ sampling_frequency_unit issue: ");
+        logger.logMetadataRecord(loglevel,$md);
+        
+        String newValue = "inches";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set format_version to \""+newValue+"\"!");
+end
+
+/**
+ * Ignore fractional exposure_time by NLNZ Metadata Extractor
+ */
+rule "ignore fractional exposure_time by NLNZ Metadata Extractor'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "exposure_time",
+            value matches "[0-9]*\\.[0-9E\\-]*",
+            MetadataUtil.isFromTool(this, "NLNZ Metadata Extractor")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"NLNZ fractional exposure_time issue: ");
+        logger.logMetadataRecord(loglevel,$md);
+        modify ($e) {
+            ignoreMetadata($md)
+        }
+        logger.log(loglevel,"    -> ignore "+$md);
+end

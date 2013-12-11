@@ -158,4 +158,10 @@ public class MetadataRecord {
     this.values = values;
   }
 
+  @Override
+  public String toString() {
+    return "MetadataRecord [property=" + property.getId() + ", value=" + value
+        + ", status=" + status + ", sources=" + sources + "]";
+  }
+
 }
