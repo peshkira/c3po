@@ -64,7 +64,7 @@ public class DroolsResolutionWorker {
     /**
      * TODO: use proper logging, not stdout
      **/
-    if (!logOutput.trim().isEmpty()) {
+      /*if (!logOutput.trim().isEmpty()) {
       synchronized (System.out) {
         System.out.println("======================================");
         System.out.println("Drools log of " + e.getUid());
@@ -72,7 +72,7 @@ public class DroolsResolutionWorker {
         System.out.println(logOutput);
         System.out.println("======================================");
       }
-    }
+    }   */
 
   }
 

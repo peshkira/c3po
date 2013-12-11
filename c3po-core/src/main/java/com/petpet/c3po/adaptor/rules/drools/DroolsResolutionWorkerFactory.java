@@ -42,6 +42,10 @@ public class DroolsResolutionWorkerFactory {
     this.initKnowledgeBase(filenames);
   }
 
+    public void setSource(List<File> sources) {
+        this.initKnowledgeBase(sources);
+    }
+
   private void initKnowledgeBase(List<File> sources) {
     KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
 

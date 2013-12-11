@@ -1,16 +1,24 @@
 package com.petpet.c3po.adaptor.rules;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import com.petpet.c3po.adaptor.rules.drools.DroolsResolutionStatisticsPrinter;
 import com.petpet.c3po.adaptor.rules.drools.DroolsResolutionWorker;
 import com.petpet.c3po.adaptor.rules.drools.DroolsResolutionWorkerFactory;
 import com.petpet.c3po.api.adaptor.PostProcessingRule;
 import com.petpet.c3po.api.model.Element;
+import sun.misc.Launcher;
 
 public class DroolsConflictResolutionProcessingRule implements
     PostProcessingRule {
@@ -29,21 +37,51 @@ public class DroolsConflictResolutionProcessingRule implements
 
     this.factory = new DroolsResolutionWorkerFactory();
     this.workers = new ConcurrentHashMap<Thread, DroolsResolutionWorker>();
-
+     List<File> fileList= new ArrayList<File>();
     // read in the source
-
-    try {
 
       // TODO: make this configurable/extendable by the user via commandline
       // parameters
-      URL url = this.getClass().getResource("/rules/additionals");
+      //URL url = this.getClass().getResource("/rules/additionals");
 
-      this.factory.setSource(new File(url.toURI()));
+      final String path = "rules/additionals";
+      final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 
-    } catch (URISyntaxException e) {
-      throw new IllegalStateException(
-          "Unable to access directory in classpath!", e);
-    }
+      if(jarFile.isFile()) {  // Run with JAR file
+          JarFile jar = null;
+          try {
+              jar = new JarFile(jarFile);
+              final Enumeration<JarEntry> entries = jar.entries(); //gives ALL entries in jar
+              while(entries.hasMoreElements()) {
+                  final String name = entries.nextElement().getName();
+                  if (name.startsWith(path + "/")) { //filter according to the path
+                      System.out.println(name);
+                  }
+              }
+              jar.close();
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+      }
+      else
+      {
+          final URL url = Launcher.class.getResource("/" + path);
+          if (url != null) {
+              try {
+                  final File directory = new File(url.toURI());
+                  for (File file : directory.listFiles()) {
+                      System.out.println(file);
+                  }
+              } catch (URISyntaxException ex) {
+                  // never happens
+              }
+          }
+
+      }
+      //InputStream is = ClassLoader.getSystemResourceAsStream("/rules/additionals");
+      //String s= String.valueOf(url);
+      //this.factory.setSource(new File(String.valueOf(url)));
+      this.factory.setSource(fileList);
   }
 
   @Override
