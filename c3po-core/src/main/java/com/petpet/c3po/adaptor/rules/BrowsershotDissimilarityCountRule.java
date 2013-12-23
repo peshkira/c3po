@@ -15,7 +15,12 @@ public class BrowsershotDissimilarityCountRule implements PostProcessingRule{
 		return 990;
 	}
 
-	@Override
+    @Override
+    public void onCommandFinished() {
+
+    }
+
+    @Override
 	public Element process(Element e) {
 		List<MetadataRecord> BrowsershotRecords = e.getMetadata();
 		int total=0;

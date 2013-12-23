@@ -186,7 +186,23 @@ public class DBCache implements Cache {
     return source;
   }
 
-  /**
+    @Override
+    public Source getSource(String id) {
+
+        Iterator<Source> result = this.findSource(id);
+
+        if (result.hasNext()) {
+            Source source = result.next();
+            if ( result.hasNext() ) {
+                throw new RuntimeException( "More than one sources found for id: " + id);
+            }
+            return source;
+        }
+
+        return null;
+    }
+
+    /**
    * {@inheritDoc}
    */
   @Override
@@ -231,7 +247,16 @@ public class DBCache implements Cache {
 
   }
 
-  /**
+    private Iterator<Source> findSource(String id) {
+
+        FilterCondition fc1 = new FilterCondition( "_id", id);
+        Filter f = new Filter(Arrays.asList(fc1));
+
+        return this.persistence.find(Source.class, f);
+    }
+
+
+    /**
    * Looks for the given property with the given key in the db.
    * 
    * @param key
