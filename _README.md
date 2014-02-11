@@ -37,9 +37,9 @@ C3PO is for:
 
 ### Roadmap
 
-* Introduction of a controlled vocabulary for properties
-* Implement HBASE backend
-* Implement Data Connector API
+* A controlled vocabulary for properties
+* HBASE backend
+* Data Connector API
 
 ## How to install and use
 
