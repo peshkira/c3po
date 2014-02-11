@@ -1,38 +1,45 @@
-# X
+# C3PO: Clever, Crafty Content Profiling of Objects
 
-Tagline (one phrase).
+Analyze your content with C3PO.
 
-### What does X do?
+### What does C3PO do?
 
-Describe in a few sentences what the purpose is of your tool and where it fits into the workflow.
+C3PO – or ‘Clever, Crafty, Content Profiling of Objects’ is a software tool, which uses metadata extracted from files of a digital collection as input to generate a profile of the content set. The tool transforms the data for faster and scalable analysis and stores it, then post-processing solves issues like conflict resolution and provides a machine-readable overview, and a web application enables the user to filter and explore any part of the data further.
 
 ### What are the benefits for the end user?
 
-A list of benefits X brings to the end user:
+C3PO brings you the following benefits:
 
-* User can do this..
-* This part of X is new because...
-* This part of X is special because...
+* In-depth knowledge of your files
+* Scalability – analyse large amounts of data in no time
+* Visualization of metadata characteristics
+* Easy integration with [PLATO](http://ifs.tuwien.ac.at/dp/plato/) for preservation planning
+* Easy integration with [SCOUT](http://openplanets.github.io/scout/) for monitoring preservation risks
 
 ### Who is the intended audience?
 
-X is for:
+C3PO is for:
 
-* Content holders? (specify if possible)
-* Preservation experts? (specify if possible)
-* Institutions that would like to ... (be as specific as possible)
+* Content holders
+* Preservation experts
+* Institutions that would like to learn more about content they have
 
 ## Features and roadmap
 
-### Version 0.0.1
+### Version 0.4
 
-* Feature 1
-* Feature 2
+* Xml-based content profile generation
+* Visualization, filtering throught the Web Application
+* Supports [FITS](http://projects.iq.harvard.edu/fits) and [Apache TIKA](https://tika.apache.org/) meta data
+* Conflict resolution using [Drools Rule Framework](https://www.jboss.org/drools/)
+* Representative sample set generation
+* Support for REST API (Scout)
 
 ### Roadmap
 
-* Feature 3
-* Feature 4
+* Introduction of a controlled vocabulary for properties
+* Implement HBASE backend
+* Implement Data Connector API
 
 ## How to install and use
 
@@ -40,49 +47,38 @@ X is for:
 
 To install you need:
 
-* Dependency 1
-* Dependency 2
+* Java 1.6
+* MongoDB 2.0.5 or higher (64 Bit)
+* FITS (optional)
+
+To run Web application, you also need:
+
+* Some Application Server (Tomcat/Jetty/JBoss 7), or
+* Play Framework
 
 ### Download
 
-| Version | Size   | SHA1                                                    |                      |
-|---------|--------|---------------------------------------------------------|----------------------|
-| v0.0.1  | 1.2 MB | <small>1234567890abcdef1234567890abcdef12345678</small> |[download](binary.jar)|
+At the moment there are no precompiled versions available.
 
+### Install and Usage instructions
 
-### Install instructions
-
-To install follow these steps:
-
-1. First step
-2. Second step
-
-### Use
-
-To use the tool, you can try the following command:
-```bash
-$ java -jar binary.jar --help
-Synopsys: java -jar binary.jar ...
-...
-```
+Please refer to [Usage Guide](https://github.com/peshkira/c3po/wiki/Usage-Guide).
 
 ### Troubleshooting
 
-**Getting exception "NullPointerException"**
-
-To solve this problem...
-
+If you encounter any problems, please let us know by submitting an issue [here](https://github.com/peshkira/c3po/issues?state=open).
 
 ## More information
 
 ### Publications
 
-* Publication 1
-* Publication 2
+* [To fits or not to fits](http://www.openplanetsfoundation.org/blogs/2012-07-27-fits-or-not-fits)
+* [C3PO: a content profiling tool for preservation analysis](http://www.openplanetsfoundation.org/blogs/2012-11-19-c3po-content-profiling-tool-preservation-analysis)
+* [C3PO is ready for you!](http://www.openplanetsfoundation.org/blogs/2013-05-20-c3po-ready-you)
 
 ### Licence
 
-X is released under [Apache version 2.0 license](LICENSE.txt).
+C3PO is released under [Apache version 2.0 license](LICENSE.txt).
 
 ### Acknowledgements
 
@@ -90,45 +86,13 @@ Part of this work was supported by the European Union in the 7th Framework Progr
 
 ### Support
 
-This tool is supported by the [Open Planets Foundation](http://www.openplanetsfoundation.org). Commercial support is provided by company X.
+This tool is supported by the [Open Planets Foundation](http://www.openplanetsfoundation.org). 
 
 ## Develop
 
 [![Build Status](https://travis-ci.org/openplanets/scape.png)](https://travis-ci.org/openplanets/scape)
 
-### Requirements
-
-To build you require:
-
-* Git client
-* Apache Maven
-* Java Developers Kit (e.g. OpenJDK 6)
-
-For using the recommended IDE you require:
-
-* Eclipse of Java
-
-### Setup IDE
-
-1. Start Eclipse
-2. Select "File > Import". Then, select "Maven > Existing Maven Projects" and click "Next"
-3. In the "Root Directory", browse to RODA source code directory on your filesystem and select "Open"
-4. Optionally, you can add it to a "Working set"
-5. Click "Finish"
-
-### Build
-
-To compile go to the sources folder and execute the command:
-
-```bash
-$ mvn clean install
-```
-
-After successful compile the binary will be available at `target/binary.jar`.
-
-### Deploy
-
-To deploy do ...
+Please read this [Dev Guide](https://github.com/peshkira/c3po/wiki/Development-Guide). You can find the [JavaDocs](http://peshkira.github.io/c3po/apidocs/index.html) here.
 
 ### Contribute
 
