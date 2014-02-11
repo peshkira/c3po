@@ -320,6 +320,8 @@ public class ProfileGenerator {
     Element sample = samples.addElement( "sample" ).addAttribute( "uid", uid );
     for ( MetadataRecord mr : element.getMetadata() ) {
       LOG.debug( "Metadata record: {}", mr.getProperty().getKey() );
+      if ( mr.getValues().size()==0)
+          continue;
       if ( mr.getStatus().equals( Status.CONFLICT.toString() ) ) {
         for ( int i = 0; i < mr.getValues().size(); i++ ) {
           Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr

@@ -53,6 +53,17 @@ public interface ReadOnlyCache {
   Source getSource( String name, String version );
 
   /**
+   * Retrieves the source designated by the given id. Depending on
+   * the implementation it might return null or a new source if there was no
+   * source with the given name and version.
+   *
+   * @param id
+   * 		  the id of the tool.
+   * @return
+   */
+  Source getSource(String id);
+
+  /**
    * Any other non-persistence layer object that can be cached.
    * 
    * @param key
