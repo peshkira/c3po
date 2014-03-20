@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -100,7 +101,7 @@ public class Controller {
      * A processing queue that is passed to each adaptor and is used for the
      * synchronisation between adaptors and consolidators.
      */
-    private final Queue<Element> processingQueue;
+    private final LinkedBlockingQueue<Element> processingQueue;
 
     /**
      * A map of the known adaptors.
@@ -134,7 +135,8 @@ public class Controller {
     public Controller(Configurator config) {
         this.configurator = config;
         this.persistence = config.getPersistence();
-        this.processingQueue = new LinkedList<Element>();
+        this.processingQueue = new LinkedBlockingQueue<Element>(10000);
+
         this.gatherLock = new Object();
         this.gatherer = new LocalFileGatherer( this.gatherLock );
         this.knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
@@ -441,6 +443,11 @@ public class Controller {
 
         List<ProcessingRule> rules = this.getRules( collection );
 
+        Thread gathererThread = new Thread( this.gatherer, "MetadataGatherer" );
+        // gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
+        gathererThread.start();
+
+
         LOG.debug( "Initializing adaptors..." );
         for ( int i = 0; i < adaptThreads; i++ ) {
             AbstractAdaptor a = this.getAdaptor( type );
@@ -459,9 +466,7 @@ public class Controller {
         // no more adaptors can be added.
         this.adaptorPool.shutdown();
 
-        Thread gathererThread = new Thread( this.gatherer, "MetadataGatherer" );
-        // gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
-        gathererThread.start();
+
 
         try {
 

@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public abstract class AbstractAdaptor implements Runnable {
    * An internally managed queue that will store the parsed Elements for further
    * processing by the application.
    */
-  private Queue<Element> elementsQueue;
+  private LinkedBlockingQueue<Element> elementsQueue;
 
   /**
    * The lock on which the adaptors and the gatherer synchronize.
@@ -194,7 +195,7 @@ public abstract class AbstractAdaptor implements Runnable {
    * @param q
    *          the queue to use.
    */
-  public final void setQueue( Queue<Element> q ) {
+  public final void setQueue( LinkedBlockingQueue<Element> q ) {
     if ( q != null && this.elementsQueue == null ) {
       this.elementsQueue = q;
     }
@@ -214,23 +215,22 @@ public abstract class AbstractAdaptor implements Runnable {
   public final void run() {
     try {
       while ( !gatherer.isReady() || gatherer.hasNext() ) {
-        try {
 
           MetadataStream stream = null;
           String name = null;
           String data = null;
 
-          synchronized ( gatherLock ) {
-            while ( !gatherer.hasNext() ) {
+          // synchronized ( gatherLock ) {
+          //   while ( !gatherer.hasNext() ) {
+          //
+          //     if ( gatherer.isReady() ) {
+          //       break;
+          //     }
+          //
+          //     gatherLock.wait();
+          //  }
 
-              if ( gatherer.isReady() ) {
-                break;
-              }
-
-              gatherLock.wait();
-            }
-
-          }
+          //  }
           stream = this.gatherer.getNext();
           if ( stream != null ) {
             name = stream.getName();
@@ -242,7 +242,6 @@ public abstract class AbstractAdaptor implements Runnable {
 
             if ( name != null || data != null ) {
               element = parseElement( name, data );
-
             }
 
           } catch ( Exception e ) {
@@ -252,11 +251,6 @@ public abstract class AbstractAdaptor implements Runnable {
           postProcessElement( element );
 
           submitElement( element );
-
-        } catch ( InterruptedException e ) {
-          e.printStackTrace();
-          break;
-        }
 
       }
 
@@ -526,8 +520,13 @@ public abstract class AbstractAdaptor implements Runnable {
   private final void submitElement( Element e ) {
     synchronized ( elementsQueue ) {
       if ( e != null ) {
-        elementsQueue.add( e );
-        elementsQueue.notify();
+          try {
+              elementsQueue.put(e);
+              elementsQueue.notify();
+          } catch (InterruptedException e1) {
+              e1.printStackTrace();
+          }
+
       }
     }
   }

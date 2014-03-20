@@ -17,6 +17,7 @@ package com.petpet.c3po.controller;
 
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class Consolidator extends Thread {
   /**
    * The queue that will be used for the processing.
    */
-  private final Queue<Element> queue;
+  private final LinkedBlockingQueue<Element> queue;
 
   /**
    * The persistence layer for storing the elements.
@@ -74,7 +75,7 @@ public class Consolidator extends Thread {
    * @param q
    *          the queue to use.
    */
-  public Consolidator(PersistenceLayer p, Queue<Element> q) {
+  public Consolidator(PersistenceLayer p, LinkedBlockingQueue<Element> q) {
     persistence = p;
     queue = q;
     setName( "Consolidator[" + instance++ + "]" );
@@ -90,19 +91,19 @@ public class Consolidator extends Thread {
   public void run() {
     this.running = true;
     while ( this.running || !queue.isEmpty() ) {
-      try {
+      //try {
 
         Element e = null;
         synchronized ( queue ) {
 
-          while ( queue.isEmpty() ) {
+          //while ( queue.isEmpty() ) {
+          //
+          //  if ( !this.isRunning() ) {
+          //    break;
+          //  }
 
-            if ( !this.isRunning() ) {
-              break;
-            }
-
-            queue.wait();
-          }
+          //  queue.wait();
+        //  }
 
           // LOG.debug("cons queue count: " + queue.size());
           e = queue.poll();
@@ -111,10 +112,10 @@ public class Consolidator extends Thread {
         // should this be here or outside of the sync block
         process( e );
 
-      } catch ( InterruptedException e ) {
-        LOG.warn( "An error occurred in {}: {}", getName(), e.getMessage() );
-        break;
-      }
+     // } catch ( InterruptedException e ) {
+    //    LOG.warn( "An error occurred in {}: {}", getName(), e.getMessage() );
+    //    break;
+    //  }
     }
     LOG.info( getName() + " is stopping" );
   }

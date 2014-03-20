@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
   /**
    * A queue where the {@link FileMetadataStream} objects are stored.
    */
-  private final Queue<MetadataStream> queue;
+  private final LinkedBlockingQueue<MetadataStream> queue;
 
   /**
    * The count of objects gathered.
@@ -81,7 +82,7 @@ public class LocalFileGatherer implements MetaDataGatherer {
    * Creates a new gatherer.
    */
   public LocalFileGatherer() {
-    this.queue = new LinkedList<MetadataStream>();
+    this.queue = new LinkedBlockingQueue<MetadataStream>(10000);
     this.ready = false;
   }
 
@@ -116,15 +117,16 @@ public class LocalFileGatherer implements MetaDataGatherer {
     boolean recursive = Boolean.valueOf( this.config.get( Constants.OPT_RECURSIVE ) );
 
     this.ready = false;
+
     this.traverseFiles( new File( path ), recursive, true );
     System.out.println( this.count + " files were submitted for processing" );
     LOG.info( "{} files were submitted for processing successfully", this.count );
-    this.ready = true;
 
-    synchronized ( lock ) {
-      this.lock.notifyAll();
 
-    }
+    //synchronized ( lock ) {
+    //  this.lock.notifyAll();
+
+   // }
   }
 
   /**
@@ -190,7 +192,8 @@ public class LocalFileGatherer implements MetaDataGatherer {
       } else {
 
         submitMetadataResult( filePath );
-
+        if (!this.ready)
+             this.ready=true;
       }
     }
 
@@ -233,26 +236,33 @@ public class LocalFileGatherer implements MetaDataGatherer {
 
   private void submitMetadataResult( String filePath ) {
     FileMetadataStream ms = new FileMetadataStream( filePath );
-    this.queue.add( ms );
-    count++;
+      try {
+          this.queue.put( ms );
+          count++;
+      } catch (InterruptedException e) {
+          e.printStackTrace();
+      }
 
-    if ( (this.count % 1000) == 0 ) {
+
+    if ( (this.count % 10000) == 0 ) {
       LOG.info( "{} files were submitted for processing", this.count );
-      synchronized ( lock ) {
-        this.lock.notify();
-
-      }
+        System.out.println( this.count + " files were submitted for processing" );
+    //  synchronized ( lock ) {
+    //    this.lock.notify();
+    //
+     // }
+        this.count=0;
     }
 
-    if ( this.queue.size() > 10000 && this.count % 1000 == 0 ) {
-      synchronized ( lock ) {
-        this.lock.notifyAll();
-      }
-    }
+    //if ( this.queue.size() > 10000 && this.count % 1000 == 0 ) {
+    //  synchronized ( lock ) {
+    //    this.lock.notifyAll();
+    //  }
+   // }
 
-    if ( this.count % 10000 == 0 ) {
-      System.out.println( this.count + " files were submitted for processing" );
-    }
+   // if ( this.count % 10000 == 0 ) {
+  //    System.out.println( this.count + " files were submitted for processing" );
+  //  }
 
   }
 }
