@@ -119,11 +119,6 @@ public class Controller {
     private Configurator configurator;
 
     /**
-     * A lock object for synchronization between the gatherer and the adaptors.
-     */
-    private Object gatherLock;
-
-    /**
      * This constructors sets the persistence layer, initializes the processing
      * queue and the {@link LocalFileGatherer};
      *
@@ -137,8 +132,7 @@ public class Controller {
         this.persistence = config.getPersistence();
         this.processingQueue = new LinkedBlockingQueue<Element>(10000);
 
-        this.gatherLock = new Object();
-        this.gatherer = new LocalFileGatherer( this.gatherLock );
+        this.gatherer = new LocalFileGatherer();
         this.knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
         this.knownRules = new HashMap<String, Class<? extends ProcessingRule>>();
 
@@ -443,18 +437,12 @@ public class Controller {
 
         List<ProcessingRule> rules = this.getRules( collection );
 
-        Thread gathererThread = new Thread( this.gatherer, "MetadataGatherer" );
-        // gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
-        gathererThread.start();
-
-
         LOG.debug( "Initializing adaptors..." );
         for ( int i = 0; i < adaptThreads; i++ ) {
             AbstractAdaptor a = this.getAdaptor( type );
 
             a.setCache( this.persistence.getCache() );
             a.setQueue( this.processingQueue );
-            a.setGatherLock( this.gatherLock );
             a.setGatherer( this.gatherer );
             a.setConfig( adaptorcnf );
             a.setRules( rules );
@@ -466,6 +454,10 @@ public class Controller {
         // no more adaptors can be added.
         this.adaptorPool.shutdown();
 
+
+        Thread gathererThread = new Thread( this.gatherer, "MetadataGatherer" );
+        // gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
+        gathererThread.start();
 
 
         try {
