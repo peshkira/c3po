@@ -93,7 +93,7 @@ public class Consolidator implements Runnable {
     @Override
     public void run() {
         try {
-            Element e = queue.take();
+            Element e = queue.poll(100, TimeUnit.SECONDS);
             process( e );
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -102,7 +102,7 @@ public class Consolidator implements Runnable {
         while (!(queue.isEmpty() && !isRunning()))
         {
             try {
-                Element e = queue.poll(100, TimeUnit.SECONDS);
+                Element e = queue.poll(20, TimeUnit.SECONDS);
                 process( e );
             } catch ( InterruptedException e ) {
                 LOG.warn( "An error occurred in {}: {}", getName(), e.getMessage() );

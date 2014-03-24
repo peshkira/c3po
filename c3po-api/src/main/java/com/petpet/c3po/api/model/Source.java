@@ -41,6 +41,8 @@ public class Source implements Model {
    */
   private String version;
 
+  private static int i=0;
+
   /**
    * A default constructor.
    */
@@ -58,7 +60,7 @@ public class Source implements Model {
    *          the version of the source.
    */
   public Source(String name, String version) {
-    this.id = UUID.randomUUID().toString();
+    this.id = Integer.toString(i++);
     this.name = name;
     this.version = version;
   }
