@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -100,7 +101,7 @@ public class Controller {
      * A processing queue that is passed to each adaptor and is used for the
      * synchronisation between adaptors and consolidators.
      */
-    private final Queue<Element> processingQueue;
+    private final LinkedBlockingQueue<Element> processingQueue;
 
     /**
      * A map of the known adaptors.
@@ -118,11 +119,6 @@ public class Controller {
     private Configurator configurator;
 
     /**
-     * A lock object for synchronization between the gatherer and the adaptors.
-     */
-    private Object gatherLock;
-
-    /**
      * This constructors sets the persistence layer, initializes the processing
      * queue and the {@link LocalFileGatherer};
      *
@@ -134,9 +130,9 @@ public class Controller {
     public Controller(Configurator config) {
         this.configurator = config;
         this.persistence = config.getPersistence();
-        this.processingQueue = new LinkedList<Element>();
-        this.gatherLock = new Object();
-        this.gatherer = new LocalFileGatherer( this.gatherLock );
+        this.processingQueue = new LinkedBlockingQueue<Element>(10000);
+
+        this.gatherer = new LocalFileGatherer();
         this.knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
         this.knownRules = new HashMap<String, Class<? extends ProcessingRule>>();
 
@@ -447,7 +443,6 @@ public class Controller {
 
             a.setCache( this.persistence.getCache() );
             a.setQueue( this.processingQueue );
-            a.setGatherLock( this.gatherLock );
             a.setGatherer( this.gatherer );
             a.setConfig( adaptorcnf );
             a.setRules( rules );
