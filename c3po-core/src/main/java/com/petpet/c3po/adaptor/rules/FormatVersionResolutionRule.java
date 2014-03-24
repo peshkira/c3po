@@ -59,4 +59,8 @@ public class FormatVersionResolutionRule implements PostProcessingRule {
     return e;
   }
 
+  @Override
+  public void onCommandFinished() {
+    // do nothing
+  }
 }

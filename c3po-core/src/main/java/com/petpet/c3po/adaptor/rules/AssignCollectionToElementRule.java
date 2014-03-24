@@ -52,6 +52,11 @@ public class AssignCollectionToElementRule implements PostProcessingRule {
     return 990;
   }
 
+  @Override
+  public void onCommandFinished() {
+    // do nothing
+  }
+
   /**
    * Sets the collection of the given element to the colleciton name and returns
    * it.

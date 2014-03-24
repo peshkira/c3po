@@ -1,0 +1,34 @@
+package c3po.custom
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+ * Treat format version "HTML x" like "x" from Jhove
+ */
+rule "set html format version/markupBasisVersion to value without prefix"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            (property.id == "format_version" || property.id == "markupBasisVersion"), 
+            value str[startsWith] "HTML ",
+            MetadataUtil.isFromTool(this, "Jhove")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Jhove HTML format version/markupBasisVersion issue: ");
+        
+        String newValue = $md.getValue().substring(4).trim();
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+end
+

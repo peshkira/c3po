@@ -21,6 +21,7 @@ import java.util.List;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
 import com.petpet.c3po.utils.DataHelper;
@@ -115,6 +116,18 @@ public class MongoElementSerializer implements MongoModelSerializer {
       if ( !meta.keySet().isEmpty() ) {
         document.put( "metadata", meta );
       }
+
+      BasicDBObject logEntries = new BasicDBObject();
+
+      for (LogEntry logEntry : element.getLogEntries()) {
+
+        logEntries.put("property", logEntry.getMetadataProperty());
+        logEntries.put("valueOld", logEntry.getMetadataValueOld());
+        logEntries.put("changeType", logEntry.getChangeType().name());
+        logEntries.put("ruleName", logEntry.getRuleName());
+      }
+
+      document.put("log", logEntries);
 
     }
 

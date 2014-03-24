@@ -16,9 +16,11 @@
 package com.petpet.c3po.api.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 
 /**
@@ -56,6 +58,11 @@ public class Element implements Model {
    * A list of {@link MetadataRecord} info.
    */
   private List<MetadataRecord> metadata;
+
+  /**
+   * A list of {@link LogEntry} records
+   */
+  private List<LogEntry> logEntries = new ArrayList<LogEntry>();
 
   /**
    * Creates an element with the given uid and name.
@@ -115,6 +122,14 @@ public class Element implements Model {
     this.metadata = metadata;
   }
 
+  public List<LogEntry> getLogEntries() {
+    return logEntries;
+  }
+
+  public void setLogEntries(List<LogEntry> logEntries) {
+    this.logEntries = logEntries;
+  }
+
   public String getId() {
     return id;
   }
@@ -145,6 +160,115 @@ public class Element implements Model {
     }
 
     return result;
+  }
+
+  /**
+   * Split the given {@link MetadataRecord} into one for every {@link Source}.
+   * This is necessary, because the MongoDB backend only holds a list of
+   * {@link Source}s if all agree on the same value OR one source for each
+   * conflicting value. By splitting up {@link MetadataRecord}s that hold
+   * several sources, it is granted that all information about {@link Source}s
+   * is persisted in the database.
+   * 
+   * @param record
+   *          The {@link MetadataRecord} to split up.
+   */
+  public void splitMetadata(MetadataRecord record) {
+    if (record.getSources().size() > 1) {
+      Iterator<String> sourceIterator = record.getSources().iterator();
+      sourceIterator.next(); // the first source will stay in "record"
+      while (sourceIterator.hasNext()) {
+        String sourceID = sourceIterator.next();
+        sourceIterator.remove();
+
+        MetadataRecord newRecord = new MetadataRecord();
+        newRecord.setProperty(record.getProperty());
+        newRecord.setStatus(record.getStatus());
+        newRecord.setValue(record.getValue());
+        newRecord.setValues(record.getValues());
+        newRecord.setSources(new ArrayList<String>(1));
+        newRecord.getSources().add(sourceID);
+
+        this.getMetadata().add(newRecord);
+      }
+    }
+  }
+
+  /**
+   * Merge two {@link MetadataRecord}s together if they have the same property
+   * and value. The second record gets removed from the list of
+   * {@link MetadataRecord}s and its sources are emptied. The sources are added
+   * to the first record.
+   * 
+   * If the property and value are not equal (in terms of
+   * {@link MetadataRecord#equals(Object)}), nothing happens.
+   * 
+   * @param record1
+   *          The {@link MetadataRecord} that will contain the union list of
+   *          source entries.
+   * @param record2
+   *          The {@link MetadataRecord} that will be removed and that will hold
+   *          no sources.
+   */
+  public void mergeMetadata(MetadataRecord record1, MetadataRecord record2) {
+    if (record1.getProperty().getId().equals(record2.getProperty().getId())
+        && record1.getValue().equals(record2.getValue())) {
+      if (this.metadata.remove(record2)) {
+        record1.getSources().addAll(record2.getSources());
+
+        // this is necessary to support Drools revert accumulation,
+        // otherwise sources get reverted twice
+        record2.getSources().clear();
+      }
+    }
+  }
+
+  /**
+   * Perform {@link #mergeMetadata(MetadataRecord, MetadataRecord)} on a
+   * collection of records.
+   * 
+   * @param record1
+   *          The {@link MetadataRecord} that will contain the union list of
+   *          source entries.
+   * @param records
+   *          A collection of {@link MetadataRecord}, each of which will be
+   *          removed and that will hold no sources.
+   */
+  public void mergeMetadata(MetadataRecord record1, Collection<MetadataRecord> records) {
+    for (MetadataRecord metadataRecord : records) {
+      this.mergeMetadata(record1, metadataRecord);
+    }
+  }
+
+  /**
+   * Ignore a {@link MetadataRecord} - currently this simply means that the
+   * record is removed from the list of {@link MetadataRecord}s.
+   * 
+   * @param record
+   *          The {@link MetadataRecord} to be ignored.
+   */
+  public void ignoreMetadata(MetadataRecord record) {
+    this.metadata.remove(record);
+  }
+
+  /**
+   * Ignore a collection of {@link MetadataRecord}s.
+   * 
+   * @see Element#ignoreMetadata(MetadataRecord)
+   * 
+   * @param records
+   *          The {@link MetadataRecord}s to be ignored.
+   */
+  public void ignoreMetadata(Collection<MetadataRecord> records) {
+    for (MetadataRecord record : records) {
+      this.ignoreMetadata(record);
+    }
+  }
+
+  public void addLog(String metadataProperty, String metadataValueOld,
+                     LogEntry.ChangeType changeType, String ruleName) {
+    this.logEntries.add(new LogEntry(metadataProperty, metadataValueOld,
+        changeType, ruleName));
   }
 
 }
