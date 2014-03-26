@@ -144,10 +144,10 @@ public class FITSAdaptor extends AbstractAdaptor {
     private void createParsingRules() {
         this.createElementRules();
         this.createIdentityRules();
-        // this.createFileInfoRules();
-        // this.createRepresentationInfoRules();
-        // this.createFileStatusRules();
-        // this.createMetaDataRules();
+        this.createFileInfoRules();
+        this.createRepresentationInfoRules();
+        this.createFileStatusRules();
+        this.createMetaDataRules();
     }
 
     /**
