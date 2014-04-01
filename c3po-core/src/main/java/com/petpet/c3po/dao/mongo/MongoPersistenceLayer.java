@@ -436,6 +436,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBObject query = this.getCachedFilter( filter );
     DBCollection dbCollection = this.getCollection( clazz );
     dbCollection.remove( query );
+    clearCache();
 
   }
 
