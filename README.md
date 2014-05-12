@@ -12,7 +12,7 @@ To install you need:
 * MongoDB 2.0.5 or higher (64 Bit)
 * FITS (optional)
 
-To run Web application, you also need:
+To run the Web application, you also need:
 
 * Some Application Server (Tomcat/Jetty/JBoss 7), or
 * Play Framework
@@ -37,6 +37,8 @@ C3PO is released under [Apache version 2.0 license](LICENSE.txt).
 
 Part of this work was supported by the European Union in the 7th Framework Program, IST, through the SCAPE project, Contract 270137.
 
+This work was partially supported by the [SCAPE project](http://scape-project.eu/). The SCAPE project is co-funded by the European Union under FP7 ICT-2009.4.1 (Grant Agreement number 270137)
+
 ### Support
 
 This tool is supported by the [Open Planets Foundation](http://www.openplanetsfoundation.org). 
@@ -46,7 +48,7 @@ This tool is supported by the [Open Planets Foundation](http://www.openplanetsfo
 ### Version 0.4
 
 * Xml-based content profile generation
-* Visualization, filtering throught the Web Application
+* Visualization, filtering through the Web Application
 * Supports [FITS](http://projects.iq.harvard.edu/fits) and [Apache TIKA](https://tika.apache.org/) meta data
 * Conflict resolution using [Drools Rule Framework](https://www.jboss.org/drools/)
 * Representative sample set generation
