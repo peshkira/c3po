@@ -11,7 +11,7 @@ C3PO – or ‘Clever, Crafty, Content Profiling of Objects’ is a software too
 C3PO brings you the following benefits:
 
 * In-depth knowledge of your files
-* Scalability – analyse large amounts of data in no time
+* Scalability – analyze large amounts of data in no time
 * Visualization of metadata characteristics
 * Easy integration with [PLATO](http://ifs.tuwien.ac.at/dp/plato/) for preservation planning
 * Easy integration with [SCOUT](http://openplanets.github.io/scout/) for monitoring preservation risks
