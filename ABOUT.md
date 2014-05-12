@@ -26,7 +26,11 @@ C3PO is for:
 
 ## More information
 
-### Publications
+General information about C3PO can be found [here](http://ifs.tuwien.ac.at/imp/c3po).
+
+Please refer to [Usage Guide](https://github.com/peshkira/c3po/wiki/Usage-Guide) for information on how to use C3PO.
+
+### Blog Posts
 
 * [To fits or not to fits](http://www.openplanetsfoundation.org/blogs/2012-07-27-fits-or-not-fits)
 * [C3PO: a content profiling tool for preservation analysis](http://www.openplanetsfoundation.org/blogs/2012-11-19-c3po-content-profiling-tool-preservation-analysis)
