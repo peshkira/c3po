@@ -49,7 +49,7 @@ This tool is supported by the [Open Planets Foundation](http://www.openplanetsfo
 
 * Xml-based content profile generation
 * Visualization, filtering through the Web Application
-* Supports [FITS](http://projects.iq.harvard.edu/fits) and [Apache TIKA](https://tika.apache.org/) meta data
+* Supports [FITS](http://projects.iq.harvard.edu/fits) and [Apache TIKA](https://tika.apache.org/) meta-data
 * Conflict resolution using [Drools Rule Framework](https://www.jboss.org/drools/)
 * Representative sample set generation
 * Support for REST API (Scout)
