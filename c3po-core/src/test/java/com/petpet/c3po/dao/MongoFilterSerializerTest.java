@@ -125,8 +125,8 @@ public class MongoFilterSerializerTest {
     DBObject filter = ser.serialize(f);
 
     String val = filter.toString();
-    String expr = "{ \"$and\" : [ { \"$or\" : [ { \"metadata.mimetype.value\" : \"applciation/pdf\"} , { \"metadata.mimetype.value\" : \"text/html\"} , { \"metadata.mimetype.value\" : \"text/xml\"}]} , { \"metadata.puid.value\" : \"fmt/42\"}]}";
-    Assert.assertEquals(expr, val);
+    String expr = "{ \"$and\" : [ { \"metadata.puid.value\" : \"fmt/42\"} , { \"$or\" : [ { \"metadata.mimetype.value\" : \"applciation/pdf\"} , { \"metadata.mimetype.value\" : \"text/html\"} , { \"metadata.mimetype.value\" : \"text/xml\"}]}]}";
+            Assert.assertEquals(expr, val);
   }
 
 }
