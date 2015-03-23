@@ -49,7 +49,7 @@ public abstract class RepresentativeGenerator {
    * is the responsibility of the method to decide how many objects should be
    * returned. Usually a small number of up to 10 is good for planning
    * experiments.
-   * 
+   *
    * @return the list of sample object identifiers.
    */
   public abstract List<String> execute();
