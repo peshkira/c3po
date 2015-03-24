@@ -215,7 +215,7 @@ public abstract class AbstractAdaptor implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        while (!(metadataStreamQueue.isEmpty() && !gatherer.isReady()))
+        while (!(metadataStreamQueue.isEmpty() ))//&& !gatherer.isReady())) TODO: check this commented gatherer.
         {
             try {
                 process(metadataStreamQueue.poll(20, TimeUnit.SECONDS));
