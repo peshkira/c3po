@@ -7,13 +7,17 @@ import com.petpet.c3po.adaptor.tika.TIKAHelper;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.dao.DefaultPersistenceLayer;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.gatherer.LocalFileGatherer;
+import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 import com.petpet.c3po.utils.XMLUtils;
@@ -31,7 +35,28 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class DistributionRepresentativeGeneratorTest extends TestCase {
 
     public void testExecute() throws Exception {
+
+
+        List<String> props = new ArrayList<String>();
+        props.add("mimetype");
+        props.add("puid");
+
+        String alg = "distsampling";
+        int size = 5;
+        String name = "test";
+
+
+
+        RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm( alg );
+        Map<String, Object> samplesOptions = new HashMap<String, Object>();
+        samplesOptions.put( "properties", props );
+        samplesGen.setOptions( samplesOptions );
+        samplesGen.setFilter( new Filter( new FilterCondition( "collection", name ) ) );
+
+
+        List<String> result = samplesGen.execute(size);
         int i=0;
+
 
     }
     MongoPersistenceLayer pLayer;
@@ -40,7 +65,11 @@ public class DistributionRepresentativeGeneratorTest extends TestCase {
     Map<String, Class<? extends ProcessingRule>> knownRules;
     Map<String, Class<? extends AbstractAdaptor>> knownAdaptors;
     public void setUp() throws Exception {
+
+        Configurator.getDefaultConfigurator().configure();
+
         pLayer = new MongoPersistenceLayer();
+        Configurator.getDefaultConfigurator().setPersistence(pLayer);
 
         config = new HashMap<String, String>();
         config.put("db.host", "localhost");
@@ -157,10 +186,8 @@ public class DistributionRepresentativeGeneratorTest extends TestCase {
                 LOG.error( "An error occurred while instantiating the adaptor: ", e.getMessage() );
             }
         }
-
         return adaptor;
     }
-
     public void tearDown() throws Exception {
         if (this.pLayer.isConnected()) {
             this.pLayer.clearCache();

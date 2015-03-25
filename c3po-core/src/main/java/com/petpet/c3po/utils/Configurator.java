@@ -332,6 +332,18 @@ public final class Configurator {
     // initialize any other helpers...
   }
 
+
+    public void setPersistence(PersistenceLayer layer)
+    {
+        if (layer != null) {
+            this.persistence=layer;
+            initializeHelpers();
+        }
+
+    }
+
+
+
   /**
    * Static instance holder.
    * 
