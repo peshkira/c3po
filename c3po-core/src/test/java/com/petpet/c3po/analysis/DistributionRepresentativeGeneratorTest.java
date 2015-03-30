@@ -2,22 +2,18 @@ package com.petpet.c3po.analysis;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.fits.FITSHelper;
-import com.petpet.c3po.adaptor.rules.*;
-import com.petpet.c3po.adaptor.tika.TIKAHelper;
+import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
+import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
+import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.api.model.ActionLog;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
-import com.petpet.c3po.api.model.helper.MetadataStream;
 import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.dao.DefaultPersistenceLayer;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.gatherer.LocalFileGatherer;
-import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 import com.petpet.c3po.utils.XMLUtils;
@@ -42,7 +38,7 @@ public class DistributionRepresentativeGeneratorTest extends TestCase {
         props.add("puid");
 
         String alg = "distsampling";
-        int size = 5;
+        int size = 50;
         String name = "test";
 
 
@@ -78,6 +74,7 @@ public class DistributionRepresentativeGeneratorTest extends TestCase {
         config.put(Constants.OPT_COLLECTION_NAME, "test");
         config.put(Constants.OPT_COLLECTION_LOCATION, "src/test/resources/fits/");
         config.put(Constants.OPT_INPUT_TYPE, "FITS");
+        config.put(Constants.OPT_RECURSIVE, "True");
         Map<String, String> adaptorcnf = this.getAdaptorConfig( config, "FITS" );
         DataHelper.init();
         XMLUtils.init();
