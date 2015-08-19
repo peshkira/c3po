@@ -1,0 +1,6 @@
+#raster images template
+colorspace.RGB, mimetype.image/png=mimetype, format, valid
+colorspace.RGB, mimetype.image/jpeg=mimetype, format, valid
+colorspace.RGB=format_version
+
+

@@ -16,6 +16,7 @@
 package controllers;
 
 import helpers.Graph;
+import helpers.PropertySetTemplate;
 import helpers.PropertyValuesFilter;
 import helpers.Statistics;
 
@@ -60,7 +61,6 @@ public class FilterController extends Controller {
     Logger.debug("in method getAll(), retrieving all properties");
     List<PropertyValuesFilter> filters = new ArrayList<PropertyValuesFilter>();
     Filter filter = Application.getFilterFromSession();
-
     if (filter != null) {
       BasicDBObject ref = new BasicDBObject("descriminator", filter.getDescriminator());
       ref.put("collection", filter.getCollection());
@@ -147,6 +147,7 @@ public class FilterController extends Controller {
 
         tmp.setValue(v);
         p.insert(Constants.TBL_FILTERS, tmp.getDocument());
+        PropertySetTemplate.setProps(tmp);
         existing = true;
         break;
       }
@@ -157,8 +158,9 @@ public class FilterController extends Controller {
       Filter newFilter = new Filter(filter.getCollection(), f, v);
       newFilter.setDescriminator(filter.getDescriminator());
       p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
+      PropertySetTemplate.setProps(newFilter);
     }
-
+    
     return ok();
 
   }
@@ -180,7 +182,7 @@ public class FilterController extends Controller {
     }
 
     final String filtervalue = graph.getKeys().get(value);
-
+    
     return addFromFilter(filter, f, filtervalue);
   }
 

@@ -42,7 +42,7 @@ import common.WebAppConstants;
 
 public class Application extends Controller {
 
-  public static final String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed",
+  public static String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed",
       "creating_application_name", "created" };
 
   public static Result index() {
