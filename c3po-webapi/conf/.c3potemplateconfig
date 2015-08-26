@@ -1,6 +1,7 @@
 #raster images template
-colorspace.RGB, mimetype.image/png=mimetype, format, valid
-colorspace.RGB, mimetype.image/jpeg=mimetype, format, valid
-colorspace.RGB=format_version
-
-
+colorspace=format_version, mimetype, image_width, image_height, icc_profile_name, exif_version
+mimetype.image/png=format_version, mimetype, image_width, image_height, icc_profile_name, exif_version
+mimetype.image/jpeg=format_version, mimetype, image_width, image_height, icc_profile_name, exif_version
+brightness=format_version, mimetype, image_width, image_height, icc_profile_name, exif_version
+lightsource=format_version, mimetype, image_width, image_height, icc_profile_name, exif_version
+icc_profile_name=format_version, mimetype, image_width, image_height, icc_profile_name, exif_version

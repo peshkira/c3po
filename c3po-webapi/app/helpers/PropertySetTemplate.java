@@ -29,15 +29,16 @@ import play.Logger;
 
 public class PropertySetTemplate {
 	private static String[] defaultProps = { "mimetype", "format", "format_version", "valid", "wellformed",
-			"creating_application_name", "created", "colorspace" };
+			"creating_application_name", "created" };
 	public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3potemplateconfig";
+	@SuppressWarnings("rawtypes")
 	public static void setProps(Filter filter){
 		//if (filter == null)
 
 		HashMap<List, List> templates = loadConfig();    //colorspace.RBG, mimetype.html/text=mimetype, format, valid
 		List listFilter=filterToString(filter);
 		for(List l: templates.keySet()){
-			if (listFilter.containsAll(l))
+			if (contains(listFilter, l)) // listFilter.containsAll(l))
 			{
 				Application.PROPS=(String[])templates.get(l).toArray();
 				return;
@@ -46,8 +47,23 @@ public class PropertySetTemplate {
 		Application.PROPS=defaultProps;
 	}
 
+	private static Boolean contains(List listFilter, List listTemplate) {
+		Boolean result=true;
+		for (String s: (List<String>) listTemplate){
+			Boolean contains=false;
+			for (String sf: (List<String>) listFilter){
+				if (sf.contains(s)){
+					contains=true;
+				}
+			}
+			if (!contains)
+				result=false;
+		}
+		return result;
+	}
+
 	public static HashMap<List, List> loadConfig(){
-		HashMap<List, List> result=new HashMap<>();
+		LinkedHashMap<List, List> result=new LinkedHashMap<>();
 
 		final File f = new File( USER_PROPERTIES );
 		//Properties props=new Properties();
@@ -60,7 +76,6 @@ public class PropertySetTemplate {
 						continue;
 					if (line.contains("=")){
 						String[] tmp = line.split("=");
-
 						String key=tmp[0];
 						String value=tmp[1];
 						key=key.replace(" ", "");
@@ -93,12 +108,18 @@ public class PropertySetTemplate {
 		DataHelper.init();
 		BasicDBObject ref= DataHelper.getFilterQuery(filter);
 		ref.removeField("collection");
-		HashMap<String,String> map=(HashMap<String, String>) ref.toMap();   //colorspace.RBG, mimetype.html/text=mimetype, format, valid
-		List list=new ArrayList();									// {metadata.author.value=121549}
+		HashMap<String,String> map=(HashMap<String, String>) ref.toMap(); 
+		List list=new ArrayList();									
 		for(String s: map.keySet()){
-			String value=map.get(s);
+			Object value=map.get(s);
 			s=s.replace("metadata.", "");
 			s=s.replace(".value", "");
+			if (value instanceof BasicDBObject){
+				HashMap<String,String> valueMap=(HashMap<String, String>) ((BasicDBObject) value).toMap();
+				Object high = valueMap.get("$lte");
+				Object low = valueMap.get("$gte");
+				value=low.toString()+"-"+high.toString();
+			}
 			list.add(s+"."+value);
 		}
 		Collections.sort(list);

@@ -338,11 +338,14 @@ public class FilterController extends Controller {
 
     if (p.getType().equals(PropertyType.INTEGER.toString())) {
       DBObject range = (DBObject) query.get("metadata." + property + ".value");
+      if (range==null)
+    	  width=50;
+      else{
+    	  Long low = (Long) range.get("$gte");
+    	  Long high = (Long) range.get("$lte");
       
-      Long low = (Long) range.get("$gte");
-      Long high = (Long) range.get("$lte");
-      
-      width = high - low + 1; //because of lte/gte
+    	  width = high - low + 1; //because of lte/gte
+      }
 
       HashMap<String, String> config = new HashMap<String, String>();
       config.put("bin_width", width + "");
