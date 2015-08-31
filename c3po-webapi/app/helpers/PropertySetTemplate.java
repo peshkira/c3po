@@ -33,18 +33,19 @@ public class PropertySetTemplate {
 	public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3potemplateconfig";
 	@SuppressWarnings("rawtypes")
 	public static void setProps(Filter filter){
-		//if (filter == null)
-
-		HashMap<List, List> templates = loadConfig();    //colorspace.RBG, mimetype.html/text=mimetype, format, valid
+		Application.PROPS=defaultProps;
+		if (filter==null){
+			return;
+		}
+		HashMap<List, List> templates = loadConfig();  
 		List listFilter=filterToString(filter);
 		for(List l: templates.keySet()){
-			if (contains(listFilter, l)) // listFilter.containsAll(l))
+			if (contains(listFilter, l)) 
 			{
 				Application.PROPS=(String[])templates.get(l).toArray();
 				return;
 			}
 		}
-		Application.PROPS=defaultProps;
 	}
 
 	private static Boolean contains(List listFilter, List listTemplate) {

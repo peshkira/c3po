@@ -94,15 +94,17 @@ public class FilterController extends Controller {
     DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
     if (cursor.count() == 0) {
       Logger.debug("No filter found for property: " + property);
+      PropertySetTemplate.setProps(null);
     } else if (cursor.count() == 1) {
       Logger.debug("Removing filter for property: " + property);
       Filter tmp = DataHelper.parseFilter(cursor.next());
       p.getDB().getCollection(Constants.TBL_FILTERS).remove(tmp.getDocument());
+      PropertySetTemplate.setProps(null);
     } else {
       Logger.error("Something went wrong, while removing filter for property: " + property);
       throw new RuntimeException("Two many filters found for property " + property);
     }
-
+    
     return ok();
   }
 
@@ -448,23 +450,25 @@ public class FilterController extends Controller {
     // find classes based on number of bins...
     // map reduce this property based on the classes...
     Graph g = null;
-    if (alg.equals("fixed")) {
-      int width = 50;
-      try {
-        width = Integer.parseInt(w);
-      } catch (NumberFormatException e) {
-        Logger.warn("Not a number, using default bin width: 50");
-      }
-
-      g = getFixedWidthHistogram(filter, property, width);
-      g.getOptions().put("width", w);
-
-    } else if (alg.equals("sturge")) {
+    if (alg.equals("sturge")) {
       // bins = log2 n + 1
       g = getSturgesHistogramm(filter, property);
     } else if (alg.equals("sqrt")) {
       // bins = sqrt(n);
       g = getSquareRootHistogram(filter, property);
+    } else {
+    	alg="fixed";
+    	int width = 50;
+        try {
+          width = Integer.parseInt(w);
+        } catch (NumberFormatException e) {
+          Logger.warn("Not a number, using default bin width: 50");
+        }
+
+        g = getFixedWidthHistogram(filter, property, width);
+        g.getOptions().put("width", w);
+
+    	
     }
 
     g.getOptions().put("type", PropertyType.INTEGER.toString());

@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import play.Logger;
+
 
 public class Graph {
 
@@ -102,7 +104,15 @@ public class Graph {
       }
       
       v.add(val);
-      k.add(keys.remove(pos));
+      String key="";
+      try{
+    	  key=keys.remove(pos);
+    	  k.add(key);
+      } catch(IndexOutOfBoundsException e)
+      {
+    	  Logger.warn("Index " + key + " is out of bounds of the list when created a graph" );
+      }
+      
     }
 
     this.keys = k;
