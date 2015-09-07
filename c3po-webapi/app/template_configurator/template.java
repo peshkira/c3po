@@ -1,5 +1,6 @@
 package template_configurator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.simpleframework.xml.*;
@@ -46,6 +47,24 @@ public class template {
 			result+=prop.hashCode();
 		}
 		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (obj==null)
+			return false;
+		if (obj.getClass()!=getClass())
+			return false;
+		template that=(template) obj;
+		if (ID.equals(that.ID) && (name.equals(that.name))){
+			ArrayList<property> tmp=new ArrayList<>(properties);
+			ArrayList<property> tmp2=new ArrayList<>(that.properties);
+			tmp.removeAll(that.properties);
+			tmp2.removeAll(properties);
+			if (tmp.isEmpty() && tmp2.isEmpty())
+				return true;
+		}
+			
+		return false;
 	}
 
 }

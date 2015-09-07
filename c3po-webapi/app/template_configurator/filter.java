@@ -1,6 +1,9 @@
 package template_configurator;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -34,5 +37,32 @@ public class filter {
 		return result;
 	}
 	
+	public boolean equals(Object obj) {
+		if (obj==null)
+			return false;
+		
+		if (obj instanceof Map){
+			Map<String,String> thatMap=(Map<String,String>) obj;
+			for (Entry<String,String> entry: thatMap.entrySet()){
+				condition tmp_condition=new condition(entry.getKey(),entry.getValue());
+				if (!conditions.contains(tmp_condition))
+					return false;
+			}
+			return true;
+		}
+		
+		if (obj.getClass()!=getClass())
+			return false;
+		filter that=(filter) obj;
+		if (template_ID.equals(that.template_ID)){
+			ArrayList<condition> tmp=new ArrayList<>(conditions);
+			ArrayList<condition> tmp2=new ArrayList<>(that.conditions);
+			tmp.removeAll(that.conditions);
+			tmp2.removeAll(conditions);
+			if (tmp.isEmpty() && tmp2.isEmpty())
+				return true;
+		}
+		return false;
+	}
 
 }

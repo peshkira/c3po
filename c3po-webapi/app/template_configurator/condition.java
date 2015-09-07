@@ -35,5 +35,17 @@ public class condition {
 		result+=value.length();
 		return result;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj==null)
+			return false;
+		if (obj.getClass()!=getClass())
+			return false;
+		condition that=(condition) obj;
+		if (key.equals(that.key) && (value.equals(that.value)))
+			return true;
+		return false;
+	}
 
 }

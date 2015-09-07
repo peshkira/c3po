@@ -40,5 +40,15 @@ public class property {
 		return result;
 	}
 	
-	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj==null)
+			return false;
+		if (obj.getClass()!=getClass())
+			return false;
+		property that=(property) obj;
+		if (name.equals(that.name) && (render_type.equals(that.render_type)))
+			return true;
+		return false;
+	}
 }

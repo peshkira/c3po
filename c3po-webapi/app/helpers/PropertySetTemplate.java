@@ -2,56 +2,52 @@ package helpers;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
+import java.util.Map;
+import java.util.TreeMap;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.utils.*;
+import com.petpet.c3po.utils.DataHelper;
 
 import controllers.Application;
 import play.Logger;
-import template_configurator.configurationTest;
+import template_configurator.configuration;
 
 public class PropertySetTemplate {
 	private static String[] defaultProps = { "mimetype", "format", "format_version", "valid", "wellformed",
 			"creating_application_name", "created" };
-	public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3potemplateconfig";
+	public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3po.template_config";
 	@SuppressWarnings("rawtypes")
 	public static void setProps(Filter filter){
 		Application.PROPS=defaultProps;
-		
-		configurationTest ctest=new configurationTest();
-		ctest.run();
 		
 		if (filter==null){
 			return;
 		}
 		
 		HashMap<List, List> templates = loadConfig();  
-		List listFilter=filterToString(filter);
-		for(List l: templates.keySet()){
-			if (contains(listFilter, l)) 
-			{
-				Application.PROPS=(String[])templates.get(l).toArray();
-				return;
-			}
-		}
+		Map mapFilter=filterToString(filter);
+		configuration config=new configuration();
+		config.loadFromFile(new File( USER_PROPERTIES ));
+		String[] props=config.getProps(mapFilter);
+		if (props.length!=0)
+			Application.PROPS=props;
+		//for(List l: templates.keySet()){
+		//	if (contains(listFilter, l)) 
+		//	{
+		//		Application.PROPS=(String[])templates.get(l).toArray();
+		//		return;
+		//	}
+		//}
 	}
 
 	private static Boolean contains(List listFilter, List listTemplate) {
@@ -108,30 +104,31 @@ public class PropertySetTemplate {
 		}
 		return result;
 	}
-	public static List filterToString(Filter filter){
-		String[] result=null;
+	public static Map filterToString(Filter filter){
+		Map<String,String> result=new TreeMap<String,String>();
 
 
 		DataHelper.init();
 		BasicDBObject ref= DataHelper.getFilterQuery(filter);
 		ref.removeField("collection");
-		HashMap<String,String> map=(HashMap<String, String>) ref.toMap(); 
-		List list=new ArrayList();									
+		Map<String,String> map= ref.toMap(); 
+		//List list=new ArrayList();									
 		for(String s: map.keySet()){
 			Object value=map.get(s);
 			s=s.replace("metadata.", "");
 			s=s.replace(".value", "");
 			if (value instanceof BasicDBObject){
-				HashMap<String,String> valueMap=(HashMap<String, String>) ((BasicDBObject) value).toMap();
+				Map<String,String> valueMap=((BasicDBObject) value).toMap();
 				Object high = valueMap.get("$lte");
 				Object low = valueMap.get("$gte");
 				value=low.toString()+"-"+high.toString();
 			}
-			list.add(s+"."+value);
+			result.put(s, value.toString());
+			//list.add(s+"."+value);
 		}
-		Collections.sort(list);
+		//Collections.sort(list);
 
-		return list;
+		return result;
 
 	}
 }

@@ -1,21 +1,33 @@
 package template_configurator;
 
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import javax.security.auth.login.Configuration;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
-import junit.framework.TestCase;
-
-public class configurationTest extends TestCase {
-
+public class configurationTest {
+	Serializer serlzr = new Persister();
+	configuration configWritten = new configuration();
+	configuration configRead=null;
+	File file = null;
+	
+	@Rule
+    public TemporaryFolder testFolder = new TemporaryFolder();
+	
+	@Before
 	public void setUp() throws Exception {
-		super.setUp();
+		file=testFolder.newFile(".c3po.template_config");
 		List<template> templates = new ArrayList<template>();
 		List<filter> filters = new ArrayList<filter>();
 
@@ -47,24 +59,31 @@ public class configurationTest extends TestCase {
 		configWritten.setFilters(filters);
 	}
 
+	@After
 	public void tearDown() throws Exception {
-		
 	}
-	Serializer serlzr = new Persister();
-	configuration configWritten = new configuration();
-	configuration configRead=null;
-	File result = new File("template_config.xml");
-	public void testSetTemplates() {
-		
+
+	@Test
+	public void testHashCode() {
 		try {
-			serlzr.write(configWritten, result);
-			configRead = serlzr.read(configuration.class, result);
+			serlzr.write(configWritten, file);
+			configRead = serlzr.read(configuration.class, file);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		assertTrue(configWritten.hashCode() == configRead.hashCode());
-		// fail("Not yet implemented");
 	}
+	
+	@Test
+	public void getPropsTest(){
+		Map<String, String> mapFilter=new TreeMap<>();
+		mapFilter.put("colorspace", "rgb");
+		String[] props=configWritten.getProps(mapFilter);
+		
+		assertEquals(props.length, 6);
+	}
+
+	
 
 }
