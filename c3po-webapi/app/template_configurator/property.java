@@ -31,6 +31,14 @@ public class property {
 		this.name = name;
 		this.render_type = render_type;
 	}
+	public property(){}
+	@Override
+	public int hashCode() {
+		int result=0;
+		result+=name.length();
+		result+=render_type.length();
+		return result;
+	}
 	
 	
 }

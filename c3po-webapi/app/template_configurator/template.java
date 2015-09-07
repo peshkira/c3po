@@ -37,6 +37,15 @@ public class template {
 	public void setProperties(List<property> properties) {
 		this.properties = properties;
 	}
-	
+	@Override
+	public int hashCode() {
+		int result=0;
+		result+=ID.length();
+		result+=name.length();
+		for(property prop: properties){
+			result+=prop.hashCode();
+		}
+		return result;
+	}
 
 }

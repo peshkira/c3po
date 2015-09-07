@@ -22,5 +22,14 @@ public class configuration {
 	List<filter> filters;
 	@ElementList
 	List<template> templates;
+	@Override
+	public int hashCode() {
+		int result=0;
+		for(filter filt: filters)
+			result+=filt.hashCode();
+		for(template templt: templates)
+			result+=templt.hashCode();
+		return result;
+	}
 
 }

@@ -24,5 +24,15 @@ public class filter {
 	String template_ID;
 	@ElementList
 	List<condition> conditions;
+	@Override
+	public int hashCode() {
+		int result=0;
+		result+=template_ID.length();
+		for (condition cond:conditions){
+			result+=cond.hashCode();
+		}
+		return result;
+	}
+	
 
 }

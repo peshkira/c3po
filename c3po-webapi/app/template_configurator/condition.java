@@ -10,6 +10,8 @@ public class condition {
 		this.key = key;
 		this.value = value;
 	}
+	public condition()
+	{}
 	@Element
 	String key;
 	@Element
@@ -25,6 +27,13 @@ public class condition {
 	}
 	public void setValue(String value) {
 		this.value = value;
+	}
+	@Override
+	public int hashCode() {
+		int result=0;
+		result+=key.length();
+		result+=value.length();
+		return result;
 	}
 
 }

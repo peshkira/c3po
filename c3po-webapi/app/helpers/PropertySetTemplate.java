@@ -26,6 +26,7 @@ import com.petpet.c3po.utils.*;
 
 import controllers.Application;
 import play.Logger;
+import template_configurator.configurationTest;
 
 public class PropertySetTemplate {
 	private static String[] defaultProps = { "mimetype", "format", "format_version", "valid", "wellformed",
@@ -34,9 +35,14 @@ public class PropertySetTemplate {
 	@SuppressWarnings("rawtypes")
 	public static void setProps(Filter filter){
 		Application.PROPS=defaultProps;
+		
+		configurationTest ctest=new configurationTest();
+		ctest.run();
+		
 		if (filter==null){
 			return;
 		}
+		
 		HashMap<List, List> templates = loadConfig();  
 		List listFilter=filterToString(filter);
 		for(List l: templates.keySet()){
