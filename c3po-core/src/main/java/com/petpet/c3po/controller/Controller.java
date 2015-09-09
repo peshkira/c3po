@@ -28,20 +28,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.petpet.c3po.adaptor.rules.*;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
-import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
-import com.petpet.c3po.adaptor.rules.BrowsershotDissimilarityCountRule;
-import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
-import com.petpet.c3po.adaptor.rules.DroolsConflictResolutionProcessingRule;
-import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
-import com.petpet.c3po.adaptor.rules.FormatVersionResolutionRule;
-import com.petpet.c3po.adaptor.rules.HtmlInfoProcessingRule;
-import com.petpet.c3po.adaptor.rules.InferDateFromFileNameRule;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
 import com.petpet.c3po.adaptor.browsershot.BrowserShotAdaptor;
 import com.petpet.c3po.analysis.CSVGenerator;
@@ -153,6 +146,8 @@ public class Controller {
         this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
         this.knownRules.put(Constants.CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE, BrowsershotDissimilarityCountRule.class);
         this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
+        this.knownRules.put(Constants.CNF_CONTENT_TYPE_IDENTIFICATION_RULE, ContentTypeIdentificationRule.class);
+        this.knownRules.put(Constants.CNF_FILE_EXTENSION_IDENTIFICATION_RULE, FileExtensionIdentificationRule.class);
     }
 
     /**

@@ -36,7 +36,7 @@ public class ContentTypeIdentificationRule implements PostProcessingRule {
 
     @Override
     public int getPriority() {
-        return 1;
+        return 100;
     }
 
     @Override

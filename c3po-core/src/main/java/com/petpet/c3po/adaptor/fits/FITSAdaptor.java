@@ -92,7 +92,7 @@ public class FITSAdaptor extends AbstractAdaptor {
             element = context.getElement();
             List<MetadataRecord> values = context.getValues();
 
-            values.add(getFileExtensionMetadataRecord(name));
+           // values.add(getFileExtensionMetadataRecord(name));
 
             if ( element != null ) {
                 element.setMetadata( values );

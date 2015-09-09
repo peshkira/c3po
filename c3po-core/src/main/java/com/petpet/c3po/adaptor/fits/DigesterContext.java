@@ -64,7 +64,7 @@ public class DigesterContext {
   /**
    * Creates the digester context object.
    * 
-   * @param cache
+   * @param //cache
    *          the cache to use
    * @param rules
    *          the list of pre processing rules to apply.

@@ -128,10 +128,19 @@ public final class Constants {
   public static final String CNF_DROOLS_CONFLICT_RESOLUTION_RULE = "c3po.rule.drools_conflict_resolution_processing";
 
   /**
+   * The key for the content type indentification rule.
+   */
+  public static final String CNF_CONTENT_TYPE_IDENTIFICATION_RULE = "c3po.rule.content_type_identification";
+
+  /**
+   * The key for the file extension indentification rule.
+   */
+  public static final String CNF_FILE_EXTENSION_IDENTIFICATION_RULE = "c3po.rule.file_extension_identification";
+  /**
    * An array of the configurable processing rule keys.
    */
   public static final String[] RULE_KEYS = { CNF_ELEMENT_IDENTIFIER_RULE, CNF_VERSION_RESOLUTION_RULE,
-      CNF_EMPTY_VALUE_RULE, CNF_INFER_DATE_RULE, CNF_HTML_INFO_RULE,  CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE , CNF_DROOLS_CONFLICT_RESOLUTION_RULE};
+      CNF_EMPTY_VALUE_RULE, CNF_INFER_DATE_RULE, CNF_HTML_INFO_RULE,  CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE , CNF_DROOLS_CONFLICT_RESOLUTION_RULE, CNF_CONTENT_TYPE_IDENTIFICATION_RULE, CNF_FILE_EXTENSION_IDENTIFICATION_RULE};
 
   /**
    * The version of the core module.
@@ -158,6 +167,7 @@ public final class Constants {
 
   @Deprecated
   public static final String PROPERTIES_IN_COLLECTION_REDUCE = "function reduce(key, values) {return null;}";
+
 
   private Constants() {
 
