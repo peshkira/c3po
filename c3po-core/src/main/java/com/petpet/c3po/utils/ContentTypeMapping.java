@@ -24,7 +24,7 @@ public class ContentTypeMapping {
         if (TERMS==null)
             init();
         final String prop = (String) TERMS.get( name );
-        return (prop == null) ? null : prop;
+        return (prop == null) ? "Unknown" : prop;
     }
 }
 
