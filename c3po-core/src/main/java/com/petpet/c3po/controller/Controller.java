@@ -450,7 +450,7 @@ public class Controller {
         this.adaptorPool.shutdown();
 
         Thread gathererThread = new Thread( this.gatherer, "MetadataGatherer" );
-        // gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
+        gathererThread.setPriority(Thread.NORM_PRIORITY + 1);
         gathererThread.start();
 
         try {

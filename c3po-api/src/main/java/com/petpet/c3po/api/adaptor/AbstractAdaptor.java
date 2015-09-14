@@ -211,14 +211,14 @@ public abstract class AbstractAdaptor implements Runnable {
     @Override
     public final void run() {
         try {
-            process(metadataStreamQueue.poll(100, TimeUnit.SECONDS));
+            process(metadataStreamQueue.poll(5, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        while (!(metadataStreamQueue.isEmpty() ))//&& !gatherer.isReady())) TODO: check this commented gatherer.
+        while (!(metadataStreamQueue.isEmpty() && !gatherer.isReady())) //TODO: check this commented gatherer.
         {
             try {
-                process(metadataStreamQueue.poll(20, TimeUnit.SECONDS));
+                process(metadataStreamQueue.poll(2, TimeUnit.SECONDS));
             } catch ( Exception e ) {
                 LOG.error("Adaptor stopped unexpectedly {}", Thread.currentThread().getName());
                 e.printStackTrace();

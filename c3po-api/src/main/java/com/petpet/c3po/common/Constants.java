@@ -127,6 +127,8 @@ public final class Constants {
    */
   public static final String CNF_DROOLS_CONFLICT_RESOLUTION_RULE = "c3po.rule.drools_conflict_resolution_processing";
 
+  public static final String CNF_DROOLS_PATH="c3po.rule.drools_path";
+
   /**
    * The key for the content type indentification rule.
    */
@@ -151,6 +153,7 @@ public final class Constants {
    * The version of the api module.
    */
   public static final String API_VERSION = "0.4.0-SNAPSHOT";
+
 
   /**
    * The same as {@link Constants#AGGREGATE_MAP} but it aggregates the desired

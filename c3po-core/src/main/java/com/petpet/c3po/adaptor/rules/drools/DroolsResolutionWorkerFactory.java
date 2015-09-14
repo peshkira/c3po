@@ -1,6 +1,8 @@
 package com.petpet.c3po.adaptor.rules.drools;
 
+import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.utils.C3POFileUtils;
+import com.petpet.c3po.utils.Configurator;
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
 import org.drools.builder.KnowledgeBuilder;
@@ -24,8 +26,15 @@ public class DroolsResolutionWorkerFactory {
     private boolean rulesAvailable;
 
     public DroolsResolutionWorkerFactory(String pathToRules) {
-
-        initKnowledgeBase(pathToRules);
+        File rulesDir=new File(pathToRules);
+        if (rulesDir.exists()) {
+            initKnowledgeBase(pathToRules);
+        }
+        pathToRules=Configurator.getDefaultConfigurator().getStringProperty(Constants.CNF_DROOLS_PATH);
+        rulesDir=new File(pathToRules);
+        if (rulesDir.exists()) {
+            initKnowledgeBase(pathToRules);
+        }
     }
 
 
