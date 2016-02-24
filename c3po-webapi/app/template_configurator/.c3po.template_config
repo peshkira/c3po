@@ -1,0 +1,148 @@
+<configuration>
+   <filters class="java.util.ArrayList">
+      <filter>
+         <template_ID>1</template_ID>
+         <conditions class="java.util.ArrayList">
+            <condition>
+               <key>colorspace</key>
+               <value>RGB</value>
+            </condition>
+         </conditions>
+      </filter>
+      <filter>
+        <template_ID>1</template_ID>
+         <conditions class="java.util.ArrayList">
+            <condition>
+               <key>content_type</key>
+               <value>Image</value>
+            </condition>
+         </conditions>
+      </filter>
+      <filter>
+        <template_ID>2</template_ID>
+         <conditions class="java.util.ArrayList">
+            <condition>
+               <key>content_type</key>
+               <value>Document</value>
+            </condition>
+         </conditions>
+      </filter>
+      <filter>
+        <template_ID>3</template_ID>
+         <conditions class="java.util.ArrayList">
+            <condition>
+               <key>content_type</key>
+               <value>Binary</value>
+            </condition>
+         </conditions>
+      </filter>
+      <filter>
+        <template_ID>4</template_ID>
+         <conditions class="java.util.ArrayList">
+            <condition>
+               <key>content_type</key>
+               <value>Audio</value>
+            </condition>
+         </conditions>
+      </filter>
+      <filter>
+        <template_ID>5</template_ID>
+         <conditions class="java.util.ArrayList">
+            <condition>
+               <key>content_type</key>
+               <value>Video</value>
+            </condition>
+         </conditions>
+      </filter>
+      <filter>
+        <template_ID>6</template_ID>
+         <conditions class="java.util.ArrayList">
+            <condition>
+               <key>content_type</key>
+               <value>Archive</value>
+            </condition>
+         </conditions>
+      </filter>
+   </filters>
+   <templates class="java.util.ArrayList">
+      <template>
+         <ID>1</ID>
+         <name>raster_image_template</name>
+         <message>This is a template for raster images</message>
+         <properties class="java.util.ArrayList">
+            <property>
+               <name>format_version</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>mimetype</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>image_width</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>image_height</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>icc_profile_name</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>exif_version</name>
+               <render_type>histogram</render_type>
+            </property>
+         </properties>
+      </template>
+	<template>
+         <ID>2</ID>
+         <name>document_template</name>
+         <message>This is a template for documents</message>
+         <properties class="java.util.ArrayList">
+         	 <property>
+               <name>format</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>format_version</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>mimetype</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>file_extension</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>language</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>wordcount</name>
+               <render_type>histogram</render_type>
+            </property>
+             <property>
+               <name>charset</name>
+               <render_type>histogram</render_type>
+            </property>
+             <property>
+               <name>has_annotations</name>
+               <render_type>histogram</render_type>
+            </property>
+             <property>
+               <name>has_forms</name>
+               <render_type>histogram</render_type>
+            </property>
+            <property>
+               <name>orientation</name>
+               <render_type>histogram</render_type>
+            </property>
+         </properties>
+      </template>
+
+   </templates>
+</configuration>

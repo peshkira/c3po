@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,8 +22,7 @@ import play.Logger;
 import template_configurator.configuration;
 
 public class PropertySetTemplate {
-	private static String[] defaultProps = { "mimetype", "format", "format_version", "valid", "wellformed",
-			"creating_application_name", "created" };
+	private static String[] defaultProps ={"content_type", "created", "valid"}; //{ "mimetype", "format", "format_version", "valid", "wellformed","creating_application_name", "created" };
 	public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3po.template_config";
 	@SuppressWarnings("rawtypes")
 	public static void setProps(Filter filter){
