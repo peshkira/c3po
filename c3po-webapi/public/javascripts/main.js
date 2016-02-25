@@ -40,6 +40,17 @@ $(document).ready(function(){
 		}
 		changeSetting('client.filter.show', !visible);
 	});
+	
+	$('#templates_btn').click(function(event) {
+		visible = $("#templates").is(":visible");
+		if (visible) {
+			$('#templates').slideUp("fast");
+		} else {
+			$('#templates').slideDown("normal");
+		}
+		changeSetting('client.templates.show', !visible);
+	});
+	
 
 	//###############################
 	//#		  Collection Bar		#

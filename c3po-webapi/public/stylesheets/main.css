@@ -335,6 +335,26 @@ img.smalllogo{
     padding:10px;
 }
 
+#templates {
+    background: url('../images/black_linen.png');
+    height:100px;
+    border-bottom: 4px solid black;
+    display:none;
+    color: white;
+    padding:10px;
+}
+
+.inline {
+    display: inline-block;
+    
+    border-right: 40px ;
+    vertical-align: top;
+    
+    
+}
+
+
+
 #collections h2{
 	color: white;
 }

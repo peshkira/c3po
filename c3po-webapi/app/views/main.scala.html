@@ -36,6 +36,16 @@ $(document).ready(function() {
 	    $('#filter').css('display', 'none');
    }
  }
+ 
+ @if(session.get("client.templates.show") != null) {
+	    @if(session.get("client.templates.show").equals("true")) {
+	        $('#templates').css('display', 'block');
+	    } else {
+	        $('#templates').css('display', 'none');
+	    }
+	 }
+ 
+ 
 });
 
 </script>

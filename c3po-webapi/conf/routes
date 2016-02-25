@@ -41,7 +41,10 @@ GET     /c3po/export/csv/filter                controllers.Export.exportFilterTo
 # Mail
 POST    /c3po/feedback                         controllers.Mail.send()
     
+# Templates
 
+GET /c3po/template/export						controllers.Templates.exportTemplate()
+POST /c3po/template/import 						controllers.Templates.importTemplate()
 
 # Profile page
 #GET     /c3po/profile/              controllers.Profiles.index()

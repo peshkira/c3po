@@ -62,6 +62,40 @@ public class PropertySetTemplate {
 		}
 		return result;
 	}
+	
+	public static HashMap<List, List> loadConfig(File config) throws FileNotFoundException, IOException{
+		LinkedHashMap<List, List> result=new LinkedHashMap<>();
+
+		final File f = config;
+		//Properties props=new Properties();
+		if ( f.exists() && f.isFile() ) {
+			Logger.debug( "Found user defined properties, loading." );
+			try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+				String line;
+				while ((line = br.readLine()) != null) {
+					if (line.contains("#"))
+						continue;
+					if (line.contains("=")){
+						String[] tmp = line.split("=");
+						String key=tmp[0];
+						String value=tmp[1];
+						key=key.replace(" ", "");
+						value=value.replace(" ", "");
+						List<String> filter_values = Arrays.asList(key.split(","));
+						List<String> histograms= Arrays.asList(value.split(","));
+						Collections.sort(filter_values);
+						Collections.sort(histograms);
+						result.put(filter_values, histograms);
+						Logger.debug(key + " => " + value);
+					}
+
+				}
+			} 
+
+
+		}
+		return result;
+	}
 
 	public static HashMap<List, List> loadConfig(){
 		LinkedHashMap<List, List> result=new LinkedHashMap<>();

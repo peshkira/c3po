@@ -1,4 +1,5 @@
 @(title: String, collections: List[String])
+@()(implicit request: RequestHeader)
 
 @scripts = {
 <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
@@ -59,4 +60,25 @@
     </ul>
   </div>
 </div>
+
+
+<div class="content">
+  <h2>Templates</h2>
+  <div class="export">
+    <ul>
+      <li>To download a current template:
+ 		<a class="green_button" href="javascript:request('/c3po/template/export')">Download</a></li>
+      <li>To upload your own template: @helper.form(action = routes.Templates.importTemplate, 'enctype -> "multipart/form-data") {
+ 		<input type="file" name="fileUpload">
+ 		<input class="green_button" type="submit" value="Import">}
+ 		
+ 		</li>
+ 		
+ 		
+ 		
+    </ul>
+  </div>
+</div>
+
+
 }
