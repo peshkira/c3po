@@ -28,7 +28,9 @@ import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
+import views.html.export2;
 import views.html.export;
+
 
 import com.mongodb.BasicDBObject;
 import com.petpet.c3po.analysis.CSVGenerator;
@@ -45,7 +47,7 @@ import com.petpet.c3po.utils.Configurator;
 public class Export extends Controller {
 
   public static Result index() {
-    return ok(export.render("c3po - Export Data", Application.getCollectionNames()));
+    return ok(export.render("c3po - Export Data", Application.getCollectionNames(),Templates.getTemplates()));//export.render("c3po - Export Data", Application.getCollectionNames()));
   }
 
   public static Result profile() {

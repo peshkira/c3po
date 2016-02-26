@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import helpers.PropertySetTemplate;
 import play.Logger;
@@ -20,14 +22,12 @@ public class Templates extends Controller {
 		    String contentType = fileUploaded.getContentType(); 
 		    File file = fileUploaded.getFile();
 	    	try {
-				PropertySetTemplate.loadConfig(file);
-			} catch (FileNotFoundException e) {
+				PropertySetTemplate.updateConfig(file);
+			} catch (Exception e) {
+				Logger.debug("Provided template is not valid");
 				Logger.debug(e.getMessage());
-				return notFound("No template was found\n");
-			} catch (IOException e) {
-				Logger.debug(e.getMessage());
-				return notFound("Template is not correct\n");
-			}
+				return notFound("Provided template is not valid");
+			} 
 		   Logger.debug("Template was imported successfully");
 		    return redirect(routes.Export.index());
 		  } else {
@@ -36,7 +36,10 @@ public class Templates extends Controller {
 		  }
 	}
 	
-	
+	public static List<String> getTemplates(){
+		return PropertySetTemplate.templatesToString(); //TODO:FIX THIS!
+		
+	}
 	public static Result exportTemplate(){
 		Logger.debug("Exporting the template config file");
 		String path = System.getProperty( "user.home" ) + File.separator + ".c3po.template_config";

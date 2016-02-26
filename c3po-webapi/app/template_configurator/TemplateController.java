@@ -12,15 +12,15 @@ import org.simpleframework.xml.core.Persister;
 
 import com.petpet.c3po.datamodel.Filter;
 @Root
-public class configuration {
-	public List<filter> getFilters() {
+public class TemplateController {
+	public List<TemplateFilter> getFilters() {
 		return filters;
 	}
 	public void loadFromFile(File file){
 		Serializer serlzr = new Persister();
-		configuration configRead=null;
+		TemplateController configRead=null;
 		try {
-			configRead = serlzr.read(configuration.class, file);
+			configRead = serlzr.read(TemplateController.class, file);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -30,58 +30,74 @@ public class configuration {
 		}
 		
 	}
-	public void setFilters(List<filter> filters) {
+	public void setFilters(List<TemplateFilter> filters) {
 		this.filters = filters;
 	}
-	public List<template> getTemplates() {
+	public List<Template> getTemplates() {
 		return templates;
 	}
-	public void setTemplates(List<template> templates) {
+	public void setTemplates(List<Template> templates) {
 		this.templates = templates;
 	}
 	@ElementList
-	List<filter> filters;
+	List<TemplateFilter> filters;
 	@ElementList
-	List<template> templates;
+	List<Template> templates;
 	@Override
 	public int hashCode() {
 		int result=0;
-		for(filter filt: filters)
+		for(TemplateFilter filt: filters)
 			result+=filt.hashCode();
-		for(template templt: templates)
+		for(Template templt: templates)
 			result+=templt.hashCode();
 		return result;
 	}
 	public String[] getProps(Map<String,String> filter){
-		filter tmp_filter= find_corresponding_template_filter(filter);
-		template tmp_template=find_template(tmp_filter);
+		TemplateFilter tmp_filter= find_corresponding_template_filter(filter);
+		Template tmp_template=find_template(tmp_filter);
 		List<String> result=get_list_of_properties(tmp_template);
 		return result.toArray(new String[0]);
 	}
-	private List<String> get_list_of_properties(template tmp_template) {
+	private List<String> get_list_of_properties(Template tmp_template) {
 		List<String> result=new ArrayList<String>();
 		if (tmp_template==null)
 			return result;
-		for(property prop: tmp_template.properties)
+		for(TemplateProperty prop: tmp_template.properties)
 			result.add(prop.name);
 		return result;
 	}
-	private template find_template(filter tmp_filter) {
+	private Template find_template(TemplateFilter tmp_filter) {
 		if (tmp_filter==null)
 			return null;
-		for(template tmpl: templates){
+		for(Template tmpl: templates){
 			if (tmpl.ID.equals(tmp_filter.template_ID))
 				return tmpl;
 		}
 		return null;
 	}
-	private filter find_corresponding_template_filter(Map<String,String>  filter) {
+	private TemplateFilter find_corresponding_template_filter(Map<String,String>  filter) {
 		
-		for(filter filt: filters){
+		for(TemplateFilter filt: filters){
 			if (filt.equals(filter))
 				return filt;
 		}
 		return null;
+	}
+	
+	public ArrayList<String> toArrayString(){
+		ArrayList<String> result=new ArrayList<>();
+		if (templates!=null){
+			for(Template t: templates){
+				result.add(t.toString());
+			}
+			
+		}
+		return result;
+	}
+
+	
+	public boolean isSet(){
+		return (templates!=null && !templates.isEmpty());
 	}
 
 }

@@ -9,7 +9,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 @Root
-public class filter {
+public class TemplateFilter {
 	
 	public String getTemplate_ID() {
 		return template_ID;
@@ -17,21 +17,21 @@ public class filter {
 	public void setTemplate_ID(String template_ID) {
 		this.template_ID = template_ID;
 	}
-	public List<condition> getConditions() {
+	public List<TemplateCondition> getConditions() {
 		return conditions;
 	}
-	public void setConditions(List<condition> conditions) {
+	public void setConditions(List<TemplateCondition> conditions) {
 		this.conditions = conditions;
 	}
 	@Element
 	String template_ID;
 	@ElementList
-	List<condition> conditions;
+	List<TemplateCondition> conditions;
 	@Override
 	public int hashCode() {
 		int result=0;
 		result+=template_ID.length();
-		for (condition cond:conditions){
+		for (TemplateCondition cond:conditions){
 			result+=cond.hashCode();
 		}
 		return result;
@@ -44,7 +44,7 @@ public class filter {
 		if (obj instanceof Map){
 			Map<String,String> thatMap=(Map<String,String>) obj;
 			for (Entry<String,String> entry: thatMap.entrySet()){
-				condition tmp_condition=new condition(entry.getKey(),entry.getValue());
+				TemplateCondition tmp_condition=new TemplateCondition(entry.getKey(),entry.getValue());
 				if (!conditions.contains(tmp_condition))
 					return false;
 			}
@@ -53,10 +53,10 @@ public class filter {
 		
 		if (obj.getClass()!=getClass())
 			return false;
-		filter that=(filter) obj;
+		TemplateFilter that=(TemplateFilter) obj;
 		if (template_ID.equals(that.template_ID)){
-			ArrayList<condition> tmp=new ArrayList<>(conditions);
-			ArrayList<condition> tmp2=new ArrayList<>(that.conditions);
+			ArrayList<TemplateCondition> tmp=new ArrayList<>(conditions);
+			ArrayList<TemplateCondition> tmp2=new ArrayList<>(that.conditions);
 			tmp.removeAll(that.conditions);
 			tmp2.removeAll(conditions);
 			if (tmp.isEmpty() && tmp2.isEmpty())

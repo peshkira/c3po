@@ -18,8 +18,8 @@ import org.simpleframework.xml.core.Persister;
 
 public class configurationTest {
 	Serializer serlzr = new Persister();
-	configuration configWritten = new configuration();
-	configuration configRead=null;
+	TemplateController configWritten = new TemplateController();
+	TemplateController configRead=null;
 	File file = null;
 	
 	@Rule
@@ -28,30 +28,30 @@ public class configurationTest {
 	@Before
 	public void setUp() throws Exception {
 		file=testFolder.newFile(".c3po.template_config");
-		List<template> templates = new ArrayList<template>();
-		List<filter> filters = new ArrayList<filter>();
+		List<Template> templates = new ArrayList<Template>();
+		List<TemplateFilter> filters = new ArrayList<TemplateFilter>();
 
-		template raster_image_template = new template();
+		Template raster_image_template = new Template();
 		raster_image_template.setID("1");
 		raster_image_template.setMessage("This is a template for raster images");
 		raster_image_template.setName("raster_image_template");
 
-		List<property> props = new ArrayList<property>();
-		props.add(new property("format_version", "histogram"));
-		props.add(new property("mimetype", "histogram"));
-		props.add(new property("image_width", "histogram"));
-		props.add(new property("image_height", "histogram"));
-		props.add(new property("icc_profile_name", "histogram"));
-		props.add(new property("exif_version", "histogram"));
+		List<TemplateProperty> props = new ArrayList<TemplateProperty>();
+		props.add(new TemplateProperty("format_version", "histogram"));
+		props.add(new TemplateProperty("mimetype", "histogram"));
+		props.add(new TemplateProperty("image_width", "histogram"));
+		props.add(new TemplateProperty("image_height", "histogram"));
+		props.add(new TemplateProperty("icc_profile_name", "histogram"));
+		props.add(new TemplateProperty("exif_version", "histogram"));
 		raster_image_template.setProperties(props);
 		templates.add(raster_image_template);
 		configWritten.setTemplates(templates);
 
-		filter colorspaceRBG = new filter();
+		TemplateFilter colorspaceRBG = new TemplateFilter();
 		colorspaceRBG.setTemplate_ID("1");
 
-		List<condition> conditions = new ArrayList<condition>();
-		conditions.add(new condition("colorspace", "rgb"));
+		List<TemplateCondition> conditions = new ArrayList<TemplateCondition>();
+		conditions.add(new TemplateCondition("colorspace", "rgb"));
 
 		colorspaceRBG.setConditions(conditions);
 		filters.add(colorspaceRBG);
@@ -67,7 +67,7 @@ public class configurationTest {
 	public void testHashCode() {
 		try {
 			serlzr.write(configWritten, file);
-			configRead = serlzr.read(configuration.class, file);
+			configRead = serlzr.read(TemplateController.class, file);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

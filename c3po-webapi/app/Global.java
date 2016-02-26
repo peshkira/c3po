@@ -26,6 +26,8 @@ import com.petpet.c3po.analysis.mapreduce.NumericAggregationJob;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 
+import helpers.PropertySetTemplate;
+
 public class Global extends GlobalSettings {
 
   @Override
@@ -34,8 +36,10 @@ public class Global extends GlobalSettings {
     super.onStart(app);
 
     Configurator.getDefaultConfigurator().configure();
+    
     this.calculateCollectionStatistics();
     this.calculateHistogramms();
+    PropertySetTemplate.updateConfig();
   }
 
   // TODO think of a better way to decide when to drop the

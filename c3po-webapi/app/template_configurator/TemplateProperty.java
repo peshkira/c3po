@@ -3,7 +3,7 @@ package template_configurator;
 import org.simpleframework.xml.*;
 
 @Root
-public class property {
+public class TemplateProperty {
 	@Element
 	String name;
 	@Element
@@ -26,12 +26,12 @@ public class property {
 		this.name = name;
 	}
 
-	public property(String name, String render_type) {
+	public TemplateProperty(String name, String render_type) {
 		super();
 		this.name = name;
 		this.render_type = render_type;
 	}
-	public property(){}
+	public TemplateProperty(){}
 	@Override
 	public int hashCode() {
 		int result=0;
@@ -46,7 +46,7 @@ public class property {
 			return false;
 		if (obj.getClass()!=getClass())
 			return false;
-		property that=(property) obj;
+		TemplateProperty that=(TemplateProperty) obj;
 		if (name.equals(that.name) && (render_type.equals(that.render_type)))
 			return true;
 		return false;

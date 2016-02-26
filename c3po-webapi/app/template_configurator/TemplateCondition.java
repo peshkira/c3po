@@ -4,13 +4,13 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
 @Root
-public class condition {
-	public condition(String key, String value) {
+public class TemplateCondition {
+	public TemplateCondition(String key, String value) {
 		super();
 		this.key = key;
 		this.value = value;
 	}
-	public condition()
+	public TemplateCondition()
 	{}
 	@Element
 	String key;
@@ -42,7 +42,7 @@ public class condition {
 			return false;
 		if (obj.getClass()!=getClass())
 			return false;
-		condition that=(condition) obj;
+		TemplateCondition that=(TemplateCondition) obj;
 		if (key.equals(that.key) && (value.equals(that.value)))
 			return true;
 		return false;

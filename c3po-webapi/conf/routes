@@ -45,6 +45,7 @@ POST    /c3po/feedback                         controllers.Mail.send()
 
 GET /c3po/template/export						controllers.Templates.exportTemplate()
 POST /c3po/template/import 						controllers.Templates.importTemplate()
+#GET  /c3po/templates                      controllers.Templates.getTemplates()
 
 # Profile page
 #GET     /c3po/profile/              controllers.Profiles.index()

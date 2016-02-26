@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.simpleframework.xml.*;
 @Root
-public class template {
+public class Template {
 	@Element
 	String ID;
 	@Element
@@ -13,7 +13,7 @@ public class template {
 	@Element
 	String message;
 	@ElementList
-	List<property> properties;
+	List<TemplateProperty> properties;
 	public String getID() {
 		return ID;
 	}
@@ -32,10 +32,10 @@ public class template {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	public List<property> getProperties() {
+	public List<TemplateProperty> getProperties() {
 		return properties;
 	}
-	public void setProperties(List<property> properties) {
+	public void setProperties(List<TemplateProperty> properties) {
 		this.properties = properties;
 	}
 	@Override
@@ -43,7 +43,7 @@ public class template {
 		int result=0;
 		result+=ID.length();
 		result+=name.length();
-		for(property prop: properties){
+		for(TemplateProperty prop: properties){
 			result+=prop.hashCode();
 		}
 		return result;
@@ -54,10 +54,10 @@ public class template {
 			return false;
 		if (obj.getClass()!=getClass())
 			return false;
-		template that=(template) obj;
+		Template that=(Template) obj;
 		if (ID.equals(that.ID) && (name.equals(that.name))){
-			ArrayList<property> tmp=new ArrayList<>(properties);
-			ArrayList<property> tmp2=new ArrayList<>(that.properties);
+			ArrayList<TemplateProperty> tmp=new ArrayList<>(properties);
+			ArrayList<TemplateProperty> tmp2=new ArrayList<>(that.properties);
 			tmp.removeAll(that.properties);
 			tmp2.removeAll(properties);
 			if (tmp.isEmpty() && tmp2.isEmpty())
@@ -65,6 +65,9 @@ public class template {
 		}
 			
 		return false;
+	}
+	public String toString(){
+		return this.message;
 	}
 
 }

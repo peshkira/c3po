@@ -19,7 +19,7 @@ import com.petpet.c3po.utils.DataHelper;
 
 import controllers.Application;
 import play.Logger;
-import template_configurator.configuration;
+import template_configurator.TemplateController;;
 
 public class PropertySetTemplate {
 	private static String[] defaultProps ={"content_type", "created", "valid"}; //{ "mimetype", "format", "format_version", "valid", "wellformed","creating_application_name", "created" };
@@ -31,111 +31,26 @@ public class PropertySetTemplate {
 		if (filter==null){
 			return;
 		}
-		
-		HashMap<List, List> templates = loadConfig();  
 		Map mapFilter=filterToString(filter);
-		configuration config=new configuration();
-		config.loadFromFile(new File( USER_PROPERTIES ));
-		String[] props=config.getProps(mapFilter);
+		if (!templateController.isSet())
+			templateController.loadFromFile(new File( USER_PROPERTIES ));
+		String[] props=templateController.getProps(mapFilter);
 		if (props.length!=0)
 			Application.PROPS=props;
-		//for(List l: templates.keySet()){
-		//	if (contains(listFilter, l)) 
-		//	{
-		//		Application.PROPS=(String[])templates.get(l).toArray();
-		//		return;
-		//	}
-		//}
+	}
+	static TemplateController templateController =new TemplateController();
+	public static void updateConfig(File file){
+		templateController.loadFromFile(file);
+		
+	}
+	public static void updateConfig(){
+		templateController.loadFromFile(new File( USER_PROPERTIES ));
+		
+	}
+	public static  List<String> templatesToString(){
+		return templateController.toArrayString();
 	}
 
-	private static Boolean contains(List listFilter, List listTemplate) {
-		Boolean result=true;
-		for (String s: (List<String>) listTemplate){
-			Boolean contains=false;
-			for (String sf: (List<String>) listFilter){
-				if (sf.contains(s)){
-					contains=true;
-				}
-			}
-			if (!contains)
-				result=false;
-		}
-		return result;
-	}
-	
-	public static HashMap<List, List> loadConfig(File config) throws FileNotFoundException, IOException{
-		LinkedHashMap<List, List> result=new LinkedHashMap<>();
-
-		final File f = config;
-		//Properties props=new Properties();
-		if ( f.exists() && f.isFile() ) {
-			Logger.debug( "Found user defined properties, loading." );
-			try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-				String line;
-				while ((line = br.readLine()) != null) {
-					if (line.contains("#"))
-						continue;
-					if (line.contains("=")){
-						String[] tmp = line.split("=");
-						String key=tmp[0];
-						String value=tmp[1];
-						key=key.replace(" ", "");
-						value=value.replace(" ", "");
-						List<String> filter_values = Arrays.asList(key.split(","));
-						List<String> histograms= Arrays.asList(value.split(","));
-						Collections.sort(filter_values);
-						Collections.sort(histograms);
-						result.put(filter_values, histograms);
-						Logger.debug(key + " => " + value);
-					}
-
-				}
-			} 
-
-
-		}
-		return result;
-	}
-
-	public static HashMap<List, List> loadConfig(){
-		LinkedHashMap<List, List> result=new LinkedHashMap<>();
-
-		final File f = new File( USER_PROPERTIES );
-		//Properties props=new Properties();
-		if ( f.exists() && f.isFile() ) {
-			Logger.debug( "Found user defined properties, loading." );
-			try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-				String line;
-				while ((line = br.readLine()) != null) {
-					if (line.contains("#"))
-						continue;
-					if (line.contains("=")){
-						String[] tmp = line.split("=");
-						String key=tmp[0];
-						String value=tmp[1];
-						key=key.replace(" ", "");
-						value=value.replace(" ", "");
-						List<String> filter_values = Arrays.asList(key.split(","));
-						List<String> histograms= Arrays.asList(value.split(","));
-						Collections.sort(filter_values);
-						Collections.sort(histograms);
-						result.put(filter_values, histograms);
-						Logger.debug(key + " => " + value);
-					}
-
-				}
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-
-		}
-		return result;
-	}
 	public static Map filterToString(Filter filter){
 		Map<String,String> result=new TreeMap<String,String>();
 
