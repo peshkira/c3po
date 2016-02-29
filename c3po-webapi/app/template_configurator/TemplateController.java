@@ -85,7 +85,7 @@ public class TemplateController {
 	}
 	
 	public ArrayList<String> toArrayString(){
-		ArrayList<String> result=new ArrayList<>();
+		ArrayList<String> result=new ArrayList<String>();
 		if (templates!=null){
 			for(Template t: templates){
 				result.add(t.toString());

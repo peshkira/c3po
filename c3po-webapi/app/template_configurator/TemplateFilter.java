@@ -55,8 +55,8 @@ public class TemplateFilter {
 			return false;
 		TemplateFilter that=(TemplateFilter) obj;
 		if (template_ID.equals(that.template_ID)){
-			ArrayList<TemplateCondition> tmp=new ArrayList<>(conditions);
-			ArrayList<TemplateCondition> tmp2=new ArrayList<>(that.conditions);
+			ArrayList<TemplateCondition> tmp=new ArrayList<TemplateCondition>(conditions);
+			ArrayList<TemplateCondition> tmp2=new ArrayList<TemplateCondition>(that.conditions);
 			tmp.removeAll(that.conditions);
 			tmp2.removeAll(conditions);
 			if (tmp.isEmpty() && tmp2.isEmpty())

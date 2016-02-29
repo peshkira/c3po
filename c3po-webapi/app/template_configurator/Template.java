@@ -56,8 +56,8 @@ public class Template {
 			return false;
 		Template that=(Template) obj;
 		if (ID.equals(that.ID) && (name.equals(that.name))){
-			ArrayList<TemplateProperty> tmp=new ArrayList<>(properties);
-			ArrayList<TemplateProperty> tmp2=new ArrayList<>(that.properties);
+			ArrayList<TemplateProperty> tmp=new ArrayList<TemplateProperty>(properties);
+			ArrayList<TemplateProperty> tmp2=new ArrayList<TemplateProperty>(that.properties);
 			tmp.removeAll(that.properties);
 			tmp2.removeAll(properties);
 			if (tmp.isEmpty() && tmp2.isEmpty())

@@ -68,10 +68,10 @@
       <template>
          <ID>1</ID>
          <name>raster_image_template</name>
-         <message>This is a template for raster images</message>
+         <message>Raster images</message>
          <properties class="java.util.ArrayList">
             <property>
-               <name>format_version</name>
+               <name>format</name>
                <render_type>histogram</render_type>
             </property>
             <property>
@@ -99,14 +99,14 @@
 	<template>
          <ID>2</ID>
          <name>document_template</name>
-         <message>This is a template for documents</message>
+         <message>Documents</message>
          <properties class="java.util.ArrayList">
          	 <property>
                <name>format</name>
                <render_type>histogram</render_type>
             </property>
             <property>
-               <name>format_version</name>
+               <name>format</name>
                <render_type>histogram</render_type>
             </property>
             <property>
