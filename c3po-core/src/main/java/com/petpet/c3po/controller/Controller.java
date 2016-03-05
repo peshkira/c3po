@@ -17,12 +17,7 @@ package com.petpet.c3po.controller;
 
 import com.petpet.c3po.adaptor.browsershot.BrowserShotAdaptor;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -243,6 +238,9 @@ public class Controller {
         new ActionLogHelper( this.persistence ).recordAction( log );
 
     }
+
+
+
 
     /**
      * Finds sample records that are representative. The options include: <br>
@@ -568,6 +566,83 @@ public class Controller {
         }
 
         return adaptor;
+    }
+
+
+
+    public void ResolveConflicts(){
+        if (processingQueue!=null && !processingQueue.isEmpty()){
+            LOG.info("Tried to resolve conflicts while gathering, exiting");
+            System.out.println("Tried to resolve conflicts while gathering, exiting");
+            return;
+        }
+
+
+        int consThreads = this.configurator.getIntProperty( Constants.CNF_CONSOLIDATORS_COUNT, 2 );
+        this.consolidatorPool = Executors.newFixedThreadPool( consThreads );
+        ExecutorService conflictResolverPool=Executors.newFixedThreadPool( consThreads );
+        List<Consolidator> consolidators = new ArrayList<Consolidator>();
+        final LinkedBlockingQueue<Element> elementsToProcess = new LinkedBlockingQueue<Element>(10000);
+
+
+
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                String collectionName = Configurator.getDefaultConfigurator().getStringProperty(Constants.OPT_COLLECTION_NAME);
+                Iterator<Element> elementIterator = Configurator.getDefaultConfigurator().getPersistence().find(Element.class, new Filter(new FilterCondition("collection", collectionName)));
+                while (elementIterator.hasNext())
+                {
+                    try {
+                        elementsToProcess.put(elementIterator.next());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        thread.start();
+        for ( int i = 0; i < consThreads; i++ ) {
+
+            conflictResolverPool.submit(new Thread("Resolver Thread") {
+                                            public void run() {
+                                                DroolsConflictResolutionProcessingRule resolver = new DroolsConflictResolutionProcessingRule();
+                                                while (!elementsToProcess.isEmpty()) {
+                                                    try {
+                                                        Element polledElement = elementsToProcess.poll(20, TimeUnit.SECONDS);
+                                                        Element elementProcessed = resolver.process(polledElement);
+                                                        processingQueue.add(elementProcessed);
+                                                    } catch (InterruptedException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+
+
+
+                                            }
+                                        }
+            );
+        }
+        conflictResolverPool.shutdown();
+
+        LOG.debug( "Initializing consolidators..." );
+        for ( int i = 0; i < consThreads; i++ ) {
+            Consolidator c = new Consolidator( this.persistence, this.processingQueue );
+            consolidators.add( c );
+            this.consolidatorPool.submit( c );
+        }
+
+        // no more consolidators can be added.
+        this.consolidatorPool.shutdown();
+
+
+        try {
+            conflictResolverPool.wait();
+            this.stopConsoldators( consolidators );
+            this.consolidatorPool.awaitTermination( 2678400, TimeUnit.SECONDS );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }
