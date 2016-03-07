@@ -21,10 +21,12 @@ public class ContentTypeIdentificationRule implements PostProcessingRule {
             if (mdrec.getProperty().getKey().equals("mimetype")){
                 String mimetype=mdrec.getValue();
                 String content_type= ContentTypeMapping.getMappingByName(mimetype);
-                tmp=new MetadataRecord();
-                tmp.setProperty(new Property("content_type", PropertyType.STRING));
-                tmp.setValue(content_type);
-                tmp.setStatus("SINGLE_RESULT");
+                if (content_type!=null) {
+                    tmp = new MetadataRecord();
+                    tmp.setProperty(new Property("content_type", PropertyType.STRING));
+                    tmp.setValue(content_type);
+                    tmp.setStatus("SINGLE_RESULT");
+                }
                 break;
             }
         }
