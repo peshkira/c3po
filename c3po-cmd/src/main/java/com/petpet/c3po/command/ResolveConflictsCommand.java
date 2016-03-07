@@ -2,6 +2,7 @@ package com.petpet.c3po.command;
 
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.controller.Controller;
+import com.petpet.c3po.parameters.DeconflictParams;
 import com.petpet.c3po.parameters.Params;
 import com.petpet.c3po.parameters.ProfileParams;
 import com.petpet.c3po.utils.Configurator;
@@ -22,12 +23,12 @@ public class ResolveConflictsCommand extends AbstractCLICommand implements Comma
     /**
      * The profile parameter passed on the command line.
      */
-    private ProfileParams params;
+    private DeconflictParams params;
 
     @Override
     public void setParams(Params params) {
-        if ( params != null && params instanceof ProfileParams ) {
-            this.params = (ProfileParams) params;
+        if ( params != null && params instanceof DeconflictParams ) {
+            this.params = (DeconflictParams) params;
         }
 
     }
@@ -40,18 +41,14 @@ public class ResolveConflictsCommand extends AbstractCLICommand implements Comma
         final Configurator configurator = Configurator.getDefaultConfigurator();
         configurator.configure();
 
-        Map<String, Object> options = new HashMap<String, Object>();
+        Map<String, String> options = new HashMap<String, String>();
         options.put( Constants.OPT_COLLECTION_NAME, this.params.getCollection() );
-        options.put( Constants.OPT_OUTPUT_LOCATION, this.params.getLocation() );
-        options.put( Constants.OPT_SAMPLING_ALGORITHM, this.params.getAlgorithm() );
-        options.put( Constants.OPT_SAMPLING_SIZE, this.params.getSize() );
-        options.put( Constants.OPT_SAMPLING_PROPERTIES, this.params.getProperties() );
-        options.put( Constants.OPT_INCLUDE_ELEMENTS, this.params.isIncludeElements() );
+        options.put( Constants.CNF_DROOLS_PATH, this.params.getLocation() );
 
         Controller ctrl = new Controller( configurator );
 
         try {
-            ctrl.ResolveConflicts();
+            ctrl.resolveConflicts(options);
         } catch ( Exception e ) {
             LOG.error( e.getMessage() );
             return;

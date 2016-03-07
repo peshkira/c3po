@@ -28,6 +28,11 @@ public class DroolsConflictResolutionProcessingRule implements
         this.workers = new ConcurrentHashMap<Thread, DroolsResolutionWorker>();
     }
 
+    public DroolsConflictResolutionProcessingRule(String pathToRules){
+        this.factory = new DroolsResolutionWorkerFactory(pathToRules);
+        this.workers = new ConcurrentHashMap<Thread, DroolsResolutionWorker>();
+    }
+
     @Override
     public int getPriority() {
         return PRIORITY;
@@ -39,11 +44,11 @@ public class DroolsConflictResolutionProcessingRule implements
 
 
         if (this.factory.isRulesAvailable()){
-            // RuleActivationListener.getInstance().printStatistics(System.out, false);
+            //DroolsResolutionStatisticsPrinter.printStatistics(System.out, false);
             DroolsResolutionStatisticsPrinter.printRuleActivation(System.out, false);
             DroolsResolutionStatisticsPrinter.printConflictsAccumulated(System.out,
                     false);
-            // DroolsResolutionStatisticsPrinter.printConflicts(System.out, false);
+            DroolsResolutionStatisticsPrinter.printConflicts(System.out, false);
         }
     }
 

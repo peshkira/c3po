@@ -8,6 +8,7 @@ import org.drools.KnowledgeBaseFactory;
 import org.drools.builder.KnowledgeBuilder;
 import org.drools.builder.KnowledgeBuilderFactory;
 import org.drools.builder.ResourceType;
+import org.drools.io.Resource;
 import org.drools.io.ResourceFactory;
 import sun.misc.Launcher;
 
@@ -47,7 +48,8 @@ public class DroolsResolutionWorkerFactory {
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
         List<File> sources=readRules(pathToRules);
         for (File filename : sources) {
-            kbuilder.add(ResourceFactory.newFileResource(filename), ResourceType.DRL);
+            Resource fileResource = ResourceFactory.newFileResource(filename);
+            kbuilder.add(fileResource, ResourceType.DRL);
             System.out.println("Adding rule: " + filename.getPath());
         }
 

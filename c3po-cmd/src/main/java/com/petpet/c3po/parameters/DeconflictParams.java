@@ -34,11 +34,26 @@ public class DeconflictParams implements Params {
   @Parameter( names = { "-c", "--collection" }, validateValueWith = EmptyStringValidator.class, required = true, description = "The name of the collection" )
   private String collection;
 
+  /**
+   * The output directory location for the generated profile. The default value
+   * is the working directory. Supports '-o' and '--outputdir'.
+   */
+  @Parameter( names = { "-o", "--outputdir" }, description = "The output directory where the profile will be stored" )
+  private String location = "";
+
   public String getCollection() {
     return collection;
   }
 
   public void setCollection( String collection ) {
     this.collection = collection;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public void setLocation( String location ) {
+    this.location = location;
   }
 }

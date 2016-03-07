@@ -68,7 +68,7 @@ public class Consolidator implements Runnable {
     /**
      * A flag whether or not the consolidator should run in the next run loop.
      */
-    private boolean running;
+    private boolean running=true;
 
     /**
      * Creates the consolidator worker.
@@ -98,11 +98,11 @@ public class Consolidator implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        this.running = true;
+        //this.running = true;
         while (!(queue.isEmpty() && !isRunning()))
         {
             try {
-                Element e = queue.poll(20, TimeUnit.SECONDS);
+                Element e = queue.poll(2, TimeUnit.SECONDS);
                 process( e );
             } catch ( InterruptedException e ) {
                 LOG.warn( "An error occurred in {}: {}", getName(), e.getMessage() );
