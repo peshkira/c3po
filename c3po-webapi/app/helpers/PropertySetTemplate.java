@@ -26,19 +26,20 @@ public class PropertySetTemplate {
 	public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3po.template_config";
 	@SuppressWarnings("rawtypes")
 	public static void setProps(Filter filter){
-		Application.PROPS=defaultProps;
+		if (!templateController.isSet())
+			templateController.loadFromFile(new File( USER_PROPERTIES ));
+		Application.PROPS=templateController.getDefaultTemplate();
 		
 		if (filter==null){
 			return;
 		}
 		Map mapFilter=filterToString(filter);
-		if (!templateController.isSet())
-			templateController.loadFromFile(new File( USER_PROPERTIES ));
+		
 		String[] props=templateController.getProps(mapFilter);
 		if (props.length!=0)
 			Application.PROPS=props;
 	}
-	static TemplateController templateController =new TemplateController();
+	static TemplateController templateController =new TemplateController(new File( USER_PROPERTIES ));
 	public static void updateConfig(File file){
 		templateController.loadFromFile(file);
 		
@@ -50,6 +51,8 @@ public class PropertySetTemplate {
 	public static  List<String> templatesToString(){
 		return templateController.toArrayString();
 	}
+	
+	
 
 	public static Map filterToString(Filter filter){
 		Map<String,String> result=new TreeMap<String,String>();

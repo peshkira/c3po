@@ -13,6 +13,13 @@ import org.simpleframework.xml.core.Persister;
 import com.petpet.c3po.datamodel.Filter;
 @Root
 public class TemplateController {
+	public TemplateController(File file){
+		loadFromFile(file);
+		
+	}
+	public TemplateController(){
+		
+	}
 	public List<TemplateFilter> getFilters() {
 		return filters;
 	}
@@ -90,14 +97,22 @@ public class TemplateController {
 			for(Template t: templates){
 				result.add(t.toString());
 			}
-			
 		}
 		return result;
 	}
-
-	
 	public boolean isSet(){
 		return (templates!=null && !templates.isEmpty());
+	}
+	public String[] getDefaultTemplate(){
+		for(Template tmpl: templates){
+			if (tmpl.getName().equals("Default_template")){
+				List<String> result=get_list_of_properties(tmpl);
+				return result.toArray(new String[0]);
+			}
+		}
+		String[] defaultProps ={"content_type", "created", "valid"};
+		return defaultProps;
+		
 	}
 
 }
