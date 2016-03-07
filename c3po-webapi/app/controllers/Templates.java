@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.petpet.c3po.datamodel.Filter;
+
 import helpers.PropertySetTemplate;
 import play.Logger;
 import play.mvc.Controller;
@@ -37,7 +39,7 @@ public class Templates extends Controller {
 	}
 	
 	public static List<String> getTemplates(){
-		return PropertySetTemplate.templatesToString(); //TODO:FIX THIS!
+		return PropertySetTemplate.templatesToString(); 
 		
 	}
 	public static Result exportTemplate(){
@@ -50,6 +52,11 @@ public class Templates extends Controller {
 	      return internalServerError(e.getMessage());
 	    }
 		
+	}
+	
+	public static String getCurrentTemplate(){
+		Filter filter = Application.getFilterFromSession();
+		return PropertySetTemplate.getCurrentTemplate(filter);
 	}
 	
 

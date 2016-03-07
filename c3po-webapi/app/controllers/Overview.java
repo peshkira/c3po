@@ -69,7 +69,7 @@ public class Overview extends Controller {
       }
 
     }
-    return ok(overview.render(names, data, stats));
+    return ok(overview.render(names, data, stats, Templates.getCurrentTemplate()));
   }
 
   public static Result getGraph(String property) {

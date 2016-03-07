@@ -65,6 +65,16 @@ public class TemplateController {
 		List<String> result=get_list_of_properties(tmp_template);
 		return result.toArray(new String[0]);
 	}
+	
+	public String getCurrentTemplate(Map<String,String> filter){
+		TemplateFilter tmp_filter= find_corresponding_template_filter(filter);
+		Template template=find_template(tmp_filter);
+		if (template!=null)
+			return template.getName();
+		return "Default";
+		
+	}
+	
 	private List<String> get_list_of_properties(Template tmp_template) {
 		List<String> result=new ArrayList<String>();
 		if (tmp_template==null)

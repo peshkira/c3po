@@ -51,6 +51,11 @@ public class PropertySetTemplate {
 	public static  List<String> templatesToString(){
 		return templateController.toArrayString();
 	}
+	public static String getCurrentTemplate(Filter filter){
+		Map mapFilter=filterToString(filter);
+		return templateController.getCurrentTemplate(mapFilter);
+		
+	}
 	
 	
 
@@ -71,9 +76,13 @@ public class PropertySetTemplate {
 				Map<String,String> valueMap=((BasicDBObject) value).toMap();
 				Object high = valueMap.get("$lte");
 				Object low = valueMap.get("$gte");
-				value=low.toString()+"-"+high.toString();
+				if (high == null || low==null)
+					value =null;
+				else
+					value=low.toString()+"-"+high.toString();
 			}
-			result.put(s, value.toString());
+			if (value!=null)
+				result.put(s, value.toString());
 			//list.add(s+"."+value);
 		}
 		//Collections.sort(list);

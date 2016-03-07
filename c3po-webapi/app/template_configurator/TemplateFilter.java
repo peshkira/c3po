@@ -1,6 +1,8 @@
 package template_configurator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,24 +38,50 @@ public class TemplateFilter {
 		}
 		return result;
 	}
+	public Map toMap(){
+		Map<String, String> result=new HashMap<String,String>();
+		
+		for (TemplateCondition tc: conditions){
+			result.put(tc.getKey(),tc.getValue());
+		}	
+		return result;
+	}
 	
 	public boolean equals(Object obj) {
 		if (obj==null)
 			return false;
 		
-		if (obj instanceof Map){
-			Map<String,String> thatMap=(Map<String,String>) obj;
-			for (Entry<String,String> entry: thatMap.entrySet()){
-				TemplateCondition tmp_condition=new TemplateCondition(entry.getKey(),entry.getValue());
-				if (!conditions.contains(tmp_condition))
+		if (obj == this)
+			return true;
+		
+		if (!(obj instanceof Map))
+			return false;
+		Map<String,String> thatMap=(Map<String,String>) obj;
+		Map<String, String> thisMap=this.toMap();
+		if (thatMap.size()!= thisMap.size())
+			return false;
+		
+		Iterator<Entry<String, String>> iteratorThis = thisMap.entrySet().iterator();
+		
+		while(iteratorThis.hasNext()){
+			Entry<String, String> next = iteratorThis.next();
+			String key = next.getKey();
+			String value = next.getValue();
+			if (value==null){
+				if (thatMap.get(key)!=null || !thatMap.containsKey(key))
 					return false;
 			}
-			return true;
+			else {
+				if (!value.equals(thatMap.get(key)))
+						return false;
+				
+			}
+			
+			
 		}
+		return true;
 		
-		if (obj.getClass()!=getClass())
-			return false;
-		TemplateFilter that=(TemplateFilter) obj;
+		/*TemplateFilter that=(TemplateFilter) obj;
 		if (template_ID.equals(that.template_ID)){
 			ArrayList<TemplateCondition> tmp=new ArrayList<TemplateCondition>(conditions);
 			ArrayList<TemplateCondition> tmp2=new ArrayList<TemplateCondition>(that.conditions);
@@ -62,7 +90,7 @@ public class TemplateFilter {
 			if (tmp.isEmpty() && tmp2.isEmpty())
 				return true;
 		}
-		return false;
+		return false;*/
 	}
 
 }

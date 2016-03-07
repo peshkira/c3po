@@ -160,7 +160,7 @@ public class FilterController extends Controller {
       Filter newFilter = new Filter(filter.getCollection(), f, v);
       newFilter.setDescriminator(filter.getDescriminator());
       p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
-      PropertySetTemplate.setProps(newFilter);
+      //PropertySetTemplate.setProps(newFilter);
     }
     
     return ok();
