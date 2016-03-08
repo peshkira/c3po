@@ -18,7 +18,7 @@ public class ContentTypeIdentificationRule implements PostProcessingRule {
         List<MetadataRecord> metadataRecords = e.getMetadata();
         MetadataRecord tmp=null;
         for (MetadataRecord mdrec: metadataRecords){
-            if (mdrec.getProperty().getKey().equals("mimetype")){
+            if (mdrec.getProperty().getKey().equals("mimetype") && !mdrec.getStatus().equals("CONFLICT")){
                 String mimetype=mdrec.getValue();
                 String content_type= ContentTypeMapping.getMappingByName(mimetype);
                 if (content_type!=null) {

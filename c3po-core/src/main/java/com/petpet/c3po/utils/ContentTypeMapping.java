@@ -9,7 +9,7 @@ import java.util.Properties;
  */
 public class ContentTypeMapping {
     static Properties TERMS;
-    public static void init() {
+    static void init() {
         try {
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(
                     "content_type_mapping.properties" );
@@ -24,7 +24,9 @@ public class ContentTypeMapping {
         if (TERMS==null)
             init();
         final String prop = (String) TERMS.get( name );
-        return (prop == null) ? null : prop;
+        if (prop!=null)
+            return prop;
+        return null;
     }
 }
 
