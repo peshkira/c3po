@@ -120,7 +120,7 @@ public class TemplateController {
 				return result.toArray(new String[0]);
 			}
 		}
-		String[] defaultProps ={"content_type", "created", "valid"};
+		String[] defaultProps ={"content_type", "valid"};
 		return defaultProps;
 		
 	}
