@@ -17,6 +17,7 @@ package controllers;
 
 import helpers.Graph;
 import helpers.GraphData;
+import helpers.PropertySetTemplate;
 import helpers.Statistics;
 
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class Overview extends Controller {
       DBCursor cursor = Configurator.getDefaultConfigurator().getPersistence().find(Constants.TBL_FILTERS, ref);
 
       Logger.info("filter is not null");
+      PropertySetTemplate.setProps(filter);
       if (cursor.count() == 1) { // only root filter
         Logger.info("filter has no parent, using cached statistics");
         // used cached results

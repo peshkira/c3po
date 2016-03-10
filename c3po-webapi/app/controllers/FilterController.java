@@ -94,12 +94,12 @@ public class FilterController extends Controller {
     DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
     if (cursor.count() == 0) {
       Logger.debug("No filter found for property: " + property);
-      PropertySetTemplate.setProps(null);
+      //PropertySetTemplate.setProps(null);
     } else if (cursor.count() == 1) {
       Logger.debug("Removing filter for property: " + property);
       Filter tmp = DataHelper.parseFilter(cursor.next());
       p.getDB().getCollection(Constants.TBL_FILTERS).remove(tmp.getDocument());
-      PropertySetTemplate.setProps(null);
+      //PropertySetTemplate.setProps(null);
     } else {
       Logger.error("Something went wrong, while removing filter for property: " + property);
       throw new RuntimeException("Two many filters found for property " + property);
@@ -149,7 +149,7 @@ public class FilterController extends Controller {
 
         tmp.setValue(v);
         p.insert(Constants.TBL_FILTERS, tmp.getDocument());
-        PropertySetTemplate.setProps(tmp);
+        //PropertySetTemplate.setProps(tmp);
         existing = true;
         break;
       }
@@ -160,7 +160,7 @@ public class FilterController extends Controller {
       Filter newFilter = new Filter(filter.getCollection(), f, v);
       newFilter.setDescriminator(filter.getDescriminator());
       p.insert(Constants.TBL_FILTERS, newFilter.getDocument());
-      //PropertySetTemplate.setProps(newFilter);
+     // PropertySetTemplate.setProps(newFilter);
     }
     
     return ok();
