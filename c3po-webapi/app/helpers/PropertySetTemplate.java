@@ -14,7 +14,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.mongodb.BasicDBObject;
-import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.DataHelper;
 
 import controllers.Application;
@@ -52,8 +53,9 @@ public class PropertySetTemplate {
 		return templateController.toArrayString();
 	}
 	public static String getCurrentTemplate(Filter filter){
-		Map mapFilter=filterToString(filter);
-		return templateController.getCurrentTemplate(mapFilter);
+		return "TODO";
+		//Map mapFilter=filterToString(filter);
+		//return templateController.getCurrentTemplate(mapFilter);
 		
 	}
 	
@@ -62,8 +64,13 @@ public class PropertySetTemplate {
 	public static Map filterToString(Filter filter){
 		Map<String,String> result=new TreeMap<String,String>();
 
-
-		DataHelper.init();
+		List<FilterCondition> fcs=filter.getConditions();
+		for (FilterCondition fc : fcs){
+			result.put(fc.getField(), (String)fc.getValue());
+			
+		}
+		
+		/*DataHelper.init();
 		BasicDBObject ref= DataHelper.getFilterQuery(filter);
 		ref.removeField("collection");
 		Map<String,String> map= ref.toMap(); 
@@ -86,7 +93,7 @@ public class PropertySetTemplate {
 			//list.add(s+"."+value);
 		}
 		//Collections.sort(list);
-
+*/
 		return result;
 
 	}

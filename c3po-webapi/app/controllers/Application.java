@@ -15,246 +15,310 @@
  ******************************************************************************/
 package controllers;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.NumericStatistics;
+import com.petpet.c3po.utils.Configurator;
+
+import common.WebAppConstants;
+import helpers.Distribution;
+import helpers.SessionFilters;
 import play.Logger;
-import play.api.mvc.MultipartFormData;
-import play.api.mvc.MultipartFormData.FilePart;
 import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.index;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.MapReduceOutput;
-import com.petpet.c3po.analysis.mapreduce.CollectionPropertiesJob;
-import com.petpet.c3po.analysis.mapreduce.JobResult;
-import com.petpet.c3po.analysis.mapreduce.MapReduceJob;
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Filter;
-import com.petpet.c3po.datamodel.Property;
-import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.DataHelper;
-import common.WebAppConstants;
-
 public class Application extends Controller {
 
-  public static String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed",
-      "creating_application_name", "created" };
+	public static String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed",
+			"creating_application_name", "created" };
 
-  public static Result index() {
+	private static void buildSession() {
+		String session = session(WebAppConstants.SESSION_ID);
+		Logger.debug("Building a new session with id:'" + session + "'");
+		if (session == null) {
+			session(WebAppConstants.SESSION_ID, UUID.randomUUID().toString());
+		}
+		Filter f=new Filter();
+		SessionFilters.addFilter(session, f);
+	}
 
-    buildSession();
+	public static Result clear() {
+		Logger.debug("Received a clear call");
+		session().clear();
 
-    return ok(index.render("c3po", getCollectionNames()));
-  }
+		//final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
+		//pl.remove(arg0);
 
-  public static Result setCollection(String c) {
-    Logger.debug("Received collection setup change for " + c);
-    final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    final List<String> names = getCollectionNames();
+		return redirect("/c3po");
+	}
 
-    if (c == null || c.equals("") || !names.contains(c)) {
-      return notFound("No collection '" + c + "' was found");
-    }
+	public static Result collectionsAsJson() {
+		Logger.debug("Received a collectionsAsJson call");
+		final List<String> names = Application.getCollectionNames();
+		names.add(0, ""); //Adding empty element for default position in the drop-down list
+		//names.remove(0);
+		response().setContentType("application/json");
+		return ok(play.libs.Json.toJson(names));
+	}
 
-    Filter f = new Filter(c, null, null);
+	public static Result collectionsAsXml() {
+		Logger.debug("Received a collectionsAsXml call");
+		final List<String> names = Application.getCollectionNames();
+		names.add(0, ""); //Adding empty element for default position in the drop-down list
+		//names.remove(0);
+		final StringBuffer resp = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-    buildSession();
-    String session = session(WebAppConstants.SESSION_ID);
-    System.out.println("session: " + session);
-    f.setDescriminator(session);
+		resp.append("<collections>\n");
 
-    BasicDBObject query = new BasicDBObject("collection", c);
-    query.put("descriminator", session);
-    System.out.println("Query: " + query.toString());
+		for (String s : names) {
+			resp.append("<collection name=\"" + s + "\" />\n");
+		}
+		resp.append("</collections>\n");
+		response().setContentType("text/xml");
+		return ok(resp.toString());
+	}
 
-    DBCursor cursor = p.find(Constants.TBL_FILTERS, query);
-    if (cursor.count() == 0) {
-      p.insert(Constants.TBL_FILTERS, f.getDocument());
-    } else {
-      f = DataHelper.parseFilter(cursor.next());
-    }
+	public static List<String> getCollectionNames() {
+		Logger.debug("Listing collection names");
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		List<String> collections = (List<String>) persistence.distinct(Element.class, "collection", null);
+		Collections.sort(collections);
+		return collections;
+	}
 
-    session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
-    session().put(WebAppConstants.CURRENT_FILTER_SESSION, f.getDescriminator());
-    return ok("The collection was changed successfully\n");
-  }
+	public static Result getCollections() {
+		Logger.debug("Received a getCollections call");
+		final String accept = request().getHeader("Accept");
 
-  public static Result setSetting() {
+		if (accept.contains("*/*") || accept.contains("application/xml")) {
+			return collectionsAsXml();
+		} else if (accept.contains("application/json")) {
+			return collectionsAsJson();
+		}
 
-    DynamicForm form = form().bindFromRequest();
-    String setting = form.get("setting");
-    String value = form.get("value");
+		return badRequest("The accept header is not supported");
+	}
 
-    session().put(setting, value);
-    Logger.debug("changed setting '" + setting + "' to value: '" + value + "'");
-    return ok();
-  }
+	
+	
+	public static Distribution getDistribution(String property, Filter filter){
+		Logger.debug("Calculating distrubution for the property '" + property +"'");
+		Distribution result=new Distribution();
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Property p=persistence.getCache().getProperty(property);
+		if (p==null)
+			return result;
+		Filter f=filter;
+		result.setPropertyDistribution( persistence.getValueHistogramFor(p, f));
+		result.setProperty(p.getKey());
+		result.setType(p.getType());
+		switch (p.getType()) {
+		case "STRING":
 
-  public static Result getSetting(String key) {
-    String value = session(key);
-    return ok(play.libs.Json.toJson(value));
-  }
+			break;
+		case "BOOL":
 
-  public static Result getCollections() {
-    Logger.debug("Received a get collections call");
-    final String accept = request().getHeader("Accept");
+			break;
+		case "INTEGER":
+		{
+			Logger.debug("Calculating numeric statistics for the property '" + property +"'");
+			NumericStatistics ns=persistence.getNumericStatistics(p, f);
+			result.getStatistics().put("average", ns.getAverage());
+			result.getStatistics().put("min", ns.getMin());
+			result.getStatistics().put("max", ns.getMax());
+			result.getStatistics().put("sd", ns.getStandardDeviation());
+			result.getStatistics().put("var", ns.getVariance());
+			result.getStatistics().put("count", (double)ns.getCount());
+			result.getStatistics().put("sum", ns.getSum());
+		}
+		break;
+		case "FLOAT":
+			Logger.debug("Calculating numeric statistics for the property '" + property +"'");
+			NumericStatistics ns=persistence.getNumericStatistics(p, f);
+			result.getStatistics().put("average", ns.getAverage());
+			result.getStatistics().put("min", ns.getMin());
+			result.getStatistics().put("max", ns.getMax());
+			result.getStatistics().put("sd", ns.getStandardDeviation());
+			result.getStatistics().put("var", ns.getVariance());
+			result.getStatistics().put("count", (double)ns.getCount());
+			result.getStatistics().put("sum", ns.getSum());
+			break;
+		case "DATE":
+			break;
+		case "ARRAY":
+			break;
+		default:
+			break;
+		}
+		return result;
+	}
+	
+	public static Distribution getDistribution(String property){
+		Filter f=FilterController.getFilterFromSession();
+		return Application.getDistribution(property, f);
+	}
 
-    if (accept.contains("*/*") || accept.contains("application/xml")) {
-      return collectionsAsXml();
-    } else if (accept.contains("application/json")) {
-      return collectionsAsJson();
-    }
+	public static Result getProperties() {
+		Logger.debug("Received a getProperties call");
+		final String accept = request().getHeader("Accept");
 
-    return badRequest("The accept header is not supported");
-  }
+		if (accept.contains("*/*") || accept.contains("application/xml")) {
+			return TODO;
+		} else if (accept.contains("application/json")) {
+			return propertiesAsJson();
+		}
 
-  public static Result getProperties() {
-    Logger.debug("Received a get properties call");
-    final String accept = request().getHeader("Accept");
+		return badRequest("The accept header is not supported");
+	}
 
-    if (accept.contains("*/*") || accept.contains("application/xml")) {
-      return TODO;
-    } else if (accept.contains("application/json")) {
-      return propertiesAsJson();
-    }
+	public static Result getProperty(String name) {
+		Logger.debug("Received a getProperty call");
+		final String accept = request().getHeader("Accept");
+		if (accept.contains("*/*") || accept.contains("application/json")) {
+			return propertyAsJson(name);
+		} else {
+			return TODO;
+		}
+	}
 
-    return badRequest("The accept header is not supported");
-  }
+	public static List<String> getPropertyNames() {
+		Logger.debug("Listing property names");
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		List<String> names = persistence.distinct( Property.class, "_id", null );
+		return names;
+	}
 
-  public static Result getProperty(String name) {
-    Logger.debug("Received a get property call");
-    final String accept = request().getHeader("Accept");
-    if (accept.contains("*/*") || accept.contains("application/json")) {
-      return propertyAsJson(name);
-    } else {
-      return TODO;
-    }
-  }
+	public static Result getSetting(String key) {
+		Logger.debug("Received a getSetting call");
+		String value = session(key);
+		return ok(play.libs.Json.toJson(value));
+	}
 
-  private static Result propertyAsJson(String name) {
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    Property property = p.getCache().getProperty(name);
-    return ok(play.libs.Json.toJson(property));
-  }
+	static Object getTypedValue( String val ) {
+		Logger.debug("Retrieving typedValue of '" +val+ "'");
+		Object value = null;
+		try {
+			value = Long.parseLong( val );
+		} catch ( NumberFormatException e ) {
+		}
 
-  private static Result propertiesAsJson() {
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    List<String> properties = new ArrayList<String>();
+		if ( val.equalsIgnoreCase( "yes" ) || val.equalsIgnoreCase( "true" ) ) {
+			value = new Boolean( true );
+		} else if ( val.equalsIgnoreCase( "no" ) || val.equalsIgnoreCase( "false" ) ) {
+			value = new Boolean( false );
+		}
 
-    String collection = session(WebAppConstants.CURRENT_COLLECTION_SESSION);
-    MapReduceJob job = new CollectionPropertiesJob(collection);
-    JobResult output = job.run();
+		if ( value == null ) {
+			value = val;
+		}
+		return value;
+	}
 
-    List<BasicDBObject> results = output.getResults();
-    if (results != null && results.size() > 0) {
-      for (BasicDBObject dbo : results) {
-        properties.add((String) dbo.get("_id"));
-      }
-    } else {
-      properties.addAll(p.distinct(Constants.TBL_PROEPRTIES, "key"));
-    }
+	public static Result index() {
+		Logger.debug("Received an index call in application");
+		buildSession();
+		return ok(index.render("c3po", getCollectionNames()));
+	}
 
-    return ok(play.libs.Json.toJson(properties));
-  }
+	private static Object inferValue(String value) {
+		Logger.debug("Inferring value of '" +value+ "'");
+		Object result = value;
+		if (value.equalsIgnoreCase("true")) {
+			result = new Boolean(true);
+		}
 
-  public static Result collectionsAsXml() {
-    final List<String> names = Application.getCollectionNames();
-    names.remove(0);
-    final StringBuffer resp = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		if (value.equalsIgnoreCase("false")) {
+			result = new Boolean(false);
+		}
 
-    resp.append("<collections>\n");
+		return result;
+	}
 
-    for (String s : names) {
-      resp.append("<collection name=\"" + s + "\" />\n");
-    }
+	private static Result propertiesAsJson() {
+		Logger.debug("Received a propertiesAsJson call");
+		//PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		List<String> properties = getPropertyNames();
+		//Iterator<Property> iter = persistence.find( Property.class, null );
+		//while ( iter.hasNext() ) {
+		//		properties.add( iter.next().getKey() );
+		//	}
 
-    resp.append("</collections>\n");
+		return ok( play.libs.Json.toJson( properties ) );
+	}
 
-    response().setContentType("text/xml");
+	private static Result propertyAsJson(String name) {
+		Logger.debug("Received a propertyAsJson call");
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Property property = persistence.getCache().getProperty(name);
+		return ok(play.libs.Json.toJson(property));
+	}
 
-    return ok(resp.toString());
-  }
 
-  public static Result collectionsAsJson() {
-    final List<String> names = Application.getCollectionNames();
-    names.remove(0);
-    response().setContentType("application/json");
-    return ok(play.libs.Json.toJson(names));
-  }
 
-  public static List<String> getCollectionNames() {
-    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-    List<String> collections = (List<String>) persistence.distinct(Constants.TBL_ELEMENTS, "collection");
-    Collections.sort(collections);
-    collections.add(0, "");
-    return collections;
+	public static Result setCollection(String c) {
+		Logger.debug("Received a setCollection call to '" + c + "'");
+		final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+		final List<String> names = getCollectionNames();
 
-  }
+		if (c == null || c.equals("") || !names.contains(c)) {
+			return notFound("No collection '" + c + "' was found");
+		}
+		
+		
+		Filter f = FilterController.getFilterFromSession();  //I dont use getCollection(), because we need to update the collection value in the filter.
+		List<FilterCondition> fcs=f.getConditions();
+		for (FilterCondition fc: fcs){
+			if (fc.getField().equals("collection")){
+				fc.setValue(c);
+				session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
+				return ok("The collection was changed successfully\n");
+			}
+		}
+		f.addFilterCondition(new FilterCondition("collection", c));
+		//f.addFilterCondition(new FilterCondition("collection", c));
+		//buildSession();
+		//String session = session(WebAppConstants.SESSION_ID);
+		//SessionFilters.addFilter(session, f);
+		//System.out.println("session: " + session);
 
-  public static Filter getFilterFromSession() {
-    PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    String f = session(WebAppConstants.CURRENT_FILTER_SESSION);
-    String c = session(WebAppConstants.CURRENT_COLLECTION_SESSION);
+		//session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
+		return ok("The collection was changed successfully\n");
+	}
+	
+	public static String getCollection(){
+		Filter f = FilterController.getFilterFromSession();
+		List<FilterCondition> fcs=f.getConditions();
+		for (FilterCondition fc: fcs){
+			if (fc.getField().equals("collection")){
+				return fc.getValue().toString();
+			}
+		}
+		return null;
 
-    if (f != null) {
-      BasicDBObject fQuery = new BasicDBObject("descriminator", f);
-      fQuery.put("collection", c);
-      fQuery.put("property", null);
-      fQuery.put("value", null);
-      DBCursor cursor = pl.find(Constants.TBL_FILTERS, fQuery);
-      if (cursor.count() == 1) {
-        Filter filter = DataHelper.parseFilter(cursor.next());
-        return filter;
-      } else if (cursor.count() > 1) {
-        Logger.error("More than one filter found");
-        throw new RuntimeException("Found more than one filters with the same id");
-      }
-    }
+	}
 
-    return null;
-  }
+	public static Result setSetting() {
 
-  public static BasicDBObject getFilterQuery(Filter filter) {
-    return DataHelper.getFilterQuery(filter);
-  }
+		DynamicForm form = form().bindFromRequest();
+		String setting = form.get("setting");
+		String value = form.get("value");
+		Logger.debug("Received a setSetting call for '" + setting + "' to value: '" + value + "'");
+		session().put(setting, value);
 
-  public static Result clear() {
-    session().clear();
+		return ok();
+	}
 
-    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    pl.getDB().getCollection(Constants.TBL_FILTERS).drop();
 
-    return redirect("/c3po");
-  }
 
-  private static Object inferValue(String value) {
-    Object result = value;
-    if (value.equalsIgnoreCase("true")) {
-      result = new Boolean(true);
-    }
-
-    if (value.equalsIgnoreCase("false")) {
-      result = new Boolean(false);
-    }
-
-    return result;
-  }
-
-  private static void buildSession() {
-    String session = session(WebAppConstants.SESSION_ID);
-    if (session == null) {
-      session(WebAppConstants.SESSION_ID, UUID.randomUUID().toString());
-    }
-  }
-  
- 
-  
 }

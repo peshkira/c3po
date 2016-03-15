@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.petpet.c3po.datamodel.Filter;
+//import com.petpet.c3po.datamodel.Filter;
+import com.petpet.c3po.api.model.helper.Filter;
 
 import helpers.PropertySetTemplate;
 import play.Logger;
@@ -55,7 +56,7 @@ public class Templates extends Controller {
 	}
 	
 	public static String getCurrentTemplate(){
-		Filter filter = Application.getFilterFromSession();
+		Filter filter = FilterController.getFilterFromSession();
 		return PropertySetTemplate.getCurrentTemplate(filter);
 	}
 	
