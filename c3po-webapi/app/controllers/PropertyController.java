@@ -16,6 +16,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.Configurator;
 
 import common.WebAppConstants;
@@ -109,15 +110,7 @@ public class PropertyController extends Controller{
 		result.setPropertyDistribution(histogram);
 		result.setProperty(p.getKey());
 		result.setType(p.getType());
-		switch (p.getType()) {
-		case "STRING":
-
-			break;
-		case "BOOL":
-
-			break;
-		case "INTEGER":
-		{
+		if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())){
 			Logger.debug("Calculating numeric statistics for the property '" + property +"'");
 			NumericStatistics ns=persistence.getNumericStatistics(p, filter);
 			result.getStatistics().put("average", ns.getAverage());
@@ -127,25 +120,6 @@ public class PropertyController extends Controller{
 			result.getStatistics().put("var", ns.getVariance());
 			result.getStatistics().put("count", (double)ns.getCount());
 			result.getStatistics().put("sum", ns.getSum());
-		}
-		break;
-		case "FLOAT":
-			Logger.debug("Calculating numeric statistics for the property '" + property +"'");
-			NumericStatistics ns=persistence.getNumericStatistics(p, filter);
-			result.getStatistics().put("average", ns.getAverage());
-			result.getStatistics().put("min", ns.getMin());
-			result.getStatistics().put("max", ns.getMax());
-			result.getStatistics().put("sd", ns.getStandardDeviation());
-			result.getStatistics().put("var", ns.getVariance());
-			result.getStatistics().put("count", (double)ns.getCount());
-			result.getStatistics().put("sum", ns.getSum());
-			break;
-		case "DATE":
-			break;
-		case "ARRAY":
-			break;
-		default:
-			break;
 		}
 		return result;
 	}
