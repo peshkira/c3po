@@ -55,8 +55,8 @@ public class Elements extends Controller {
 
 	public static Result index() {
 		Logger.debug("Received an index call in elements");
-		List<String> names = Application.getCollectionNames();
-		String collection = Application.getCollection();
+		List<String> names = PropertyController.getCollectionNames();
+		String collection = PropertyController.getCollection();
 		if (collection == null) {
 			return ok(elements.render(names, null));
 		}
@@ -92,92 +92,20 @@ public class Elements extends Controller {
 
 	}
 
-	/*	public static List<Element> listElements(String collection, int batch, int offset) {
 
-		List<Element> result = new ArrayList<Element>();
-		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-
-		//BasicDBObject query = new BasicDBObject();
-		//query.put("collection", collection);
-		Filter filter = FilterController.getFilterFromSession();
-		//if (filter != null) {
-		//  query = Application.getFilterQuery(filter);
-		//  System.out.println("Objects Query: " + query);
-		//}
-
-		//final DBCursor cursor = pl.getDB().getCollection(Constants.TBL_ELEMENTS).find(query).skip(offset).limit(batch);
-
-		//Logger.info("Cursor has: " + cursor.count() + " objects");
-		Iterator<Element> iterator=persistence.find(Element.class, filter);
-		while (iterator.hasNext()) {
-			Element e = iterator.next();
-
-			if (e.getName() == null) {
-				e.setName("missing name");
-			}
-			result.add(e);
-		}
-		//return result;
-
-
-
-
-		    Map<String, String[]> urlQuery = new HashMap<String, String[]>();
-		    urlQuery.putAll( query );
-
-		    String[] offsetParameters = urlQuery.remove( "offset" );
-		    String[] limitParameters = urlQuery.remove( "limit" );
-		    Filter filter = Application.getFilterFromQuery( urlQuery );
-
-		    offset = readFirstIntegerFromParameterArray( offsetParameters, offset );
-		    limit = readFirstIntegerFromParameterArray( limitParameters, limit );
-
-		    ArrayList<Element> elements = new ArrayList<Element>();
-		    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-		    Iterator<Element> elementsIterator = persistence.find( Element.class, filter );
-
-		    while ( offset > 0 ) {
-		      if ( elementsIterator.hasNext() ) {
-		        elementsIterator.next();
-		        offset--;
-		      } else {
-		        break;
-		      }
-		    }
-
-		    while ( limit > 0 ) {
-		      if ( elementsIterator.hasNext() ) {
-		        Element element = elementsIterator.next();
-		        elements.add( element );
-		        limit--;
-		      } else {
-		        break;
-		      }
-
-		    }
-
-		    return elements;
-
-	}*/
 
 	public static Result show(String id) {
 		Logger.debug("Received a show call in elements, with id: " + id);
-		List<String> names = Application.getCollectionNames();
+		List<String> names = PropertyController.getCollectionNames();
 		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-		Filter filter=FilterController.getFilterFromSession();
-
+		Filter filter=new Filter();
 		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
-		//DBCursor cursor =pl.find(Element.class, filter);// arg1) pl.find(Constants.TBL_ELEMENTS, new BasicDBObject("_id", new ObjectId(id)));
-
 		Iterator<Element> iterator=persistence.find(Element.class, filter);
-
-
 		if (iterator.hasNext()) {
 			Element result = iterator.next();
 			if (iterator.hasNext()) {
 				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
 			}
-
 			return ok( element.render(names, result) );
 
 		} else {

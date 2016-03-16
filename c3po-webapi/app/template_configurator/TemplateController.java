@@ -68,10 +68,10 @@ public class TemplateController {
 	}
 	
 	public String getCurrentTemplate(Map<String,String> filter){
-		//TemplateFilter tmp_filter= find_corresponding_template_filter(filter);
-		//Template template=find_template(tmp_filter);
-		//if (template!=null)
-	//		return template.getName();
+		TemplateFilter tmp_filter= find_corresponding_template_filter(filter);
+		Template template=find_template(tmp_filter);
+		if (template!=null)
+			return template.getName();
 		return "Default";
 		
 	}

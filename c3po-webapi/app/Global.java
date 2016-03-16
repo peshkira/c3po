@@ -38,12 +38,11 @@ public class Global extends GlobalSettings {
   public void onStart(Application app) {
     Logger.info("Starting c3po web app");
     super.onStart(app);
-
     Configurator.getDefaultConfigurator().configure();
     
  //   this.calculateCollectionStatistics();
  //   this.calculateHistogramms();
-  //  PropertySetTemplate.updateConfig();
+    PropertySetTemplate.updateConfig();
   }
 
   // TODO think of a better way to decide when to drop the
@@ -68,7 +67,7 @@ public class Global extends GlobalSettings {
   private void calculateCollectionStatistics() {
     Logger.info("Calculating size statistics of each collection");
     final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    final List<String> collections = controllers.Application.getCollectionNames();
+    final List<String> collections = controllers.PropertyController.getCollectionNames();
     Property size = pl.getCache().getProperty( "size" );
     for (String collection : collections) {
       final String cName = "statistics_" + collection;
@@ -90,7 +89,7 @@ public class Global extends GlobalSettings {
 
   private void calculateHistogramms() {
     Logger.info("Calculating histograms of each collection");
-    final List<String> collections = controllers.Application.getCollectionNames();
+    final List<String> collections = controllers.PropertyController.getCollectionNames();
     final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
 
     for (String collection : collections) {

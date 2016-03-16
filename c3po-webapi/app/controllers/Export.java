@@ -56,7 +56,7 @@ public class Export extends Controller {
 
 	public static Result index() {
 		Logger.debug("Received an index call in export");
-		return ok(export.render("c3po - Export Data", Application.getCollectionNames(),Templates.getTemplates()));//export.render("c3po - Export Data", Application.getCollectionNames()));
+		return ok(export.render("c3po - Export Data", PropertyController.getCollectionNames(),Templates.getTemplates()));//export.render("c3po - Export Data", Application.getCollectionNames()));
 	}
 
 	public static Result profile() {
@@ -73,7 +73,7 @@ public class Export extends Controller {
 		if (filter == null) {
 			if (c == null) {
 				return badRequest("No collection parameter provided\n");
-			} else if (!Application.getCollectionNames().contains(c)) {
+			} else if (!PropertyController.getCollectionNames().contains(c)) {
 				return notFound("No collection with name " + c + " was found\n");
 			}
 
@@ -96,11 +96,7 @@ public class Export extends Controller {
 	public static Result exportAllToCSV() {
 		Logger.debug("Received an exportAllToCSV call");
 		CSVGenerator generator = getGenerator();
-
-		Filter filter = FilterController.getFilterFromSession();
-		List<FilterCondition> fcs= filter.getConditions();
-		String collection=Application.getCollection();
-		// String collection = filter.getConditions()
+		String collection=PropertyController.getCollection();
 		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
 		generator.exportAll(collection, path);
 
@@ -116,10 +112,8 @@ public class Export extends Controller {
 	public static Result exportFilterToCSV() {
 		Logger.debug("Received an exportFilterToCSV call");
 		CSVGenerator generator = getGenerator();
-
 		Filter filter = FilterController.getFilterFromSession();
-		List<FilterCondition> fcs= filter.getConditions();
-		String collection=Application.getCollection();
+		String collection=PropertyController.getCollection();
 		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
 		generator.export(filter, path);
 
@@ -149,18 +143,8 @@ public class Export extends Controller {
 
 	private static File generateProfile(Filter filter, boolean includeelements) {
 		StringBuilder pathBuilder = new StringBuilder();
-		String collection=Application.getCollection();
+		String collection=PropertyController.getCollection();
 		String path = "profiles/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_profile.xml";
-
-		// pathBuilder.append("profiles/").append(filter.getCollection()).append("_").append(filter.getDescriminator());
-		//if (includeelements) {
-		//   pathBuilder.append("_").append("elements");
-		// }
-
-		//pathBuilder.append(".xml");
-
-		//String path = pathBuilder.toString();
-
 		Logger.debug("Looking for collection profile " + path);
 
 		File file = new File(path);
@@ -217,14 +201,7 @@ public class Export extends Controller {
 			//just regenerate the profile...
 		}
 
-		//PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-		//long filtersCount = persistence.count(Constants.TBL_FILTERS,
-		//    new BasicDBObject("descriminator", filter.getDescriminator()));
-		//long filterObjectsCount = persistence.count(Constants.TBL_ELEMENTS, Application.getFilterQuery(filter));
 
-		//if (filtersCount == profileFiltersCount && profileObjectsCount == filterObjectsCount) {
-		//  isNew = false;
-		//}
 
 		return isNew; 
 

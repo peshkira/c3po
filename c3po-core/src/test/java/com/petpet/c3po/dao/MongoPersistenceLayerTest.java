@@ -260,7 +260,7 @@ public class MongoPersistenceLayerTest {
     Element e1 = new Element("test", "test1", "Some name 1");
     Element e2 = new Element("test", "test2", "Some name 2");
     Element e3 = new Element("test", "test3", "Some name 3");
-
+    
     Property property = new Property("pagecount", PropertyType.INTEGER);
     Property mimetype = new Property("mimetype");
 

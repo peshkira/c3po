@@ -23,7 +23,7 @@ import play.Logger;
 import template_configurator.TemplateController;;
 
 public class PropertySetTemplate {
-	private static String[] defaultProps ={"content_type", "valid"}; //{ "mimetype", "format", "format_version", "valid", "wellformed","creating_application_name", "created" };
+	private static String[] defaultProps ={"content_type", "created","valid"}; //{ "mimetype", "format", "format_version", "valid", "wellformed","creating_application_name", "created" };
 	public static final String USER_PROPERTIES = System.getProperty( "user.home" ) + File.separator + ".c3po.template_config";
 	@SuppressWarnings("rawtypes")
 	public static void setProps(Filter filter){
@@ -53,47 +53,19 @@ public class PropertySetTemplate {
 		return templateController.toArrayString();
 	}
 	public static String getCurrentTemplate(Filter filter){
-		return "TODO";
-		//Map mapFilter=filterToString(filter);
-		//return templateController.getCurrentTemplate(mapFilter);
+		
+		Map mapFilter=filterToString(filter);
+		return templateController.getCurrentTemplate(mapFilter);
 		
 	}
-	
-	
-
 	public static Map filterToString(Filter filter){
 		Map<String,String> result=new TreeMap<String,String>();
 
 		List<FilterCondition> fcs=filter.getConditions();
 		for (FilterCondition fc : fcs){
-			result.put(fc.getField(), (String)fc.getValue());
-			
+			if (!fc.getField().equals("collection"))
+				result.put(fc.getField(), (String)fc.getValue());
 		}
-		
-		/*DataHelper.init();
-		BasicDBObject ref= DataHelper.getFilterQuery(filter);
-		ref.removeField("collection");
-		Map<String,String> map= ref.toMap(); 
-		//List list=new ArrayList();									
-		for(String s: map.keySet()){
-			Object value=map.get(s);
-			s=s.replace("metadata.", "");
-			s=s.replace(".value", "");
-			if (value instanceof BasicDBObject){
-				Map<String,String> valueMap=((BasicDBObject) value).toMap();
-				Object high = valueMap.get("$lte");
-				Object low = valueMap.get("$gte");
-				if (high == null || low==null)
-					value =null;
-				else
-					value=low.toString()+"-"+high.toString();
-			}
-			if (value!=null)
-				result.put(s, value.toString());
-			//list.add(s+"."+value);
-		}
-		//Collections.sort(list);
-*/
 		return result;
 
 	}

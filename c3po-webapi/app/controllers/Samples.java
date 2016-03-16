@@ -48,7 +48,7 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 public class Samples extends Controller {
 
   public static Result index() {
-    final List<String> names = Application.getCollectionNames();
+    final List<String> names = PropertyController.getCollectionNames();
     return ok(samples.render(names));
   }
 
