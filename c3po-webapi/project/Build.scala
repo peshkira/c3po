@@ -12,6 +12,7 @@ object ApplicationBuild extends Build {
       javaCore,
       javaJdbc,
       javaEbean,
+      cache,
       "dom4j" % "dom4j" % "1.6.1",
       "org.apache.commons" % "commons-digester3" % "3.2",
       "org.apache.commons" % "commons-math" % "2.2",
