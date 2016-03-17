@@ -35,15 +35,17 @@ public class Mail extends Controller {
     String to = Play.application().configuration().getString("feedback.mail.to");
     String subject = Play.application().configuration().getString("feedback.mail.subject");
 
-    MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
-    mail.setSubject(subject).addRecipient(to).addFrom(email);
-    try {
-      mail.send(message);
-    } catch (Exception e) {
-      Logger.error(e.getMessage());
-      e.printStackTrace();
-      return internalServerError("Sending email failed: " + e.getMessage());
-    }
+   // MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
+   // mail.setSubject(subject);
+   // mail.addRecipient(to);
+   // mail.addFrom(email);
+   // try {
+   //   mail.send(message);
+   // } catch (Exception e) {
+    //  Logger.error(e.getMessage());
+    //  e.printStackTrace();
+     // return internalServerError("Sending email failed: " + e.getMessage());
+   // }
 
     return ok();
   }

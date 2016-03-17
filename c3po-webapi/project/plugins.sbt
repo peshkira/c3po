@@ -16,6 +16,6 @@ resolvers += Resolver.url(
 
 // Use the Play sbt plugin for Play projects
 //addSbtPlugin("play" % "sbt-plugin" % "2.1.0")
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.0")
 
-addSbtPlugin("com.github.play2war" % "play2-war-plugin" % "1.2.1")
+addSbtPlugin("com.github.play2war" % "play2-war-plugin" % "1.3-beta1")
