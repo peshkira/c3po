@@ -41,6 +41,7 @@ import helpers.Statistics;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
+import play.data.Form;
 import play.mvc.Result;
 
 public class FilterController extends Controller {
@@ -50,7 +51,7 @@ public class FilterController extends Controller {
 		// final List<String> names = Application.getCollectionNames();
 		Filter filter = FilterController.getFilterFromSession();
 		if (filter != null) {
-			final DynamicForm form = form().bindFromRequest();
+			final DynamicForm form = play.data.Form.form().bindFromRequest();
 			final String propertyName = form.get("filter");
 			final String propertyValue = form.get("value");
 			final String t = form.get("type");
@@ -182,7 +183,7 @@ public class FilterController extends Controller {
 	}
 	public static Graph getGraph(String property) {
 
-		DynamicForm form = form().bindFromRequest();
+		DynamicForm form = play.data.Form.form().bindFromRequest();
 		String alg = form.get("alg");
 		//TODO: DEBUG THIS PART!!
 		return Graph.getGraph(FilterController.getFilterFromSession(), property);

@@ -24,6 +24,7 @@ import helpers.SessionFilters;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
+import play.data.Form;
 import play.mvc.Result;
 import views.html.index;
 
@@ -95,7 +96,7 @@ public class Application extends Controller {
 	}
 	public static Result setSetting() {
 
-		DynamicForm form = form().bindFromRequest();
+		DynamicForm form = play.data.Form.form().bindFromRequest();
 		String setting = form.get("setting");
 		String value = form.get("value");
 		Logger.debug("Received a setSetting call for '" + setting + "' to value: '" + value + "'");

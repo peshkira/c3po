@@ -19,13 +19,14 @@ import play.Logger;
 import play.Play;
 import play.data.DynamicForm;
 import play.mvc.Controller;
+import play.data.Form;
 import play.mvc.Result;
 import com.typesafe.plugin.*;
 
 public class Mail extends Controller {
 
   public static Result send() {
-    DynamicForm form = form().bindFromRequest();
+    DynamicForm form = play.data.Form.form().bindFromRequest();
     String email = form.get("email");
     String message = form.get("message");
 

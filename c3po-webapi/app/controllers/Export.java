@@ -28,6 +28,7 @@ import org.dom4j.io.SAXReader;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
+import play.data.Form;
 import play.mvc.Result;
 import views.html.export;
 
@@ -63,7 +64,7 @@ public class Export extends Controller {
 		Logger.debug("Received a profile generation call");
 		final String accept = request().getHeader("Accept");
 
-		final DynamicForm form = form().bindFromRequest();
+		final DynamicForm form = play.data.Form.form().bindFromRequest();
 		final String c = form.get("collection");
 		final String e = form.get("includeelements");
 

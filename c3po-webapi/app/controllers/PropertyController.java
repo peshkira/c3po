@@ -27,6 +27,7 @@ import play.Logger;
 import play.data.DynamicForm;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.data.Form;
 import play.mvc.Result;
 import views.html.index;
 
@@ -70,7 +71,7 @@ public class PropertyController extends Controller{
 	public static List<String> getCollectionNames() {
 		Logger.debug("Listing collection names");
 		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-		List<String> collections = (List<String>) persistence.distinct(Element.class, "collection", null);
+		List<String> collections = (List<String>) persistence.distinct(Element.class, "collection", new Filter());
 		collections.add(0, "");
 		Collections.sort(collections);
 		return collections;
@@ -211,7 +212,7 @@ public class PropertyController extends Controller{
 
 	public static Result getValues() {
 		Logger.debug("Received a getValues call in filter");
-		final DynamicForm form = form().bindFromRequest();
+		final DynamicForm form = play.data.Form.form().bindFromRequest();
 		final String c = form.get("collection");
 		final String p = form.get("filter");
 
