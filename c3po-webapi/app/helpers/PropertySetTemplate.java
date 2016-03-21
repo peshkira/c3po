@@ -34,11 +34,11 @@ public class PropertySetTemplate {
 		if (filter==null){
 			return;
 		}
-		Map mapFilter=filterToString(filter);
+		//Map mapFilter=filterToString(filter);
 		
-		String[] props=templateController.getProps(mapFilter);
-		if (props.length!=0)
-			Application.PROPS=props;
+		//String[] props=templateController.getProps(mapFilter);
+		//if (props.length!=0)
+		//	Application.PROPS=props;
 	}
 	static TemplateController templateController =new TemplateController(new File( USER_PROPERTIES ));
 	public static void updateConfig(File file){
@@ -54,8 +54,8 @@ public class PropertySetTemplate {
 	}
 	public static String getCurrentTemplate(Filter filter){
 		
-		Map mapFilter=filterToString(filter);
-		return templateController.getCurrentTemplate(mapFilter);
+		//Map mapFilter=filterToString(filter);
+		return null;// templateController.getCurrentTemplate(mapFilter);
 		
 	}
 	public static Map filterToString(Filter filter){

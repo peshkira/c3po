@@ -36,8 +36,7 @@ public class PropertyController extends Controller{
 	public static String propertiesAsXml() {
 
 		List<String> properties = getPropertyNames();
-		//names.add(0, ""); //Adding empty element for default position in the drop-down list
-		//names.remove(0);
+
 		final StringBuffer resp = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
 		resp.append("<properties>\n");
@@ -48,13 +47,11 @@ public class PropertyController extends Controller{
 		resp.append("</properties>\n");
 		response().setContentType("text/xml");
 		return resp.toString();
-		//return ok(resp.toString());
 	}
 
 	public static String collectionsAsXml() {
 		final List<String> names = PropertyController.getCollectionNames();
-		//names.add(0, ""); //Adding empty element for default position in the drop-down list
-		//names.remove(0);
+
 		final StringBuffer resp = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
 		resp.append("<collections>\n");
@@ -65,7 +62,6 @@ public class PropertyController extends Controller{
 		resp.append("</collections>\n");
 		response().setContentType("text/xml");
 		return resp.toString();
-		//return ok(resp.toString());
 	}
 
 	public static List<String> getCollectionNames() {
@@ -92,11 +88,6 @@ public class PropertyController extends Controller{
 		}
 		return badRequest("The accept header is not supported");
 	}
-	/*public static List<String> getCollectionNamesToRender() {
-		List<String>names=getCollectionNames();
-		names.add(0, "");
-		return names;
-	}*/
 
 	public static Distribution getDistribution(String property, Filter filter){
 		Logger.debug("Calculating distrubution for the property '" + property +"'");

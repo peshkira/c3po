@@ -493,7 +493,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     } else {
       // process
-      DBObject object = (DBObject) cursor.next().get( "results" );
+      DBObject object = this.histogramMapReduce( key, p, filter );// (DBObject) cursor.next().get( "results" ); TODO Return caching here
       histogram = this.parseHistogramResults( object );
     }
 
@@ -537,7 +537,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     } else {
 
-      DBObject next = (DBObject) cursor.next().get( "value" );
+      DBObject next = this.numericMapReduce( p.getKey(), filter );//(DBObject) cursor.next().get( "value" );
       result = this.parseNumericStatistics( next );
 
     }

@@ -15,10 +15,10 @@
  ******************************************************************************/
 package controllers;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MapReduceOutput;
@@ -29,6 +29,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.dao.mongo.MongoFilterSerializer;
 import com.petpet.c3po.utils.Configurator;
 
@@ -48,44 +49,86 @@ public class FilterController extends Controller {
 
 	public static Result addCondition() {
 		Logger.debug("Received an add call in filter");
+		PersistenceLayer persistence=Configurator.getDefaultConfigurator().getPersistence();
 		// final List<String> names = Application.getCollectionNames();
 		Filter filter = FilterController.getFilterFromSession();
 		if (filter != null) {
-			final DynamicForm form = play.data.Form.form().bindFromRequest();
-			final String propertyName = form.get("filter");
-			final String propertyValue = form.get("value");
-			final String t = form.get("type");
-			final String a = form.get("alg");
-			final String w = form.get("width");
-
-			if (t == null || t.equals("normal")) {
-				List<FilterCondition> fcs=filter.getConditions();
-				for (FilterCondition fc: fcs){
-					if (fc.getField().equals(propertyName)){
-						fc.setValue(propertyValue);
-						FilterController.setFilterFromSession(filter);
-						return ok();
-					}
-				}
-				
-				filter.addFilterCondition(new FilterCondition(propertyName,propertyValue));
-			} else if (t.equals("graph")) {
-				int value = Integer.parseInt(propertyValue);
-				Graph graph = null;
-				graph = Graph.getGraph(filter, propertyName);
+			DynamicForm form = play.data.Form.form().bindFromRequest();
+			String propertyName = form.get("filter");
+			String propertyValueString = form.get("value");
+			String t = form.get("type");
+			String a = form.get("alg");
+			String w = form.get("width");
+			if (t.equals("graph")) {
+				int value = Integer.parseInt(propertyValueString);
+				Graph graph = Graph.getGraph(filter, propertyName);
 				graph.cutLongTail();
-				final String filtervalue = graph.getKeys().get(value);
-	
-				List<FilterCondition> fcs=filter.getConditions();
-				for (FilterCondition fc: fcs){
-					if (fc.getField().equals(propertyName)){
-						fc.setValue(filtervalue);
-						FilterController.setFilterFromSession(filter);
-						return ok();
+				propertyValueString = graph.getKeys().get(value);
+			}
+			Object propertyValue=null;
+			Property p=persistence.getCache().getProperty(propertyName);
+			if (p.getType().equals(PropertyType.INTEGER.toString()))
+			{
+				if (propertyValueString.equals("Unknown"))
+					propertyValue=null;
+				else if (propertyValueString.equals("Conflicted"))
+					propertyValue="CONFLICT";
+				else
+					propertyValue=Integer.parseInt(propertyValueString);
+			}
+			else if (p.getType().equals(PropertyType.FLOAT.toString()))
+			{
+				if (propertyValueString.equals("Unknown") )
+					propertyValue=null;
+				else if (propertyValueString.equals("Conflicted"))
+					propertyValue="CONFLICT";
+				else
+					propertyValue=Long.parseLong(propertyValueString);
+			}
+			else if (p.getType().equals(PropertyType.BOOL.toString()))
+			{
+				if (propertyValueString.equals("Unknown") )
+					propertyValue=null;//propertyValueString;
+				else if (propertyValueString.equals("Conflicted"))
+					propertyValue="CONFLICT";
+				else
+					propertyValue=Boolean.parseBoolean(propertyValueString);
+			}
+			else if (p.getType().equals(PropertyType.STRING.toString()))
+			{
+				if (propertyValueString.equals("Unknown"))
+					propertyValue=null;//propertyValueString;
+				else if (propertyValueString.equals("Conflicted"))
+					propertyValue="CONFLICT";
+				else
+					propertyValue=propertyValueString;
+			}
+			else if (p.getType().equals(PropertyType.DATE.toString()))
+			{
+				if (propertyValueString.equals("Unknown") )
+					propertyValue=null;
+				else if (propertyValueString.equals("Conflicted"))
+					propertyValue="CONFLICT";
+				else {
+					DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+					try {
+						propertyValue = dateFormat.parse(propertyValueString);
+					} catch (ParseException e) {
+						propertyValue = propertyValueString;
 					}
 				}
-				filter.addFilterCondition(new FilterCondition(propertyName,filtervalue));
 			}
+
+			List<FilterCondition> fcs=filter.getConditions();
+			for (FilterCondition fc: fcs){
+				if (fc.getField().equals(propertyName)){
+					fc.setValue(propertyValue);
+					FilterController.setFilterFromSession(filter);
+					return ok();
+				}
+			}
+
+			filter.addFilterCondition(new FilterCondition(propertyName,propertyValue));
 			FilterController.setFilterFromSession(filter);
 			return ok();
 		}
@@ -107,10 +150,16 @@ public class FilterController extends Controller {
 		List<FilterCondition> fcs=filter.getConditions();
 		for(FilterCondition fc: fcs){
 			Property p=persistence.getCache().getProperty(fc.getField());
-			//String c=PropertyController.getCollection();
-			String v=fc.getValue().toString();
+			Object obj=fc.getValue();
+			String v="Unknown";
+			if (obj!=null){
+				v=obj.toString();
+			}
 			PropertyValuesFilter f = PropertyController.getValues( p.getKey(), v);
 			f.setSelected(v);
+			if (v.equals("CONFLICT")){
+				f.setSelected("Conflicted");
+			}
 			result.add(f);
 		}
 		return ok(play.libs.Json.toJson(result));
@@ -155,6 +204,8 @@ public class FilterController extends Controller {
 	}
 
 	public static void setFilterFromSession(Filter filter){
+		PersistenceLayer persistence=Configurator.getDefaultConfigurator().getPersistence();
+
 		String session = session(WebAppConstants.SESSION_ID);
 		SessionFilters.addFilter(session, filter);
 	}

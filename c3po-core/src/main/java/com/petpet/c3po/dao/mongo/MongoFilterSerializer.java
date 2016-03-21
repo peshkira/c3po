@@ -47,7 +47,7 @@ public class MongoFilterSerializer {
    * A static exists query for Mongo.
    */
   private static final BasicDBObject EXISTS = new BasicDBObject( "$exists", true );
-
+  private static final BasicDBObject NOTEXISTS = new BasicDBObject( "$exists", false );
   /**
    * Serializes the given filter according to the strategy proposed here:
    * {@link Filter}. If the filter is null, then an empty {@link DBObject} is
@@ -105,7 +105,15 @@ public class MongoFilterSerializer {
     }
 
     String result = "metadata." + f;
-    return (value.equals( EXISTS )) ? result : result + ".value";
+
+    if (value.equals(EXISTS)){
+      return result;
+    }
+    else if (value.equals("CONFLICT")){
+      return result + ".status";
+    }
+    else
+      return result + ".value";
   }
 
   /**
@@ -178,7 +186,7 @@ public class MongoFilterSerializer {
           res = new BasicDBObject( "$and", and );
 
         } else {
-          val = (val == null) ? EXISTS : val;
+          val = (val == null) ? NOTEXISTS : val;
           res = new BasicDBObject( this.mapFieldToProperty( field, val ), val );
         }
 
