@@ -26,11 +26,9 @@ import com.petpet.c3po.api.model.helper.*;
 import com.petpet.c3po.utils.Configurator;
 
 import common.WebAppConstants;
-import helpers.Distribution;
 import helpers.Graph;
 import helpers.PropertyValuesFilter;
 import helpers.SessionFilters;
-import helpers.Statistics;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;

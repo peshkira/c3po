@@ -19,10 +19,9 @@ import helpers.Distribution;
 import helpers.Graph;
 import helpers.GraphData;
 import helpers.PropertySetTemplate;
-import helpers.Statistics;
+import helpers.StatisticsToPrint;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,18 +31,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.overview;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.api.model.Property;
-import com.petpet.c3po.api.model.helper.PropertyType;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.DataHelper;
-import common.WebAppConstants;
 import com.petpet.c3po.api.model.helper.Filter;
-import com.petpet.c3po.api.model.helper.FilterCondition;
-import com.petpet.c3po.api.model.helper.NumericStatistics;
 
 public class Overview extends Controller {
     public static GraphData allGraphs=new GraphData();
@@ -64,14 +52,14 @@ public class Overview extends Controller {
         }
         allGraphs = new GraphData(graphs);
         Map<String, Double> statistics = PropertyController.getStatistics("size");
-        Statistics stats = new Statistics();
-        stats.setAvg(PropertyController.round(statistics.get("average") / 1024 / 1024, 3) + " MB");
+        StatisticsToPrint stats = new StatisticsToPrint();
+        stats.setAvg(PropertyController.round(statistics.get("average") / 1024.0 / 1024.0, 3) + " MB");
         stats.setCount(statistics.get("count").intValue() + " objects");
-        stats.setMax(PropertyController.round(statistics.get("max") / 1024 / 1024, 3) + " MB");
-        stats.setMin(PropertyController.round(statistics.get("min") / 1024 / 1024, 3) + " MB");
-        stats.setSd(PropertyController.round(statistics.get("sd") / 1024 / 1024, 3) + " MB");
-        stats.setSize(PropertyController.round(statistics.get("sum") / 1024 / 1024, 3) + " MB");
-        stats.setVar(PropertyController.round(statistics.get("var") / 1024 / 1024, 3) + " MB");
+        stats.setMax(PropertyController.round(statistics.get("max") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setMin(PropertyController.round(statistics.get("min") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setSd(PropertyController.round(statistics.get("sd") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setSize(PropertyController.round(statistics.get("sum") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setVar(PropertyController.round(statistics.get("var") / 1024.0 / 1024.0, 3) + " MB^2");
 
         return ok(overview.render(names, allGraphs, stats, Templates.getCurrentTemplate()));
     }

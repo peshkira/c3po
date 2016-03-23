@@ -54,17 +54,18 @@ public class PropertySetTemplate {
 	}
 	public static String getCurrentTemplate(Filter filter){
 		
-		//Map mapFilter=filterToString(filter);
-		return null;// templateController.getCurrentTemplate(mapFilter);
+		Map mapFilter=filterToString(filter);
+		return templateController.getCurrentTemplate(mapFilter);
 		
 	}
 	public static Map filterToString(Filter filter){
 		Map<String,String> result=new TreeMap<String,String>();
-
-		List<FilterCondition> fcs=filter.getConditions();
-		for (FilterCondition fc : fcs){
-			if (!fc.getField().equals("collection"))
-				result.put(fc.getField(), (String)fc.getValue());
+		if (filter!=null) {
+			List<FilterCondition> fcs = filter.getConditions();
+			for (FilterCondition fc : fcs) {
+				if (!fc.getField().equals("collection"))
+					result.put(fc.getField(), (String) fc.getValue());
+			}
 		}
 		return result;
 

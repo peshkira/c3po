@@ -9,6 +9,8 @@ import com.petpet.c3po.utils.Configurator;
 import common.WebAppConstants;
 import helpers.Distribution;
 import helpers.PropertyValuesFilter;
+import helpers.Statistics;
+import helpers.StatisticsToPrint;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -16,10 +18,7 @@ import play.mvc.Result;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PropertyController extends Controller {
 
@@ -83,13 +82,13 @@ public class PropertyController extends Controller {
         Logger.debug("Calculating distrubution for the property '" + property + "'");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         Property p = persistence.getCache().getProperty(property);
-        Distribution result=null;
-        if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())){
-            if (algorithm==null)
-                algorithm="sqrt";
-            result=getBinDistribution(property,filter,algorithm,width);
-        }else{
-            result=getNonimalDistribution(property,filter);
+        Distribution result = null;
+        if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
+            if (algorithm == null)
+                algorithm = "sqrt";
+            result = getBinDistribution(property, filter, algorithm, width);
+        } else {
+            result = getNonimalDistribution(property, filter);
         }
         return result;
     }
@@ -103,9 +102,7 @@ public class PropertyController extends Controller {
         if (filter == null)
             filter = new Filter();
 
-        Filter tmpFilter=FilterController.normalize(filter);
-
-
+        Filter tmpFilter = FilterController.normalize(filter);
         Map<String, Long> histogram = persistence.getValueHistogramFor(p, tmpFilter);
         result.setPropertyDistribution(histogram);
         result.setProperty(p.getKey());
@@ -116,28 +113,48 @@ public class PropertyController extends Controller {
 
     public static Distribution getNominalDistribution(String property) {
         Filter f = FilterController.getFilterFromSession();
-        return PropertyController.getNonimalDistribution(property,f);
+        return PropertyController.getNonimalDistribution(property, f);
     }
 
     public static Map<String, Double> getStatistics(Filter filter, String property) {
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        Map<String, Double> result =new HashMap<String,Double>();
+        Map<String, Double> result = new HashMap<String, Double>();
         Property p = persistence.getCache().getProperty(property);
         if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
             Logger.debug("Calculating numeric statistics for the property '" + property + "'");
-            Filter tmpFilter=FilterController.normalize(filter);
-            NumericStatistics ns = persistence.getNumericStatistics(p, tmpFilter);
-            result.put("average", ns.getAverage());
-            result.put("min", ns.getMin());
-            result.put("max", ns.getMax());
-            result.put("sd", ns.getStandardDeviation());
-            result.put("var", ns.getVariance());
-            result.put("count", (double) ns.getCount());
-            result.put("sum", ns.getSum());
+            Distribution distribution = PropertyController.getNominalDistribution(property);
+
+            Map<String, Long> propertyDistribution = distribution.getPropertyDistribution();
+            long conflictedCount = 0;
+            long unknownCount = 0;
+            List<Double> values = new ArrayList<Double>();
+            for (Map.Entry<String, Long> entry : propertyDistribution.entrySet()) {
+                String key = entry.getKey();
+                Long propertyValueCount = entry.getValue();
+                if (key.equals("Unknown")) {
+                    unknownCount = propertyValueCount;
+                } else if (key.equals("CONFLICT")) {
+                    conflictedCount = propertyValueCount;
+                } else {
+                    double propertyValue = Double.parseDouble(key);
+                    for (long i = 0; i < propertyValueCount; i++)
+                        values.add(propertyValue);
+                }
+            }
+            Statistics stats = new Statistics(values);
+
+            result.put("average", stats.getMean());
+            result.put("min", stats.getMin());
+            result.put("max", stats.getMax());
+            result.put("sd", stats.getStdDev());
+            result.put("var", stats.getVariance());
+            result.put("count", stats.getCount());
+            result.put("sum", stats.getSum());
         }
         return result;
     }
-    public static Map<String, Double> getStatistics( String property) {
+
+    public static Map<String, Double> getStatistics(String property) {
         Filter f = FilterController.getFilterFromSession();
         return getStatistics(f, property);
     }
@@ -149,8 +166,6 @@ public class PropertyController extends Controller {
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.doubleValue();
     }
-
-
 
     public static Result getProperties() {
         Logger.debug("Received a getProperties call");
@@ -234,18 +249,18 @@ public class PropertyController extends Controller {
 
         PropertyValuesFilter f;
         if (property.getType().equals(PropertyType.INTEGER.toString()) || property.getType().equals(PropertyType.FLOAT.toString())) {
-            f = getNumericValues(p,null, a, w, null); //TODO: Debug this!
+            f = getNumericValues(p, null, a, w, null); //TODO: Debug this!
         } else {
             f = getNominalValues(p, null, null);
         }
         return ok(play.libs.Json.toJson(f));
     }
 
-    public static PropertyValuesFilter getNominalValues(String property,Filter filter, String selectedValue) {
+    public static PropertyValuesFilter getNominalValues(String property, Filter filter, String selectedValue) {
         Logger.debug("get property values filter for property " + property);
         if (property.equals("collection")) {
             PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-            Property p= persistence.getCache().getProperty(property);
+            Property p = persistence.getCache().getProperty(property);
             PropertyValuesFilter pvf = new PropertyValuesFilter();
             pvf.setProperty(p.getKey());
             pvf.setType(p.getType());
@@ -255,25 +270,25 @@ public class PropertyController extends Controller {
             pvf.setSelected(getCollection());
             return pvf;
         } else {
-            Distribution d = PropertyController.getNonimalDistribution(property,filter);
+            Distribution d = PropertyController.getNonimalDistribution(property, filter);
             PropertyValuesFilter pvf = new PropertyValuesFilter();
             pvf.setProperty(d.getProperty());
             pvf.setType(d.getType());
             pvf.setValues(d.getPropertyValues());
-            if (selectedValue!=null)
+            if (selectedValue != null)
                 pvf.setSelected(selectedValue);
             return pvf;
         }
     }
 
-    public static PropertyValuesFilter getNumericValues(String property, Filter filter,String algorithm, String width, String selectedValue) {
-        Distribution mergedDistribution = PropertyController.getBinDistribution(property,filter ,algorithm, width);
+    public static PropertyValuesFilter getNumericValues(String property, Filter filter, String algorithm, String width, String selectedValue) {
+        Distribution mergedDistribution = PropertyController.getBinDistribution(property, filter, algorithm, width);
         PropertyValuesFilter result = new PropertyValuesFilter();
         result.setProperty(property);
         result.setType(mergedDistribution.getType());
         result.setValues(mergedDistribution.getPropertyValues());
         result.setSelected(selectedValue);
-        if (selectedValue!=null )
+        if (selectedValue != null)
             result.setSelected(selectedValue);
         return result;
     }
@@ -286,8 +301,8 @@ public class PropertyController extends Controller {
         Double count = (double) d.getPropertyValues().size();
         int bin_width = 0;
         int bins_count = 0;
-        if (width==null)
-            width="";
+        if (width == null)
+            width = "";
         if (algorithm.equals("fixed")) {
             bin_width = Integer.parseInt(width);
             bins_count = (int) ((max - min) / bin_width);
@@ -301,15 +316,15 @@ public class PropertyController extends Controller {
         bins_count++;
         long[] binDistribution = new long[bins_count];
         Map<String, Long> propertyDistribution = d.getPropertyDistribution();
-        long conflictedCount=0;
-        long unknownCount=0;
+        long conflictedCount = 0;
+        long unknownCount = 0;
         for (Map.Entry<String, Long> entry : propertyDistribution.entrySet()) {
             String key = entry.getKey();
             Long propertyValueCount = entry.getValue();
-            if (key.equals("Unknown")){
-                unknownCount=propertyValueCount;
-            } else if (key.equals("CONFLICT")){
-                conflictedCount=propertyValueCount;
+            if (key.equals("Unknown")) {
+                unknownCount = propertyValueCount;
+            } else if (key.equals("CONFLICT")) {
+                conflictedCount = propertyValueCount;
             } else {
                 double propertyValue = Double.parseDouble(key);
                 int bin_id = (int) (propertyValue / bin_width);
@@ -318,14 +333,14 @@ public class PropertyController extends Controller {
         }
         Map<String, Long> propertyDistributionResult = new HashMap<String, Long>();
         for (int i = 0; i < bins_count; i++) {
-            String leftValue=String.valueOf(i * bin_width);
-            String rightValue=String.valueOf((i+1) * bin_width);
-            String id=leftValue + " - "+rightValue + " |" + algorithm + width;
+            String leftValue = String.valueOf(i * bin_width);
+            String rightValue = String.valueOf((i + 1) * bin_width);
+            String id = leftValue + " - " + rightValue + " |" + algorithm + width;
             propertyDistributionResult.put(id, binDistribution[i]);
         }
-        if (conflictedCount>0)
+        if (conflictedCount > 0)
             propertyDistributionResult.put("CONFLICT", conflictedCount);
-        if (unknownCount>0)
+        if (unknownCount > 0)
             propertyDistributionResult.put("Unknown", unknownCount);
 
         Distribution mergedDistribution = new Distribution();
@@ -335,32 +350,31 @@ public class PropertyController extends Controller {
         return mergedDistribution;
     }
 
-    public static double getMin(List<String> values){
-        double result=Double.MAX_VALUE;
-        for (String value : values){
+    public static double getMin(List<String> values) {
+        double result = Double.MAX_VALUE;
+        for (String value : values) {
             try {
                 double v = Double.parseDouble(value);
                 if (result > v)
-                    result=v;
-            } catch (NumberFormatException e){}
+                    result = v;
+            } catch (NumberFormatException e) {
+            }
         }
         return result;
     }
-    public static double getMax(List<String> values){
-        double result=Double.MIN_VALUE;
-        for (String value : values){
+
+    public static double getMax(List<String> values) {
+        double result = Double.MIN_VALUE;
+        for (String value : values) {
             try {
                 double v = Double.parseDouble(value);
                 if (result < v)
-                    result=v;
-            } catch (NumberFormatException e){}
+                    result = v;
+            } catch (NumberFormatException e) {
+            }
         }
         return result;
     }
-
-
-
-
 
 
     static Object getTypedValue(String val) {

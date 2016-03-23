@@ -64,7 +64,7 @@ public class Global extends GlobalSettings {
 //    return notFound();
 //  }
 
-  private void calculateCollectionStatistics() {
+  /*private void calculateCollectionStatistics() {
     Logger.info("Calculating size statistics of each collection");
     final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
     final List<String> collections = controllers.PropertyController.getCollectionNames();
@@ -114,6 +114,6 @@ public class Global extends GlobalSettings {
         //}
       }
     }
-  }
+  }*/
 
 }

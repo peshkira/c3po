@@ -39,7 +39,6 @@ public class TemplateController {
             }
         } catch (Exception e) {
             Logger.debug("No template config file was found. Using default values");
-            //e.printStackTrace();
         }
 
 
