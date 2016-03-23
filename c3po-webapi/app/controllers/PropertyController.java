@@ -122,36 +122,50 @@ public class PropertyController extends Controller {
         Property p = persistence.getCache().getProperty(property);
         if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
             Logger.debug("Calculating numeric statistics for the property '" + property + "'");
-            Distribution distribution = PropertyController.getNominalDistribution(property);
+            Filter tmpFilter=FilterController.normalize(filter);
+            NumericStatistics ns = persistence.getNumericStatistics(p, tmpFilter);
+            result.put("average", ns.getAverage());
+            result.put("min", ns.getMin());
+            result.put("max", ns.getMax());
+            result.put("sd", ns.getStandardDeviation());
+            result.put("var", ns.getVariance());
+            result.put("count", (double) ns.getCount());
+            result.put("sum", ns.getSum());
 
-            Map<String, Long> propertyDistribution = distribution.getPropertyDistribution();
-            long conflictedCount = 0;
-            long unknownCount = 0;
-            List<Double> values = new ArrayList<Double>();
-            for (Map.Entry<String, Long> entry : propertyDistribution.entrySet()) {
-                String key = entry.getKey();
-                Long propertyValueCount = entry.getValue();
-                if (key.equals("Unknown")) {
-                    unknownCount = propertyValueCount;
-                } else if (key.equals("CONFLICT")) {
-                    conflictedCount = propertyValueCount;
-                } else {
-                    double propertyValue = Double.parseDouble(key);
-                    for (long i = 0; i < propertyValueCount; i++)
-                        values.add(propertyValue);
-                }
-            }
-            Statistics stats = new Statistics(values);
-
-            result.put("average", stats.getMean());
-            result.put("min", stats.getMin());
-            result.put("max", stats.getMax());
-            result.put("sd", stats.getStdDev());
-            result.put("var", stats.getVariance());
-            result.put("count", stats.getCount());
-            result.put("sum", stats.getSum());
+            //StatsFromHistogram(property, result); // This is the second way to calculate statistics. We find a distribution for numerical values and then calculate the metrics.
         }
         return result;
+    }
+
+    private static void StatsFromHistogram(String property, Map<String, Double> result) {
+        Distribution distribution = PropertyController.getNominalDistribution(property);
+
+        Map<String, Long> propertyDistribution = distribution.getPropertyDistribution();
+        long conflictedCount = 0;
+        long unknownCount = 0;
+        List<Double> values = new ArrayList<Double>();
+        for (Map.Entry<String, Long> entry : propertyDistribution.entrySet()) {
+            String key = entry.getKey();
+            Long propertyValueCount = entry.getValue();
+            if (key.equals("Unknown")) {
+                unknownCount = propertyValueCount;
+            } else if (key.equals("CONFLICT")) {
+                conflictedCount = propertyValueCount;
+            } else {
+                double propertyValue = Double.parseDouble(key);
+                for (long i = 0; i < propertyValueCount; i++)
+                    values.add(propertyValue);
+            }
+        }
+        Statistics stats = new Statistics(values);
+
+        result.put("average", stats.getMean());
+        result.put("min", stats.getMin());
+        result.put("max", stats.getMax());
+        result.put("sd", stats.getStdDev());
+        result.put("var", stats.getVariance());
+        result.put("count", stats.getCount());
+        result.put("sum", stats.getSum());
     }
 
     public static Map<String, Double> getStatistics(String property) {
