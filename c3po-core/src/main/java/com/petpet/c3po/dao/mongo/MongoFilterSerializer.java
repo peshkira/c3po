@@ -15,18 +15,17 @@
  ******************************************************************************/
 package com.petpet.c3po.dao.mongo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
 import com.petpet.c3po.api.model.helper.BetweenFilterCondition.Operator;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.utils.Configurator;
 
 /**
  * The {@link MongoFilterSerializer} translates a filter object to a
@@ -62,6 +61,17 @@ public class MongoFilterSerializer {
 
     if ( filter != null ) {
       List<FilterCondition> conditions = filter.getConditions();
+      /*Iterator<FilterCondition> iterator = conditions.iterator();
+      while(iterator.hasNext()){
+        FilterCondition fc = iterator.next();
+        String propertyName = fc.getField();
+        Property property = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(propertyName);
+        if (property.getType().equals(PropertyType.INTEGER.toString())){
+          BetweenFilterCondition bfc = getBetweenFilterCondition(fc.getValue().toString(), propertyName);
+          fc=bfc;
+        }
+      }
+*/
       Map<String, Integer> distinctFields = this.getDistinctFields( conditions );
       List<BasicDBObject> and = new ArrayList<BasicDBObject>();
 
@@ -69,8 +79,7 @@ public class MongoFilterSerializer {
 
         if ( distinctFields.get( field ) == 1 ) {
 
-          BasicDBObject val = this
-              .getValueForField( field, conditions.toArray( new FilterCondition[conditions.size()] ) );
+          BasicDBObject val = getValueForField( field, conditions.toArray( new FilterCondition[conditions.size()] ) );
           and.add( val );
 
         } else {
@@ -90,6 +99,10 @@ public class MongoFilterSerializer {
 
     return result;
   }
+
+
+
+
 
   /**
    * Wraps the field within a metadata.[field].value if necessary, so that it

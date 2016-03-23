@@ -149,7 +149,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * values). Note that there is a '@1' wildcard that has to be replaced with
    * the id of the desired property, prior to usage.
    */
-  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {emit(this.metadata['@1'].value, 1);}else{emit('Conflicted', 1);}} else {emit('Unknown', 1);}}";
+  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {emit(this.metadata['@1'].value, 1);}else{emit('CONFLICT', 1);}} else {emit('Unknown', 1);}}";
 
   /**
    * A javascript Map function for building a histogram over a specific date
@@ -159,7 +159,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * the year is used as the key. Note that there is a '@1' wildcard that has to
    * be replaced with the id of the desired property, prior to usage.
    */
-  public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['created'] != null && this.metadata['created'].value != undefined) {if (this.metadata['created'].status !== 'CONFLICT') {var date = new Date(this.metadata['created'].value);emit(date.getFullYear(), 1);}else{emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
+  public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['created'] != null && this.metadata['created'].value != undefined) {if (this.metadata['created'].status !== 'CONFLICT') {var date = new Date(this.metadata['created'].value);emit(date.getFullYear(), 1);}else{emit('CONFLICT', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * A javascript Map function for building a histogram with fixed bin size. It
@@ -171,7 +171,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * the id 1 marks the number of elements where the numeric property was
    * between the width and 2*width and so on.
    */
-  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['@1'].value / @2);emit(idx, 1);} else {emit('Conflicted', 1);}}else{emit('Unknown', 1);}}";
+  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['@1'].value / @2);emit(idx, 1);} else {emit('CONFLICT', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
@@ -754,7 +754,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBObject result = null;
 
     if ( filter != null && filter.equals( f ) ) {
-      result = (DBObject) this.dbCache.getObject( LAST_FILTER_QUERY );
+     result = (DBObject) this.dbCache.getObject( LAST_FILTER_QUERY );
     } else {
       result = this.filterSerializer.serialize( f );
       this.dbCache.put( LAST_FILTER, f );

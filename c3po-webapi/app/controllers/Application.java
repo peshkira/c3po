@@ -57,23 +57,6 @@ public class Application extends Controller {
 		String value = session(key);
 		return ok(play.libs.Json.toJson(value));
 	}
-	static Object getTypedValue( String val ) {
-		Logger.debug("Retrieving typedValue of '" +val+ "'");
-		Object value = null;
-		try {
-			value = Long.parseLong( val );
-		} catch ( NumberFormatException e ) {
-		}
-		if ( val.equalsIgnoreCase( "yes" ) || val.equalsIgnoreCase( "true" ) ) {
-			value = new Boolean( true );
-		} else if ( val.equalsIgnoreCase( "no" ) || val.equalsIgnoreCase( "false" ) ) {
-			value = new Boolean( false );
-		}
-		if ( value == null ) {
-			value = val;
-		}
-		return value;
-	}
 
 	public static Result index() {
 		Logger.debug("Received an index call in application");

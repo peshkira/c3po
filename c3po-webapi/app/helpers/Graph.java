@@ -169,7 +169,7 @@ public class Graph {
     this.options = options;
   }
 
-public static Graph getFixedWidthHistogram(Filter filter, String property, int width) {
+/*public static Graph getFixedWidthHistogram(Filter filter, String property, int width) {
 	//BasicDBObject query = FilterController.getFilterQuery(filter);
 
 	final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
@@ -179,17 +179,22 @@ public static Graph getFixedWidthHistogram(Filter filter, String property, int w
 	Graph g = null;
 	return g;
 
-}
+}*/
 
 public static Graph getGraph(Filter filter, String property) {
-
-	Distribution d=PropertyController.getDistribution(property, filter);
+    DynamicForm form = play.data.Form.form().bindFromRequest();
+    String alg = form.get("alg");
+    String width = form.get("width");
+    if (width.equals("-1"))
+        width=null;
+   // Distribution d = PropertyController.getDistribution(property, filter, alg, width);
+	Distribution d=PropertyController.getDistribution(property, filter, alg, width );
 	Graph g = new Graph( d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts() );
 	return g;
 }
 
 
-
+/*
 public static Graph getNumericGraph(Filter filter, String property, String alg, String w) {
 
 	// TODO find number of elements based on filter...
@@ -225,8 +230,8 @@ public static Graph getNumericGraph(Filter filter, String property, String alg, 
 	g.sort();
 
 	return g;
-}
-
+}*/
+/*
 public static Graph getOrdinalGraph(Filter filter, String property) {
 	Graph g = null;
 	if (filter != null) {
@@ -240,7 +245,8 @@ public static Graph getOrdinalGraph(Filter filter, String property) {
 	}
 
 	return g;
-}
+}*/
+/*
 
 public static Graph getSquareRootHistogram(Filter f, String property) {
 	//BasicDBObject query = FilterController.getFilterQuery(f);
@@ -253,7 +259,8 @@ public static Graph getSquareRootHistogram(Filter f, String property) {
 	// MapReduceOutput output = job.execute();
 	// List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 	Graph g = null;
-	/*if (!results.isEmpty()) {
+	*/
+/*if (!results.isEmpty()) {
   BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
   long max = aggregation.getLong("max");
   int width = (int) (max / bins);
@@ -270,7 +277,8 @@ public static Graph getSquareRootHistogram(Filter f, String property) {
   calculateNumericHistogramResults(output, keys, values, width);
 
   g = new Graph(property, keys, values);
-}*/
+}*//*
+
 
 	return g;
 }
@@ -286,7 +294,8 @@ public static Graph getSturgesHistogramm(Filter f, String property) {
 	//MapReduceOutput output = job.execute();
 	//List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get("results");
 	Graph g = null;
-	/* if (!results.isEmpty()) {
+	*/
+/* if (!results.isEmpty()) {
   BasicDBObject aggregation = (BasicDBObject) results.get(0).get("value");
   long max = aggregation.getLong("max");
   int width = (int) (max / bins);
@@ -303,9 +312,11 @@ public static Graph getSturgesHistogramm(Filter f, String property) {
   calculateNumericHistogramResults(output, keys, values, width);
 
   g = new Graph(property, keys, values);
-}*/
+}*//*
+
 
 	return g;
 }
+*/
 
 }

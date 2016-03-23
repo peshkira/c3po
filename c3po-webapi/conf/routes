@@ -18,7 +18,7 @@ GET     /c3po/settings                         controllers.Application.getSettin
 GET     /c3po/filters                          controllers.FilterController.getConditions()
 DELETE  /c3po/filter                           controllers.FilterController.removeCondition(property: String)
 POST    /c3po/filter                           controllers.FilterController.addCondition()
-GET     /c3po/filter/values                    controllers.PropertyController.getValues()
+GET     /c3po/filter/values                    controllers.PropertyController.getValuesUnconditional()
 
 # Collection Overview
 GET     /c3po/overview                         controllers.Overview.index()
