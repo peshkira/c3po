@@ -18,7 +18,6 @@ package controllers;
 import helpers.Distribution;
 import helpers.Graph;
 import helpers.GraphData;
-import helpers.PropertySetTemplate;
 import helpers.StatisticsToPrint;
 
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public class Overview extends Controller {
 
 
         Filter filter = FilterController.getFilterFromSession();
-        PropertySetTemplate.setProps(filter);
+        Templates.setProps(filter);
         for (String property : Application.PROPS) {
             Distribution d = PropertyController.getDistribution(property, filter, null, null);
             Graph g = new Graph(d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts());

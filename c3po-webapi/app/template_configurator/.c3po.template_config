@@ -261,19 +261,11 @@
 					<render_type>histogram</render_type>
 				</property>
 				<property>
-					<name>created</name>
-					<render_type>histogram</render_type>
-				</property>
-				<property>
-					<name>byte_order</name>
+					<name>mimetype</name>
 					<render_type>histogram</render_type>
 				</property>
 				<property>
 					<name>valid</name>
-					<render_type>histogram</render_type>
-				</property>
-				<property>
-					<name>well_formed</name>
 					<render_type>histogram</render_type>
 				</property>
 			</properties>
