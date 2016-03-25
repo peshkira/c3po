@@ -23,6 +23,7 @@ import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 
 /**
@@ -99,7 +100,15 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
 
       List<String> src = (List<String>) prop.get( "sources" );
       if ( src != null && !src.isEmpty() ) {
-        rec.setSources( src );
+        List<String> src_fullname=new ArrayList<String>();
+        for (String s: src){
+          Source source = this.persistence.getCache().getSource(s);
+          String sourceName = source.getName();
+          String sourceVersion = source.getVersion();
+          src_fullname.add(sourceName+":"+sourceVersion);
+        }
+
+        rec.setSources( src_fullname );
       }
 
       e.getMetadata().add( rec );
