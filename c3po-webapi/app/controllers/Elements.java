@@ -27,15 +27,10 @@ import play.mvc.Result;
 import views.html.element;
 import views.html.elements;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
 //import com.petpet.c3po.datamodel.Element;
 //import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.DataHelper;
-import common.WebAppConstants;
 
 
 import com.petpet.c3po.api.model.Element;
@@ -55,15 +50,15 @@ public class Elements extends Controller {
 
 	public static Result index() {
 		Logger.debug("Received an index call in elements");
-		List<String> names = PropertyController.getCollectionNames();
-		String collection = PropertyController.getCollection();
+		List<String> names = Properties.getCollectionNames();
+		String collection = Properties.getCollection();
 		if (collection == null) {
 			return ok(elements.render(names, null));
 		}
 		int batch = getQueryParameter("batch", 25);
 		int offset = getQueryParameter("offset", 0);
 
-		Filter filter = FilterController.getFilterFromSession();
+		Filter filter = Filters.getFilterFromSession();
 		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
 		Iterator<Element> elementsIterator = persistence.find( Element.class, filter );
 		List<Element> result=new ArrayList<Element>();
@@ -96,7 +91,7 @@ public class Elements extends Controller {
 
 	public static Result show(String id) {
 		Logger.debug("Received a show call in elements, with id: " + id);
-		List<String> names = PropertyController.getCollectionNames();
+		List<String> names = Properties.getCollectionNames();
 		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
 		Filter filter=new Filter();
 		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));

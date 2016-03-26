@@ -10,7 +10,6 @@ import common.WebAppConstants;
 import helpers.Distribution;
 import helpers.PropertyValuesFilter;
 import helpers.Statistics;
-import helpers.StatisticsToPrint;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -20,7 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
-public class PropertyController extends Controller {
+public class Properties extends Controller {
 
     public static String propertiesAsXml() {
 
@@ -39,7 +38,7 @@ public class PropertyController extends Controller {
     }
 
     public static String collectionsAsXml() {
-        final List<String> names = PropertyController.getCollectionNames();
+        final List<String> names = Properties.getCollectionNames();
 
         final StringBuffer resp = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
@@ -72,7 +71,7 @@ public class PropertyController extends Controller {
             return ok(result);
         } else if (accept.contains("application/json")) {
             response().setContentType("application/json");
-            List<String> names = PropertyController.getCollectionNames();
+            List<String> names = Properties.getCollectionNames();
             return ok(play.libs.Json.toJson(names));
         }
         return badRequest("The accept header is not supported");
@@ -81,8 +80,10 @@ public class PropertyController extends Controller {
     public static Distribution getDistribution(String property, Filter filter, String algorithm, String width) {
         Logger.debug("Calculating distrubution for the property '" + property + "'");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        Property p = persistence.getCache().getProperty(property);
         Distribution result = null;
+        if (property == null)
+            return result;
+        Property p = persistence.getCache().getProperty(property);
         if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
             if (algorithm == null)
                 algorithm = "sqrt";
@@ -97,12 +98,9 @@ public class PropertyController extends Controller {
         Distribution result = new Distribution();
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         Property p = persistence.getCache().getProperty(property);
-        if (p == null)
-            return result;
         if (filter == null)
             filter = new Filter();
-
-        Filter tmpFilter = FilterController.normalize(filter);
+        Filter tmpFilter = Filters.normalize(filter);
         Map<String, Long> histogram = persistence.getValueHistogramFor(p, tmpFilter);
         result.setPropertyDistribution(histogram);
         result.setProperty(p.getKey());
@@ -112,8 +110,8 @@ public class PropertyController extends Controller {
     }
 
     public static Distribution getNominalDistribution(String property) {
-        Filter f = FilterController.getFilterFromSession();
-        return PropertyController.getNonimalDistribution(property, f);
+        Filter f = Filters.getFilterFromSession();
+        return Properties.getNonimalDistribution(property, f);
     }
 
     public static Map<String, Double> getStatistics(Filter filter, String property) {
@@ -122,7 +120,7 @@ public class PropertyController extends Controller {
         Property p = persistence.getCache().getProperty(property);
         if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
             Logger.debug("Calculating numeric statistics for the property '" + property + "'");
-            Filter tmpFilter=FilterController.normalize(filter);
+            Filter tmpFilter= Filters.normalize(filter);
             NumericStatistics ns = persistence.getNumericStatistics(p, tmpFilter);
             result.put("average", ns.getAverage());
             result.put("min", ns.getMin());
@@ -138,7 +136,7 @@ public class PropertyController extends Controller {
     }
 
     private static void StatsFromHistogram(String property, Map<String, Double> result) {
-        Distribution distribution = PropertyController.getNominalDistribution(property);
+        Distribution distribution = Properties.getNominalDistribution(property);
 
         Map<String, Long> propertyDistribution = distribution.getPropertyDistribution();
         long conflictedCount = 0;
@@ -169,7 +167,7 @@ public class PropertyController extends Controller {
     }
 
     public static Map<String, Double> getStatistics(String property) {
-        Filter f = FilterController.getFilterFromSession();
+        Filter f = Filters.getFilterFromSession();
         return getStatistics(f, property);
     }
 
@@ -191,7 +189,7 @@ public class PropertyController extends Controller {
             return ok(result);
         } else if (accept.contains("application/json")) {
             response().setContentType("application/json");
-            List<String> names = PropertyController.getPropertyNames();
+            List<String> names = Properties.getPropertyNames();
             return ok(play.libs.Json.toJson(names));
         }
         return badRequest("The accept header is not supported");
@@ -224,24 +222,24 @@ public class PropertyController extends Controller {
             return notFound("No collection '" + c + "' was found");
         }
 
-        Filter f = FilterController.getFilterFromSession();  //I dont use getCollection(), because we need to update the collection value in the filter.
+        Filter f = Filters.getFilterFromSession();  //I dont use getCollection(), because we need to update the collection value in the filter.
         List<FilterCondition> fcs = f.getConditions();
         for (FilterCondition fc : fcs) {
             if (fc.getField().equals("collection")) {
                 fc.setValue(c);
                 session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
-                FilterController.setFilterFromSession(f);
+                Filters.setFilterFromSession(f);
                 return ok("The collection was changed successfully");
             }
         }
         session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
         f.addFilterCondition(new FilterCondition("collection", c));
-        FilterController.setFilterFromSession(f);
+        Filters.setFilterFromSession(f);
         return ok("The collection was changed successfully");
     }
 
     public static String getCollection() {
-        Filter f = FilterController.getFilterFromSession();
+        Filter f = Filters.getFilterFromSession();
         List<FilterCondition> fcs = f.getConditions();
         for (FilterCondition fc : fcs) {
             if (fc.getField().equals("collection")) {
@@ -284,7 +282,7 @@ public class PropertyController extends Controller {
             pvf.setSelected(getCollection());
             return pvf;
         } else {
-            Distribution d = PropertyController.getNonimalDistribution(property, filter);
+            Distribution d = Properties.getNonimalDistribution(property, filter);
             PropertyValuesFilter pvf = new PropertyValuesFilter();
             pvf.setProperty(d.getProperty());
             pvf.setType(d.getType());
@@ -296,7 +294,7 @@ public class PropertyController extends Controller {
     }
 
     public static PropertyValuesFilter getNumericValues(String property, Filter filter, String algorithm, String width, String selectedValue) {
-        Distribution mergedDistribution = PropertyController.getBinDistribution(property, filter, algorithm, width);
+        Distribution mergedDistribution = Properties.getBinDistribution(property, filter, algorithm, width);
         PropertyValuesFilter result = new PropertyValuesFilter();
         result.setProperty(property);
         result.setType(mergedDistribution.getType());

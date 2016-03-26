@@ -1,4 +1,4 @@
-package template_configurator;
+package helpers.template_configurator;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;

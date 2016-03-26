@@ -17,19 +17,13 @@ package helpers;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
-import com.petpet.c3po.api.model.helper.PropertyType;
-import com.petpet.c3po.utils.Configurator;
 
-import controllers.FilterController;
-import controllers.PropertyController;
+import controllers.Properties;
 import play.Logger;
 import play.data.DynamicForm;
 
@@ -188,7 +182,7 @@ public static Graph getGraph(Filter filter, String property) {
     if (width.equals("-1"))
         width=null;
    // Distribution d = PropertyController.getDistribution(property, filter, alg, width);
-	Distribution d=PropertyController.getDistribution(property, filter, alg, width );
+	Distribution d= Properties.getDistribution(property, filter, alg, width );
 	Graph g = new Graph( d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts() );
 	return g;
 }
@@ -239,7 +233,7 @@ public static Graph getOrdinalGraph(Filter filter, String property) {
 
 		Property p = pl.getCache().getProperty( property );
 		Map<String, Long> hist = pl.getValueHistogramFor(p , filter );
-		g = Graph.getGraph(filter, property);
+		g = Graph.addGraph(filter, property);
 
 
 	}

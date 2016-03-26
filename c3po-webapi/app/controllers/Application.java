@@ -24,7 +24,6 @@ import helpers.SessionFilters;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
-import play.data.Form;
 import play.mvc.Result;
 import views.html.index;
 
@@ -61,7 +60,7 @@ public class Application extends Controller {
 	public static Result index() {
 		Logger.debug("Received an index call in application");
 		buildSession();
-		return ok(index.render("c3po", PropertyController.getCollectionNames()));
+		return ok(index.render("c3po", Properties.getCollectionNames()));
 	}
 
 	private static Object inferValue(String value) {

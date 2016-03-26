@@ -34,13 +34,13 @@ import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-public class FilterController extends Controller {
+public class Filters extends Controller {
 
     public static Result addCondition() {
         Logger.debug("Received an add call in filter");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         // final List<String> names = Application.getCollectionNames();
-        Filter filter = FilterController.getFilterFromSession();
+        Filter filter = Filters.getFilterFromSession();
         if (filter != null) {
             DynamicForm form = play.data.Form.form().bindFromRequest();
             String propertyName = form.get("filter");
@@ -48,11 +48,11 @@ public class FilterController extends Controller {
             String t = form.get("type");
             if (t.equals("graph")) {
                 int value = Integer.parseInt(propertyValueString);
-                for (Graph gr : Overview.allGraphs.getGraphs()) {
+                for (Graph gr : Overview.getAllGraphs().getGraphs()) {
                     if (gr.getProperty().equals(propertyName))
                         propertyValueString = gr.getKeys().get(value);
                 }
-                //Graph graph = Graph.getGraph(filter, propertyName);
+                //Graph graph = Graph.addGraph(filter, propertyName);
                 // propertyValueString = graph.getKeys().get(value);
             }
             Object propertyValue = null;
@@ -105,14 +105,14 @@ public class FilterController extends Controller {
                 if (fc.getField().equals(propertyName)) {
 
                     fc.setValue(propertyValue);
-                    FilterController.setFilterFromSession(filter);
+                    Filters.setFilterFromSession(filter);
                     return ok();
 
                 }
             }
 
             filter.addFilterCondition(new FilterCondition(propertyName, propertyValue));
-            FilterController.setFilterFromSession(filter);
+            Filters.setFilterFromSession(filter);
             return ok();
         }
 
@@ -129,7 +129,7 @@ public class FilterController extends Controller {
         Logger.debug("Received a getAll call in filter");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<PropertyValuesFilter> result = new ArrayList<PropertyValuesFilter>();
-        Filter filter = FilterController.getFilterFromSession();
+        Filter filter = Filters.getFilterFromSession();
         List<FilterCondition> fcs = filter.getConditions();
         for (FilterCondition fc : fcs) {
             Property p = persistence.getCache().getProperty(fc.getField());
@@ -143,11 +143,11 @@ public class FilterController extends Controller {
                 String[] strings = v.split(" \\|");
                 if (strings[1].contains("fixed")) {
                     String width = strings[1].replace("fixed", "");
-                    f = PropertyController.getNumericValues(p.getKey(), null, "fixed", width, v);
+                    f = Properties.getNumericValues(p.getKey(), null, "fixed", width, v);
                 } else
-                    f = PropertyController.getNumericValues(p.getKey(), null, strings[1], null, v);
+                    f = Properties.getNumericValues(p.getKey(), null, strings[1], null, v);
             } else
-                f = PropertyController.getNominalValues(p.getKey(), null, v);
+                f = Properties.getNominalValues(p.getKey(), null, v);
             result.add(f);
         }
         return ok(play.libs.Json.toJson(result));
@@ -180,7 +180,7 @@ public class FilterController extends Controller {
             String[] values = query.get(key);
 
             for (String val : values) {
-                Object typedValue = PropertyController.getTypedValue(val);
+                Object typedValue = Properties.getTypedValue(val);
                 filter.addFilterCondition(new FilterCondition(key, typedValue));
             }
         }
@@ -228,21 +228,21 @@ public class FilterController extends Controller {
         DynamicForm form = play.data.Form.form().bindFromRequest();
         String alg = form.get("alg");
         //TODO: DEBUG THIS PART!!
-        return Graph.getGraph(FilterController.getFilterFromSession(), property);
+        return Graph.getGraph(Filters.getFilterFromSession(), property);
 
 
     }
 
     public static Result removeCondition(String property) {
         Logger.debug("Received a removeCondition call in filter, removing filter with property " + property);
-        Filter filter = FilterController.getFilterFromSession();
+        Filter filter = Filters.getFilterFromSession();
         for (Iterator<FilterCondition> iter = filter.getConditions().listIterator(); iter.hasNext(); ) {
             FilterCondition fc = iter.next();
             if (fc.getField().equals(property)) {
                 iter.remove();
             }
         }
-        FilterController.setFilterFromSession(filter);
+        Filters.setFilterFromSession(filter);
         if (property.equals("collection")) {
             session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, "none");
 

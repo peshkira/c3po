@@ -29,16 +29,12 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.samples;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
 //import com.petpet.c3po.datamodel.Element;
 //import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.DataHelper;
 
 
 import com.petpet.c3po.api.model.Element;
@@ -48,7 +44,7 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 public class Samples extends Controller {
 
   public static Result index() {
-    final List<String> names = PropertyController.getCollectionNames();
+    final List<String> names = Properties.getCollectionNames();
     return ok(samples.render(names));
   }
 
@@ -56,7 +52,7 @@ public class Samples extends Controller {
 	Logger.debug("Received a getSamples call, sampling with alg " + alg + " size " + size + " props " + props);
     //final Configurator configurator = Configurator.getDefaultConfigurator();
     final PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-    final Filter filter = FilterController.getFilterFromSession();
+    final Filter filter = Filters.getFilterFromSession();
     final RepresentativeGenerator sg = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
     sg.setFilter(filter);
 
@@ -203,7 +199,7 @@ public class Samples extends Controller {
 	  private static List<Element> getSamples( RepresentativeGenerator gen, Map<String, String[]> query, int count ) {
 	    Configurator configurator = Configurator.getDefaultConfigurator();
 	    PersistenceLayer pl = configurator.getPersistence();
-	    Filter filter = FilterController.getFilterFromQuery( query );
+	    Filter filter = Filters.getFilterFromQuery( query );
 	    gen.setFilter( filter );
 
 	    List<String> ids = gen.execute( count );

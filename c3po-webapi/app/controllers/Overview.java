@@ -15,10 +15,7 @@
  ******************************************************************************/
 package controllers;
 
-import helpers.Distribution;
-import helpers.Graph;
-import helpers.GraphData;
-import helpers.StatisticsToPrint;
+import helpers.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,38 +30,42 @@ import views.html.overview;
 import com.petpet.c3po.api.model.helper.Filter;
 
 public class Overview extends Controller {
-    public static GraphData allGraphs=new GraphData();
+    public static GraphData getAllGraphs() {
+        return allGraphs;
+    }
+
+    static GraphData allGraphs=new GraphData();
     public static Result index() {
         Application.buildSession();
         Logger.debug("Received an index call in overview");
-        final List<String> names = PropertyController.getCollectionNames();
+        final List<String> names = Properties.getCollectionNames();
         List<Graph> graphs = new ArrayList<Graph>();
 
 
-        Filter filter = FilterController.getFilterFromSession();
-        Templates.setProps(filter);
+        Filter filter = Filters.getFilterFromSession();
+        TemplatesLoader.setProps(filter);
         for (String property : Application.PROPS) {
-            Distribution d = PropertyController.getDistribution(property, filter, null, null);
+            Distribution d = Properties.getDistribution(property, filter, null, null);
             Graph g = new Graph(d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts());
             g.cutLongTail();
             graphs.add(g);
         }
         allGraphs = new GraphData(graphs);
-        Map<String, Double> statistics = PropertyController.getStatistics("size");
+        Map<String, Double> statistics = Properties.getStatistics("size");
         StatisticsToPrint stats = new StatisticsToPrint();
-        stats.setAvg(PropertyController.round(statistics.get("average") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setAvg(Properties.round(statistics.get("average") / 1024.0 / 1024.0, 3) + " MB");
         stats.setCount(statistics.get("count").intValue() + " objects");
-        stats.setMax(PropertyController.round(statistics.get("max") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setMin(PropertyController.round(statistics.get("min") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setSd(PropertyController.round(statistics.get("sd") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setSize(PropertyController.round(statistics.get("sum") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setVar(PropertyController.round(statistics.get("var") / 1024.0 / 1024.0, 3) + " MB^2");
+        stats.setMax(Properties.round(statistics.get("max") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setMin(Properties.round(statistics.get("min") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setSd(Properties.round(statistics.get("sd") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setSize(Properties.round(statistics.get("sum") / 1024.0 / 1024.0, 3) + " MB");
+        stats.setVar(Properties.round(statistics.get("var") / 1024.0 / 1024.0, 3) + " MB^2");
 
-        return ok(overview.render(names, allGraphs, stats, Templates.getCurrentTemplate()));
+        return ok(overview.render(names, allGraphs, stats, TemplatesLoader.getCurrentTemplate()));
     }
 
-    public static Result getGraph(String property) {
-        Logger.debug("Received a getGraph call for property '" + property + "'");
+    public static Result addGraph(String property) {
+        Logger.debug("Received a addGraph call for property '" + property + "'");
 
         // if it is one of the default properties, do not draw..
         for (String p : Application.PROPS) {
@@ -78,12 +79,12 @@ public class Overview extends Controller {
         if (width!=null && width.equals("-1"))
             width=null;
 
-        Filter filter = FilterController.getFilterFromSession();
-        Distribution d = PropertyController.getDistribution(property, filter, alg, width);
+        Filter filter = Filters.getFilterFromSession();
+        Distribution d = Properties.getDistribution(property, filter, alg, width);
         Graph g = new Graph(d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts());
         g.cutLongTail();
         allGraphs.getGraphs().add(g);
-
+        TemplatesLoader.addUserDefinedGraph(property);
         return ok(play.libs.Json.toJson(g));
     }
 

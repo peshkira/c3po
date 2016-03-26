@@ -1,4 +1,4 @@
-package template_configurator;
+package helpers.template_configurator;
 
 import static org.junit.Assert.*;
 
@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import helpers.TemplatesLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,8 +19,8 @@ import org.simpleframework.xml.core.Persister;
 
 public class configurationTest {
 	Serializer serlzr = new Persister();
-	TemplateController configWritten = new TemplateController();
-	TemplateController configRead=null;
+	TemplatesLoader configWritten = new TemplatesLoader();
+	TemplatesLoader configRead=null;
 	File file = null;
 	
 	@Rule
@@ -67,7 +68,7 @@ public class configurationTest {
 	public void testHashCode() {
 		try {
 			serlzr.write(configWritten, file);
-			configRead = serlzr.read(TemplateController.class, file);
+			configRead = serlzr.read(TemplatesLoader.class, file);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

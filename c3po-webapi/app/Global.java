@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-import controllers.Templates;
+import helpers.TemplatesLoader;
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
@@ -32,12 +32,9 @@ public class Global extends GlobalSettings {
     Logger.info("Starting c3po web app");
     super.onStart(app);
     Configurator.getDefaultConfigurator().configure();
-    
- //   this.calculateCollectionStatistics();
- //   this.calculateHistogramms();
-    Templates.updateConfig();
-  }
 
+    TemplatesLoader.updateConfig();
+  }
   // TODO think of a better way to decide when to drop the
   // mapreduce results.
   @Override
@@ -45,68 +42,4 @@ public class Global extends GlobalSettings {
     Logger.info("Stopping c3po web app");
     super.onStop(app);
   }
-  
-//  @Override
-//  public Result onBadRequest(String uri, String error){
-//    Logger.error("Bad Request: " + uri + " " + error);
-//    return badRequest(uri, error);
-//  }
-//  
-//  public Result onHandlerNotFound(String uri) {
-//    Logger.error("Handler not found: " + uri);
-//    return notFound();
-//  }
-
-  /*private void calculateCollectionStatistics() {
-    Logger.info("Calculating size statistics of each collection");
-    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    final List<String> collections = controllers.PropertyController.getCollectionNames();
-    Property size = pl.getCache().getProperty( "size" );
-    for (String collection : collections) {
-      final String cName = "statistics_" + collection;
-      Filter filter=new Filter();
-      filter.addFilterCondition(new FilterCondition("collection", collection));
-      NumericStatistics statistics = pl.getNumericStatistics( size, filter );
-      //final DBCollection c = pl.getDB().getCollection(cName);
-
-      //if (c.find().count() == 0) {
-      ///  Logger.info("No statistics found for collection " + collection + ", rebuilding");
-
-      //  final NumericAggregationJob job = new NumericAggregationJob(collection, "size");
-      //  job.setType(OutputType.REPLACE);
-      //  job.setOutputCollection(cName);
-      //  job.execute();
-     // }
-    }
-  }
-
-  private void calculateHistogramms() {
-    Logger.info("Calculating histograms of each collection");
-    final List<String> collections = controllers.PropertyController.getCollectionNames();
-    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-
-    for (String collection : collections) {
-      for (String p : controllers.Application.PROPS) {
-        final String cName = "histogram_" + collection + "_" + p;
-        Property prop = pl.getCache().getProperty( p );
-        
-        Filter filter=new Filter();
-        filter.addFilterCondition(new FilterCondition("collection", collection));
-         pl.getValueHistogramFor( prop, filter );
-        
-        
-        //final DBCollection c = pl.getDB().getCollection(cName);
-
-       // if (c.find().count() == 0) {
-       //   Logger.info("No histogram found for collection " + collection + "  and property " + p + ", rebuilding");
-
-        //  final HistogramJob job = new HistogramJob(collection, p);
-        //  job.setType(OutputType.REPLACE);
-        //  job.setOutputCollection(cName);
-        //  job.execute();
-        //}
-      }
-    }
-  }*/
-
 }

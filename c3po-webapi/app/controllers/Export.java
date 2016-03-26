@@ -18,8 +18,8 @@ package controllers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.List;
 
+import helpers.TemplatesLoader;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 //import org.dom4j.Element;
@@ -28,18 +28,15 @@ import org.dom4j.io.SAXReader;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
-import play.data.Form;
 import play.mvc.Result;
 import views.html.export;
 
 
-import com.mongodb.BasicDBObject;
 import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
 //import com.petpet.c3po.datamodel.ActionLog;
 //import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.ActionLogHelper;
@@ -48,7 +45,6 @@ import com.petpet.c3po.utils.Configurator;
 import common.WebAppConstants;
 
 import com.petpet.c3po.api.model.ActionLog;
-import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 
@@ -57,7 +53,7 @@ public class Export extends Controller {
 
 	public static Result index() {
 		Logger.debug("Received an index call in export");
-		return ok(export.render("c3po - Export Data", PropertyController.getCollectionNames(),Templates.getTemplates()));//export.render("c3po - Export Data", Application.getCollectionNames()));
+		return ok(export.render("c3po - Export Data", Properties.getCollectionNames(), TemplatesLoader.templatesToString()));//export.render("c3po - Export Data", Application.getCollectionNames()));
 	}
 
 	public static Result profile() {
@@ -68,13 +64,13 @@ public class Export extends Controller {
 		final String c = form.get("collection");
 		final String e = form.get("includeelements");
 
-		Filter filter = FilterController.getFilterFromSession();
+		Filter filter = Filters.getFilterFromSession();
 		boolean include = false;
 
 		if (filter == null) {
 			if (c == null) {
 				return badRequest("No collection parameter provided\n");
-			} else if (!PropertyController.getCollectionNames().contains(c)) {
+			} else if (!Properties.getCollectionNames().contains(c)) {
 				return notFound("No collection with name " + c + " was found\n");
 			}
 
@@ -97,7 +93,7 @@ public class Export extends Controller {
 	public static Result exportAllToCSV() {
 		Logger.debug("Received an exportAllToCSV call");
 		CSVGenerator generator = getGenerator();
-		String collection=PropertyController.getCollection();
+		String collection= Properties.getCollection();
 		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
 		generator.exportAll(collection, path);
 
@@ -113,8 +109,8 @@ public class Export extends Controller {
 	public static Result exportFilterToCSV() {
 		Logger.debug("Received an exportFilterToCSV call");
 		CSVGenerator generator = getGenerator();
-		Filter filter = FilterController.getFilterFromSession();
-		String collection=PropertyController.getCollection();
+		Filter filter = Filters.getFilterFromSession();
+		String collection= Properties.getCollection();
 		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
 		generator.export(filter, path);
 
@@ -144,7 +140,7 @@ public class Export extends Controller {
 
 	private static File generateProfile(Filter filter, boolean includeelements) {
 		StringBuilder pathBuilder = new StringBuilder();
-		String collection=PropertyController.getCollection();
+		String collection= Properties.getCollection();
 		String path = "profiles/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_profile.xml";
 		Logger.debug("Looking for collection profile " + path);
 
