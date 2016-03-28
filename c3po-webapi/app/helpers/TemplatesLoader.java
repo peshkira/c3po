@@ -20,7 +20,7 @@ import java.util.*;
 public class TemplatesLoader {
     static final String PATH_TEMPLATE_CONFIG = System.getProperty("user.home") + File.separator + ".c3po.template_config";
     static TemplatesLoader templatesLoader = new TemplatesLoader(new File(PATH_TEMPLATE_CONFIG));
-    static List<String> userAddedProperties = new ArrayList<>();
+    static List<String> userAddedProperties = new ArrayList<String>();
     static String[] defaultProps = {"content_type", "created", "valid"}; //{ "mimetype", "format", "format_version", "valid", "wellformed","creating_application_name", "created" };
     @ElementList
     List<TemplateFilter> filters;
