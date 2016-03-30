@@ -110,4 +110,20 @@ public class Elements extends Controller {
 
 	}
 
+	public static Result get(String id) {
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Filter filter=new Filter();
+		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
+		Iterator<Element> iterator=persistence.find(Element.class, filter);
+		if (iterator.hasNext()) {
+			Element result = iterator.next();
+			if (iterator.hasNext()) {
+				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+			}
+			return ok(play.libs.Json.toJson(result));
+		} else {
+			return notFound( "{error: \"Element not found\"}" ) ;
+		}
+
+	}
 }

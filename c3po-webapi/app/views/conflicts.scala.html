@@ -1,0 +1,107 @@
+@(title: String, collections: List[String])
+
+@scripts = {
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+}
+
+@main(title, collections, scripts) {
+
+    <script type="text/javascript">
+
+        $(function () {
+
+            function url_query(query, dflt) {
+                query = query.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                var expr = "[\\?&]" + query + "=([^&#]*)";
+                var regex = new RegExp(expr);
+                var results = regex.exec(window.location.href);
+                if (results !== null) {
+                    return results[1];
+                    return decodeURIComponent(results[1].replace(/\+/g, " "));
+                } else {
+                    return dflt;
+                }
+            }
+
+            var c_offset = url_query("offset", 0);
+            var c_batch = url_query("batch", 25);
+
+            $('#prev').click(function () {
+                var diff = parseInt(c_offset) - c_batch;
+                var offset = (diff > 0) ? diff : 0;
+                window.location.search = 'offset=' + offset;
+            });
+
+            $('#next').click(function () {
+                window.location.search = 'offset=' + (parseInt(c_offset) + parseInt(c_batch));
+            });
+        });
+
+
+        $(document).ready(function () {
+            $("#example").multiselect();
+        });
+
+
+        $("#collections select").change(function () {
+            var collection = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '/c3po/collections?name=' + collection,
+                timeout: 5000,
+                success: function (oData) {
+                    startSpinner();
+                    $('#ajax_collection').text(collection);
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 300);
+                }
+            });
+        });
+
+
+
+    </script>
+
+
+
+    <div class="content">
+        <p>Conflict reduction lab</p>
+        <form id="form1" name="form1" method="post" action="/c3po/conflicts/">
+            <textarea name="text" id="textarea" cols="45" rows="5">
+                RULE “name”
+                IF
+                status=”conflict”
+                puid=”fmt/111”
+                creatingApplicationName CONTAINS “acrobat”
+                THEN
+                type=”document”
+                format=”Adobe PDF”
+                END RULE
+            </textarea>
+            <input type="submit" name="button" id="button" value="Send" />
+        </form>
+
+
+        <h2>
+            Current collection: <span id="ajax_collection">@session.get("current.collection")</span>
+        </h2>
+        Other collections: <select> @for(c <- collections) {
+        <option value="@c">@c</option>
+    }
+
+
+
+
+        <select id="example" name="example" multiple="multiple">
+            <option value="1">Option 1</option>
+            <option value="2">Option 2</option>
+            <option value="3">Option 3</option>
+            <option value="4">Option 4</option>
+            <option value="5">Option 5</option>
+        </select>
+
+
+    </select>
+    </div>
+}

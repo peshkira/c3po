@@ -1,41 +1,165 @@
 @(collections: List[String], element: com.petpet.c3po.api.model.Element)
-@import helper._
 
 @scripts = {
-<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
-}
+    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css" type="text/css">
+    <script src="http://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+    <script>
 
+            function createRule(property, value, source) {
+                $("#overlay").addClass('activeoverlay');
+                var popup = $('#filterpopup');
+                popup.css({'display': 'block', 'z-index': 11});
+                var popupconfig = popup.children('.popupconfig');
 
-@main("c3po", collections, scripts){
- @if(element != null) {
-     
-     <div id="objects" class="content">     
-        <h2>@element.getName()</h2>
-        <div class="element_general">
-        <p>
-            UID: @element.getUid()<br />
-            Collection: @element.getCollection()  
-         </p>
-         </div>
-         <div class ="element_data">
-         <h3> Meta Data </h3>
-         <ul>
-            @for(mr <- element.getMetadata()) {
-              @if(mr.getValue() == null) {
-                <li class="conflict">
-                @mr.getProperty().getKey() :
-                
-                @for((value, i) <- mr.getValues().zipWithIndex) {                
-                    @value  [@mr.getSources().get(i)],
+                //Adding necessary elements to the html:
+                //popup.children('.popupreason').html('Do you want to create a new conflict resolution rule?');
+                var caption = $('Do you want to create a new conflict resolution rule?').appendTo(popup.children('.popupreason'));
+                var table = $('<table id="ruleTable" class="display" width="80%"></table>').appendTo(popupconfig);
+                var dropDown = $('<select id="dropDown"></select>').appendTo(popupconfig);
+                var addButton = $('<a name="addCondition" class="green_button" href="javascript:void(0);">Add condition</a>').appendTo(popupconfig);
+                var deleteButton = $('<a name="deleteCondition" class="green_button" href="javascript:void(0);">Delete selected condition</a>').appendTo(popupconfig);
+                var submitButton = $('<a class="green_button" href="#">Create rule</a>').appendTo(popupconfig);
+
+                //Get element as json:
+                var elem = "";
+                var objectID = window.location.href.split('/').pop();
+                $.ajax({
+                    type: 'GET',
+                    url: '/c3po/object/' + objectID,
+                    async: false,
+                    success: function (oData) {
+                        elem = oData;
+                    }
+                });
+
+                //Create a list of filter conditions based on metadata records of the element:
+                var conditions = [];
+                for (var i in elem.metadata) {
+                    var property = elem.metadata[i].property.key;
+                    var value = elem.metadata[i].value;
+                    if (value !=null)
+                    conditions.push({"property": property, "value": value});
                 }
-                </li>
-                
-              } else {
-                <li>@mr.getProperty().getKey() : @mr.getValue() </li>
-              }
+
+
+
+                //Add options to dropdown list, based on properties of the element:
+                dropDown.append(new Option("Select a new condition to add"));
+                for (var i in conditions) {
+                    dropDown.append(new Option(conditions[i].property + " : " + conditions[i].value));
+                }
+                //dropDown.append("</select>");
+
+                //Get filter as json:
+                var filter = [];
+                $.ajax({
+                    type: 'GET',
+                    url: '/c3po/filters',
+                    async: false,
+                    success: function (oData) {
+                        filter = oData;
+                    }
+                });
+
+                //Compose components for the rule:
+                var dataRule = [];
+                for (var i in filter) {
+                    var row = [];
+                    row.push(filter[i].property);
+                    row.push(filter[i].selected);
+                    row.push("condition");
+                    dataRule.push(row);
+                }
+                var row = [property, value, "action"];
+                dataRule.push(row);
+
+                // popup.children('.popupconfig').append('<table id="ruleTable" class="display" width="80%"></table>');//'<input id="mail" type="text" placeholder="Your Email" /><br/>');
+
+
+                var table = table.DataTable( {
+                //table.DataTable({
+                    paging: false,
+                    searching: false,
+                    info: false,
+                    data: dataRule,
+                    columns: [
+                        {title: "Property"},
+                        {title: "Value"},
+                        {title: "Component"}
+                    ]
+                });
+
+                //Various actions to add, remove conditions
+
+                table.on('click', 'tr', function () {
+                    if ($(this).hasClass('selected')) {
+                        $(this).removeClass('selected');
+                    }
+                    else {
+                        table.$('tr.selected').removeClass('selected');
+                        $(this).addClass('selected');
+                    }
+                });
+
+                deleteButton.on('click', function () {
+                    var rows = table.rows('.selected').data();
+                    if (rows) {
+                        var row = rows[0];
+                        if (row[2] && row[2] == "condition")
+                            table.row('.selected').remove().draw(false);
+                    }
+                });
+
+                addButton.on('click', function () {
+                    var i=document.getElementById("dropDown").selectedIndex;
+                    if (i != null) {
+                        var p = conditions[i-1].property;
+                        var v = conditions[i-1].value;
+                        if (p!=null && v!=null)
+                            table.row.add([p, v, "condition"]).draw(true);
+                    }
+                });
+
             }
-          </ul>
-         </div>
-     </div>
+
+    </script>
+    }
 }
+
+
+@main("c3po", collections, scripts) {
+    @if(element != null) {
+        <div id="objects" class="content">
+            <h2>@element.getName()</h2>
+            <div class="element_general">
+                <p>
+                    UID: @element.getUid()<br />
+                    Collection: @element.getCollection()
+                </p>
+            </div>
+            <div class ="element_data">
+                <h3> Meta Data </h3>
+                <ul>
+                @for(mr <- element.getMetadata()) {
+                    @if(mr.getValue() == null) {
+                        <li class="conflict">
+                            @mr.getProperty().getKey() :
+
+                            @for((value, i) <- mr.getValues().zipWithIndex) {
+                                <a onclick="createRule('@mr.getProperty().getKey()', '@value', '@mr.getSources().get(i)');" href="javascript:void(0);" >@value
+                                    [@mr.getSources().get(i)]</a>,
+                            }
+                        </li>
+
+                    } else {
+                        <li>@mr.getProperty().getKey() : @mr.getValue() </li>
+                    }
+                }
+                </ul>
+            </div>
+        </div>
+
+
+    }
 }
