@@ -24,18 +24,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MapReduceCommand;
-import com.mongodb.MapReduceOutput;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.ActionLog;
@@ -130,7 +122,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * @1 = the id under which the results will be output. <br>
    * @2 = the key of the desired numeric property prior to usage.
    */
-  public static final String AGGREGATE_MAP = "function map() {if (this.metadata['@2'] != null) {emit(@1,{sum: this.metadata['@2'].value, min: this.metadata['@2'].value,max:this.metadata['@2'].value,count:1,diff: 0,});}}";
+  public static final String AGGREGATE_MAP = "function map() {if (this['@2'] != null) {emit(@1,{sum: this['@2'].value, min: this['@2'].value,max: this['@2'].value,count:1,diff: 0,});}}";
 
   /**
    * The reduce of the aggregation functions.
@@ -149,7 +141,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * values). Note that there is a '@1' wildcard that has to be replaced with
    * the id of the desired property, prior to usage.
    */
-  public static final String HISTOGRAM_MAP = "function map() {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {emit(this.metadata['@1'].value, 1);}else{emit('CONFLICT', 1);}} else {emit('Unknown', 1);}}";
+  public static final String HISTOGRAM_MAP = "function map() {if (this['@1'] != null) {if (this['@1'].status !== 'CONFLICT') {emit(this['@1'].value, 1);}else{emit('CONFLICT', 1);}} else {emit('Unknown', 1);}}";
 
   /**
    * A javascript Map function for building a histogram over a specific date
@@ -159,7 +151,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * the year is used as the key. Note that there is a '@1' wildcard that has to
    * be replaced with the id of the desired property, prior to usage.
    */
-  public static final String DATE_HISTOGRAM_MAP = "function () {if (this.metadata['created'] != null && this.metadata['created'].value != undefined) {if (this.metadata['created'].status !== 'CONFLICT') {var date = new Date(this.metadata['created'].value);emit(date.getFullYear(), 1);}else{emit('CONFLICT', 1);}}else{emit('Unknown', 1);}}";
+  public static final String DATE_HISTOGRAM_MAP = "function () {if (this['created'] != null && this['created'].value != undefined) {if (this['created'].status !== 'CONFLICT') {var date = new Date(this['created'].value);emit(date.getFullYear(), 1);}else{emit('CONFLICT', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * A javascript Map function for building a histogram with fixed bin size. It
@@ -171,7 +163,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    * the id 1 marks the number of elements where the numeric property was
    * between the width and 2*width and so on.
    */
-  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this.metadata['@1'] != null) {if (this.metadata['@1'].status !== 'CONFLICT') {var idx = Math.floor(this.metadata['@1'].value / @2);emit(idx, 1);} else {emit('CONFLICT', 1);}}else{emit('Unknown', 1);}}";
+  public static final String NUMERIC_HISTOGRAM_MAP = "function () {if (this['@1'] != null) {if (this['@1'].status !== 'CONFLICT') {var idx = Math.floor(this['@1'].value / @2);emit(idx, 1);} else {emit('CONFLICT', 1);}}else{emit('Unknown', 1);}}";
 
   /**
    * The reduce function for the {@link Constants#HISTOGRAM_MAP}.
@@ -193,6 +185,28 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   private Map<String, DBCollection> collections;
 
   private MongoFilterSerializer filterSerializer;
+
+  private void setResult(WriteResult result) {
+    this.writeResult = result;
+  }
+
+  public Map<String, Object> getResult() {
+    Map<String, Object> result=new HashMap<String, Object>();
+    if (writeResult.getField("nInserted")!=null)
+      result.put("nInserted",writeResult.getField("nInserted"));
+    if (writeResult.getField("nMatched")!=null)
+      result.put("nMatched",writeResult.getField("nMatched"));
+    if (writeResult.getField("nModified")!=null)
+      result.put("nModified",writeResult.getField("nModified"));
+    if (writeResult.getField("nUpserted")!=null)
+      result.put("nUpserted",writeResult.getField("nUpserted"));
+    if (writeResult.getField("nRemoved")!=null)
+      result.put("nRemoved",writeResult.getField("nRemoved"));
+    result.put("count",writeResult.getN());
+    return result;
+  }
+
+  private WriteResult writeResult;
 
   /**
    * The constructor initializes all needed objects, such as the serializers and
@@ -370,7 +384,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBCollection dbCollection = this.getCollection( object.getClass() );
     MongoModelSerializer serializer = this.getSerializer( object.getClass() );
 
-    dbCollection.insert( serializer.serialize( object ) );
+    WriteResult insert = dbCollection.insert(serializer.serialize(object));
+    setResult(insert);
 
   }
 
@@ -407,8 +422,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     MongoModelSerializer serializer = this.getSerializer( object.getClass() );
     DBObject objectToUpdate = serializer.serialize( object );
     BasicDBObject set = new BasicDBObject( "$set", objectToUpdate );
-    dbCollection.update( filter, set, true, true );
-
+    WriteResult update = dbCollection.update(filter, set, true, true);
+    setResult(update);
   }
 
   /**
@@ -423,7 +438,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBCollection dbCollection = this.getCollection( object.getClass() );
     MongoModelSerializer serializer = this.getSerializer( object.getClass() );
 
-    dbCollection.remove( serializer.serialize( object ) );
+    WriteResult remove = dbCollection.remove(serializer.serialize(object));
+    setResult(remove);
 
   }
 
@@ -435,8 +451,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     DBObject query = this.getCachedFilter( filter );
     DBCollection dbCollection = this.getCollection( clazz );
-    dbCollection.remove( query );
+    WriteResult remove = dbCollection.remove(query);
     clearCache();
+    setResult(remove);
 
   }
 
@@ -764,4 +781,5 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return result;
 
   }
+
 }

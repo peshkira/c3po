@@ -187,4 +187,9 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
     this.persistence.update( object, f );
   }
 
+  @Override
+  public Map<String, Object> getResult() {
+    return this.persistence.getResult();
+  }
+
 }

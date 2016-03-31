@@ -59,7 +59,7 @@ public class MongoFilterSerializerTest {
 
     DBObject filter = ser.serialize(f);
 
-    String expected = "{ \"$and\" : [ { \"metadata.mimetype.value\" : \"applciation/pdf\"}]}";
+    String expected = "{ \"$and\" : [ { \"mimetype.value\" : \"applciation/pdf\"}]}";
     Assert.assertEquals(expected, filter.toString());
   }
 
@@ -89,7 +89,7 @@ public class MongoFilterSerializerTest {
     DBObject filter = ser.serialize(f);
 
     String val = filter.toString();
-    String expr = "{ \"$and\" : [ { \"$or\" : [ { \"metadata.mimetype.value\" : \"applciation/pdf\"} , { \"metadata.mimetype.value\" : \"text/html\"} , { \"metadata.mimetype.value\" : \"text/xml\"}]}]}";
+    String expr = "{ \"$and\" : [ { \"$or\" : [ { \"mimetype.value\" : \"applciation/pdf\"} , { \"mimetype.value\" : \"text/html\"} , { \"mimetype.value\" : \"text/xml\"}]}]}";
     Assert.assertEquals(expr, val);
   }
 
@@ -125,7 +125,7 @@ public class MongoFilterSerializerTest {
     DBObject filter = ser.serialize(f);
 
     String val = filter.toString();
-    String expr = "{ \"$and\" : [ { \"metadata.puid.value\" : \"fmt/42\"} , { \"$or\" : [ { \"metadata.mimetype.value\" : \"applciation/pdf\"} , { \"metadata.mimetype.value\" : \"text/html\"} , { \"metadata.mimetype.value\" : \"text/xml\"}]}]}";
+    String expr = "{ \"$and\" : [ { \"puid.value\" : \"fmt/42\"} , { \"$or\" : [ { \"mimetype.value\" : \"applciation/pdf\"} , { \"mimetype.value\" : \"text/html\"} , { \"mimetype.value\" : \"text/xml\"}]}]}";
      //       Assert.assertEquals(expr, val);
   }
 

@@ -206,4 +206,8 @@ public interface PersistenceLayer {
    *          the filter that uniquely identifies the object.
    */
   <T extends Model> void update( T object, Filter f );
+
+
+
+  Map<String,Object> getResult();
 }

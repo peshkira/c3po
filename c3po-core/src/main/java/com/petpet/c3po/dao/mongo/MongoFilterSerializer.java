@@ -117,7 +117,7 @@ public class MongoFilterSerializer {
       return f;
     }
 
-    String result = "metadata." + f;
+    String result = f;
 
     if (value.equals(EXISTS)){
       return result;
