@@ -430,6 +430,29 @@ public class Controller {
 
         List<ProcessingRule> rules = this.getRules( collection );
 
+        Collections.sort( rules, new Comparator<ProcessingRule>() {
+
+            // sorts from descending
+            @Override
+            public int compare( ProcessingRule r1, ProcessingRule r2 ) {
+                int first = this.fixPriority( r2.getPriority() );
+                int second = this.fixPriority( r1.getPriority() );
+                return new Integer( first ).compareTo( new Integer( second ) );
+            }
+
+            private int fixPriority( int prio ) {
+                if ( prio < 0 )
+                    return 0;
+
+                if ( prio > 1000 )
+                    return 1000;
+
+                return prio;
+            }
+
+        } );
+
+
         LOG.debug( "Initializing adaptors..." );
         for ( int i = 0; i < adaptThreads; i++ ) {
             AbstractAdaptor a = this.getAdaptor( type );

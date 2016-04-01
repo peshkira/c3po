@@ -37,9 +37,8 @@ import play.mvc.Result;
 public class Filters extends Controller {
 
     public static Result addCondition() {
-        Logger.debug("Received an add call in filter");
+        Logger.debug("Received an addCondition in filter");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        // final List<String> names = Application.getCollectionNames();
         Filter filter = Filters.getFilterFromSession();
         if (filter != null) {
             DynamicForm form = play.data.Form.form().bindFromRequest();
@@ -52,8 +51,10 @@ public class Filters extends Controller {
                     if (gr.getProperty().equals(propertyName))
                         propertyValueString = gr.getKeys().get(value);
                 }
-                //Graph graph = Graph.addGraph(filter, propertyName);
-                // propertyValueString = graph.getKeys().get(value);
+            }
+            if (propertyValueString.equals("Rest")){
+                return ok("Cannot show distribution for 'Rest' value");
+
             }
             Object propertyValue = null;
             Property p = persistence.getCache().getProperty(propertyName);
@@ -80,6 +81,8 @@ public class Filters extends Controller {
             } else if (p.getType().equals(PropertyType.BOOL.toString())) {
                 if (propertyValueString.equals("Unknown"))
                     propertyValue = null;
+                else if (propertyValueString.equals("CONFLICT"))
+                    propertyValue = "CONFLICT";
                 else
                     propertyValue = Boolean.parseBoolean(propertyValueString);
             } else if (p.getType().equals(PropertyType.STRING.toString())) {
@@ -126,7 +129,7 @@ public class Filters extends Controller {
      * @return
      */
     public static Result getConditions() {
-        Logger.debug("Received a getAll call in filter");
+        Logger.debug("Received a getConditions call in filter");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<PropertyValuesFilter> result = new ArrayList<PropertyValuesFilter>();
         Filter filter = Filters.getFilterFromSession();
@@ -140,12 +143,15 @@ public class Filters extends Controller {
             }
             PropertyValuesFilter f = null;
             if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
-                String[] strings = v.split(" \\|");
-                if (strings[1].contains("fixed")) {
-                    String width = strings[1].replace("fixed", "");
-                    f = Properties.getNumericValues(p.getKey(), null, "fixed", width, v);
+                if (v.contains(" \\|")) {
+                    String[] strings = v.split(" \\|");
+                    if (strings[1].contains("fixed")) {
+                        String width = strings[1].replace("fixed", "");
+                        f = Properties.getNumericValues(p.getKey(), null, "fixed", width, v);
+                    } else
+                        f = Properties.getNumericValues(p.getKey(), null, strings[1], null, v);
                 } else
-                    f = Properties.getNumericValues(p.getKey(), null, strings[1], null, v);
+                    f = Properties.getNominalValues(p.getKey(), null, v);
             } else
                 f = Properties.getNominalValues(p.getKey(), null, v);
             result.add(f);
@@ -153,25 +159,6 @@ public class Filters extends Controller {
         return ok(play.libs.Json.toJson(result));
     }
 
-
-
-
-   /* public static Statistics getCollectionStatistics(Filter filter) {
-        Distribution sizeDistribution = PropertyController.getDistribution("size", filter);
-        final PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        Property size = persistence.getCache().getProperty("size");
-        NumericStatistics statistics = persistence.getNumericStatistics(size, filter);
-
-        Statistics stats = new Statistics();
-        stats.setAvg(sizeDistribution.getStatistics().get("average").toString());
-        stats.setCount(sizeDistribution.getStatistics().get("count").toString());
-        stats.setMax(sizeDistribution.getStatistics().get("max").toString());
-        stats.setMin(sizeDistribution.getStatistics().get("min").toString());
-        stats.setSd(sizeDistribution.getStatistics().get("sd").toString());
-        stats.setSize(sizeDistribution.getStatistics().get("sum").toString());
-        stats.setVar(sizeDistribution.getStatistics().get("var").toString());
-        return stats;
-    }*/
 
     public static Filter getFilterFromQuery(Map<String, String[]> query) {
         Filter filter = new Filter();
@@ -195,33 +182,15 @@ public class Filters extends Controller {
     }
 
     public static void setFilterFromSession(Filter filter) {
+        List<String> toPrint=new ArrayList<String>();
+        for (FilterCondition fc: filter.getConditions()){
+            toPrint.add(fc.getField()+" : "+fc.getValue());
+        }
+        Logger.debug("Setting the filter session to: " + toPrint.toString());
 
         String session = session(WebAppConstants.SESSION_ID);
         SessionFilters.addFilter(session, filter);
     }
-
-    /*private static PropertyValuesFilter getNumericValues(String c, Property p, String alg, String width) {
-        Filter filter = FilterController.getFilterFromSession();
-        Graph graph = null;
-
-        if (alg.equals("fixed")) {
-            int w = Integer.parseInt(width);
-            graph = Graph.getFixedWidthHistogram(filter, p.getId(), w);
-        } else if (alg.equals("sqrt")) {
-            graph = Graph.getSquareRootHistogram(filter, p.getId());
-        } else if (alg.equals("sturge")) {
-            graph = Graph.getSturgesHistogramm(filter, p.getId());
-        }
-
-        graph.sort();
-
-        PropertyValuesFilter f = new PropertyValuesFilter();
-        f.setProperty(p.getId());
-        f.setType(p.getType());
-        f.setValues(graph.getKeys()); // this is not a mistake.
-
-        return f;
-    }*/
 
     public static Graph getGraph(String property) {
 

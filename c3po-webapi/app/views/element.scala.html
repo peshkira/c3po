@@ -35,10 +35,10 @@
                 //Create a list of filter conditions based on metadata records of the element:
                 var conditions = [];
                 for (var i in elem.metadata) {
-                    var property = elem.metadata[i].property.key;
-                    var value = elem.metadata[i].value;
+                    var p = elem.metadata[i].property.key;
+                    var v = elem.metadata[i].value;
                     if (value !=null)
-                    conditions.push({"property": property, "value": value});
+                    conditions.push({"property": p, "value": v});
                 }
 
 
@@ -70,8 +70,8 @@
                     row.push("condition");
                     dataRule.push(row);
                 }
-                var row = [property, value, "action"];
-                dataRule.push(row);
+                var actionRow = [property, value, "action"];
+                dataRule.push(actionRow);
 
                 // popup.children('.popupconfig').append('<table id="ruleTable" class="display" width="80%"></table>');//'<input id="mail" type="text" placeholder="Your Email" /><br/>');
 

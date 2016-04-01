@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,6 +111,7 @@ public abstract class AbstractAdaptor implements Runnable {
 
 
     private boolean ready;
+
     public abstract String getAdaptorPrefix();
 
     /**
@@ -167,7 +169,7 @@ public abstract class AbstractAdaptor implements Runnable {
      */
     public final void setRules( List<ProcessingRule> rules ) {
         if ( rules != null && this.rules == null ) {
-            this.rules = rules;
+            this.rules=Collections.synchronizedList(rules);
         }
     }
 
@@ -215,12 +217,12 @@ public abstract class AbstractAdaptor implements Runnable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        while (!(metadataStreamQueue.isEmpty() ))//&& !gatherer.isReady())) //TODO: check this commented gatherer.
+        while (!(metadataStreamQueue.isEmpty() ))// && !gatherer.isReady()) //TODO: check this commented gatherer.
         {
             try {
                 process(metadataStreamQueue.poll(2, TimeUnit.SECONDS));
             } catch ( Exception e ) {
-                LOG.error("Adaptor stopped unexpectedly {}", Thread.currentThread().getName());
+                //LOG.error("Adaptor stopped unexpectedly {}", Thread.currentThread().getName());
                 e.printStackTrace();
             }
         }
@@ -429,7 +431,7 @@ public abstract class AbstractAdaptor implements Runnable {
      * @return the list of rules.
      */
     private final List<ProcessingRule> getRules() {
-        if ( this.rules != null ) {
+        /*if ( this.rules != null ) {
 
             Collections.sort( this.rules, new Comparator<ProcessingRule>() {
 
@@ -453,7 +455,7 @@ public abstract class AbstractAdaptor implements Runnable {
 
             } );
 
-        }
+        }*/
 
         return Collections.unmodifiableList( rules );
     }
