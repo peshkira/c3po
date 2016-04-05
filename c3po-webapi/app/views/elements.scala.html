@@ -2,42 +2,52 @@
 @import helper._
 
 @scripts = {
-<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.multiselect.min.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-ui-1.8.21.min.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/jquery.multiselect.css")">
+
+    <script type="text/javascript" src="/assets/javascripts/jquery.multiselect.min.js"></script>
+    <script type="text/javascript">
+
+            $(function(){
+
+                function url_query( query, dflt ) {
+                    query = query.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+                    var expr = "[\\?&]"+query+"=([^&#]*)";
+                    var regex = new RegExp( expr );
+                    var results = regex.exec( window.location.href );
+                    if( results !== null ) {
+                        return results[1];
+                        return decodeURIComponent(results[1].replace(/\+/g, " "));
+                    } else {
+                        return dflt;
+                    }
+                }
+
+                var c_offset = url_query("offset", 0);
+                var c_batch = url_query("batch", 25);
+
+                $('#prev').click(function() {
+                    var diff = parseInt(c_offset) - c_batch;
+                    var offset = (diff > 0) ? diff : 0;
+                    window.location.search = 'offset='+offset;
+                });
+
+                $('#next').click(function(){
+                    window.location.search = 'offset='+ (parseInt(c_offset) + parseInt(c_batch));
+                });
+            });
+    </script>
+
 }
 
+
 @main("c3po - objects", collections, scripts){
-<script type="text/javascript">
 
-       $(function(){
-
-           function url_query( query, dflt ) {
-               query = query.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-               var expr = "[\\?&]"+query+"=([^&#]*)";
-               var regex = new RegExp( expr );
-               var results = regex.exec( window.location.href );
-               if( results !== null ) {
-                   return results[1];
-                   return decodeURIComponent(results[1].replace(/\+/g, " "));
-               } else {
-                   return dflt;
-               }
-           }
-            
-            var c_offset = url_query("offset", 0);
-            var c_batch = url_query("batch", 25);
-           
-            $('#prev').click(function() {
-                var diff = parseInt(c_offset) - c_batch;
-                var offset = (diff > 0) ? diff : 0;
-                window.location.search = 'offset='+offset;
-            });   
-
-            $('#next').click(function(){
-                window.location.search = 'offset='+ (parseInt(c_offset) + parseInt(c_batch));
-              });   
-       });
-</script>  
-  
   @if(elements != null) {
      <div id="objects" class="content">     
      <h2>Objects</h2>

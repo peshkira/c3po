@@ -1,7 +1,7 @@
 @(collections: List[String], element: com.petpet.c3po.api.model.Element)
 
 @scripts = {
-    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css" type="text/css">
+    <link rel="stylesheet" href="/assets/stylesheets/table.css" type="text/css">
     <script src="http://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
     <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
     <script>
@@ -14,11 +14,12 @@
 
                 //Adding necessary elements to the html:
                 popup.children('.popupreason').html('Do you want to create a new conflict resolution rule?');
+                var ruleName=$('<input type="text" id="ruleName" value="Type in the rule name">').appendTo(popupconfig);
                 var table = $('<table id="ruleTable" class="display" width="80%"></table>').appendTo(popupconfig);
                 var dropDown = $('<select id="dropDown"></select>').appendTo(popupconfig);
-                var addButton = $('<a name="addCondition" class="green_button" href="javascript:void(0);">Add condition</a>').appendTo(popupconfig);
-                var deleteButton = $('<a name="deleteCondition" class="green_button" href="javascript:void(0);">Delete selected condition</a>').appendTo(popupconfig);
-                var submitButton = $('<a class="green_button" href="#">Create rule</a>').appendTo(popupconfig);
+                var addButton = $('<a name="addCondition" class="grey_button" href="javascript:void(0);">Add condition</a>').appendTo(popupconfig);
+                var deleteButton = $('<a name="deleteCondition" class="grey_button" href="javascript:void(0);">Delete selected condition</a>').appendTo(popupconfig);
+                var submitButton = $('<a class="green_button" href="javascript:void(0);">Create rule</a>').appendTo(popupconfig);
 
                 //Get element as json:
                 var elem = "";
@@ -118,6 +119,36 @@
                         if (p!=null && v!=null)
                             table.row.add([p, v, "condition"]).draw(true);
                     }
+                });
+
+                submitButton.on('click', function(){
+
+                    var payLoad= [];
+                    table.rows().every( function () {
+                        var d = this.data();
+                        payLoad.push(d);
+                    } );
+                    payLoad.push([ruleName.val(),ruleName.val(), "name"]);
+
+                    $.ajax ({
+                        type:     'POST',
+                        url:      '/c3po/conflicts',
+                        dataType: 'json',
+                        data: JSON.stringify(payLoad),
+                        contentType: "application/json; charset=utf-8",
+                        async: false,
+                        success:  function (oData) {
+                            hideValueOptionDialog(false);
+                        },
+                        error:    function (oData) {
+                            $('.popupreason').fadeOut('fast', function() {
+                                $(this).css({'color': 'red'}).html('An error occurred while sending the email! Error message is: <br />' + oData.responseText).fadeIn('slow');
+                            })
+                        }
+                    });
+
+
+
                 });
 
             }

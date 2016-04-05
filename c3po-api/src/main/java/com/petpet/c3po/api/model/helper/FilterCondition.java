@@ -15,6 +15,8 @@
  ******************************************************************************/
 package com.petpet.c3po.api.model.helper;
 
+import java.io.Serializable;
+
 /**
  * Encapsulates a single filter condition of a filter. Example: Field is the
  * mimetype property and value is a string "application/pdf", then this
@@ -25,7 +27,7 @@ package com.petpet.c3po.api.model.helper;
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
-public class FilterCondition {
+public class FilterCondition implements Serializable {
 
   /**
    * The property of this condition.

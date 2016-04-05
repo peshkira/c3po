@@ -4,13 +4,25 @@ package com.petpet.c3po.analysis.conflictResolution;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.Filter;
 
+import java.io.Serializable;
+
 /**
  * Created by artur on 31/03/16.
  */
-public class Rule {
+public class Rule implements Serializable {
     public Filter getFilter() {
         return filter;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String name;
 
     public void setFilter(Filter filter) {
         this.filter = filter;
