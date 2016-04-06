@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.petpet.c3po.analysis.ConflictResolutionProcessor;
 import com.petpet.c3po.analysis.conflictResolution.Rule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
@@ -9,6 +10,7 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.utils.Configurator;
+import org.apache.commons.digester3.Rules;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Result;
@@ -35,11 +37,11 @@ public class Conflicts {
     }
 
     public static Result getRules() {
-        loadRules();
+        if (rules.isEmpty())
+            loadRules();
         JsonNode jsonNode = Json.toJson(rules);
-        return ok(play.libs.Json.toJson(rules));
+        return ok(jsonNode);
     }
-
 
     public static Result createRule() {
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
@@ -71,18 +73,16 @@ public class Conflicts {
             }
         }
         rule.setElement(ruleElement);
-        rule.setFilter(ruleFilter);
+        rule.setFilter(Filters.normalize(ruleFilter));
         rules.add(rule);
         System.out.println("data = " + json);
         saveRules();
-        loadRules();
         return ok();
     }
 
     public static Result deleteRule() {
         return play.mvc.Results.TODO;
     }
-
     public static void saveRules(){
         Logger.debug("Saving the rules");
         String path = System.getProperty( "user.home" ) + File.separator + ".C3POConflictRules";
@@ -125,7 +125,32 @@ public class Conflicts {
         }
         rules=tmpRules;
         Logger.debug("The rules are loaded");
+    }
 
+    public static Result resolve() {
+        ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        List<Rule> tmpRules=new ArrayList<Rule>();
+        JsonNode json = request().body().asJson();
+        Iterator<JsonNode> jsonNodeIterator = json.elements();
+        while (jsonNodeIterator.hasNext()){
+            JsonNode next = jsonNodeIterator.next();
+            String ruleName = next.asText();
+            Rule rule= getRuleByName(ruleName);
+            if (rule!=null)
+                rule.setFilter(Filters.normalize(rule.getFilter()));
+                tmpRules.add(rule);
 
+        }
+        crp.setRules(tmpRules);
+        long resolve = crp.resolve();
+        return ok(String.valueOf(resolve) + " conflicts were resolved");
+    }
+
+    static Rule getRuleByName(String ruleName){
+        for(Rule rule: rules){
+            if (rule.getName().equals(ruleName))
+                return rule;
+        }
+        return null;
     }
 }

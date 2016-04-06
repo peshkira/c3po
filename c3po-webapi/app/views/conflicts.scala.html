@@ -46,43 +46,44 @@
                         ]
                     });
 
-
-                    table.on('click', 'td.details-control', function () {
-                        var tr = $(this).closest('tr');
-                        var row = table.row( tr );
-
-                        if ( row.child.isShown() ) {
-                            // This row is already open - close it
-                            row.child.hide();
-                            tr.removeClass('shown');
-                        }
-                        else {
-                            // Open this row
-                            row.child( format(row.data()) ).show();
-                            tr.addClass('shown');
-                        }
-                    } );
-
-                    table.on( 'click', 'tr', function () {
-                        $(this).toggleClass('selected');
-                    } );
-
-
                 }
             });
+            table.on('click', 'td.details-control', function () {
+                var tr = $(this).closest('tr');
+                var row = table.row( tr );
 
-
-
-
-            /*deleteButton.on('click', function () {
-                var rows = table.rows('.selected').data();
-                if (rows) {
-                    var row = rows[0];
-                    if (row[2] && row[2] == "condition")
-                        table.row('.selected').remove().draw(false);
+                if ( row.child.isShown() ) {
+                    // This row is already open - close it
+                    row.child.hide();
+                    tr.removeClass('shown');
                 }
+                else {
+                    // Open this row
+                    row.child( format(row.data()) ).show();
+                    tr.addClass('shown');
+                }
+            } );
+            table.on( 'click', 'tr', function () {
+                $(this).toggleClass('selected');
+            } );
+            $('#runButton').on('click', function () {
+                var ruleNames= $.map(table.rows('.selected').data(), function(item){
+                    return item.name;
+                });
+                $.ajax({
+                    type: 'POST',
+                    url: '/c3po/conflicts/resolve',
+                    data: JSON.stringify(ruleNames),
+                    contentType: "application/json; charset=utf-8",
+                    async: false,
+                    success: function (oData) {
+                        $('#conflictResolutionResults').html(oData);
+                    }
+                });
             });
-*/
+            $('#deleteButton').on('click', function () {
+                var rows = table.rows('.selected').remove().draw();
+            });
         })
 
         function format ( d ) {
@@ -121,11 +122,12 @@
         <table id="ruleTable" class="display" width="80%"></table>
 
         <div name="runSection">
-            <a  name="runButton" class="green_button" href="javascript:void(0);">Execute conflict resolution with selected rules</a>
+            <div id="conflictResolutionResults"></div>
+            <a  id="runButton" class="green_button" href="javascript:void(0);">Execute conflict resolution with selected rules</a>
+
         </div>
-        <div name="deleteSection">
-            <a  name="deleteButton" class="grey_button" href="javascript:void(0);">Delete rules</a>
-        </div>
+            <a  id="deleteButton" class="green_button" href="javascript:void(0);">Delete rules</a>
+
 
     </div>
 }

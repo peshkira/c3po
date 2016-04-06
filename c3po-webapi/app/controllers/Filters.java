@@ -243,13 +243,16 @@ public class Filters extends Controller {
             Property p = persistence.getCache().getProperty(property);
             if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
                 if (value == null || value.toString().equals("Unknown"))
-                    result.addFilterCondition(new FilterCondition(property, value));
+                    result.addFilterCondition(new FilterCondition(property, null));
                 else {
                     BetweenFilterCondition bfc = getBetweenFilterCondition(value.toString(), property);
                     result.addFilterCondition(bfc);
                 }
             } else {
-                result.addFilterCondition(new FilterCondition(property, value));
+                if (value == null || value.toString().equals("Unknown"))
+                    result.addFilterCondition(new FilterCondition(property, null));
+                else
+                    result.addFilterCondition(new FilterCondition(property, value));
             }
         }
         return result;

@@ -510,7 +510,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     } else {
       // process
-      DBObject object =  (DBObject) cursor.next().get( "results" );
+      DBObject object =  this.histogramMapReduce( key, p, filter );//(DBObject) cursor.next().get( "results" );
       histogram = this.parseHistogramResults( object );
     }
 
@@ -554,7 +554,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     } else {
 
-      DBObject next = (DBObject) cursor.next().get( "value" );
+      DBObject next = this.numericMapReduce( p.getKey(), filter );//(DBObject) cursor.next().get( "value" );
       result = this.parseNumericStatistics( next );
 
     }
@@ -770,13 +770,13 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     Filter filter = (Filter) this.dbCache.getObject( LAST_FILTER );
     DBObject result = null;
 
-    if ( filter != null && filter.equals( f ) ) {
-     result = (DBObject) this.dbCache.getObject( LAST_FILTER_QUERY );
-    } else {
+    //if ( filter != null && filter.equals( f ) ) {
+    // result = (DBObject) this.dbCache.getObject( LAST_FILTER_QUERY );
+    //} else {
       result = this.filterSerializer.serialize( f );
-      this.dbCache.put( LAST_FILTER, f );
-      this.dbCache.put( LAST_FILTER_QUERY, result );
-    }
+    //  this.dbCache.put( LAST_FILTER, f );
+    //  this.dbCache.put( LAST_FILTER_QUERY, result );
+    //}
 
     return result;
 
