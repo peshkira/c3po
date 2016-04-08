@@ -38,11 +38,13 @@
                 for (var i in elem.metadata) {
                     var p = elem.metadata[i].property.key;
                     var v = elem.metadata[i].value;
-                    if (value !=null)
-                    conditions.push({"property": p, "value": v});
+                    if (v !=null)
+                        conditions.push({"property": p, "value": v});
+                    else if (elem.metadata[i].status=="CONFLICT"){
+                        v="CONFLICT";
+                        conditions.push({"property": p, "value": v});
+                    }
                 }
-
-
 
                 //Add options to dropdown list, based on properties of the element:
                 dropDown.append(new Option("Select a new condition to add"));
