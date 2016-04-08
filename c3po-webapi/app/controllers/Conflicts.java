@@ -10,22 +10,16 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.utils.Configurator;
-import org.apache.commons.digester3.Rules;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Result;
 import views.html.conflicts;
-import views.html.index;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import static play.mvc.Controller.request;
 import static play.mvc.Results.ok;
-
-
 /**
  * Created by artur on 01/04/16.
  */
@@ -73,7 +67,7 @@ public class Conflicts {
             }
         }
         rule.setElement(ruleElement);
-        rule.setFilter(Filters.normalize(ruleFilter));
+        rule.setFilter(ruleFilter);
         rules.add(rule);
         System.out.println("data = " + json);
         saveRules();
@@ -106,6 +100,8 @@ public class Conflicts {
         List<Rule> tmpRules = null;
         String path = System.getProperty( "user.home" ) + File.separator + ".C3POConflictRules";
         File file = new File(path);
+        if (!file.exists())
+            return;
         try
         {
             FileInputStream fileIn = new FileInputStream(file);
@@ -123,7 +119,7 @@ public class Conflicts {
             c.printStackTrace();
             return;
         }
-        rules=tmpRules;
+        rules.addAll(tmpRules);
         Logger.debug("The rules are loaded");
     }
 
@@ -139,7 +135,6 @@ public class Conflicts {
             if (rule!=null)
                 rule.setFilter(Filters.normalize(rule.getFilter()));
                 tmpRules.add(rule);
-
         }
         crp.setRules(tmpRules);
         long resolve = crp.resolve();
