@@ -57,7 +57,7 @@ $(document).ready(function(){
 	//###############################
 
 	// add click event on the collection chooser html select element
-	$("#collections select").change(function() {
+	$("#collectionSelect").change(function() {
 		var collection = $(this).val();
 		$.ajax ({
 			type:     'POST',

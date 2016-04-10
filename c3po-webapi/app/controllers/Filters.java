@@ -29,6 +29,7 @@ import common.WebAppConstants;
 import helpers.Graph;
 import helpers.PropertyValuesFilter;
 import helpers.SessionFilters;
+import helpers.StringParser;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -58,49 +59,49 @@ public class Filters extends Controller {
             }
             Object propertyValue = null;
             Property p = persistence.getCache().getProperty(propertyName);
-            if (p.getType().equals(PropertyType.INTEGER.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else {
+            PropertyType pType=PropertyType.valueOf(p.getType());
+            switch (pType){
+                case INTEGER:
                     try {
                         propertyValue = Integer.parseInt(propertyValueString);
                     } catch (NumberFormatException ex) {
-                        propertyValue = propertyValueString;
+                        propertyValue = propertyValueString.equals("Unknown")?null:propertyValueString;
                     }
-                }
-            } else if (p.getType().equals(PropertyType.FLOAT.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else {
+                    break;
+                case FLOAT:
                     try {
                         propertyValue = Double.parseDouble(propertyValueString);
                     } catch (NumberFormatException ex) {
-                        propertyValue = propertyValueString;
+                        propertyValue = propertyValueString.equals("Unknown")?null:propertyValueString;
                     }
-                }
-            } else if (p.getType().equals(PropertyType.BOOL.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else if (propertyValueString.equals("CONFLICT"))
-                    propertyValue = "CONFLICT";
-                else
-                    propertyValue = Boolean.parseBoolean(propertyValueString);
-            } else if (p.getType().equals(PropertyType.STRING.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else
-                    propertyValue = propertyValueString;
-            } else if (p.getType().equals(PropertyType.DATE.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else {
-                    DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+                    break;
+                case BOOL:
                     try {
-                        propertyValue = dateFormat.parse(propertyValueString);
-                    } catch (ParseException e) {
-                        propertyValue = propertyValueString;
+                        propertyValue = Double.parseDouble(propertyValueString);
+                    } catch (Exception ex){
+                        if (propertyValueString.equals("Unknown"))
+                            propertyValue = null;
+                        else if (propertyValueString.equals("CONFLICT"))
+                            propertyValue = "CONFLICT";
                     }
-                }
+                    break;
+                case STRING:
+                    propertyValue = propertyValueString;
+                    if (propertyValueString.equals("Unknown"))
+                        propertyValue = null;
+                    break;
+                case DATE:
+                    if (propertyValueString.equals("Unknown"))
+                        propertyValue = null;
+                    else {
+                        DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+                        try {
+                            propertyValue = dateFormat.parse(propertyValueString);
+                        } catch (ParseException e) {
+                            propertyValue = propertyValueString;
+                        }
+                    }
+                    break;
             }
 
             List<FilterCondition> fcs = filter.getConditions();
@@ -142,19 +143,10 @@ public class Filters extends Controller {
                 v = obj.toString();
             }
             PropertyValuesFilter f = null;
-            if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
-                if (v.contains(" \\|")) {
-                    String[] strings = v.split(" \\|");
-                    if (strings[1].contains("fixed")) {
-                        String width = strings[1].replace("fixed", "");
-                        f = Properties.getNumericValues(p.getKey(), null, "fixed", width, v);
-                    } else
-                        f = Properties.getNumericValues(p.getKey(), null, strings[1], null, v);
-                } else
-                    f = Properties.getNominalValues(p.getKey(), null, v);
-            } else
-                f = Properties.getNominalValues(p.getKey(), null, v);
-            result.add(f);
+            String distributionType = StringParser.getDistributionType(v);
+            String distributionTypeWidth = StringParser.getDistributionTypeWidth(v);
+            PropertyValuesFilter pvf = Properties.getValues(p.getKey(), distributionType, distributionTypeWidth, v);
+            result.add(pvf);
         }
         return ok(play.libs.Json.toJson(result));
     }
@@ -183,11 +175,17 @@ public class Filters extends Controller {
 
     public static void setFilterFromSession(Filter filter) {
         List<String> toPrint=new ArrayList<String>();
+        String collectionName=null;
         for (FilterCondition fc: filter.getConditions()){
             toPrint.add(fc.getField()+" : "+fc.getValue());
+            if (fc.getField().equals("collection"))
+                collectionName=fc.getValue().toString();
         }
         Logger.debug("Setting the filter session to: " + toPrint.toString());
 
+        if (collectionName==null)
+            collectionName="all";
+        session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, collectionName);
         String session = session(WebAppConstants.SESSION_ID);
         SessionFilters.addFilter(session, filter);
     }
@@ -196,10 +194,7 @@ public class Filters extends Controller {
 
         DynamicForm form = play.data.Form.form().bindFromRequest();
         String alg = form.get("alg");
-        //TODO: DEBUG THIS PART!!
         return Graph.getGraph(Filters.getFilterFromSession(), property);
-
-
     }
 
     public static Result removeCondition(String property) {
@@ -212,10 +207,6 @@ public class Filters extends Controller {
             }
         }
         Filters.setFilterFromSession(filter);
-        if (property.equals("collection")) {
-            session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, "none");
-
-        }
         return ok();
     }
 

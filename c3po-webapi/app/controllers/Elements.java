@@ -51,10 +51,7 @@ public class Elements extends Controller {
 	public static Result index() {
 		Logger.debug("Received an index call in elements");
 		List<String> names = Properties.getCollectionNames();
-		String collection = Properties.getCollection();
-		if (collection == null) {
-			return ok(elements.render(names, null));
-		}
+
 		int batch = getQueryParameter("batch", 25);
 		int offset = getQueryParameter("offset", 0);
 
@@ -82,8 +79,7 @@ public class Elements extends Controller {
 
 		}
 
-		//List<Element> result = listElements(collection, batch, offset);
-		return ok(elements.render(names, result));//listElements(collection, batch, offset);
+		return ok(elements.render(names, result));
 
 	}
 

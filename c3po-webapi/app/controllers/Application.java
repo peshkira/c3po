@@ -54,6 +54,8 @@ public class Application extends Controller {
 	public static Result getSetting(String key) {
 		Logger.debug("Received a getSetting call");
 		String value = session(key);
+		if (value==null)
+			value ="all";
 		return ok(play.libs.Json.toJson(value));
 	}
 

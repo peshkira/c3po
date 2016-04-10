@@ -1,5 +1,7 @@
 package helpers;
 
+import com.petpet.c3po.api.model.helper.Filter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,6 +14,16 @@ import java.util.Map;
 public class Distribution {
 	private String property;
 	private String type;
+
+	public Filter getFilter() {
+		return filter;
+	}
+
+	public void setFilter(Filter filter) {
+		this.filter = filter;
+	}
+
+	private Filter filter;
 	private Map<String, Long> propertyDistribution;
 	private Map<String, Double> statistics;
 	public Distribution(){

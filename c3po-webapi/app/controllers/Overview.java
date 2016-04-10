@@ -18,6 +18,7 @@ package controllers;
 import helpers.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +46,15 @@ public class Overview extends Controller {
         Filter filter = Filters.getFilterFromSession();
         TemplatesLoader.setProps(filter);
         for (String property : Application.PROPS) {
-            Distribution d = Properties.getDistribution(property, filter, null, null);
-            Graph g = new Graph(d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts());
+            Distribution d = Properties.getDistribution(property, filter);
+            Graph g = Properties.interpretDistribution(d, null, null);
             g.cutLongTail();
             graphs.add(g);
+            //addToAllGraphs(g);
+
+
         }
+       // if (allGraphs.getGraphs().size()==0)
         allGraphs = new GraphData(graphs);
         Map<String, Double> statistics = Properties.getStatistics("size");
         StatisticsToPrint stats = new StatisticsToPrint();
@@ -62,6 +67,21 @@ public class Overview extends Controller {
         stats.setVar(Properties.round(statistics.get("var") / 1024.0 / 1024.0, 3) + " MB^2");
 
         return ok(overview.render(names, allGraphs, stats, TemplatesLoader.getCurrentTemplate()));
+    }
+
+    public static void addToAllGraphs(Graph g){
+        List<Graph> graphs = allGraphs.getGraphs();
+        Iterator<Graph> iterator = graphs.iterator();
+        while (iterator.hasNext()){
+            Graph next = iterator.next();
+            if (next.getProperty().equals(g.getProperty())){
+                if (next.getFilter()!=null && g.getFilter()!=null && !next.getFilter().equals(g.getFilter())){
+                    next=g;
+                    return;
+                }
+            }
+        }
+        graphs.add(g);
     }
 
     public static Result addGraph(String property) {
@@ -78,10 +98,9 @@ public class Overview extends Controller {
         String width = form.get("width");
         if (width!=null && width.equals("-1"))
             width=null;
-
         Filter filter = Filters.getFilterFromSession();
-        Distribution d = Properties.getDistribution(property, filter, alg, width);
-        Graph g = new Graph(d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts());
+        Distribution d = Properties.getDistribution(property, filter);
+        Graph g = Properties.interpretDistribution(d,alg,width);
         g.cutLongTail();
         allGraphs.getGraphs().add(g);
         TemplatesLoader.addUserDefinedGraph(property);

@@ -8,6 +8,7 @@ import com.petpet.c3po.api.model.helper.*;
 import com.petpet.c3po.utils.Configurator;
 import common.WebAppConstants;
 import helpers.Distribution;
+import helpers.Graph;
 import helpers.PropertyValuesFilter;
 import helpers.Statistics;
 import play.Logger;
@@ -17,7 +18,12 @@ import play.mvc.Result;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static helpers.StringParser.DistibutionRangeValueToString;
 
 public class Properties extends Controller {
 
@@ -77,24 +83,94 @@ public class Properties extends Controller {
         return badRequest("The accept header is not supported");
     }
 
-    public static Distribution getDistribution(String property, Filter filter, String algorithm, String width) {
-        Logger.debug("Calculating distrubution for the property '" + property + "'");
-        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        Distribution result = null;
-        if (property == null)
+    public static Graph interpretDistribution(Distribution d, String algorithm, String width){
+        Graph result =null;
+        if (d==null || d.getProperty()==null)
             return result;
-        Property p = persistence.getCache().getProperty(property);
-        if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
-            if (algorithm == null)
-                algorithm = "sqrt";
-            result = getBinDistribution(property, filter, algorithm, width);
-        } else {
-            result = getNonimalDistribution(property, filter);
+        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        Property p = persistence.getCache().getProperty(d.getProperty());
+        PropertyType pType=PropertyType.valueOf(p.getType());
+        switch (pType){
+            case INTEGER:
+            case FLOAT:
+                Distribution mergedDistribution = processNumericDistribution(d, algorithm, width);
+                result = new Graph(mergedDistribution.getProperty(), mergedDistribution.getPropertyValues(), mergedDistribution.getPropertyValueCounts());
+
+                break;
+            case DATE:
+            case BOOL:
+            case STRING:
+                result = new Graph(d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts());
+                break;
         }
         return result;
     }
 
-    public static Distribution getNonimalDistribution(String property, Filter filter) {
+    private static Distribution processNumericDistribution(Distribution d, String algorithm, String width) {
+        Double min = getMin(d.getPropertyValues());
+        Double max = getMax(d.getPropertyValues());
+        Double count = (double) d.getPropertyValues().size();
+        int bin_width = 0;
+        int bins_count = 0;
+        if (width == null)
+            width = "";
+        if (algorithm == null)
+            algorithm = "sqrt";
+
+        if (algorithm.equals("fixed")) {
+            bin_width = Integer.parseInt(width);
+            bins_count = (int) ((max - min) / bin_width);
+        } else if (algorithm.equals("sqrt")) {
+            bins_count = (int) (Math.sqrt(count));
+            bin_width = (int) ((max - min) / bins_count);
+        } else if (algorithm.equals("sturge")) {
+            bins_count = (int) (Math.log(count) / Math.log(2) + 1);
+            bin_width = (int) ((max - min) / bins_count);
+        }
+        bins_count++;
+        if (min.equals(max)){  //TODO: fix this case
+            bins_count=1;
+            bin_width= max.intValue();
+        }
+        long[] binDistribution = new long[bins_count];
+        Map<String, Long> propertyDistribution = d.getPropertyDistribution();
+        long conflictedCount = 0;
+        long unknownCount = 0;
+        for (Map.Entry<String, Long> entry : propertyDistribution.entrySet()) {
+            String key = entry.getKey();
+            Long propertyValueCount = entry.getValue();
+            if (key.equals("Unknown")) {
+                unknownCount = propertyValueCount;
+            } else if (key.equals("CONFLICT")) {
+                conflictedCount = propertyValueCount;
+            } else {
+                double propertyValue = Double.parseDouble(key);
+                int bin_id=0;
+                if (bins_count!=1)
+                    bin_id = (int) (propertyValue / bin_width);
+                binDistribution[bin_id] += propertyValueCount;
+            }
+        }
+        Map<String, Long> propertyDistributionResult = new HashMap<String, Long>();
+        for (int i = 0; i < bins_count; i++) {
+            String leftValue = String.valueOf(i * bin_width);
+            String rightValue = String.valueOf((i + 1) * bin_width);
+            String id = DistibutionRangeValueToString(leftValue, rightValue, algorithm, width);
+            propertyDistributionResult.put(id, binDistribution[i]);
+        }
+        if (conflictedCount > 0)
+            propertyDistributionResult.put("CONFLICT", conflictedCount);
+        if (unknownCount > 0)
+            propertyDistributionResult.put("Unknown", unknownCount);
+
+        Distribution mergedDistribution = new Distribution();
+        mergedDistribution.setProperty(d.getProperty());
+        mergedDistribution.setType(d.getType());
+        mergedDistribution.setPropertyDistribution(propertyDistributionResult);
+        return mergedDistribution;
+    }
+
+    public static Distribution getDistribution(String property, Filter filter) {
         Distribution result = new Distribution();
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         Property p = persistence.getCache().getProperty(property);
@@ -105,14 +181,10 @@ public class Properties extends Controller {
         result.setPropertyDistribution(histogram);
         result.setProperty(p.getKey());
         result.setType(p.getType());
-        //getStatistics(filter, property);
+        result.setFilter(filter);
         return result;
     }
 
-    public static Distribution getNominalDistribution(String property) {
-        Filter f = Filters.getFilterFromSession();
-        return Properties.getNonimalDistribution(property, f);
-    }
 
     public static Map<String, Double> getStatistics(Filter filter, String property) {
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
@@ -129,42 +201,10 @@ public class Properties extends Controller {
             result.put("var", ns.getVariance());
             result.put("count", (double) ns.getCount());
             result.put("sum", ns.getSum());
-
-            //StatsFromHistogram(property, result); // This is the second way to calculate statistics. We find a distribution for numerical values and then calculate the metrics.
-        }
+   }
         return result;
     }
 
-    private static void StatsFromHistogram(String property, Map<String, Double> result) {
-        Distribution distribution = Properties.getNominalDistribution(property);
-
-        Map<String, Long> propertyDistribution = distribution.getPropertyDistribution();
-        long conflictedCount = 0;
-        long unknownCount = 0;
-        List<Double> values = new ArrayList<Double>();
-        for (Map.Entry<String, Long> entry : propertyDistribution.entrySet()) {
-            String key = entry.getKey();
-            Long propertyValueCount = entry.getValue();
-            if (key.equals("Unknown")) {
-                unknownCount = propertyValueCount;
-            } else if (key.equals("CONFLICT")) {
-                conflictedCount = propertyValueCount;
-            } else {
-                double propertyValue = Double.parseDouble(key);
-                for (long i = 0; i < propertyValueCount; i++)
-                    values.add(propertyValue);
-            }
-        }
-        Statistics stats = new Statistics(values);
-
-        result.put("average", stats.getMean());
-        result.put("min", stats.getMin());
-        result.put("max", stats.getMax());
-        result.put("sd", stats.getStdDev());
-        result.put("var", stats.getVariance());
-        result.put("count", stats.getCount());
-        result.put("sum", stats.getSum());
-    }
 
     public static Map<String, Double> getStatistics(String property) {
         Filter f = Filters.getFilterFromSession();
@@ -227,12 +267,10 @@ public class Properties extends Controller {
         for (FilterCondition fc : fcs) {
             if (fc.getField().equals("collection")) {
                 fc.setValue(c);
-                session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
                 Filters.setFilterFromSession(f);
                 return ok("The collection was changed successfully");
             }
         }
-        session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, c);
         f.addFilterCondition(new FilterCondition("collection", c));
         Filters.setFilterFromSession(f);
         return ok("The collection was changed successfully");
@@ -255,50 +293,18 @@ public class Properties extends Controller {
         final String p = form.get("filter");
         final String a = form.get("alg");
         final String w = form.get("width");
-
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        Property property = persistence.getCache().getProperty(p);
-
-        PropertyValuesFilter f;
-        if (property.getType().equals(PropertyType.INTEGER.toString()) || property.getType().equals(PropertyType.FLOAT.toString())) {
-            f = getNumericValues(p, null, a, w, null); //TODO: Debug this!
-        } else {
-            f = getNominalValues(p, null, null);
-        }
+        PropertyValuesFilter f= getValues(p,a,w,null);
         return ok(play.libs.Json.toJson(f));
     }
 
-    public static PropertyValuesFilter getNominalValues(String property, Filter filter, String selectedValue) {
-        Logger.debug("get property values filter for property " + property);
-        if (property.equals("collection")) {
-            PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-            Property p = persistence.getCache().getProperty(property);
-            PropertyValuesFilter pvf = new PropertyValuesFilter();
-            pvf.setProperty(p.getKey());
-            pvf.setType(p.getType());
-            List<String> collections = getCollectionNames();
-            collections.remove(0);
-            pvf.setValues(collections);
-            pvf.setSelected(getCollection());
-            return pvf;
-        } else {
-            Distribution d = Properties.getNonimalDistribution(property, filter);
-            PropertyValuesFilter pvf = new PropertyValuesFilter();
-            pvf.setProperty(d.getProperty());
-            pvf.setType(d.getType());
-            pvf.setValues(d.getPropertyValues());
-            if (selectedValue != null)
-                pvf.setSelected(selectedValue);
-            return pvf;
-        }
-    }
-
-    public static PropertyValuesFilter getNumericValues(String property, Filter filter, String algorithm, String width, String selectedValue) {
-        Distribution mergedDistribution = Properties.getBinDistribution(property, filter, algorithm, width);
+    public static PropertyValuesFilter getValues(String property, String algorithm, String width, String selectedValue) {
+        Distribution d = Properties.getDistribution(property, null);
+        Graph graph = Properties.interpretDistribution(d, algorithm, width);
         PropertyValuesFilter result = new PropertyValuesFilter();
         result.setProperty(property);
-        result.setType(mergedDistribution.getType());
-        result.setValues(mergedDistribution.getPropertyValues());
+        result.setType(d.getType());
+        result.setValues(graph.getKeys());
         result.setSelected(selectedValue);
         if (selectedValue != null)
             result.setSelected(selectedValue);
@@ -306,61 +312,7 @@ public class Properties extends Controller {
     }
 
 
-    public static Distribution getBinDistribution(String propertyName, Filter filter, String algorithm, String width) {
-        Distribution d = getNonimalDistribution(propertyName, filter);
-        Double min = getMin(d.getPropertyValues());
-        Double max = getMax(d.getPropertyValues());
-        Double count = (double) d.getPropertyValues().size();
-        int bin_width = 0;
-        int bins_count = 0;
-        if (width == null)
-            width = "";
-        if (algorithm.equals("fixed")) {
-            bin_width = Integer.parseInt(width);
-            bins_count = (int) ((max - min) / bin_width);
-        } else if (algorithm.equals("sqrt")) {
-            bins_count = (int) (Math.sqrt(count));
-            bin_width = (int) ((max - min) / bins_count);
-        } else if (algorithm.equals("sturge")) {
-            bins_count = (int) (Math.log(count) / Math.log(2) + 1);
-            bin_width = (int) ((max - min) / bins_count);
-        }
-        bins_count++;
-        long[] binDistribution = new long[bins_count];
-        Map<String, Long> propertyDistribution = d.getPropertyDistribution();
-        long conflictedCount = 0;
-        long unknownCount = 0;
-        for (Map.Entry<String, Long> entry : propertyDistribution.entrySet()) {
-            String key = entry.getKey();
-            Long propertyValueCount = entry.getValue();
-            if (key.equals("Unknown")) {
-                unknownCount = propertyValueCount;
-            } else if (key.equals("CONFLICT")) {
-                conflictedCount = propertyValueCount;
-            } else {
-                double propertyValue = Double.parseDouble(key);
-                int bin_id = (int) (propertyValue / bin_width);
-                binDistribution[bin_id] += propertyValueCount;
-            }
-        }
-        Map<String, Long> propertyDistributionResult = new HashMap<String, Long>();
-        for (int i = 0; i < bins_count; i++) {
-            String leftValue = String.valueOf(i * bin_width);
-            String rightValue = String.valueOf((i + 1) * bin_width);
-            String id = leftValue + " - " + rightValue + " |" + algorithm + width;
-            propertyDistributionResult.put(id, binDistribution[i]);
-        }
-        if (conflictedCount > 0)
-            propertyDistributionResult.put("CONFLICT", conflictedCount);
-        if (unknownCount > 0)
-            propertyDistributionResult.put("Unknown", unknownCount);
 
-        Distribution mergedDistribution = new Distribution();
-        mergedDistribution.setProperty(propertyName);
-        mergedDistribution.setType(d.getType());
-        mergedDistribution.setPropertyDistribution(propertyDistributionResult);
-        return mergedDistribution;
-    }
 
     public static double getMin(List<String> values) {
         double result = Double.MAX_VALUE;

@@ -35,6 +35,16 @@ public class Graph {
   private List<String> keys;
   private List<String> values;
 
+  public Filter getFilter() {
+    return filter;
+  }
+
+  public void setFilter(Filter filter) {
+    this.filter = filter;
+  }
+
+  private Filter filter;
+
   public Graph() {
     this.setOptions(new HashMap<String, String>());
   }
@@ -182,8 +192,8 @@ public static Graph getGraph(Filter filter, String property) {
     if (width.equals("-1"))
         width=null;
    // Distribution d = PropertyController.getDistribution(property, filter, alg, width);
-	Distribution d= Properties.getDistribution(property, filter, alg, width );
-	Graph g = new Graph( d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts() );
+	Distribution d= Properties.getDistribution(property, filter);//, alg, width );
+	Graph g = Properties.interpretDistribution(d,alg,width);//new  Graph( d.getProperty(), d.getPropertyValues(), d.getPropertyValueCounts() );
 	return g;
 }
 

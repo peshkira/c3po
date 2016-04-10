@@ -21,12 +21,6 @@ public class SessionFilters {
 			addFilter(session, result);
 		}
 		
-		/*List<String> strings=new ArrayList<String>();
-		for( FilterCondition fc: result.getConditions()){
-			strings.add(fc.getField()+":"+fc.getValue().toString());
-		}
-		Logger.debug(session + " - "+strings.toString());*/
-		
 		return result;
 	};
 	public static void addFilter(String session,Filter filter){
