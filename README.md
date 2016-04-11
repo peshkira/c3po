@@ -24,8 +24,13 @@ At the moment there are no precompiled versions available.
 ### Install and Usage instructions
 
 !UPDATE! Now C3PO is based on Play Framework 2.3.0. Installation instructions of the web-app are available at [Play Framework Documentation](https://www.playframework.com/documentation/2.3.x/Production).
+Once Play Framework and MongoDB is installed, navigate to *c3po/c3po-webapi/* and execute
+```
+activator start
+```
+to run the app.
 
-For the usage instructions, please refer to [Usage Guide](https://github.com/peshkira/c3po/wiki/Usage-Guide).
+For the usage instructions, please refer to [Usage Guide](https://github.com/peshkira/c3po/wiki/Usage-Guide). Beware: the installation manual is outdated.
 
 ### Troubleshooting
 
