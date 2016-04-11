@@ -299,16 +299,29 @@ public class Properties extends Controller {
     }
 
     public static PropertyValuesFilter getValues(String property, String algorithm, String width, String selectedValue) {
-        Distribution d = Properties.getDistribution(property, null);
-        Graph graph = Properties.interpretDistribution(d, algorithm, width);
-        PropertyValuesFilter result = new PropertyValuesFilter();
-        result.setProperty(property);
-        result.setType(d.getType());
-        result.setValues(graph.getKeys());
-        result.setSelected(selectedValue);
-        if (selectedValue != null)
+        if (property.equals("collection")) {
+            PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+            Property p = persistence.getCache().getProperty(property);
+            PropertyValuesFilter pvf = new PropertyValuesFilter();
+            pvf.setProperty(p.getKey());
+            pvf.setType(p.getType());
+            List<String> collections = getCollectionNames();
+            collections.remove(0);
+            pvf.setValues(collections);
+            pvf.setSelected(getCollection());
+            return pvf;
+        } else {
+            Distribution d = Properties.getDistribution(property, null);
+            Graph graph = Properties.interpretDistribution(d, algorithm, width);
+            PropertyValuesFilter result = new PropertyValuesFilter();
+            result.setProperty(property);
+            result.setType(d.getType());
+            result.setValues(graph.getKeys());
             result.setSelected(selectedValue);
-        return result;
+            if (selectedValue != null)
+                result.setSelected(selectedValue);
+            return result;
+        }
     }
 
 

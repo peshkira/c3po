@@ -61,17 +61,7 @@ public class MongoFilterSerializer {
 
     if ( filter != null ) {
       List<FilterCondition> conditions = filter.getConditions();
-      /*Iterator<FilterCondition> iterator = conditions.iterator();
-      while(iterator.hasNext()){
-        FilterCondition fc = iterator.next();
-        String propertyName = fc.getField();
-        Property property = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(propertyName);
-        if (property.getType().equals(PropertyType.INTEGER.toString())){
-          BetweenFilterCondition bfc = getBetweenFilterCondition(fc.getValue().toString(), propertyName);
-          fc=bfc;
-        }
-      }
-*/
+
       Map<String, Integer> distinctFields = this.getDistinctFields( conditions );
       List<BasicDBObject> and = new ArrayList<BasicDBObject>();
 
@@ -79,8 +69,8 @@ public class MongoFilterSerializer {
 
         if ( distinctFields.get( field ) == 1 ) {
 
-          BasicDBObject val = getValueForField( field, conditions.toArray( new FilterCondition[conditions.size()] ) );
-          and.add( val );
+          List<BasicDBObject> andQuery = getAndQuery( field, conditions.toArray( new FilterCondition[conditions.size()] ) );
+          and.addAll( andQuery );
 
         } else {
 
@@ -144,8 +134,8 @@ public class MongoFilterSerializer {
 
     for ( FilterCondition fc : conditions ) {
       if ( field.equals( fc.getField() ) ) {
-        BasicDBObject val = this.getValueForField( field, fc );
-        or.add( val );
+        List<BasicDBObject> val = this.getAndQuery( field, fc );
+        or.addAll( val );
       }
     }
 
@@ -181,12 +171,12 @@ public class MongoFilterSerializer {
    *          the field to look at.
    * @return the value or null.
    */
-  private BasicDBObject getValueForField( String field, FilterCondition... conditions ) {
+  private List<BasicDBObject> getAndQuery( String field, FilterCondition... conditions ) {
     for ( FilterCondition fc : conditions ) {
       if ( fc.getField().equals( field ) ) {
 
         Object val = fc.getValue();
-        BasicDBObject res = null;
+        List<BasicDBObject> res = new ArrayList<BasicDBObject>();
         if ( fc instanceof BetweenFilterCondition ) {
           BetweenFilterCondition bfc = (BetweenFilterCondition) fc;
           String mappedField = this.mapFieldToProperty( field, new Object() );
@@ -196,11 +186,15 @@ public class MongoFilterSerializer {
           List<BasicDBObject> and = new ArrayList<BasicDBObject>();
           and.add( low );
           and.add( high );
-          res = new BasicDBObject( "$and", and );
+          res.add( new BasicDBObject( "$and", and ));
 
         } else {
-          val = (val == null) ? NOTEXISTS : val;
-          res = new BasicDBObject( this.mapFieldToProperty( field, val ), val );
+          if (val==null){
+            val=NOTEXISTS;
+            res.add( new BasicDBObject( this.mapFieldToProperty( field, val ), val ));
+            res.add( new BasicDBObject( field + ".values", val ));
+          } else
+            res.add( new BasicDBObject( this.mapFieldToProperty( field, val ), val ));
         }
 
         return res;
