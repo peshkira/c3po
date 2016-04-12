@@ -134,7 +134,6 @@
                },
               type:     'GET',
               url:      '/c3po/samples/get?alg=' + alg + '&size=' + size + '&props=' + options,
-              timeout:  5000,
               success:  function (oData) {
                 showSamples(oData);  
                 stopSpinner();
