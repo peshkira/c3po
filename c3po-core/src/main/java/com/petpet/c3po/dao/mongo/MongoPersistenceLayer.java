@@ -375,6 +375,21 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return new MongoIterator<T>( modelDeserializer, cursor );
   }
 
+  public <T extends Model> Iterator<T> findQ( Class<T> clazz, DBObject query ) {
+
+    DBCollection dbCollection = this.getCollection( clazz );
+    MongoModelDeserializer modelDeserializer = this.getDeserializer( clazz );
+
+    if ( dbCollection == null ) {
+      LOG.warn( "No collection found for clazz [{}]", clazz.getName() );
+      return new MongoIterator<T>( modelDeserializer, null );
+    }
+
+    DBCursor cursor = dbCollection.find( query );
+
+    return new MongoIterator<T>( modelDeserializer, cursor );
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -464,6 +479,14 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   public <T extends Model> long count( Class<T> clazz, Filter filter ) {
 
     DBObject query = this.getCachedFilter( filter );
+    DBCollection dbCollection = this.getCollection( clazz );
+    return dbCollection.count( query );
+
+  }
+
+
+  public <T extends Model> long count( Class<T> clazz, DBObject query ) {
+
     DBCollection dbCollection = this.getCollection( clazz );
     return dbCollection.count( query );
 
@@ -618,6 +641,17 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     }
 
     return (DBObject) cursor.next().get( "results" );
+  }
+
+  public List<BasicDBObject> mapReduce(String map, String reduce, DBObject query){
+
+    DBCollection elmnts = getCollection( Element.class );
+    MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
+
+    MapReduceOutput output = elmnts.mapReduce( cmd );
+    List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+    return results;
+
   }
 
   /**
