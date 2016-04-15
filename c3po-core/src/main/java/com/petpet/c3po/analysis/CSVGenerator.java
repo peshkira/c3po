@@ -164,22 +164,26 @@ public class CSVGenerator {
 
       // for all elements append the values in the correct column
       while ( matrix.hasNext() ) {
-        Element next = matrix.next();
+        try{
+          Element next = matrix.next();
 
-        // first the uid
-        writer.append( replace( next.getUid() ) + ", " );
+          // first the uid
+          writer.append( replace( next.getUid() ) + ", " );
 
-        // then the properties
-        for ( Property p : props ) {
-          List<MetadataRecord> value = next.removeMetadata( p.getId() );
+          // then the properties
+          for ( Property p : props ) {
+            List<MetadataRecord> value = next.removeMetadata( p.getId() );
 
-          assert value.size() == 0 || value.size() == 1;
+            assert value.size() == 0 || value.size() == 1;
 
-          final String val = this.getValueFromMetaDataRecord( value );
-          writer.append( val );
-          writer.append( ", " );
-        }
-        writer.append( "\n" );
+            final String val = this.getValueFromMetaDataRecord( value );
+            writer.append( val );
+            writer.append( ", " );
+          }
+          writer.append( "\n" );
+        } catch (Exception e) {}
+
+
       }
 
       writer.flush();
@@ -198,8 +202,9 @@ public class CSVGenerator {
    * @return the matching elements.
    */
   private Iterator<Element> buildMatrix( final String collection ) {
-    Filter filter = new Filter( new FilterCondition( "collection", collection ) );
-
+    Filter filter=null;
+    if (collection!=null)
+      filter = new Filter( new FilterCondition( "collection", collection ) );
     return this.persistence.find( Element.class, filter );
   }
 

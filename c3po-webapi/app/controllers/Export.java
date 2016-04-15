@@ -94,7 +94,11 @@ public class Export extends Controller {
 		Logger.debug("Received an exportAllToCSV call");
 		CSVGenerator generator = getGenerator();
 		String collection= Properties.getCollection();
-		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
+		String path="";
+		if (collection!=null)
+			path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
+		else
+			path = "exports/" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
 		generator.exportAll(collection, path);
 
 		File file = new File(path);
@@ -114,6 +118,8 @@ public class Export extends Controller {
 		Filter filter = Filters.getFilterFromSession();
 		String collection= Properties.getCollection();
 		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
+		if (filter==null)
+			exportAllToCSV();
 		generator.export(filter, path);
 
 		File file = new File(path);

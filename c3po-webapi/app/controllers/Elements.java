@@ -99,7 +99,7 @@ public class Elements extends Controller {
 			List<MetadataRecord> metadata = result.getMetadata();
 			for(MetadataRecord mr: metadata){
 				List<String> sources = mr.getSources();
-				List<String> sourcesFullName= new ArrayList<>();
+				List<String> sourcesFullName= new ArrayList<String>();
 				for (String s: sources) {
 					Source source = persistence.getCache().getSource(s);
 					sourcesFullName.add(source.getName()+":"+source.getVersion());
