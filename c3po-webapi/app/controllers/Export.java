@@ -100,6 +100,8 @@ public class Export extends Controller {
 		File file = new File(path);
 
 		try {
+			response().setContentType("text/csv");
+			response().setHeader("Content-disposition","attachment; filename=all.csv");
 			return ok(new FileInputStream(file));
 		} catch (FileNotFoundException e) {
 			return internalServerError(e.getMessage());
@@ -117,6 +119,8 @@ public class Export extends Controller {
 		File file = new File(path);
 
 		try {
+			response().setContentType("text/csv");
+			response().setHeader("Content-disposition","attachment; filename=filter.csv");
 			return ok(new FileInputStream(file));
 		} catch (FileNotFoundException e) {
 			return internalServerError(e.getMessage());

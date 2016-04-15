@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 import org.bson.types.ObjectId;
 
 import play.Logger;
@@ -94,6 +96,16 @@ public class Elements extends Controller {
 		Iterator<Element> iterator=persistence.find(Element.class, filter);
 		if (iterator.hasNext()) {
 			Element result = iterator.next();
+			List<MetadataRecord> metadata = result.getMetadata();
+			for(MetadataRecord mr: metadata){
+				List<String> sources = mr.getSources();
+				List<String> sourcesFullName= new ArrayList<>();
+				for (String s: sources) {
+					Source source = persistence.getCache().getSource(s);
+					sourcesFullName.add(source.getName()+":"+source.getVersion());
+				}
+				mr.setSources(sourcesFullName);
+			}
 			if (iterator.hasNext()) {
 				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
 			}

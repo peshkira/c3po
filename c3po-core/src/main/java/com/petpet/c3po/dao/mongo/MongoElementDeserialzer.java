@@ -103,15 +103,7 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
 
       List<String> src = (List<String>) prop.get( "sources" );
       if ( src != null && !src.isEmpty() ) {
-        List<String> src_fullname=new ArrayList<String>();
-        for (String s: src){
-          Source source = this.persistence.getCache().getSource(s);
-          String sourceName = source.getName();
-          String sourceVersion = source.getVersion();
-          src_fullname.add(sourceName+":"+sourceVersion);
-        }
-
-        rec.setSources( src_fullname );
+        rec.setSources( src);
       }
 
       e.getMetadata().add( rec );
