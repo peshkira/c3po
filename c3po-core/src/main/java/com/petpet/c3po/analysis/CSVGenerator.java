@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.petpet.c3po.api.model.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,9 +239,22 @@ public class CSVGenerator {
    */
   private String getValueFromMetaDataRecord( List<MetadataRecord> value ) {
     String result = "";
-    if ( value.size() != 0 ) {
+all    if ( value.size() != 0 ) {
       final String v = value.get( 0 ).getValue();
-      result = (v == null) ? "CONFLICT" : replace( v.toString() );
+      if (v!=null)
+        result=v;
+      else{
+        List<String> values = value.get(0).getValues();
+        List<String> sources = value.get(0).getSources();
+        for (int i=0; i< values.size();i++){
+          String s = values.get(i);
+          Source source = this.persistence.getCache().getSource(sources.get(i));
+          result+=s+"["+source.getName()+":"+source.getVersion()+"]"+";";
+        }
+        result = result.substring(0, result.length() - 1);
+      }
+
+     // result = (v == null) ? "CONFLICT" : replace( v.toString() );
     }
 
     return result;
