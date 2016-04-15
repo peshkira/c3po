@@ -21,6 +21,7 @@ import com.petpet.c3po.api.model.helper.Filter;
 
 import common.WebAppConstants;
 import helpers.SessionFilters;
+import helpers.TemplatesLoader;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -44,6 +45,7 @@ public class Application extends Controller {
 		}
 		Filter f=new Filter();
 		SessionFilters.addFilter(session, f);
+		Application.PROPS = TemplatesLoader.getDefaultTemplate();
 	}
 
 	public static Result clear() {

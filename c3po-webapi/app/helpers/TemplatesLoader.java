@@ -25,7 +25,7 @@ public class TemplatesLoader {
     @ElementList
     List<TemplateFilter> filters;
     @ElementList
-    List<Template> templates;
+    static List<Template> templates;
 
     public TemplatesLoader(File file) {
         loadFromFile(file);
@@ -52,16 +52,17 @@ public class TemplatesLoader {
     public static void setProps(Filter filter) {
         if (!templatesLoader.isSet()) {
             templatesLoader.loadFromFile(new File(PATH_TEMPLATE_CONFIG));
+        }
+        //if (filter == null) {
+        //    return;
+        //}
 
-        }
-        Application.PROPS = templatesLoader.getDefaultTemplate();
-        if (filter == null) {
-            return;
-        }
+        //Application.PROPS = templatesLoader.getDefaultTemplate();
         Map mapFilter = filterToString(filter);
 
-
         List<String> templateProperties = templatesLoader.getProps(mapFilter);
+        if (templateProperties==null)
+            return;
         templateProperties.addAll(userAddedProperties);
         if (templateProperties.size()!=0)
             Application.PROPS = templateProperties.toArray(new String[0]);
@@ -152,10 +153,12 @@ public class TemplatesLoader {
 
     }
 
-    private List<String> getProperties(Template tmp_template) {
-        List<String> result = new ArrayList<String>();
+    private static List<String> getProperties(Template tmp_template) {
+        List<String> result = null;
         if (tmp_template == null)
             return result;
+
+        result = new ArrayList<String>();
         for (TemplateProperty prop : tmp_template.getProperties())
             result.add(prop.getName());
         return result;
@@ -205,7 +208,7 @@ public class TemplatesLoader {
 
     }
 
-    public String[] getDefaultTemplate() {
+    public static String[] getDefaultTemplate() {
         if (templates != null) {
             for (Template tmpl : templates) {
                 if (tmpl.getName().equals("Default_template")) {
