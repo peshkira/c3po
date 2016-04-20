@@ -242,6 +242,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     try {
       String name = config.get( CNF_DB_NAME );
       String host = config.get( CNF_DB_HOST );
+      if (host.equals("localhost")){
+        host="127.0.0.1";
+      }
       int port = Integer.parseInt( config.get( CNF_DB_PORT ) );
 
       this.mongo = new Mongo( host, port );
@@ -461,7 +464,6 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     DBObject query = this.getCachedFilter( filter );
     DBCollection dbCollection = this.getCollection( clazz );
     f = this.filterSerializer.mapFieldToProperty( f, new Object() );
-
     return dbCollection.distinct( f, query );
 
   }

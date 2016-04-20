@@ -1,7 +1,6 @@
 import sbt._
 import Keys._
 //import play.Project._
-import com.github.play2war.plugin._
 
 object ApplicationBuild extends Build {
 
@@ -27,10 +26,6 @@ object ApplicationBuild extends Build {
       version := appVersion,
       libraryDependencies ++= appDependencies
     ).settings(
-
-      resolvers += "Play2war plugins release" at "http://repository-play-war.forge.cloudbees.com/release/",
-      Play2WarKeys.servletVersion := "3.0",
       scalaVersion := "2.11.1"
-    ).settings(Play2WarPlugin.play2WarSettings: _*)//.settings( templatesImport ++= Seq("play.mvc.Http.Context.Implicit._") )
-
+    )
 }
