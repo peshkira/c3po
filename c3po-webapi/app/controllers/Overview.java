@@ -15,6 +15,9 @@
  ******************************************************************************/
 package controllers;
 
+import com.petpet.c3po.api.dao.Cache;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.utils.Configurator;
 import helpers.*;
 
 import java.util.ArrayList;
@@ -106,5 +109,22 @@ public class Overview extends Controller {
         TemplatesLoader.addUserDefinedGraph(property);
         return ok(play.libs.Json.toJson(g));
     }
+
+    public static Result indexFiltered() {
+        Map<String, String[]> stringMap = request().queryString();
+        Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+        Filter f=new Filter();
+        for (Map.Entry<String, String[]> stringEntry : stringMap.entrySet()) {
+            String key = stringEntry.getKey();
+            String[] value = stringEntry.getValue();
+           // if (value.length==1)
+           //     f.addFilterCondition(new FilterCondition(key,value[0]));
+           // else
+                f.addFilterCondition(new FilterCondition(key,value));
+        }
+        Filters.setFilterFromSession(f);
+        return index();
+    }
+
 
 }

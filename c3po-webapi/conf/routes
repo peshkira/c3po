@@ -23,6 +23,7 @@ GET           /c3po/filter/values            controllers.Properties.getValuesUnc
 # Collection Overview
 GET           /c3po/overview                 controllers.Overview.index()
 GET           /c3po/overview/graph           controllers.Overview.addGraph(property: String)
+GET           /c3po/overview/filter          controllers.Overview.indexFiltered()
 
 # Elements Page
 GET           /c3po/objects                  controllers.Elements.index()
@@ -54,6 +55,7 @@ POST          /c3po/template/import          controllers.Templates.importTemplat
 
 GET           /c3po/conflicts/index          controllers.Conflicts.index()
 GET           /c3po/conflicts                controllers.Conflicts.getRules()
+GET           /c3po/conflicts/csv            controllers.Conflicts.csv()
 POST          /c3po/conflicts                controllers.Conflicts.createRule()
 DELETE        /c3po/conflicts                controllers.Conflicts.deleteRule()
 POST          /c3po/conflicts/resolve        controllers.Conflicts.resolve()

@@ -65,6 +65,16 @@ public class Filter implements Serializable{
    */
   private List<FilterCondition> conditions;
 
+  public String getRaw() {
+    return raw;
+  }
+
+  public void setRaw(String raw) {
+    this.raw = raw;
+  }
+
+  private String raw;
+
   /**
    * Create a new empty filter with an initialized empty list of
    * {@link FilterCondition}s.

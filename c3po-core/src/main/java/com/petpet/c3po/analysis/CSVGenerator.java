@@ -239,7 +239,7 @@ public class CSVGenerator {
    */
   private String getValueFromMetaDataRecord( List<MetadataRecord> value ) {
     String result = "";
-all    if ( value.size() != 0 ) {
+    if ( value.size() != 0 ) {
       final String v = value.get( 0 ).getValue();
       if (v!=null)
         result=v;

@@ -2,6 +2,7 @@ package com.petpet.c3po.dao;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.petpet.c3po.api.model.Source;
 import com.sun.javafx.binding.IntegerConstant;
 import org.junit.After;
@@ -40,7 +41,7 @@ public class mapReduceTest {
 
     MongoPersistenceLayer pLayer;
 
-    @Before
+    //@Before
     public void setup() {
         pLayer = new MongoPersistenceLayer();
 
@@ -58,7 +59,7 @@ public class mapReduceTest {
         }
     }
 
-    @Test
+   //@Test
     public void mapReduceGenericTest() throws Exception {
 
         String map2 = "function map() {\n" +
@@ -160,7 +161,6 @@ public class mapReduceTest {
             output+=count.intValue();
             BasicDBObject id1 = (BasicDBObject) obj.get("_id");
             if (id1.size()==0)  continue;
-            //TODO: finish serializing this shiiit!;
             BasicDBObject format =(BasicDBObject) id1.get("format");
             BasicDBObject format_version =(BasicDBObject) id1.get("format_version");
             BasicDBObject mimetype =(BasicDBObject) id1.get("mimetype");
@@ -180,25 +180,40 @@ public class mapReduceTest {
             BasicDBList andQuery=new BasicDBList();
             BasicDBObject query;
             query=new BasicDBObject();
+            String getQuery="";
             if (format.getString("status").equals("CONFLICT")){
                 query.put("format.values", format_values);
+                for (Object o: format_values){
+                    getQuery+="format="+o.toString()+"&";
+                }
             } else{
                 query.put("format.value", format_values.get(0));
+                getQuery+="format="+format_values.get(0).toString()+"&";
             }
             andQuery.add(query);
             query=new BasicDBObject();
             if (format_version.getString("status").equals("CONFLICT")){
                 query.put("format_version.values", format_version_values);
+                for (Object o: format_version_values){
+                    getQuery+="format_version="+o.toString()+"&";
+                }
             } else{
                 query.put("format_version.value", format_version_values.get(0));
+                getQuery+="format_version="+format_version_values.get(0).toString()+"&";
             }
             andQuery.add(query);
             query=new BasicDBObject();
             if (mimetype.getString("status").equals("CONFLICT")){
                 query.put("mimetype.values", mimetype_values);
+                for (Object o: mimetype_values){
+                    getQuery+="mimetype="+o.toString()+"&";
+                }
             } else{
                 query.put("mimetype.value", mimetype.get(0));
+                getQuery+="mimetype="+mimetype_values.get(0).toString()+"&";
             }
+            getQuery=getQuery.substring(0,getQuery.length()-1);
+            getQuery=getQuery.replace("+","%2B").replace(" ", "%20");
             andQuery.add(query);
             query=new BasicDBObject("$and", andQuery);
             String s = query.toString();
@@ -208,7 +223,7 @@ public class mapReduceTest {
                 Element next = elementIterator.next();
                 output+= "http://localhost:9000/c3po/objects/"+ next.getId();
             }
-            output+=";"+s;
+            output+=";"+"http://localhost:9000/c3po/overview/filter?"+getQuery;
             out.println(output);
         }
     }

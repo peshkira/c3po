@@ -1,15 +1,20 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.petpet.c3po.analysis.ConflictResolutionProcessor;
 import com.petpet.c3po.analysis.conflictResolution.Rule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
+import common.WebAppConstants;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Result;
@@ -19,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import static play.mvc.Controller.request;
+import static play.mvc.Controller.response;
+import static play.mvc.Controller.session;
+import static play.mvc.Results.internalServerError;
 import static play.mvc.Results.ok;
 /**
  * Created by artur on 01/04/16.
@@ -148,4 +156,23 @@ public class Conflicts {
         }
         return null;
     }
+
+    public static Result csv() {
+        ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        String url = request().host();
+        String filename= "conflicts_overview_table_" +session(WebAppConstants.SESSION_ID) + ".csv";
+        String path = "exports"+File.separator +filename;
+
+        File file = crp.printCSV(path, url);
+
+        try {
+            response().setContentType("text/csv");
+            response().setHeader("Content-disposition","attachment; filename="+filename);
+            return ok(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+
 }

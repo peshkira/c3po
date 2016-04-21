@@ -18,6 +18,7 @@ package com.petpet.c3po.dao.mongo;
 import java.util.*;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
@@ -60,6 +61,11 @@ public class MongoFilterSerializer {
     DBObject result = new BasicDBObject();
 
     if ( filter != null ) {
+      if (filter.getRaw()!=null){
+        Object o = com.mongodb.util.JSON.parse(filter.getRaw());
+        return (DBObject) o;
+      }
+
       List<FilterCondition> conditions = filter.getConditions();
 
       Map<String, Integer> distinctFields = this.getDistinctFields( conditions );
@@ -115,8 +121,13 @@ public class MongoFilterSerializer {
     else if (value.equals("CONFLICT")){
       return result + ".status";
     }
-    else
-      return result + ".value";
+    else {
+      if (value.getClass().isArray() && ((Object[]) value).length>1){
+        return result + ".values";
+      }
+      else
+        return result + ".value";
+    }
   }
 
   /**
@@ -193,10 +204,20 @@ public class MongoFilterSerializer {
             val=NOTEXISTS;
             res.add( new BasicDBObject( this.mapFieldToProperty( field, val ), val ));
             res.add( new BasicDBObject( field + ".values", val ));
-          } else
-            res.add( new BasicDBObject( this.mapFieldToProperty( field, val ), val ));
+          } else {
+            if (val.getClass().isArray())
+            {
+              Object[] valArray = (Object[]) val;
+              if (valArray.length>1)
+                res.add(new BasicDBObject(this.mapFieldToProperty(field, val), valArray));
+              else
+              {
+                res.add(new BasicDBObject(this.mapFieldToProperty(field, valArray[0]), valArray[0]));
+              }
+            } else
+              res.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
+          }
         }
-
         return res;
       }
 
