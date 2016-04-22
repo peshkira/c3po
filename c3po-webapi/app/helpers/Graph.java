@@ -157,7 +157,7 @@ public class Graph {
     }
     
     if (rest > 0) {
-    k.add("Rest");
+    k.add("Other");
     v.add("" + rest);
     }
     
