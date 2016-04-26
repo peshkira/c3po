@@ -19,10 +19,7 @@ import static com.mongodb.MapReduceCommand.OutputType.INLINE;
 import static com.mongodb.MapReduceCommand.OutputType.MERGE;
 
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -372,8 +369,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         DBCollection dbCollection = this.getCollection(object.getClass());
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
-
-        dbCollection.insert(serializer.serialize(object));
+        if (dbCollection!=null)
+            dbCollection.insert(serializer.serialize(object));
 
     }
 
@@ -410,7 +407,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
         DBObject objectToUpdate = serializer.serialize(object);
         BasicDBObject set = new BasicDBObject("$set", objectToUpdate);
-        dbCollection.update(filter, set, true, true);
+        if (dbCollection!=null)
+            dbCollection.update(filter, set, true, true);
 
     }
 
@@ -425,8 +423,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         DBCollection dbCollection = this.getCollection(object.getClass());
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
-
-        dbCollection.remove(serializer.serialize(object));
+        if (dbCollection!=null)
+            dbCollection.remove(serializer.serialize(object));
 
     }
 
@@ -438,7 +436,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         DBObject query = this.getCachedFilter(filter);
         DBCollection dbCollection = this.getCollection(clazz);
-        dbCollection.remove(query);
+        if (dbCollection!=null)
+            dbCollection.remove(query);
         clearCache();
 
     }
@@ -451,6 +450,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         DBObject query = this.getCachedFilter(filter);
         DBCollection dbCollection = this.getCollection(clazz);
+        if (dbCollection==null)
+            return 0;
         return dbCollection.count(query);
 
     }
@@ -464,6 +465,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBObject query = this.getCachedFilter(filter);
         DBCollection dbCollection = this.getCollection(clazz);
         f = this.filterSerializer.mapFieldToProperty(f, new Object());
+        if (dbCollection==null)
+            return new ArrayList<String>();
         return dbCollection.distinct(f, query);
 
     }
