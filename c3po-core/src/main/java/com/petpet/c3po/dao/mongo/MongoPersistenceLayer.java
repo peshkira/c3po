@@ -699,32 +699,32 @@ public class MongoPersistenceLayer implements PersistenceLayer {
             double sum, min, max, avg, std, var;
             try {
                 sum = obj.getDouble("sum");
-            } catch (ClassCastException e) {
+            } catch (Exception e) {
                 sum = 0;
             }
             try {
                 min = obj.getDouble("min");
-            } catch (ClassCastException e) {
+            } catch (Exception e) {
                 min = 0;
             }
             try {
                 max = obj.getDouble("max");
-            } catch (ClassCastException e) {
+            } catch (Exception e) {
                 max = 0;
             }
             try {
                 avg = obj.getDouble("avg");
-            } catch (ClassCastException e) {
+            } catch (Exception e) {
                 avg = 0;
             }
             try {
                 std = obj.getDouble("stddev");
-            } catch (ClassCastException e) {
+            } catch (Exception e) {
                 std = 0;
             }
             try {
                 var = obj.getDouble("variance");
-            } catch (ClassCastException e) {
+            } catch (Exception e) {
                 var = 0;
             }
             result = new NumericStatistics(count, sum, min, max, avg, std, var);
