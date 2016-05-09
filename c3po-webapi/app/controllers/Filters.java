@@ -228,6 +228,8 @@ public class Filters extends Controller {
         Filter result = new Filter();
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<FilterCondition> conditions = filter.getConditions();
+        if (conditions==null || conditions.size()==0)
+            return filter;
         for (FilterCondition fc : conditions) {
             String property = fc.getField();
             Object value = fc.getValue();

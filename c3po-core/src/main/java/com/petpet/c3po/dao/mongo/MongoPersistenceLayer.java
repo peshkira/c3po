@@ -375,6 +375,22 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return new MongoIterator<T>( modelDeserializer, cursor );
   }
 
+
+  public <T extends Model> DBCursor findRaw( Class<T> clazz, Filter filter ) {
+
+    DBObject query = this.getCachedFilter( filter );
+
+    DBCollection dbCollection = this.getCollection( clazz );
+
+    if ( dbCollection == null ) {
+      LOG.warn( "No collection found for clazz [{}]", clazz.getName() );
+      return null;
+    }
+
+    DBCursor cursor = dbCollection.find( query );
+    return cursor;
+  }
+
   public <T extends Model> Iterator<T> findQ( Class<T> clazz, DBObject query ) {
 
     DBCollection dbCollection = this.getCollection( clazz );

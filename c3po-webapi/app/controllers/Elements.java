@@ -19,19 +19,22 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import org.bson.types.ObjectId;
 
 import play.Logger;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.element;
 import views.html.elements;
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
-//import com.petpet.c3po.datamodel.Element;
-//import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
 
 
@@ -128,10 +131,88 @@ public class Elements extends Controller {
 			if (iterator.hasNext()) {
 				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
 			}
+			return ok(elementToJSON(result));
+		} else {
+			return notFound( "{error: \"Element not found\"}" ) ;
+		}
+
+	}
+
+	public static Result getRaw(String id) {
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Filter filter=new Filter();
+		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
+		Iterator<Element> iterator=persistence.find(Element.class, filter);
+		if (iterator.hasNext()) {
+			Element result = iterator.next();
+			if (iterator.hasNext()) {
+				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+			}
 			return ok(play.libs.Json.toJson(result));
 		} else {
 			return notFound( "{error: \"Element not found\"}" ) ;
 		}
+
+	}
+
+
+
+
+	private static ArrayNode elementToJSON(Element element){
+
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Iterator<Source> sourceIterator = persistence.find(Source.class, null);
+		List<String> sourceNames=new ArrayList<String>();
+		while (sourceIterator.hasNext()){
+			Source next = sourceIterator.next();
+			sourceNames.add(next.getName() + " (" + next.getVersion()+ ")");
+		}
+		List<MetadataRecord> metadata = element.getMetadata();
+		ArrayNode result = new ArrayNode(new JsonNodeFactory(false));
+		String nullStr=null;
+		for(MetadataRecord mr: metadata){
+			String status = mr.getStatus();
+			List<String> values = mr.getValues();
+			List<String> sources = mr.getSources();
+			Property property = mr.getProperty();
+			String value = mr.getValue();
+
+			List<String> tmp_sources=new ArrayList<String>();
+			for (String s:sources){
+				Integer integer = Integer.valueOf(s);
+				tmp_sources.add(sourceNames.get(integer));
+
+			}
+			sources=tmp_sources;
+			ObjectNode tmp=Json.newObject();
+
+			tmp.put("property", property.getKey());
+
+			for (String source: sourceNames){
+				int i = sources.indexOf(source);
+				if (i>=0){
+					if (!status.equals("CONFLICT")){
+						tmp.put(source, value);
+					} else if (status.equals("CONFLICT")){
+						tmp.put(source, values.get(i));
+					}
+				} else{
+					tmp.put(source, nullStr);
+				}
+
+				if (sources.isEmpty()) {
+					tmp.put("C3PO", value);
+				} else {
+					tmp.put("C3PO", nullStr);
+				}
+			}
+
+			result.add(tmp);
+		}
+		return result;
+
+
+
 
 	}
 }

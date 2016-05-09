@@ -1,8 +1,17 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import com.petpet.c3po.analysis.ConflictResolutionProcessor;
 import com.petpet.c3po.analysis.conflictResolution.Rule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -15,10 +24,13 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 import common.WebAppConstants;
+import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Result;
 import views.html.conflicts;
+
+import javax.swing.plaf.metal.MetalRadioButtonUI;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,34 +58,88 @@ public class Conflicts {
     }
 
     public static Result createRule() {
-        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
         JsonNode json = request().body().asJson();
         Rule rule=new Rule();
+        String uid = json.get("uid").asText();
+
+        Filter tmpFilter=new Filter();
+        tmpFilter.addFilterCondition(new FilterCondition("uid", uid ));
+        DBCursor cursor = persistence.findRaw(Element.class, tmpFilter);
+        JsonNode elementJson=null;
+        if (cursor.hasNext()) {
+            DBObject next = cursor.next();
+            String jsonStr = JSON.serialize( next );
+            elementJson = Json.parse(jsonStr);
+        }
+        JsonNode conditions = json.get("conditions");
+        ArrayNode filterArray=new ArrayNode(new JsonNodeFactory(false));
+        for (JsonNode condition: conditions){
+            String propertyName = condition.get("property").asText();
+            JsonNode propertyValueJson = elementJson.get(propertyName);
+            ObjectNode tmp=Json.newObject();
+            tmp.put(propertyName, propertyValueJson);
+            filterArray.add(tmp);
+        }
+
+        ObjectNode andQuery=Json.newObject();
+
+        andQuery.put("$and", filterArray);
+
+
         Filter ruleFilter=new Filter();
+        ruleFilter.setRaw(andQuery.toString());
+
         Element ruleElement=new Element(null,null);
-        Iterator<JsonNode> jsonNodeIterator = json.elements();
-        while (jsonNodeIterator.hasNext()){
-            JsonNode next = jsonNodeIterator.next();
-            String component = next.get(2).asText();
-            String propertyName = next.get(0).asText();
-            String propertyValue = next.get(1).asText();
-            if (component.equals("action")){
-                if (propertyName!=null) {
-                    Property property = persistence.getCache().getProperty(propertyName);
-                    MetadataRecord mr=new MetadataRecord(property,propertyValue);
+
+
+        Element element= null;
+        Iterator<Element> elementIterator = persistence.find(Element.class, tmpFilter);
+
+        if (elementIterator.hasNext()) {
+            element=elementIterator.next();
+        }
+
+        JsonNode valuesToDelete = json.get("valuesToDelete");
+        Iterator<Source> sourceIterator = persistence.find(Source.class, null);
+        List<String> sourceNames=new ArrayList<String>();
+        while (sourceIterator.hasNext()){
+            Source next = sourceIterator.next();
+            sourceNames.add(next.getName() + " (" + next.getVersion()+ ")");
+        }
+        Iterator<JsonNode> elements = valuesToDelete.elements();
+        while (elements.hasNext()){
+            JsonNode next = elements.next();
+            String source = next.get("source").asText();
+            String property = next.get("property").asText();
+            String value = next.get("value").asText();
+
+
+            for (MetadataRecord mr : element.getMetadata()){
+                if (mr.getProperty().getId().equals(property))
+                {
+
+                    if (mr.getStatus().equals("CONFLICT")){
+                        int indexOf = mr.getValues().indexOf(value);
+                        mr.getValues().remove(indexOf);
+                        mr.getSources().remove(indexOf);
+                    } else {
+                        if (mr.getValue()!=null){
+                            int i = sourceNames.indexOf(source);
+                            int indexOf = mr.getSources().indexOf(String.valueOf(i));
+                            mr.getSources().remove(indexOf);
+                        }
+                    }
                     ruleElement.getMetadata().add(mr);
                 }
-            } else if (component.equals("condition")){
-                if (propertyName!=null) {
-                    FilterCondition fc=new FilterCondition(propertyName,propertyValue);
-                    ruleFilter.addFilterCondition(fc);
-                }
-            } else if (component.equals("name")) {
-                if (propertyName != null) {
-                    rule.setName(propertyName);
-                }
+
+
             }
+
         }
+
+
+
         rule.setElement(ruleElement);
         rule.setFilter(ruleFilter);
         rules.add(rule);
@@ -136,14 +202,19 @@ public class Conflicts {
         List<Rule> tmpRules=new ArrayList<Rule>();
         JsonNode json = request().body().asJson();
         Iterator<JsonNode> jsonNodeIterator = json.elements();
-        while (jsonNodeIterator.hasNext()){
+        /*while (jsonNodeIterator.hasNext()){
             JsonNode next = jsonNodeIterator.next();
             String ruleName = next.asText();
             Rule rule= getRuleByName(ruleName);
-            if (rule!=null)
+            if (rule!=null) {
                 rule.setFilter(Filters.normalize(rule.getFilter()));
                 tmpRules.add(rule);
-        }
+            }
+            else{
+                tmpRules.addAll(rules);
+            }
+        } */
+             tmpRules.addAll(rules);
         crp.setRules(tmpRules);
         long resolve = crp.resolve();
         return ok(String.valueOf(resolve) + " conflicts were resolved");

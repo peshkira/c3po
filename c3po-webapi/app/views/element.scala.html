@@ -3,18 +3,14 @@
 @scripts = {
     <script type="text/javascript" href="/assets/javascripts/header.js"></script>
 
-    <link rel="stylesheet" href="/assets/stylesheets/table.css" type="text/css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css" type="text/css">
-    <link rel="stylesheet" href=" https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css" type="text/css">
-
-    <script src="http://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
-
-    <script src="https://code.jquery.com/jquery-1.12.0.min.js" type="text/javascript"></script>\
-    <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
-    <script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js" type="text/javascript"></script>
 
 
 
+
+
+
+    <script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js" type="text/javascript"></script>
 
 
     <script>
@@ -159,18 +155,146 @@
 
 
             $('document').ready(function () {
-                $('#contentTable').DataTable( {
-                    columnDefs: [ {
-                        orderable: false,
-                        className: 'select-checkbox',
-                        targets:   0
-                    } ],
-                    select: {
-                        style:    'os',
-                        selector: 'td:first-child'
-                    },
-                    order: [[ 1, 'asc' ]]
-                } );
+
+                var elem = "";
+                var objectID = window.location.href.split('/').pop();
+                $.ajax({
+                    type: 'GET',
+                    url: '/c3po/object/' + objectID,
+                    async: false,
+                    success: function (oData) {
+                        elem = oData;
+                    }
+                });
+
+
+                var data = elem;
+                var result_array;
+
+                var ViewModel = function () {
+                    var self = this;
+                    self.Name = ko.observable('Marat');
+                    self.MyData = ko.observableArray();
+                    self.people = ko.observableArray([
+                        {name: 'Bert'},
+                        {name: 'Charles'},
+                        {name: 'Denise'}
+                    ]);
+                    self.checkboxClick = function (myData, value) {
+                        //self.MyData.remove(myData);
+                        console.log(myData);
+                        var index=self.SelectedData.indexOf(myData);
+                        if (index>-1)
+                        {
+                            self.SelectedData.splice(index,1);
+                            console.log("removed the property:" + myData);
+                        } else{
+                            self.SelectedData.push(myData);
+                            console.log("added new property:" + myData);
+                        }
+                        return true;
+                    }
+                    self.SelectedData = ko.observableArray();
+                    self.ColumNames = ko.observableArray();
+                    result_array=self.SelectedData;
+                };
+                var viewModel = new ViewModel();
+
+                var UI = (function () {
+                    var module = {};
+                    return module;
+                })();
+
+                var CONTROLLER = (function () {
+                    var module = {};
+
+                    return module;
+                })();
+
+                var MAPPING = (function () {
+                    var module = {};
+                    module.ToMyData = function (input) {
+                        var mapping = {
+                            //customize at the root level.
+                            create: function (options) {
+                                //first map the vm like normal
+                                //var vm = ko.mapping.fromJS(options.data, { observe: ["login"] });
+                                var vm = options.data;
+                                //now manipulate the returned vm in any way that you like
+                                vm.checked = ko.observable(false);
+
+                                //return our vm that has been mapped and tweaked
+                                return vm;
+                            }
+                        };
+                        ko.mapping.fromJS(input, mapping, viewModel.MyData);
+
+                    };
+                    module.ToColumNames = function (names) {
+                        var p = names[0];
+                        for (var key in p) {
+                            if (p.hasOwnProperty(key)) {
+                                viewModel.ColumNames.push(key);
+                            }
+                        }
+
+                    };
+
+                    return module;
+                })();
+
+                ko.applyBindings(viewModel);
+                window.onload = function () {
+                    MAPPING.ToColumNames(data);
+                    MAPPING.ToMyData(data);
+                }
+
+
+                var RefreshViewModel = function () {
+                    //viewModel = new ViewModel();
+                    MAPPING.ToMyData(data);
+                    //ko.applyBindings(viewModel);
+                }
+
+
+                var createRuleButton = $('<a name="ruleCreate" class="grey_button" href="javascript:void(0);">Create a rule</a>').appendTo('#table');
+
+                createRuleButton.on('click', function () {
+                    var inputs = document.getElementsByClassName("my-checked-property-value");
+                    var valuesToDelete=[];
+                    for (var i in inputs){
+                        if (inputs[i].checked) {
+                            var tmp=new Object();
+                            tmp.source = inputs[i].getAttribute('data_source');
+                            tmp.property = inputs[i].getAttribute('data_property');
+                            tmp.value = inputs[i].getAttribute('value');
+
+                            valuesToDelete.push(tmp);
+                        }
+                    }
+                    var conditions=viewModel.SelectedData();
+
+
+                    var uid=document.getElementById('uid').innerHTML;
+                    var result={"conditions": conditions, "valuesToDelete": valuesToDelete, "uid": uid};
+                    $.ajax({
+                        type: 'POST',
+                        url: '/c3po/conflicts',
+                        dataType: 'json',
+                        data: JSON.stringify(result),
+                        contentType: "application/json; charset=utf-8",
+                        async: false,
+                        success: function (oData) {
+                            $(this).css({'color': 'black'}).html('A new rule was created').fadeIn('slow');
+                        },
+                        error: function (oData) {
+                            $('.popupreason').fadeOut('fast', function () {
+                                $(this).css({'color': 'red'}).html('An error occurred while sending the email! Error message is: <br />' + oData.responseText).fadeIn('slow');
+                            })
+                        }
+                    });
+                });
+
             })
 
     </script>
@@ -183,517 +307,46 @@
             <h2>@element.getName()</h2>
             <div class="element_general">
                 <p>
-                    UID: @element.getUid()<br />
+                    UID: <div id="uid">@element.getUid()</div><br />
                     Collection: @element.getCollection()
                 </p>
             </div>
 
+            <style>
+            table { width: 500px; }
+            .grow { width: 100%; }​
 
-
-                <table id="contentTable" class="display" cellspacing="0" width="100%">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Office</th>
-                            <th>Age</th>
-                            <th>Salary</th>
-                        </tr>
-                    </thead>
-                    <tfoot>
-                        <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Office</th>
-                            <th>Age</th>
-                            <th>Salary</th>
-                        </tr>
-                    </tfoot>
-                    <tbody>
-                        <tr>
-                            <td></td>
-                            <td>Tiger Nixon</td>
-                            <td>System Architect</td>
-                            <td>Edinburgh</td>
-                            <td>61</td>
-                            <td>$320,800</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Garrett Winters</td>
-                            <td>Accountant</td>
-                            <td>Tokyo</td>
-                            <td>63</td>
-                            <td>$170,750</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Ashton Cox</td>
-                            <td>Junior Technical Author</td>
-                            <td>San Francisco</td>
-                            <td>66</td>
-                            <td>$86,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Cedric Kelly</td>
-                            <td>Senior Javascript Developer</td>
-                            <td>Edinburgh</td>
-                            <td>22</td>
-                            <td>$433,060</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Airi Satou</td>
-                            <td>Accountant</td>
-                            <td>Tokyo</td>
-                            <td>33</td>
-                            <td>$162,700</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Brielle Williamson</td>
-                            <td>Integration Specialist</td>
-                            <td>New York</td>
-                            <td>61</td>
-                            <td>$372,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Herrod Chandler</td>
-                            <td>Sales Assistant</td>
-                            <td>San Francisco</td>
-                            <td>59</td>
-                            <td>$137,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Rhona Davidson</td>
-                            <td>Integration Specialist</td>
-                            <td>Tokyo</td>
-                            <td>55</td>
-                            <td>$327,900</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Colleen Hurst</td>
-                            <td>Javascript Developer</td>
-                            <td>San Francisco</td>
-                            <td>39</td>
-                            <td>$205,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Sonya Frost</td>
-                            <td>Software Engineer</td>
-                            <td>Edinburgh</td>
-                            <td>23</td>
-                            <td>$103,600</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Jena Gaines</td>
-                            <td>Office Manager</td>
-                            <td>London</td>
-                            <td>30</td>
-                            <td>$90,560</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Quinn Flynn</td>
-                            <td>Support Lead</td>
-                            <td>Edinburgh</td>
-                            <td>22</td>
-                            <td>$342,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Charde Marshall</td>
-                            <td>Regional Director</td>
-                            <td>San Francisco</td>
-                            <td>36</td>
-                            <td>$470,600</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Haley Kennedy</td>
-                            <td>Senior Marketing Designer</td>
-                            <td>London</td>
-                            <td>43</td>
-                            <td>$313,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Tatyana Fitzpatrick</td>
-                            <td>Regional Director</td>
-                            <td>London</td>
-                            <td>19</td>
-                            <td>$385,750</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Michael Silva</td>
-                            <td>Marketing Designer</td>
-                            <td>London</td>
-                            <td>66</td>
-                            <td>$198,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Paul Byrd</td>
-                            <td>Chief Financial Officer (CFO)</td>
-                            <td>New York</td>
-                            <td>64</td>
-                            <td>$725,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Gloria Little</td>
-                            <td>Systems Administrator</td>
-                            <td>New York</td>
-                            <td>59</td>
-                            <td>$237,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Bradley Greer</td>
-                            <td>Software Engineer</td>
-                            <td>London</td>
-                            <td>41</td>
-                            <td>$132,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Dai Rios</td>
-                            <td>Personnel Lead</td>
-                            <td>Edinburgh</td>
-                            <td>35</td>
-                            <td>$217,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Jenette Caldwell</td>
-                            <td>Development Lead</td>
-                            <td>New York</td>
-                            <td>30</td>
-                            <td>$345,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Yuri Berry</td>
-                            <td>Chief Marketing Officer (CMO)</td>
-                            <td>New York</td>
-                            <td>40</td>
-                            <td>$675,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Caesar Vance</td>
-                            <td>Pre-Sales Support</td>
-                            <td>New York</td>
-                            <td>21</td>
-                            <td>$106,450</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Doris Wilder</td>
-                            <td>Sales Assistant</td>
-                            <td>Sidney</td>
-                            <td>23</td>
-                            <td>$85,600</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Angelica Ramos</td>
-                            <td>Chief Executive Officer (CEO)</td>
-                            <td>London</td>
-                            <td>47</td>
-                            <td>$1,200,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Gavin Joyce</td>
-                            <td>Developer</td>
-                            <td>Edinburgh</td>
-                            <td>42</td>
-                            <td>$92,575</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Jennifer Chang</td>
-                            <td>Regional Director</td>
-                            <td>Singapore</td>
-                            <td>28</td>
-                            <td>$357,650</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Brenden Wagner</td>
-                            <td>Software Engineer</td>
-                            <td>San Francisco</td>
-                            <td>28</td>
-                            <td>$206,850</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Fiona Green</td>
-                            <td>Chief Operating Officer (COO)</td>
-                            <td>San Francisco</td>
-                            <td>48</td>
-                            <td>$850,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Shou Itou</td>
-                            <td>Regional Marketing</td>
-                            <td>Tokyo</td>
-                            <td>20</td>
-                            <td>$163,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Michelle House</td>
-                            <td>Integration Specialist</td>
-                            <td>Sidney</td>
-                            <td>37</td>
-                            <td>$95,400</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Suki Burks</td>
-                            <td>Developer</td>
-                            <td>London</td>
-                            <td>53</td>
-                            <td>$114,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Prescott Bartlett</td>
-                            <td>Technical Author</td>
-                            <td>London</td>
-                            <td>27</td>
-                            <td>$145,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Gavin Cortez</td>
-                            <td>Team Leader</td>
-                            <td>San Francisco</td>
-                            <td>22</td>
-                            <td>$235,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Martena Mccray</td>
-                            <td>Post-Sales support</td>
-                            <td>Edinburgh</td>
-                            <td>46</td>
-                            <td>$324,050</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Unity Butler</td>
-                            <td>Marketing Designer</td>
-                            <td>San Francisco</td>
-                            <td>47</td>
-                            <td>$85,675</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Howard Hatfield</td>
-                            <td>Office Manager</td>
-                            <td>San Francisco</td>
-                            <td>51</td>
-                            <td>$164,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Hope Fuentes</td>
-                            <td>Secretary</td>
-                            <td>San Francisco</td>
-                            <td>41</td>
-                            <td>$109,850</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Vivian Harrell</td>
-                            <td>Financial Controller</td>
-                            <td>San Francisco</td>
-                            <td>62</td>
-                            <td>$452,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Timothy Mooney</td>
-                            <td>Office Manager</td>
-                            <td>London</td>
-                            <td>37</td>
-                            <td>$136,200</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Jackson Bradshaw</td>
-                            <td>Director</td>
-                            <td>New York</td>
-                            <td>65</td>
-                            <td>$645,750</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Olivia Liang</td>
-                            <td>Support Engineer</td>
-                            <td>Singapore</td>
-                            <td>64</td>
-                            <td>$234,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Bruno Nash</td>
-                            <td>Software Engineer</td>
-                            <td>London</td>
-                            <td>38</td>
-                            <td>$163,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Sakura Yamamoto</td>
-                            <td>Support Engineer</td>
-                            <td>Tokyo</td>
-                            <td>37</td>
-                            <td>$139,575</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Thor Walton</td>
-                            <td>Developer</td>
-                            <td>New York</td>
-                            <td>61</td>
-                            <td>$98,540</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Finn Camacho</td>
-                            <td>Support Engineer</td>
-                            <td>San Francisco</td>
-                            <td>47</td>
-                            <td>$87,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Serge Baldwin</td>
-                            <td>Data Coordinator</td>
-                            <td>Singapore</td>
-                            <td>64</td>
-                            <td>$138,575</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Zenaida Frank</td>
-                            <td>Software Engineer</td>
-                            <td>New York</td>
-                            <td>63</td>
-                            <td>$125,250</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Zorita Serrano</td>
-                            <td>Software Engineer</td>
-                            <td>San Francisco</td>
-                            <td>56</td>
-                            <td>$115,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Jennifer Acosta</td>
-                            <td>Junior Javascript Developer</td>
-                            <td>Edinburgh</td>
-                            <td>43</td>
-                            <td>$75,650</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Cara Stevens</td>
-                            <td>Sales Assistant</td>
-                            <td>New York</td>
-                            <td>46</td>
-                            <td>$145,600</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Hermione Butler</td>
-                            <td>Regional Director</td>
-                            <td>London</td>
-                            <td>47</td>
-                            <td>$356,250</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Lael Greer</td>
-                            <td>Systems Administrator</td>
-                            <td>London</td>
-                            <td>21</td>
-                            <td>$103,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Jonas Alexander</td>
-                            <td>Developer</td>
-                            <td>San Francisco</td>
-                            <td>30</td>
-                            <td>$86,500</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Shad Decker</td>
-                            <td>Regional Director</td>
-                            <td>Edinburgh</td>
-                            <td>51</td>
-                            <td>$183,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Michael Bruce</td>
-                            <td>Javascript Developer</td>
-                            <td>Singapore</td>
-                            <td>29</td>
-                            <td>$183,000</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>Donna Snider</td>
-                            <td>Customer Support</td>
-                            <td>New York</td>
-                            <td>27</td>
-                            <td>$112,000</td>
-                        </tr>
-                    </tbody>
+            </style>
+            <div id="table" >
+                <table border="1" width="500px" >
+                    <tr>
+                        <th>check</th>
+                            <!--ko foreach: ColumNames-->
+                        <th data-bind="text: $data"></th>
+                            <!--/ko-->
+                    </tr>
+                        <!--ko foreach: MyData-->
+                    <tr>
+                        <td  width="5">
+                            <div><input data-bind="click: $root.checkboxClick" type="checkbox"/></div>
+                        </td>
+                            <!--ko foreach: {data: $root.ColumNames, as: 'columnName'}-->
+                        <td width="5">
+                                <!-- ko if: $parent[columnName] &&  columnName!='property' -->
+                            <input class="my-checked-property-value" data-bind="attr: {  data_source: columnName, data_property:$parent['property']  }, value: $parent[columnName] " type="checkbox" />
+                                <!-- /ko -->
+                            <span data-bind="text:$parent[columnName]"></span>
+                        </td>
+                            <!--/ko-->
+                    </tr>
+                        <!--/ko-->
                 </table>
-
-
-            <div class ="element_data">
-                <h3> Meta Data </h3>
-                <ul>
-                @for(mr <- element.getMetadata()) {
-                    @if(mr.getValue() == null) {
-                        <li class="conflict">
-                            @mr.getProperty().getKey() :
-
-                            @for((value, i) <- mr.getValues().zipWithIndex) {
-                                <a onclick="createRule('@mr.getProperty().getKey()', '@value', '@mr.getSources().get(i)');" href="javascript:void(0);" >@value
-                                    [@mr.getSources().get(i)]</a>,
-                            }
-                        </li>
-
-                    } else {
-                        <li>@mr.getProperty().getKey() : @mr.getValue() [@mr.getSources()]</li>
-                    }
-                }
-                </ul>
             </div>
+
+
         </div>
 
 
     }
 }
+
