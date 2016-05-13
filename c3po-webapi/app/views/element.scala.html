@@ -3,156 +3,13 @@
 @scripts = {
     <script type="text/javascript" href="/assets/javascripts/header.js"></script>
 
-
-
-
-
-
-
     <script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js" type="text/javascript"></script>
 
+    <script type="text/javascript" src="/assets/javascripts/notifIt.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/stylesheets/notifIt.css">
 
     <script>
-
-            function createRule(property, value, source) {
-                $("#overlay").addClass('activeoverlay');
-                var popup = $('#filterpopup');
-                popup.css({'display': 'block', 'z-index': 11});
-                var popupconfig = popup.children('.popupconfig');
-
-                popup.children('.popupreason').html('Do you want to create a new conflict resolution rule?');
-                var ruleName = $('<input type="text" id="ruleName" value="Type in the rule name">').appendTo(popupconfig);
-                var table = $('<table id="ruleTable" class="display" width="80%"></table>').appendTo(popupconfig);
-                var dropDown = $('<select id="dropDown"></select>').appendTo(popupconfig);
-                var addButton = $('<a name="addCondition" class="grey_button" href="javascript:void(0);">Add condition</a>').appendTo(popupconfig);
-                var deleteButton = $('<a name="deleteCondition" class="grey_button" href="javascript:void(0);">Delete selected condition</a>').appendTo(popupconfig);
-                var submitButton = $('<a class="green_button" href="javascript:void(0);">Create rule</a>').appendTo(popupconfig);
-
-                var elem = "";
-                var objectID = window.location.href.split('/').pop();
-                $.ajax({
-                    type: 'GET',
-                    url: '/c3po/object/' + objectID,
-                    async: false,
-                    success: function (oData) {
-                        elem = oData;
-                    }
-                });
-
-                var conditions = [];
-                for (var i in elem.metadata) {
-                    var p = elem.metadata[i].property.key;
-                    var v = elem.metadata[i].value;
-                    if (v != null)
-                        conditions.push({"property": p, "value": v});
-                    else if (elem.metadata[i].status == "CONFLICT") {
-                        v = "CONFLICT";
-                        conditions.push({"property": p, "value": v});
-                    }
-                }
-
-                dropDown.append(new Option("Select a new condition to add"));
-                for (var i in conditions) {
-                    dropDown.append(new Option(conditions[i].property + " : " + conditions[i].value));
-                }
-
-                var filter = [];
-                $.ajax({
-                    type: 'GET',
-                    url: '/c3po/filters',
-                    async: false,
-                    success: function (oData) {
-                        filter = oData;
-                    }
-                });
-
-
-                var dataRule = [];
-                for (var i in filter) {
-                    var row = [];
-                    row.push(filter[i].property);
-                    row.push(filter[i].selected);
-                    row.push("condition");
-                    dataRule.push(row);
-                }
-                var actionRow = [property, value, "action"];
-                dataRule.push(actionRow);
-
-
-                var table = table.DataTable({
-                    paging: false,
-                    searching: false,
-                    info: false,
-                    data: dataRule,
-                    columns: [
-                        {title: "Property"},
-                        {title: "Value"},
-                        {title: "Component"}
-                    ]
-                });
-
-
-                table.on('click', 'tr', function () {
-                    if ($(this).hasClass('selected')) {
-                        $(this).removeClass('selected');
-                    }
-                    else {
-                        table.$('tr.selected').removeClass('selected');
-                        $(this).addClass('selected');
-                    }
-                });
-
-                deleteButton.on('click', function () {
-                    var rows = table.rows('.selected').data();
-                    if (rows) {
-                        var row = rows[0];
-                        if (row[2] && row[2] == "condition")
-                            table.row('.selected').remove().draw(false);
-                    }
-                });
-
-                addButton.on('click', function () {
-                    var i = document.getElementById("dropDown").selectedIndex;
-                    if (i != null) {
-                        var p = conditions[i - 1].property;
-                        var v = conditions[i - 1].value;
-                        if (p != null && v != null)
-                            table.row.add([p, v, "condition"]).draw(true);
-                    }
-                });
-
-                submitButton.on('click', function () {
-
-                    var payLoad = [];
-                    table.rows().every(function () {
-                        var d = this.data();
-                        payLoad.push(d);
-                    });
-                    payLoad.push([ruleName.val(), ruleName.val(), "name"]);
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '/c3po/conflicts',
-                        dataType: 'json',
-                        data: JSON.stringify(payLoad),
-                        contentType: "application/json; charset=utf-8",
-                        async: false,
-                        success: function (oData) {
-                            hideValueOptionDialog(false);
-                        },
-                        error: function (oData) {
-                            $('.popupreason').fadeOut('fast', function () {
-                                $(this).css({'color': 'red'}).html('An error occurred while sending the email! Error message is: <br />' + oData.responseText).fadeIn('slow');
-                            })
-                        }
-                    });
-
-
-                });
-
-            }
-
 
             $('document').ready(function () {
 
@@ -167,19 +24,12 @@
                     }
                 });
 
-
                 var data = elem;
                 var result_array;
 
                 var ViewModel = function () {
                     var self = this;
-                    self.Name = ko.observable('Marat');
                     self.MyData = ko.observableArray();
-                    self.people = ko.observableArray([
-                        {name: 'Bert'},
-                        {name: 'Charles'},
-                        {name: 'Denise'}
-                    ]);
                     self.checkboxClick = function (myData, value) {
                         //self.MyData.remove(myData);
                         console.log(myData);
@@ -200,16 +50,6 @@
                 };
                 var viewModel = new ViewModel();
 
-                var UI = (function () {
-                    var module = {};
-                    return module;
-                })();
-
-                var CONTROLLER = (function () {
-                    var module = {};
-
-                    return module;
-                })();
 
                 var MAPPING = (function () {
                     var module = {};
@@ -249,17 +89,9 @@
                     MAPPING.ToMyData(data);
                 }
 
+                var ruleName = $('#ruleName');
 
-                var RefreshViewModel = function () {
-                    //viewModel = new ViewModel();
-                    MAPPING.ToMyData(data);
-                    //ko.applyBindings(viewModel);
-                }
-
-
-                var createRuleButton = $('<a name="ruleCreate" class="grey_button" href="javascript:void(0);">Create a rule</a>').appendTo('#table');
-
-                createRuleButton.on('click', function () {
+                function createRule() {
                     var inputs = document.getElementsByClassName("my-checked-property-value");
                     var valuesToDelete=[];
                     for (var i in inputs){
@@ -273,10 +105,8 @@
                         }
                     }
                     var conditions=viewModel.SelectedData();
-
-
                     var uid=document.getElementById('uid').innerHTML;
-                    var result={"conditions": conditions, "valuesToDelete": valuesToDelete, "uid": uid};
+                    var result={"conditions": conditions, "valuesToDelete": valuesToDelete, "uid": uid, "ruleName" : ruleName.val()};
                     $.ajax({
                         type: 'POST',
                         url: '/c3po/conflicts',
@@ -285,7 +115,7 @@
                         contentType: "application/json; charset=utf-8",
                         async: false,
                         success: function (oData) {
-                            $(this).css({'color': 'black'}).html('A new rule was created').fadeIn('slow');
+                            //  html('A new rule was created').appendTo('#table');
                         },
                         error: function (oData) {
                             $('.popupreason').fadeOut('fast', function () {
@@ -293,9 +123,44 @@
                             })
                         }
                     });
+
+                }
+
+                $('#ruleCreate').on('click', function () {
+                    //createRule();
+                    notif({
+                        msg: "<b>Success:</b> A new rule has been created",
+                        type: "success",
+                        position: "center",
+                        timeout: 2000
+                    });
                 });
 
-            })
+                $('#ruleCreateAndExecute').on('click', function(){
+                    createRule();
+                    var ruleNames=[];
+                    ruleNames.push(ruleName.val());
+                    $.ajax({
+                        type: 'POST',
+                        url: '/c3po/conflicts/resolve',
+                        data: JSON.stringify(ruleNames),
+                        contentType: "application/json; charset=utf-8",
+                        async: false,
+                        success: function (oData) {
+                            notif({
+                                msg: "<b>Success:</b> A rule has been created and executed. " + oData,
+                                type: "success",
+                                position: "center",
+                                timeout: 3000,
+                                multiline: true,
+                                autohide: false,
+                                callback: function(){window.location.reload();}
+                            });
+
+                        }
+                    });
+                });
+            });
 
     </script>
 
@@ -307,7 +172,7 @@
             <h2>@element.getName()</h2>
             <div class="element_general">
                 <p>
-                    UID: <div id="uid">@element.getUid()</div><br />
+                    UID: <span id="uid">@element.getUid()</span><br />
                     Collection: @element.getCollection()
                 </p>
             </div>
@@ -320,7 +185,7 @@
             <div id="table" >
                 <table border="1" width="500px" >
                     <tr>
-                        <th>check</th>
+                        <th>Rule trigger</th>
                             <!--ko foreach: ColumNames-->
                         <th data-bind="text: $data"></th>
                             <!--/ko-->
@@ -332,8 +197,10 @@
                         </td>
                             <!--ko foreach: {data: $root.ColumNames, as: 'columnName'}-->
                         <td width="5">
-                                <!-- ko if: $parent[columnName] &&  columnName!='property' -->
-                            <input class="my-checked-property-value" data-bind="attr: {  data_source: columnName, data_property:$parent['property']  }, value: $parent[columnName] " type="checkbox" />
+                                <!-- ko if: $parent[columnName]    -->
+                                    <!-- ko ifnot:  columnName==='Status'  ||  columnName==='Property'   -->
+                                <input class="my-checked-property-value" data-bind="attr: {  data_source: columnName, data_property:$parent['Property']  }, value: $parent[columnName] " type="checkbox" />
+                                    <!-- /ko -->
                                 <!-- /ko -->
                             <span data-bind="text:$parent[columnName]"></span>
                         </td>
@@ -341,9 +208,27 @@
                     </tr>
                         <!--/ko-->
                 </table>
+
+                <input type="text" id="ruleName" value="Type in the rule name">
+                <a id="ruleCreate" class="grey_button" href="javascript:void(0);" >Create a rule</a>
+                <a id="ruleCreateAndExecute" class="grey_button" href="javascript:void(0);"  >Create and execute a rule</a>
+
             </div>
+            <div>
+                <br>
+                <b>Useful Information:</b>
+                <p>
+                    This table contains information about the selected digital object. Each row describes one of the properties of the object, including it's values.<br>
 
+                    The "Status" column explains the status of the property. In case the status is 'CONFLICT', there are several conflicting values for the property.<br>
 
+                    The rest of the columns contain values from the different source tools which provide information.<br>
+
+                    The table also provides possibility to resolve the conflicts. The most right column with checkboxes set whether the properties are important for conflict resolution. <br>
+                    These properties will be used as triggering conditions for the created rule.The checkboxes next to property values define whether the values should be removed. <br>
+                    If there is only one value left the property status is set to 'SINGLE_RESULT'.
+                </p>
+            </div>
         </div>
 
 

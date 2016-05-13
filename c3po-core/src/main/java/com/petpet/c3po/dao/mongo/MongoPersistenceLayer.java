@@ -436,7 +436,6 @@ public class MongoPersistenceLayer implements PersistenceLayer {
    */
   @Override
   public <T extends Model> void update( T object, Filter f ) {
-
     DBObject filter = this.getCachedFilter( f );
 
     if ( filter.keySet().isEmpty() ) {
@@ -750,22 +749,47 @@ public class MongoPersistenceLayer implements PersistenceLayer {
   private NumericStatistics parseNumericStatistics( DBObject object ) {
     NumericStatistics result = null;
 
-    if ( object == null ) {
+
+    if (object == null) {
       result = new NumericStatistics();
 
     } else {
 
       BasicDBObject obj = (BasicDBObject) object;
 
-      long count = obj.getLong( "count" );
-      double sum = obj.getDouble( "sum" );
-      double min = obj.getDouble( "min" );
-      double max = obj.getDouble( "max" );
-      double avg = obj.getDouble( "avg" );
-      double std = obj.getDouble( "stddev" );
-      double var = obj.getDouble( "variance" );
-
-      result = new NumericStatistics( count, sum, min, max, avg, std, var );
+      long count = obj.getLong("count");
+      double sum, min, max, avg, std, var;
+      try {
+        sum = obj.getDouble("sum");
+      } catch (Exception e) {
+        sum = 0;
+      }
+      try {
+        min = obj.getDouble("min");
+      } catch (Exception e) {
+        min = 0;
+      }
+      try {
+        max = obj.getDouble("max");
+      } catch (Exception e) {
+        max = 0;
+      }
+      try {
+        avg = obj.getDouble("avg");
+      } catch (Exception e) {
+        avg = 0;
+      }
+      try {
+        std = obj.getDouble("stddev");
+      } catch (Exception e) {
+        std = 0;
+      }
+      try {
+        var = obj.getDouble("variance");
+      } catch (Exception e) {
+        var = 0;
+      }
+      result = new NumericStatistics(count, sum, min, max, avg, std, var);
     }
 
     return result;

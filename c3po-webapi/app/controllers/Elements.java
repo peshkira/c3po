@@ -48,9 +48,7 @@ public class Elements extends Controller {
 		if (strings == null || strings.length == 0) {
 			return dflt;
 		}
-
 		return Integer.parseInt(strings[0]);
-
 	}
 
 	public static Result index() {
@@ -83,9 +81,7 @@ public class Elements extends Controller {
 			}
 
 		}
-
 		return ok(elements.render(names, result));
-
 	}
 
 
@@ -113,11 +109,9 @@ public class Elements extends Controller {
 				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
 			}
 			return ok( element.render(names, result) );
-
 		} else {
 			return notFound( "{error: \"Element not found\"}" ) ;
 		}
-
 
 	}
 
@@ -135,7 +129,6 @@ public class Elements extends Controller {
 		} else {
 			return notFound( "{error: \"Element not found\"}" ) ;
 		}
-
 	}
 
 	public static Result getRaw(String id) {
@@ -152,11 +145,7 @@ public class Elements extends Controller {
 		} else {
 			return notFound( "{error: \"Element not found\"}" ) ;
 		}
-
 	}
-
-
-
 
 	private static ArrayNode elementToJSON(Element element){
 
@@ -186,7 +175,9 @@ public class Elements extends Controller {
 			sources=tmp_sources;
 			ObjectNode tmp=Json.newObject();
 
-			tmp.put("property", property.getKey());
+			tmp.put("Property", property.getKey());
+
+			tmp.put("Status", mr.getStatus());
 
 			for (String source: sourceNames){
 				int i = sources.indexOf(source);

@@ -75,7 +75,7 @@ public class Conflicts {
         JsonNode conditions = json.get("conditions");
         ArrayNode filterArray=new ArrayNode(new JsonNodeFactory(false));
         for (JsonNode condition: conditions){
-            String propertyName = condition.get("property").asText();
+            String propertyName = condition.get("Property").asText();
             JsonNode propertyValueJson = elementJson.get(propertyName);
             ObjectNode tmp=Json.newObject();
             tmp.put(propertyName, propertyValueJson);
@@ -123,25 +123,33 @@ public class Conflicts {
                         int indexOf = mr.getValues().indexOf(value);
                         mr.getValues().remove(indexOf);
                         mr.getSources().remove(indexOf);
+
+                        if (mr.getValues().size()==1){
+                            String v = mr.getValues().get(0);
+                            mr.setValue(v);
+                            mr.getValues().clear();
+                            mr.setStatus("SINGLE_RESULT");
+                        }
+
                     } else {
                         if (mr.getValue()!=null){
                             int i = sourceNames.indexOf(source);
-                            int indexOf = mr.getSources().indexOf(String.valueOf(i));
-                            mr.getSources().remove(indexOf);
+                            mr.getSources().remove(String.valueOf(i));
+                            if (mr.getSources().size()==0)
+                                mr.setValue(null);
                         }
                     }
                     ruleElement.getMetadata().add(mr);
                 }
-
-
             }
 
         }
 
-
+        String ruleName = json.get("ruleName").asText();
 
         rule.setElement(ruleElement);
         rule.setFilter(ruleFilter);
+        rule.setName(ruleName);
         rules.add(rule);
         System.out.println("data = " + json);
         saveRules();
@@ -202,7 +210,7 @@ public class Conflicts {
         List<Rule> tmpRules=new ArrayList<Rule>();
         JsonNode json = request().body().asJson();
         Iterator<JsonNode> jsonNodeIterator = json.elements();
-        /*while (jsonNodeIterator.hasNext()){
+        while (jsonNodeIterator.hasNext()){
             JsonNode next = jsonNodeIterator.next();
             String ruleName = next.asText();
             Rule rule= getRuleByName(ruleName);
@@ -210,14 +218,10 @@ public class Conflicts {
                 rule.setFilter(Filters.normalize(rule.getFilter()));
                 tmpRules.add(rule);
             }
-            else{
-                tmpRules.addAll(rules);
-            }
-        } */
-             tmpRules.addAll(rules);
+        }
         crp.setRules(tmpRules);
         long resolve = crp.resolve();
-        return ok(String.valueOf(resolve) + " conflicts were resolved");
+        return ok(String.valueOf(resolve) + " conflict/-s were resolved");
     }
 
     static Rule getRuleByName(String ruleName){
