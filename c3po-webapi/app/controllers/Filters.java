@@ -138,15 +138,32 @@ public class Filters extends Controller {
         for (FilterCondition fc : fcs) {
             Property p = persistence.getCache().getProperty(fc.getField());
             Object obj = fc.getValue();
-            String v = "Unknown";
-            if (obj != null) {
-                v = obj.toString();
+            if ( obj instanceof Object[]){
+                Object[] objArray = (Object[]) obj;
+                for (Object o: objArray){
+                    String v = "Unknown";
+                    if (o != null) {
+                        v = o.toString();
+                    }
+                    PropertyValuesFilter f = null;
+                    String distributionType = StringParser.getDistributionType(v);
+                    String distributionTypeWidth = StringParser.getDistributionTypeWidth(v);
+                    PropertyValuesFilter pvf = Properties.getValues(p.getKey(), distributionType, distributionTypeWidth, v);
+                    result.add(pvf);
+                }
+
+            } else{
+                String v = "Unknown";
+                if (obj != null) {
+                    v = obj.toString();
+                }
+                PropertyValuesFilter f = null;
+                String distributionType = StringParser.getDistributionType(v);
+                String distributionTypeWidth = StringParser.getDistributionTypeWidth(v);
+                PropertyValuesFilter pvf = Properties.getValues(p.getKey(), distributionType, distributionTypeWidth, v);
+                result.add(pvf);
             }
-            PropertyValuesFilter f = null;
-            String distributionType = StringParser.getDistributionType(v);
-            String distributionTypeWidth = StringParser.getDistributionTypeWidth(v);
-            PropertyValuesFilter pvf = Properties.getValues(p.getKey(), distributionType, distributionTypeWidth, v);
-            result.add(pvf);
+
         }
         return ok(play.libs.Json.toJson(result));
     }

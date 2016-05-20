@@ -368,7 +368,6 @@ img.smalllogo{
 
 #filter {
     background: url('../images/black_linen.png');
-    height:150px;
     width:100%;
     border-bottom: 4px solid black;
     display:none;

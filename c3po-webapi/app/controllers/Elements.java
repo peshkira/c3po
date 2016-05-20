@@ -15,6 +15,7 @@
  ******************************************************************************/
 package controllers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import views.html.element;
 import views.html.elements;
@@ -206,4 +208,22 @@ public class Elements extends Controller {
 
 
 	}
+
+	public static Result uploadFile() {
+		try {
+			Http.MultipartFormData body = request().body().asMultipartFormData();
+			Http.MultipartFormData.FilePart fileP = body.getFile("file");
+			if (fileP != null) {
+				File file = fileP.getFile();
+				System.out.println(file.getName());
+				//com.petpet.c3po.controller.Controller.processFast(file, "uploaded"); TODO: this is broken...
+				return ok();
+			} else {
+				return badRequest("Upload Error");
+			}
+		} catch (Exception e){
+			return badRequest("Upload Error");
+		}
+	}
+
 }

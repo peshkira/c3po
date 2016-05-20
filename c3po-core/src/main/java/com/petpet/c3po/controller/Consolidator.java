@@ -128,7 +128,7 @@ public class Consolidator implements Runnable {
      * @param element
      *          the element to process.
      */
-    private void process( Element element ) {
+    public void process( Element element ) {
         if ( element == null ) {
             LOG.debug( "Cannot consolidate null element" );
 

@@ -123,7 +123,7 @@ public class Overview extends Controller {
                 f.addFilterCondition(new FilterCondition(key,value));
         }
         Filters.setFilterFromSession(f);
-        return index();
+        return redirect("/c3po/overview");
     }
 
 

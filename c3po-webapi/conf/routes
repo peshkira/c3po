@@ -29,6 +29,7 @@ GET           /c3po/overview/filter          controllers.Overview.indexFiltered(
 GET           /c3po/objects                  controllers.Elements.index()
 GET           /c3po/objects/:id              controllers.Elements.show(id: String)
 GET           /c3po/object/:id               controllers.Elements.get(id: String)
+POST          /c3po/objects/uploadFile       controllers.Elements.uploadFile()
 
 
 # Samples Page
