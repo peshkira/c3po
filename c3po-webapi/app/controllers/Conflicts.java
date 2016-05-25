@@ -208,6 +208,7 @@ public class Conflicts {
     public static Result resolve() {
         ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
         List<Rule> tmpRules=new ArrayList<Rule>();
+        Filter filter = Filters.getFilterFromSession();
         JsonNode json = request().body().asJson();
         Iterator<JsonNode> jsonNodeIterator = json.elements();
         while (jsonNodeIterator.hasNext()){
@@ -220,7 +221,7 @@ public class Conflicts {
             }
         }
         crp.setRules(tmpRules);
-        long resolve = crp.resolve();
+        long resolve = crp.resolve(filter);
         return ok(String.valueOf(resolve) + " conflict/-s were resolved");
     }
 
@@ -234,11 +235,12 @@ public class Conflicts {
 
     public static Result csv() {
         ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        Filter filter = Filters.getFilterFromSession();
         String url = request().host();
         String filename= "conflicts_overview_table_" +session(WebAppConstants.SESSION_ID) + ".csv";
         String path = "exports"+File.separator +filename;
 
-        File file = crp.printCSV(path, url);
+        File file = crp.printCSV(path, url, filter);
 
         try {
             response().setContentType("text/csv");

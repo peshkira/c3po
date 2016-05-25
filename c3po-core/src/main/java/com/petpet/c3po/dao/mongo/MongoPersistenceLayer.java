@@ -658,8 +658,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     return (DBObject) cursor.next().get( "results" );
   }
 
-  public List<BasicDBObject> mapReduce(String map, String reduce, DBObject query){
 
+
+  public List<BasicDBObject> mapReduce(String map, String reduce, Filter filter ){
+    DBObject query = this.getCachedFilter( filter );
     DBCollection elmnts = getCollection( Element.class );
     MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
 

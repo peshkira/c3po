@@ -141,9 +141,10 @@ $(document).ready(function(){
 			$(deletediv).click(function() {
 				startSpinner();
 				var property = $(this).siblings('select:first').val();
+				var value = $(this).siblings('select:last').val();
 				$.ajax({
 					type:     'DELETE',
-					url:      '/c3po/filter?property=' + property,
+					url:      '/c3po/filter?property=' + property + '&value=' + value,
 					timeout:  5000,
 					success:  function(oData) {
 						stopSpinner();

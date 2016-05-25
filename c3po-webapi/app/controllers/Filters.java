@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.google.common.collect.Lists;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.*;
@@ -214,13 +215,26 @@ public class Filters extends Controller {
         return Graph.getGraph(Filters.getFilterFromSession(), property);
     }
 
-    public static Result removeCondition(String property) {
+    public static Result removeCondition(String property, String value) {
         Logger.debug("Received a removeCondition call in filter, removing filter with property " + property);
         Filter filter = Filters.getFilterFromSession();
         for (Iterator<FilterCondition> iter = filter.getConditions().listIterator(); iter.hasNext(); ) {
             FilterCondition fc = iter.next();
             if (fc.getField().equals(property)) {
-                iter.remove();
+               /* Object obj = fc.getValue();
+                if (obj instanceof Object[]) {
+                    Object[] objArray = (Object[]) obj;
+                    List<Object> objList = Arrays.asList(objArray);
+                    Iterator<Object> iterator = objList.iterator();
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        String s = next.toString();
+                        if (s.equals(value))
+                            objList.remove(next);
+                    }
+                    fc.setValue(objList.toArray());
+                } else*/
+                    iter.remove();
             }
         }
         Filters.setFilterFromSession(filter);

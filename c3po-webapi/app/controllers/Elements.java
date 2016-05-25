@@ -216,7 +216,7 @@ public class Elements extends Controller {
 			if (fileP != null) {
 				File file = fileP.getFile();
 				System.out.println(file.getName());
-				//com.petpet.c3po.controller.Controller.processFast(file, "uploaded"); TODO: this is broken...
+				com.petpet.c3po.controller.Controller.processFast(file, "uploaded");  //TODO: this is broken...
 				return ok();
 			} else {
 				return badRequest("Upload Error");
