@@ -15,23 +15,28 @@
  ******************************************************************************/
 package controllers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import org.bson.types.ObjectId;
 
 import play.Logger;
+import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import views.html.element;
 import views.html.elements;
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
-//import com.petpet.c3po.datamodel.Element;
-//import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
 
 
@@ -45,18 +50,13 @@ public class Elements extends Controller {
 		if (strings == null || strings.length == 0) {
 			return dflt;
 		}
-
 		return Integer.parseInt(strings[0]);
-
 	}
 
 	public static Result index() {
 		Logger.debug("Received an index call in elements");
 		List<String> names = Properties.getCollectionNames();
-		String collection = Properties.getCollection();
-		if (collection == null) {
-			return ok(elements.render(names, null));
-		}
+
 		int batch = getQueryParameter("batch", 25);
 		int offset = getQueryParameter("offset", 0);
 
@@ -83,10 +83,7 @@ public class Elements extends Controller {
 			}
 
 		}
-
-		//List<Element> result = listElements(collection, batch, offset);
-		return ok(elements.render(names, result));//listElements(collection, batch, offset);
-
+		return ok(elements.render(names, result));
 	}
 
 
@@ -103,7 +100,7 @@ public class Elements extends Controller {
 			List<MetadataRecord> metadata = result.getMetadata();
 			for(MetadataRecord mr: metadata){
 				List<String> sources = mr.getSources();
-				List<String> sourcesFullName= new ArrayList<>();
+				List<String> sourcesFullName= new ArrayList<String>();
 				for (String s: sources) {
 					Source source = persistence.getCache().getSource(s);
 					sourcesFullName.add(source.getName()+":"+source.getVersion());
@@ -114,12 +111,119 @@ public class Elements extends Controller {
 				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
 			}
 			return ok( element.render(names, result) );
-
 		} else {
 			return notFound( "{error: \"Element not found\"}" ) ;
 		}
 
+	}
 
+	public static Result get(String id) {
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Filter filter=new Filter();
+		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
+		Iterator<Element> iterator=persistence.find(Element.class, filter);
+		if (iterator.hasNext()) {
+			Element result = iterator.next();
+			if (iterator.hasNext()) {
+				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+			}
+			return ok(elementToJSON(result));
+		} else {
+			return notFound( "{error: \"Element not found\"}" ) ;
+		}
+	}
+
+	public static Result getRaw(String id) {
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Filter filter=new Filter();
+		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
+		Iterator<Element> iterator=persistence.find(Element.class, filter);
+		if (iterator.hasNext()) {
+			Element result = iterator.next();
+			if (iterator.hasNext()) {
+				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+			}
+			return ok(play.libs.Json.toJson(result));
+		} else {
+			return notFound( "{error: \"Element not found\"}" ) ;
+		}
+	}
+
+	private static ArrayNode elementToJSON(Element element){
+
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Iterator<Source> sourceIterator = persistence.find(Source.class, null);
+		List<String> sourceNames=new ArrayList<String>();
+		while (sourceIterator.hasNext()){
+			Source next = sourceIterator.next();
+			sourceNames.add(next.getName() + " (" + next.getVersion()+ ")");
+		}
+		List<MetadataRecord> metadata = element.getMetadata();
+		ArrayNode result = new ArrayNode(new JsonNodeFactory(false));
+		String nullStr=null;
+		for(MetadataRecord mr: metadata){
+			String status = mr.getStatus();
+			List<String> values = mr.getValues();
+			List<String> sources = mr.getSources();
+			Property property = mr.getProperty();
+			String value = mr.getValue();
+
+			List<String> tmp_sources=new ArrayList<String>();
+			for (String s:sources){
+				Integer integer = Integer.valueOf(s);
+				tmp_sources.add(sourceNames.get(integer));
+
+			}
+			sources=tmp_sources;
+			ObjectNode tmp=Json.newObject();
+
+			tmp.put("Property", property.getKey());
+
+			tmp.put("Status", mr.getStatus());
+
+			for (String source: sourceNames){
+				int i = sources.indexOf(source);
+				if (i>=0){
+					if (!status.equals("CONFLICT")){
+						tmp.put(source, value);
+					} else if (status.equals("CONFLICT")){
+						tmp.put(source, values.get(i));
+					}
+				} else{
+					tmp.put(source, nullStr);
+				}
+
+				if (sources.isEmpty()) {
+					tmp.put("C3PO", value);
+				} else {
+					tmp.put("C3PO", nullStr);
+				}
+			}
+
+			result.add(tmp);
+		}
+		return result;
+
+
+
+
+	}
+
+	public static Result uploadFile() {
+		try {
+			Http.MultipartFormData body = request().body().asMultipartFormData();
+			Http.MultipartFormData.FilePart fileP = body.getFile("file");
+			if (fileP != null) {
+				File file = fileP.getFile();
+				System.out.println(file.getName());
+				com.petpet.c3po.controller.Controller.processFast(file, "uploaded");  //TODO: this is broken...
+				return ok();
+			} else {
+				return badRequest("Upload Error");
+			}
+		} catch (Exception e){
+			return badRequest("Upload Error");
+		}
 	}
 
 }

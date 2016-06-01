@@ -17,13 +17,15 @@ package com.petpet.c3po.api.model;
 
 import com.petpet.c3po.api.model.helper.PropertyType;
 
+import java.io.Serializable;
+
 /**
  * A domain object encapsulating a property document.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
-public class Property implements Model {
+public class Property implements Model, Serializable {
 
   /**
    * The id of the proeprty.

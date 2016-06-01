@@ -15,6 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.api.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,7 +32,7 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
  * @author Petar Petrov <me@petarpetrov.org>
  */
 
-public class Element implements Model {
+public class Element implements Model, Serializable {
 
   /**
    * A back-end related identifier of this object.

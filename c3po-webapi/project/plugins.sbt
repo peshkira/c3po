@@ -7,7 +7,6 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 //resolvers += "Daniel's Repository" at "http://danieldietrich.net/repository/snapshots/"
 
 
-//resolvers += "Play2war plugins release" at "http://repository-play-war.forge.cloudbees.com/release/"
 
 resolvers += Resolver.url(
   "bintray-sbt-plugin-releases",

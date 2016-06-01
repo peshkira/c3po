@@ -103,15 +103,15 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
       Iterator<Element> avgCursor = this.pl.find( Element.class, avgFilter );
 
       if ( minCursor.hasNext() && result.size() < limit ) {
-        result.add( minCursor.next().getUid() );
+        result.add( minCursor.next().getId() );
       }
 
       if ( maxCursor.hasNext() && result.size() < limit ) {
-        result.add( maxCursor.next().getUid() );
+        result.add( maxCursor.next().getId() );
       }
 
       while ( avgCursor.hasNext() && result.size() < limit ) {
-        result.add( avgCursor.next().getUid() );
+        result.add( avgCursor.next().getId() );
       }
 
     }

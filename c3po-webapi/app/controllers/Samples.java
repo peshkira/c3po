@@ -32,8 +32,7 @@ import views.html.samples;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-//import com.petpet.c3po.datamodel.Element;
-//import com.petpet.c3po.datamodel.Filter;
+
 import com.petpet.c3po.utils.Configurator;
 
 
@@ -50,7 +49,6 @@ public class Samples extends Controller {
 
   public static Result getSamples(String alg, int size, String props) {
 	Logger.debug("Received a getSamples call, sampling with alg " + alg + " size " + size + " props " + props);
-    //final Configurator configurator = Configurator.getDefaultConfigurator();
     final PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
     final Filter filter = Filters.getFilterFromSession();
     final RepresentativeGenerator sg = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
@@ -77,9 +75,9 @@ public class Samples extends Controller {
       }
     }
 
-    return ok(play.libs.Json.toJson(samples));
+
+	  return ok(play.libs.Json.toJson(samples));
   }
-  
   
 
 	  public static Result indexAsJson() {

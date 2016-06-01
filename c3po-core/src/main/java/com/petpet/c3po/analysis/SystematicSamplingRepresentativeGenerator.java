@@ -61,7 +61,7 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
 
   @Override
   public List<String> execute( int limit ) {
-    LOG.info( "Applying {} algorithm for representatice selection", this.getType() );
+    LOG.info( "Applying {} algorithm for representative selection", this.getType() );
 
     final List<String> result = new ArrayList<String>();
 
@@ -78,20 +78,28 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
       LOG.debug( "Calculated skip is: {}", skip );
 
       Iterator<Element> cursor = this.pl.find( Element.class, this.getFilter() );
-
+      int accumulated_index=0;
+      int offset=0;
+      int i = 0;
       while ( result.size() < limit ) {
-        int offset = (int) ((skip * result.size() + (int) ((Math.random() * skip) % count)) % count);
-        LOG.debug( "offset {}", offset );
+        offset = (int) (Math.random() * skip + result.size()* skip) ;
+        accumulated_index+=offset;
+        LOG.debug( "picking an element with index {}", offset );
+        if (offset>count)
+          continue;
         // skip the offset
-        int i = 0;
-        while ( i < 0 ) {
+
+        while ( i < offset ) {
           i++;
+          if (!cursor.hasNext())
+            break;
           cursor.next();
         }
-        Element next = cursor.next();
-        result.add( next.getUid() );
-
-        cursor = this.pl.find( Element.class, this.getFilter() );
+        if (cursor.hasNext()) {
+          Element next = cursor.next();
+          result.add(next.getId());
+        }
+        //cursor = this.pl.find( Element.class, this.getFilter() );
       }
 
     }

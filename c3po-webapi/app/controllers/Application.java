@@ -21,6 +21,7 @@ import com.petpet.c3po.api.model.helper.Filter;
 
 import common.WebAppConstants;
 import helpers.SessionFilters;
+import helpers.TemplatesLoader;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -44,6 +45,7 @@ public class Application extends Controller {
 		}
 		Filter f=new Filter();
 		SessionFilters.addFilter(session, f);
+		Application.PROPS = TemplatesLoader.getDefaultTemplate();
 	}
 
 	public static Result clear() {
@@ -54,6 +56,8 @@ public class Application extends Controller {
 	public static Result getSetting(String key) {
 		Logger.debug("Received a getSetting call");
 		String value = session(key);
+		if (value==null)
+			value ="all";
 		return ok(play.libs.Json.toJson(value));
 	}
 

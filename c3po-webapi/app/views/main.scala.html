@@ -70,23 +70,25 @@ $(document).ready(function() {
         </li>
         <li><a href="/c3po/export">Export</a>
         </li>
-        <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" />
+          <!--  <li><img id="collections_btn" src="@routes.Assets.at("images/filters/collections.png")" />
+        </li>-->
+        <li><a href="/c3po/conflicts/index">Conflicts</a>
         </li>
         <li><img id="filter_btn" src="@routes.Assets.at("images/filters/filter.png")" />
         </li>
+
       </ul>
     </nav>
   </div>
-  <div id="collections">
-    <h2>
-      Current collection: <span id="ajax_collection">@session.get("current.collection")</span>
-    </h2>
-    Other collections: <select> @for(c <- collections) {
+    <!-- <div id="collections">
+    Select a collection: <select> @for(c <- collections) {
       <option value="@c">@c</option> }
     </select>
-  </div>
+  </div> -->
   <div id="filter">
-  
+      Select a collection: <select id="collectionSelect"> @for(c <- collections) {
+    <option value="@c">@c</option> }
+  </select>
 <!--      @if(session.get("current.filter")) { -->
     
     <div id="addfilter">

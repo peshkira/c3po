@@ -15,6 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.api.model.helper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import com.petpet.c3po.api.model.Property;
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
-public class MetadataRecord {
+public class MetadataRecord implements Serializable {
 
   /**
    * The status of the element shows the certainty with which the value for the

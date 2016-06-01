@@ -62,7 +62,7 @@ public class MongoElementSerializer implements MongoModelSerializer {
         document.put( "collection", element.getCollection() );
       }
 
-      BasicDBObject meta = new BasicDBObject();
+     // BasicDBObject meta = new BasicDBObject();
       for ( MetadataRecord r : element.getMetadata() ) {
         BasicDBObject key = new BasicDBObject();
 
@@ -72,8 +72,8 @@ public class MongoElementSerializer implements MongoModelSerializer {
           BasicDBObject conflicting;
           List<Object> values;
           List<Object> sources;
-          if ( meta.containsField( r.getProperty().getId() ) ) {
-            conflicting = (BasicDBObject) meta.get( r.getProperty().getId() );
+          if ( document.containsField( r.getProperty().getId() ) ) {
+            conflicting = (BasicDBObject) document.get( r.getProperty().getId() );
             values = (List<Object>) conflicting.get( "values" );
             if ( values == null ) {
               values = new ArrayList<Object>();
@@ -103,19 +103,19 @@ public class MongoElementSerializer implements MongoModelSerializer {
           conflicting.put( "values", values );
           conflicting.put( "sources", sources );
           conflicting.put( "status", r.getStatus() );
-          meta.put( r.getProperty().getId(), conflicting );
+          document.put( r.getProperty().getId(), conflicting );
 
         } else {
           key.put( "value", DataHelper.getTypedValue( r.getProperty().getType(), r.getValue() ) );
           key.put( "sources", r.getSources() );
-          meta.put( r.getProperty().getId(), key );
+          document.put( r.getProperty().getId(), key );
         }
 
       }
 
-      if ( !meta.keySet().isEmpty() ) {
-        document.put( "metadata", meta );
-      }
+      //if ( !meta.keySet().isEmpty() ) {
+      //  document.put( "metadata", meta );
+      //}
 
       BasicDBObject logEntries = new BasicDBObject();
 
@@ -126,8 +126,8 @@ public class MongoElementSerializer implements MongoModelSerializer {
         logEntries.put("changeType", logEntry.getChangeType().name());
         logEntries.put("ruleName", logEntry.getRuleName());
       }
-
-      document.put("log", logEntries);
+      if (logEntries.size()!=0)
+        document.put("log", logEntries);
 
     }
 

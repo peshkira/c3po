@@ -101,13 +101,6 @@ public class DataHelperTest {
     Assert.assertEquals(name, document.get("name"));
     Assert.assertEquals(collection, document.get("collection"));
 
-    BasicDBObject meta = (BasicDBObject) document.get("metadata");
-    Assert.assertNotNull(meta);
-    Assert.assertEquals(2, meta.keySet().size());
-
-    Assert.assertTrue(meta.containsField(p1.getId()));
-    Assert.assertTrue(meta.containsField(p2.getId()));
-
   }
   
   @Test
@@ -137,9 +130,9 @@ public class DataHelperTest {
     Assert.assertEquals(name, document.get("name"));
     Assert.assertEquals(collection, document.get("collection"));
 
-    BasicDBObject meta = (BasicDBObject) document.get("metadata");
+    DBObject meta =  document;
     Assert.assertNotNull(meta);
-    Assert.assertEquals(1, meta.keySet().size());
+    Assert.assertEquals(4, meta.keySet().size());
 
     Assert.assertTrue(meta.containsField(p1.getId()));
 

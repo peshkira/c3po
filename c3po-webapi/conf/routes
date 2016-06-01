@@ -4,48 +4,62 @@
 
 # Home page
 #TODO remove the first in production...
-GET     /                                      controllers.Application.index()
-GET     /c3po                                  controllers.Application.index()
-GET     /c3po/clear                            controllers.Application.clear()
-GET     /c3po/collections                      controllers.Properties.getCollections()
-POST    /c3po/collections                      controllers.Properties.setCollection(name: String)
-GET     /c3po/properties                       controllers.Properties.getProperties()
-GET     /c3po/property                         controllers.Properties.getProperty(name: String)
-POST    /c3po/settings                         controllers.Application.setSetting()
-GET     /c3po/settings                         controllers.Application.getSetting(key: String)
+GET           /                              controllers.Application.index()
+GET           /c3po                          controllers.Application.index()
+GET           /c3po/clear                    controllers.Application.clear()
+GET           /c3po/collections              controllers.Properties.getCollections()
+POST          /c3po/collections              controllers.Properties.setCollection(name: String)
+GET           /c3po/properties               controllers.Properties.getProperties()
+GET           /c3po/property                 controllers.Properties.getProperty(name: String)
+POST          /c3po/settings                 controllers.Application.setSetting()
+GET           /c3po/settings                 controllers.Application.getSetting(key: String)
 
 # Filter
-GET     /c3po/filters                          controllers.Filters.getConditions()
-DELETE  /c3po/filter                           controllers.Filters.removeCondition(property: String)
-POST    /c3po/filter                           controllers.Filters.addCondition()
-GET     /c3po/filter/values                    controllers.Properties.getValuesUnconditional()
+GET           /c3po/filters                  controllers.Filters.getConditions()
+DELETE        /c3po/filter                   controllers.Filters.removeCondition(property: String, value: String)
+POST          /c3po/filter                   controllers.Filters.addCondition()
+GET           /c3po/filter/values            controllers.Properties.getValuesUnconditional()
 
 # Collection Overview
-GET     /c3po/overview                         controllers.Overview.index()
-GET     /c3po/overview/graph                   controllers.Overview.addGraph(property: String)
+GET           /c3po/overview                 controllers.Overview.index()
+GET           /c3po/overview/graph           controllers.Overview.addGraph(property: String)
+GET           /c3po/overview/filter          controllers.Overview.indexFiltered()
 
 # Elements Page
-GET     /c3po/objects                          controllers.Elements.index()
-GET     /c3po/objects/:id                      controllers.Elements.show(id: String)
+GET           /c3po/objects                  controllers.Elements.index()
+GET           /c3po/objects/:id              controllers.Elements.show(id: String)
+GET           /c3po/object/:id               controllers.Elements.get(id: String)
+POST          /c3po/objects/uploadFile       controllers.Elements.uploadFile()
+
 
 # Samples Page
-GET     /c3po/samples                          controllers.Samples.index()
-GET     /c3po/samples/get                      controllers.Samples.getSamples(alg: String, size: Int, props: String ?= "")
+GET           /c3po/samples                  controllers.Samples.index()
+GET           /c3po/samples/get              controllers.Samples.getSamples(alg: String, size: Int, props: String ?= "")
 
 # Export Page
-GET     /c3po/export                           controllers.Export.index()
-GET     /c3po/export/profile                   controllers.Export.profile()
-GET     /c3po/export/csv/all                   controllers.Export.exportAllToCSV()
-GET     /c3po/export/csv/filter                controllers.Export.exportFilterToCSV()
+GET           /c3po/export                   controllers.Export.index()
+GET           /c3po/export/profile           controllers.Export.profile()
+GET           /c3po/export/csv/all           controllers.Export.exportAllToCSV()
+GET           /c3po/export/csv/filter        controllers.Export.exportFilterToCSV()
 
 # Mail
-POST    /c3po/feedback                         controllers.Mail.send()
+POST          /c3po/feedback                 controllers.Mail.send()
     
 # Templates
 
-GET /c3po/template/export						controllers.Templates.exportTemplate()
-POST /c3po/template/import 						controllers.Templates.importTemplate()
+GET           /c3po/template/export          controllers.Templates.exportTemplate()
+POST          /c3po/template/import          controllers.Templates.importTemplate()
 #GET  /c3po/templates                      controllers.Templates.getTemplates()
+
+
+#Conflicts
+
+GET           /c3po/conflicts/index          controllers.Conflicts.index()
+GET           /c3po/conflicts                controllers.Conflicts.getRules()
+GET           /c3po/conflicts/csv            controllers.Conflicts.csv()
+POST          /c3po/conflicts                controllers.Conflicts.createRule()
+DELETE        /c3po/conflicts                controllers.Conflicts.deleteRule()
+POST          /c3po/conflicts/resolve        controllers.Conflicts.resolve()
 
 # Profile page
 #GET     /c3po/profile/              controllers.Profiles.index()
@@ -53,4 +67,4 @@ POST /c3po/template/import 						controllers.Templates.importTemplate()
 #POST    /c3po/profile/:name         controllers.Profiles.submit(name: String)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET           /assets/*file                  controllers.Assets.at(path="/public", file)

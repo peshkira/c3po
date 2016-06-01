@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.google.common.collect.Lists;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.*;
@@ -29,6 +30,7 @@ import common.WebAppConstants;
 import helpers.Graph;
 import helpers.PropertyValuesFilter;
 import helpers.SessionFilters;
+import helpers.StringParser;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -37,9 +39,8 @@ import play.mvc.Result;
 public class Filters extends Controller {
 
     public static Result addCondition() {
-        Logger.debug("Received an add call in filter");
+        Logger.debug("Received an addCondition in filter");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        // final List<String> names = Application.getCollectionNames();
         Filter filter = Filters.getFilterFromSession();
         if (filter != null) {
             DynamicForm form = play.data.Form.form().bindFromRequest();
@@ -52,52 +53,56 @@ public class Filters extends Controller {
                     if (gr.getProperty().equals(propertyName))
                         propertyValueString = gr.getKeys().get(value);
                 }
-                //Graph graph = Graph.addGraph(filter, propertyName);
-                // propertyValueString = graph.getKeys().get(value);
+            }
+            if (propertyValueString.equals("Rest")){
+                return ok("Cannot show distribution for 'Rest' value");
+
             }
             Object propertyValue = null;
             Property p = persistence.getCache().getProperty(propertyName);
-            if (p.getType().equals(PropertyType.INTEGER.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else {
+            PropertyType pType=PropertyType.valueOf(p.getType());
+            switch (pType){
+                case INTEGER:
                     try {
                         propertyValue = Integer.parseInt(propertyValueString);
                     } catch (NumberFormatException ex) {
-                        propertyValue = propertyValueString;
+                        propertyValue = propertyValueString.equals("Unknown")?null:propertyValueString;
                     }
-                }
-            } else if (p.getType().equals(PropertyType.FLOAT.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else {
+                    break;
+                case FLOAT:
                     try {
                         propertyValue = Double.parseDouble(propertyValueString);
                     } catch (NumberFormatException ex) {
-                        propertyValue = propertyValueString;
+                        propertyValue = propertyValueString.equals("Unknown")?null:propertyValueString;
                     }
-                }
-            } else if (p.getType().equals(PropertyType.BOOL.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else
-                    propertyValue = Boolean.parseBoolean(propertyValueString);
-            } else if (p.getType().equals(PropertyType.STRING.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else
-                    propertyValue = propertyValueString;
-            } else if (p.getType().equals(PropertyType.DATE.toString())) {
-                if (propertyValueString.equals("Unknown"))
-                    propertyValue = null;
-                else {
-                    DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+                    break;
+                case BOOL:
                     try {
-                        propertyValue = dateFormat.parse(propertyValueString);
-                    } catch (ParseException e) {
-                        propertyValue = propertyValueString;
+                        propertyValue = Double.parseDouble(propertyValueString);
+                    } catch (Exception ex){
+                        if (propertyValueString.equals("Unknown"))
+                            propertyValue = null;
+                        else if (propertyValueString.equals("CONFLICT"))
+                            propertyValue = "CONFLICT";
                     }
-                }
+                    break;
+                case STRING:
+                    propertyValue = propertyValueString;
+                    if (propertyValueString.equals("Unknown"))
+                        propertyValue = null;
+                    break;
+                case DATE:
+                    if (propertyValueString.equals("Unknown"))
+                        propertyValue = null;
+                    else {
+                        DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+                        try {
+                            propertyValue = dateFormat.parse(propertyValueString);
+                        } catch (ParseException e) {
+                            propertyValue = propertyValueString;
+                        }
+                    }
+                    break;
             }
 
             List<FilterCondition> fcs = filter.getConditions();
@@ -126,7 +131,7 @@ public class Filters extends Controller {
      * @return
      */
     public static Result getConditions() {
-        Logger.debug("Received a getAll call in filter");
+        Logger.debug("Received a getConditions call in filter");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<PropertyValuesFilter> result = new ArrayList<PropertyValuesFilter>();
         Filter filter = Filters.getFilterFromSession();
@@ -134,44 +139,36 @@ public class Filters extends Controller {
         for (FilterCondition fc : fcs) {
             Property p = persistence.getCache().getProperty(fc.getField());
             Object obj = fc.getValue();
-            String v = "Unknown";
-            if (obj != null) {
-                v = obj.toString();
+            if ( obj instanceof Object[]){
+                Object[] objArray = (Object[]) obj;
+                for (Object o: objArray){
+                    String v = "Unknown";
+                    if (o != null) {
+                        v = o.toString();
+                    }
+                    PropertyValuesFilter f = null;
+                    String distributionType = StringParser.getDistributionType(v);
+                    String distributionTypeWidth = StringParser.getDistributionTypeWidth(v);
+                    PropertyValuesFilter pvf = Properties.getValues(p.getKey(), distributionType, distributionTypeWidth, v);
+                    result.add(pvf);
+                }
+
+            } else{
+                String v = "Unknown";
+                if (obj != null) {
+                    v = obj.toString();
+                }
+                PropertyValuesFilter f = null;
+                String distributionType = StringParser.getDistributionType(v);
+                String distributionTypeWidth = StringParser.getDistributionTypeWidth(v);
+                PropertyValuesFilter pvf = Properties.getValues(p.getKey(), distributionType, distributionTypeWidth, v);
+                result.add(pvf);
             }
-            PropertyValuesFilter f = null;
-            if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
-                String[] strings = v.split(" \\|");
-                if (strings[1].contains("fixed")) {
-                    String width = strings[1].replace("fixed", "");
-                    f = Properties.getNumericValues(p.getKey(), null, "fixed", width, v);
-                } else
-                    f = Properties.getNumericValues(p.getKey(), null, strings[1], null, v);
-            } else
-                f = Properties.getNominalValues(p.getKey(), null, v);
-            result.add(f);
+
         }
         return ok(play.libs.Json.toJson(result));
     }
 
-
-
-
-   /* public static Statistics getCollectionStatistics(Filter filter) {
-        Distribution sizeDistribution = PropertyController.getDistribution("size", filter);
-        final PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        Property size = persistence.getCache().getProperty("size");
-        NumericStatistics statistics = persistence.getNumericStatistics(size, filter);
-
-        Statistics stats = new Statistics();
-        stats.setAvg(sizeDistribution.getStatistics().get("average").toString());
-        stats.setCount(sizeDistribution.getStatistics().get("count").toString());
-        stats.setMax(sizeDistribution.getStatistics().get("max").toString());
-        stats.setMin(sizeDistribution.getStatistics().get("min").toString());
-        stats.setSd(sizeDistribution.getStatistics().get("sd").toString());
-        stats.setSize(sizeDistribution.getStatistics().get("sum").toString());
-        stats.setVar(sizeDistribution.getStatistics().get("var").toString());
-        return stats;
-    }*/
 
     public static Filter getFilterFromQuery(Map<String, String[]> query) {
         Filter filter = new Filter();
@@ -195,58 +192,52 @@ public class Filters extends Controller {
     }
 
     public static void setFilterFromSession(Filter filter) {
+        List<String> toPrint=new ArrayList<String>();
+        String collectionName=null;
+        for (FilterCondition fc: filter.getConditions()){
+            toPrint.add(fc.getField()+" : "+fc.getValue());
+            if (fc.getField().equals("collection"))
+                collectionName=fc.getValue().toString();
+        }
+        Logger.debug("Setting the filter session to: " + toPrint.toString());
 
+        if (collectionName==null)
+            collectionName="all";
+        session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, collectionName);
         String session = session(WebAppConstants.SESSION_ID);
         SessionFilters.addFilter(session, filter);
     }
-
-    /*private static PropertyValuesFilter getNumericValues(String c, Property p, String alg, String width) {
-        Filter filter = FilterController.getFilterFromSession();
-        Graph graph = null;
-
-        if (alg.equals("fixed")) {
-            int w = Integer.parseInt(width);
-            graph = Graph.getFixedWidthHistogram(filter, p.getId(), w);
-        } else if (alg.equals("sqrt")) {
-            graph = Graph.getSquareRootHistogram(filter, p.getId());
-        } else if (alg.equals("sturge")) {
-            graph = Graph.getSturgesHistogramm(filter, p.getId());
-        }
-
-        graph.sort();
-
-        PropertyValuesFilter f = new PropertyValuesFilter();
-        f.setProperty(p.getId());
-        f.setType(p.getType());
-        f.setValues(graph.getKeys()); // this is not a mistake.
-
-        return f;
-    }*/
 
     public static Graph getGraph(String property) {
 
         DynamicForm form = play.data.Form.form().bindFromRequest();
         String alg = form.get("alg");
-        //TODO: DEBUG THIS PART!!
         return Graph.getGraph(Filters.getFilterFromSession(), property);
-
-
     }
 
-    public static Result removeCondition(String property) {
+    public static Result removeCondition(String property, String value) {
         Logger.debug("Received a removeCondition call in filter, removing filter with property " + property);
         Filter filter = Filters.getFilterFromSession();
         for (Iterator<FilterCondition> iter = filter.getConditions().listIterator(); iter.hasNext(); ) {
             FilterCondition fc = iter.next();
             if (fc.getField().equals(property)) {
-                iter.remove();
+               /* Object obj = fc.getValue();
+                if (obj instanceof Object[]) {
+                    Object[] objArray = (Object[]) obj;
+                    List<Object> objList = Arrays.asList(objArray);
+                    Iterator<Object> iterator = objList.iterator();
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        String s = next.toString();
+                        if (s.equals(value))
+                            objList.remove(next);
+                    }
+                    fc.setValue(objList.toArray());
+                } else*/
+                    iter.remove();
             }
         }
         Filters.setFilterFromSession(filter);
-        if (property.equals("collection")) {
-            session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, "none");
-
-        }
         return ok();
     }
 
@@ -268,19 +259,24 @@ public class Filters extends Controller {
         Filter result = new Filter();
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<FilterCondition> conditions = filter.getConditions();
+        if (conditions==null || conditions.size()==0)
+            return filter;
         for (FilterCondition fc : conditions) {
             String property = fc.getField();
             Object value = fc.getValue();
             Property p = persistence.getCache().getProperty(property);
             if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
                 if (value == null || value.toString().equals("Unknown"))
-                    result.addFilterCondition(new FilterCondition(property, value));
+                    result.addFilterCondition(new FilterCondition(property, null));
                 else {
                     BetweenFilterCondition bfc = getBetweenFilterCondition(value.toString(), property);
                     result.addFilterCondition(bfc);
                 }
             } else {
-                result.addFilterCondition(new FilterCondition(property, value));
+                if (value == null || value.toString().equals("Unknown"))
+                    result.addFilterCondition(new FilterCondition(property, null));
+                else
+                    result.addFilterCondition(new FilterCondition(property, value));
             }
         }
         return result;

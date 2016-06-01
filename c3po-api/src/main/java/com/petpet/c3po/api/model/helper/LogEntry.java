@@ -1,5 +1,7 @@
 package com.petpet.c3po.api.model.helper;
 
+import java.io.Serializable;
+
 /**
  * <p>A LogEntry holds information about changes that were applied to a
  * {@link MetadataRecord}, based on the execution of a rule. Although the rule
@@ -12,7 +14,7 @@ package com.petpet.c3po.api.model.helper;
  * changes.
  * </p>
  */
-public class LogEntry {
+public class LogEntry implements Serializable {
 
   public static enum ChangeType {
     IGNORED,

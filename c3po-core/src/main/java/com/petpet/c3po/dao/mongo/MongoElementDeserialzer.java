@@ -75,9 +75,12 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
     e.setId( obj.get( "_id" ).toString() );
     e.setMetadata( new ArrayList<MetadataRecord>() );
 
-    DBObject meta = (BasicDBObject) obj.get( "metadata" );
+    DBObject meta =  obj;
     for ( String key : meta.keySet() ) {
       MetadataRecord rec = new MetadataRecord();
+
+      if (key.equals("_id") ||key.equals("collection") || key.equals("name") || key.equals("uid") )
+        continue;
       DBObject prop = (DBObject) meta.get( key );
       Property p = this.persistence.getCache().getProperty( key );
       rec.setProperty( p );

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -286,7 +287,7 @@ public final class Configurator {
    * Inits the default persistence layer and the cache.
    */
   private void initDefaultPersistence() {
-    this.persistence = new DefaultPersistenceLayer();
+    this.persistence = new MongoPersistenceLayer();
 
     this.initCache();
   }

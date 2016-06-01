@@ -127,7 +127,7 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
 
           Iterator<Element> cursor = pl.find( Element.class, c.query );
           if (cursor.hasNext())
-              result.add( cursor.next().getUid() );
+              result.add( cursor.next().getId() );
         //double percent = c.count * 100 / overallCount;
         //int tmpLimit = (int) Math.round( percent / 100 * limit );
 

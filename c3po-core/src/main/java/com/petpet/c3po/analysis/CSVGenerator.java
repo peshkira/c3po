@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.petpet.c3po.api.model.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,22 +165,26 @@ public class CSVGenerator {
 
       // for all elements append the values in the correct column
       while ( matrix.hasNext() ) {
-        Element next = matrix.next();
+        try{
+          Element next = matrix.next();
 
-        // first the uid
-        writer.append( replace( next.getUid() ) + ", " );
+          // first the uid
+          writer.append( replace( next.getUid() ) + ", " );
 
-        // then the properties
-        for ( Property p : props ) {
-          List<MetadataRecord> value = next.removeMetadata( p.getId() );
+          // then the properties
+          for ( Property p : props ) {
+            List<MetadataRecord> value = next.removeMetadata( p.getId() );
 
-          assert value.size() == 0 || value.size() == 1;
+            assert value.size() == 0 || value.size() == 1;
 
-          final String val = this.getValueFromMetaDataRecord( value );
-          writer.append( val );
-          writer.append( ", " );
-        }
-        writer.append( "\n" );
+            final String val = this.getValueFromMetaDataRecord( value );
+            writer.append( val );
+            writer.append( ", " );
+          }
+          writer.append( "\n" );
+        } catch (Exception e) {}
+
+
       }
 
       writer.flush();
@@ -198,8 +203,9 @@ public class CSVGenerator {
    * @return the matching elements.
    */
   private Iterator<Element> buildMatrix( final String collection ) {
-    Filter filter = new Filter( new FilterCondition( "collection", collection ) );
-
+    Filter filter=null;
+    if (collection!=null)
+      filter = new Filter( new FilterCondition( "collection", collection ) );
     return this.persistence.find( Element.class, filter );
   }
 
@@ -235,7 +241,20 @@ public class CSVGenerator {
     String result = "";
     if ( value.size() != 0 ) {
       final String v = value.get( 0 ).getValue();
-      result = (v == null) ? "CONFLICT" : replace( v.toString() );
+      if (v!=null)
+        result=v;
+      else{
+        List<String> values = value.get(0).getValues();
+        List<String> sources = value.get(0).getSources();
+        for (int i=0; i< values.size();i++){
+          String s = values.get(i);
+          Source source = this.persistence.getCache().getSource(sources.get(i));
+          result+=s+"["+source.getName()+":"+source.getVersion()+"]"+";";
+        }
+        result = result.substring(0, result.length() - 1);
+      }
+
+     // result = (v == null) ? "CONFLICT" : replace( v.toString() );
     }
 
     return result;

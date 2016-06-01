@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.petpet.c3po.utils.VocabularyDP;
+import org.bson.types.ObjectId;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -319,15 +320,15 @@ public class ProfileGenerator {
         }
     }
 
-    private void createSampleElement( final Element samples, final String uid ) {
+    private void createSampleElement( final Element samples, final String id ) {
         Iterator<com.petpet.c3po.api.model.Element> iter = this.persistence.find( ELEMENT_CLASS, new Filter(
-                new FilterCondition( "uid", uid ) ) );
+                new FilterCondition("_id", new ObjectId(id) )  ) );
 
         assert iter.hasNext();
 
         com.petpet.c3po.api.model.Element element = iter.next();
 
-        Element sample = samples.addElement( "sample" ).addAttribute( "uid", uid );
+        Element sample = samples.addElement( "sample" ).addAttribute( "id", id );
         for ( MetadataRecord mr : element.getMetadata() ) {
             LOG.debug( "Metadata record: {}", mr.getProperty().getKey() );
             if ( mr.getValues().size()==0)

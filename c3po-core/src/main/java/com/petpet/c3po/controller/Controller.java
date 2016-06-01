@@ -16,7 +16,11 @@
 package com.petpet.c3po.controller;
 
 import com.petpet.c3po.adaptor.browsershot.BrowserShotAdaptor;
-import java.io.File;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +28,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.petpet.c3po.adaptor.rules.*;
+import com.petpet.c3po.gatherer.FileMetadataStream;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.slf4j.Logger;
@@ -31,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.adaptor.tika.TIKAAdaptor;
-import com.petpet.c3po.adaptor.browsershot.BrowserShotAdaptor;
 import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
@@ -430,6 +434,29 @@ public class Controller {
 
         List<ProcessingRule> rules = this.getRules( collection );
 
+        Collections.sort( rules, new Comparator<ProcessingRule>() {
+
+            // sorts from descending
+            @Override
+            public int compare( ProcessingRule r1, ProcessingRule r2 ) {
+                int first = this.fixPriority( r2.getPriority() );
+                int second = this.fixPriority( r1.getPriority() );
+                return new Integer( first ).compareTo( new Integer( second ) );
+            }
+
+            private int fixPriority( int prio ) {
+                if ( prio < 0 )
+                    return 0;
+
+                if ( prio > 1000 )
+                    return 1000;
+
+                return prio;
+            }
+
+        } );
+
+
         LOG.debug( "Initializing adaptors..." );
         for ( int i = 0; i < adaptThreads; i++ ) {
             AbstractAdaptor a = this.getAdaptor( type );
@@ -626,29 +653,31 @@ public class Controller {
         System.out.println("Done resolving conflicts");
         cons.setRunning(false);
         resolver.onCommandFinished();
-        /*for ( int i = 0; i < consThreads; i++ ) {
-            Consolidator c = new Consolidator( this.persistence, this.processingQueue );
-            consolidators.add( c );
-            this.consolidatorPool.submit( c );
-        }
-
-        // no more consolidators can be added.
-
-
-        this.stopConsoldators( consolidators );
-
-        this.consolidatorPool.shutdown();
-
-
-
-        try {
-            this.stopConsoldators( consolidators );
-
-            this.consolidatorPool.awaitTermination( 5, TimeUnit.SECONDS );
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-
     }
 
+    public static void processFast(final File file, final String collectionName){
+       // new Thread(){
+        //    public void run(){
+                FITSAdaptor adaptor=new FITSAdaptor();
+                adaptor.setRules(new ArrayList<ProcessingRule>());
+                PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+                Consolidator consolidator = new Consolidator( persistence, null );
+        String data = null;
+        try {
+            data = readFile(file.getAbsolutePath(), Charset.defaultCharset());
+            Element element = adaptor.parseElement(file.getName(), data);
+            element.setCollection(collectionName);
+            consolidator.process(element);
+        } catch (IOException e) {
+        e.printStackTrace();
+    }
+       //     }
+       // }.start();
+    }
+
+    static String readFile(String path, Charset encoding) throws IOException
+    {
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        return new String(encoded, encoding);
+    }
 }

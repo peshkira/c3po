@@ -15,6 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.api.model.helper;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,13 +57,23 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
  * @author Petar Petrov <me@petarpetrov.org>
  * 
  */
-public class Filter {
+public class Filter implements Serializable{
 
   /**
    * A list of filter conditions, that has to be interpreted by the persistence
    * provider to a query or addition to a query.
    */
   private List<FilterCondition> conditions;
+
+  public String getRaw() {
+    return raw;
+  }
+
+  public void setRaw(String raw) {
+    this.raw = raw;
+  }
+
+  private String raw;
 
   /**
    * Create a new empty filter with an initialized empty list of

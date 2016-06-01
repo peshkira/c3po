@@ -57,7 +57,7 @@ $(document).ready(function(){
 	//###############################
 
 	// add click event on the collection chooser html select element
-	$("#collections select").change(function() {
+	$("#collectionSelect").change(function() {
 		var collection = $(this).val();
 		$.ajax ({
 			type:     'POST',
@@ -79,17 +79,171 @@ $(document).ready(function(){
 	//###############################
 
 	// build the current filter elements.
+
+
+
+
 	$.get('/c3po/filters', function(data) {
+		var availableProperties=getAvailableProperties();
 		$.each(data, function(i, pvf) {
-			addNewFilter();
-			var div = $('.propertyfilter')[i];
-			$(div).children('select').val(pvf.property);
-			$(div).attr('oldValue', pvf.property);
-			showValuesSelect(div, pvf);
-			$(div).children('select:last').val(pvf.selected); 
+			var div=createFilterConditionHolder();
+			if (div){
+				addSelectFilterConditionProperty(div,availableProperties,pvf.property);
+				addSelectFilterConditionValue(div,pvf.values, pvf.selected);
+			}
+
+		//	addNewFilter();
+		//	var div = $('.propertyfilter')[i];
+		//	$(div).children('select').val(pvf.property);
+		//	showValuesSelect(div, pvf);
+		//	$(div).children('select:last').val(pvf.selected);
 		});
 
 	});
+
+	function getAvailableProperties() {
+		var elem=[];
+		$.ajax ({
+			headers: {
+				Accept : "application/json; charset=utf-8",
+			},
+			type:     'GET',
+			url:      '/c3po/properties',
+			timeout:  5000,
+			async: false,
+			success:  function (oData) {
+				elem = oData;
+			}
+		});
+		return elem;
+	};
+	//adds a new select with all properties for the next filter selection
+	function createFilterConditionHolder() {
+		// check if the previous filter is already setup accordingly
+		var show = false;
+		if ($('.propertyfilter:last')[0]) {
+			var selects = $('.propertyfilter:last select');
+			if(selects.length > 1 && $(selects[1]).val() !== "") {
+				show = true;
+			} else {
+				$('.propertyfilter:last').effect("shake", {distance:10, times:3, direction: 'up'}, 80);
+			}
+		} else {
+			show = true;
+		}
+		// if previous filter is ready, then show
+		if (show) {
+			// create new div
+			var div = $('<div class="propertyfilter"></div>').appendTo('#filter');
+
+			// append delete button and install delete handler
+			var deletediv = $('<div class="delete"><a class="red_button" href="#">x</a></div>').appendTo($(div));
+			$(deletediv).click(function() {
+				startSpinner();
+				var property = $(this).siblings('select:first').val();
+				var value = $(this).siblings('select:last').val();
+				$.ajax({
+					type:     'DELETE',
+					url:      '/c3po/filter?property=' + property + '&value=' + value,
+					timeout:  5000,
+					success:  function(oData) {
+						stopSpinner();
+						window.location.reload();
+					}
+				});
+				$(this).parent().remove();
+
+			});
+			return div;
+		}
+	};
+
+
+	function addSelectFilterConditionProperty(div, availableProperties, property) {
+		// for each property add an option in the html select
+		var sel = $('<select>').appendTo(div);
+		sel.append($('<option>').text("").attr('value',''));
+		$.each(availableProperties, function(i, value) {
+			sel.append($('<option>').text(value).attr('value', value));
+		});
+		sel.val(property);
+		div.attr('oldValue', property);
+		// if the select is clicked then get the values for the current
+		// option.
+		sel.change(function() {
+			var property = $(this).val();
+			if (property) {
+				var old = $(this).parent().attr('oldValue');
+			//	$(this).parent().attr('oldValue', property);
+				$.ajax ({
+					type:     'DELETE',
+					async:    false,
+					url:      '/c3po/filter?property='+old,
+					timeout:  5000
+				});
+
+				var collection = "";
+				$.ajax ({
+					type:     'GET',
+					async:    false,
+					url:      '/c3po/settings?key=current.collection',
+					timeout:  5000,
+					success: function (oData) {
+						collection = oData;
+					}
+				});
+
+				var url = '/c3po/filter/values?filter='+property+'&collection=' + collection;
+
+				$.ajax ({
+					type:     'GET',
+					async:    false,
+					url:      '/c3po/property?name=' + property,
+					timeout:  5000,
+					success: function (oData) {
+						if (oData.type == 'INTEGER') {
+							showIntegerPropertyDialog('getValuesForProperty("' + url + '")');
+						} else {
+							showOtherProperty(url, div);
+						}
+					}
+				});
+
+			} else {
+				$(sel).effect("highlight", {color:'#FF1400'} , "slow");
+				if ($(div).children('select').length > 1) {
+					($(div).children('select:last')).remove();
+				}
+			}
+		});
+	};
+
+	function addSelectFilterConditionValue(div, values, selected) {
+		// first remove filtervalues if property was already selected
+		if (div.children('select').length > 1) {
+			(div.children('select:last')).remove();
+		}
+		if (values.indexOf(selected) == -1){
+			values.push(selected);
+		}
+		var sel = $('<select>').appendTo(div);
+		sel.append($('<option>').text("").attr('value',''));
+		$.each(values, function(i, value) {
+			$(sel).append($('<option>').text(value).attr('value', value));
+		});
+		sel.val(selected);
+		$(sel).change(function() {
+			var value = $(this).val();
+			if (value) {
+				startSpinner();
+				$.post('/c3po/filter?filter=' + property + '&value='+value + '&type=normal', function(data) {
+					window.location.reload();
+				});
+			} else {
+				$(sel).effect("highlight", {color:'#FF1400'} , "slow");
+			}
+		});
+	};
 
 
 	//###############################
@@ -413,7 +567,7 @@ function getUrlForIntegerProperty(url) {
 	var property = $('.popupconfig').children('select:first').val();
 	var alg = $('.popupconfig').children('select:last').val();
 	var width = -1;
-	url += "&alg=" + alg
+	url += "&alg=" + alg;
 
 	if (alg == "fixed") {
 		width = $('.popupconfig input:first').val();
