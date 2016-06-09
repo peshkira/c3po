@@ -614,6 +614,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      * @return a {@link DBObject} containing the results.
      */
     private DBObject histogramMapReduce( int key, Property p, Filter filter ) {
+        long start = System.currentTimeMillis();
         String map = "";
 
         DBObject query = this.getCachedFilter( filter );
@@ -654,19 +655,23 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         if ( cursor.count() == 0 ) {
             return null;
         }
-
+        long end = System.currentTimeMillis();
+        LOG.debug( "The map-reduce job took {} seconds", (end - start)/1000 );
         return (DBObject) cursor.next().get( "results" );
     }
 
 
 
     public List<BasicDBObject> mapReduce(String map, String reduce, Filter filter ){
+        long start = System.currentTimeMillis();
         DBObject query = this.getCachedFilter( filter );
         DBCollection elmnts = getCollection( Element.class );
         MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
 
         MapReduceOutput output = elmnts.mapReduce( cmd );
         List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+        long end = System.currentTimeMillis();
+        LOG.debug( "The map-reduce job took {} seconds", (end - start)/1000 );
         return results;
 
     }
@@ -682,6 +687,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      * @return a {@link DBObject} with the results.
      */
     private DBObject numericMapReduce( String property, Filter filter ) {
+        long start = System.currentTimeMillis();
         int key = getCachedResultId( property, filter );
 
         DBCollection elmnts = getCollection( Element.class );
@@ -699,7 +705,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         if ( cursor.count() == 0 ) {
             return null;
         }
-
+        long end = System.currentTimeMillis();
+        LOG.debug( "The map-reduce job took {} seconds", (end - start)/1000 );
         return (DBObject) cursor.next().get( "value" );
     }
 

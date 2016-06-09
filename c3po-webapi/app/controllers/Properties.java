@@ -108,7 +108,11 @@ public class Properties extends Controller {
 
     private static Distribution processNumericDistribution(Distribution d, String algorithm, String width) {
         Double min = getMin(d.getPropertyValues());
+        if (min < 0)
+            min = 0.0;
         Double max = getMax(d.getPropertyValues());
+        if (max < 0)
+            max = 0.0;
         Double count = (double) d.getPropertyValues().size();
         int bin_width = 0;
         int bins_count = 0;
@@ -145,6 +149,8 @@ public class Properties extends Controller {
                 conflictedCount = propertyValueCount;
             } else {
                 double propertyValue = Double.parseDouble(key);
+                if (propertyValue < 0)
+                    continue;
                 int bin_id=0;
                 if (bins_count!=1)
                     bin_id = (int) (propertyValue / bin_width);
