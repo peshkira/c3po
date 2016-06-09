@@ -192,7 +192,7 @@ public class ConflictResolutionProcessor {
 
         header += "SampleURL;Query";
 
-        List<BasicDBObject> basicDBObjects = persistence.mapReduce(map2, reduce, filter);
+        List<BasicDBObject> basicDBObjects = persistence.mapReduceRaw(map2, reduce, filter);
 
         int size = basicDBObjects.size();
         System.out.print(size);

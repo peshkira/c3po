@@ -19,12 +19,10 @@ import static com.mongodb.MapReduceCommand.OutputType.INLINE;
 import static com.mongodb.MapReduceCommand.OutputType.MERGE;
 
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.mongodb.*;
+import com.petpet.c3po.utils.Configurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -662,7 +660,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
 
 
-    public List<BasicDBObject> mapReduce(String map, String reduce, Filter filter ){
+    public List<BasicDBObject> mapReduceRaw(String map, String reduce, Filter filter ){
         long start = System.currentTimeMillis();
         DBObject query = this.getCachedFilter( filter );
         DBCollection elmnts = getCollection( Element.class );
@@ -722,6 +720,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     private int getCachedResultId( String property, Filter filter ) {
         return (property + filter.hashCode()).hashCode();
+    }
+
+    private int getCachedResultId( List<String> properties, Filter filter ) {
+        return (properties.hashCode() + filter.hashCode());
     }
 
     /**
@@ -863,6 +865,287 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         return result;
 
+    }
+
+
+
+
+    public <T extends Model> Map<String, Long> getValueHistogramFor( List<String> properties, Filter filter )
+            throws UnsupportedOperationException {
+
+        Map<String, Long> histogram = new HashMap<String, Long>();
+
+        filter = (filter == null) ? new Filter() : filter;
+
+        DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
+        int key = getCachedResultId( properties, filter );
+        // System.out.println(key);
+        DBCursor cursor = histCollection.find( new BasicDBObject( "_id", key ) );
+
+        if ( cursor.count() == 0 ) {
+            // no cached results for this histogram
+            DBObject object = this.histogramMapReduce( key, properties, filter );
+            histogram = this.parseHistogramResults( object );
+
+        } else {
+            // process
+            DBObject object =  this.histogramMapReduce( key, properties, filter );//(DBObject) cursor.next().get( "results" );
+            histogram = this.parseHistogramResults( object );
+        }
+
+        return histogram;
+    }
+
+
+
+    public DBObject mapReduce(int key, List<String> properties, Filter filter){
+        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        List<String> propertyStats=new ArrayList<String>();
+        List<String> propertiesDate=new ArrayList<String>();
+        List<String> propertiesNumbers=new ArrayList<String>();
+        List<String> propertiesOthers=new ArrayList<String>();
+        for (String property : properties ){
+            Property p = this.getCache().getProperty(property);
+            if (property.equals("size")){
+                propertyStats.add(property);
+            }
+            else if ( p.getType().equals( PropertyType.DATE.toString() ) ) {
+                propertiesDate.add(property);
+            } else if ( p.getType().equals( PropertyType.INTEGER.toString() )
+                    || p.getType().equals( PropertyType.FLOAT.toString() ) ) {
+                propertiesNumbers.add(property);
+            } else {
+                propertiesOthers.add(property);
+            }
+        }
+        long start = System.currentTimeMillis();
+        String map = "function() {\n" +
+                "    var propertyStats = @1;\n" +
+                "    var propertiesDate = @2;\n" +
+                "    var propertiesNumbers = @3;\n" +
+                "    var propertiesOthers = @4;\n" +
+                "    for (x in propertiesOthers) {\n" +
+                "        property = propertiesOthers[x];\n" +
+                "        if (this[property] != null) {\n" +
+                "            if (this[property].status != 'CONFLICT') {\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: this[property].value\n" +
+                "                }, 1);\n" +
+                "            } else {\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: 'CONFLICT'\n" +
+                "                }, 1);\n" +
+                "            }\n" +
+                "        } else {\n" +
+                "            emit({\n" +
+                "                property: property,\n" +
+                "                value: 'Unknown'\n" +
+                "            }, 1);\n" +
+                "        }\n" +
+                "    }\n" +
+                "\n" +
+                "    for (x in propertiesNumbers) {\n" +
+                "        property = propertiesNumbers[x];\n" +
+                "        if (this[property] != null) {\n" +
+                "            if (this[property].status !== 'CONFLICT') {\n" +
+                "                var idx = Math.floor(this[property].value / 10);\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: idx\n" +
+                "                }, 1);\n" +
+                "            } else {\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: 'CONFLICT'\n" +
+                "                }, 1);\n" +
+                "            }\n" +
+                "        } else {\n" +
+                "            emit({\n" +
+                "                property: property,\n" +
+                "                value: 'Unknown'\n" +
+                "            }, 1);\n" +
+                "        }\n" +
+                "    }\n" +
+                "\n" +
+                "    for (x in propertiesDate) {\n" +
+                "        property = propertiesDate[x];\n" +
+                "        if (this[property] != null && this[property].value != undefined) {\n" +
+                "            if (this[property].status !== 'CONFLICT') {\n" +
+                "                var date = new Date(this[property].value);\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: date.getFullYear()\n" +
+                "                }, 1);\n" +
+                "            } else {\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: 'CONFLICT'\n" +
+                "                }, 1);\n" +
+                "            }\n" +
+                "        } else {\n" +
+                "            emit({\n" +
+                "                property: property,\n" +
+                "                value: 'Unknown'\n" +
+                "            }, 1);\n" +
+                "        }\n" +
+                "    }\n" +
+                "\n" +
+                "    for (x in propertyStats) {\n" +
+                "        property = propertyStats[x];\n" +
+                "        if (this[property] != null) {\n" +
+                "            emit({\n" +
+                "                property: property,\n" +
+                "                value: this[property].value\n" +
+                "            }, {\n" +
+                "                sum: this[property].value,\n" +
+                "                min: this[property].value,\n" +
+                "                max: this[property].value,\n" +
+                "                count: 1,\n" +
+                "                diff: 0,\n" +
+                "            });\n" +
+                "        }\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "}";
+
+        String reduce= "function reduce(key, values) {\n" +
+                "    if (key.property != 'size') {\n" +
+                "        var res = 0;\n" +
+                "        values.forEach(function(v) {\n" +
+                "            res += v;\n" +
+                "        });\n" +
+                "        return res;\n" +
+                "    } else {\n" +
+                "        var a = values[0];\n" +
+                "        for (var i = 1; i < values.length; i++) {\n" +
+                "            var b = values[i];\n" +
+                "            var delta = a.sum / a.count - b.sum / b.count;\n" +
+                "            var weight = (a.count * b.count) / (a.count + b.count);\n" +
+                "            a.diff += b.diff + delta * delta * weight;\n" +
+                "            a.sum += b.sum;\n" +
+                "            a.count += b.count;\n" +
+                "            a.min = Math.min(a.min, b.min);\n" +
+                "            a.max = Math.max(a.max, b.max);\n" +
+                "        }\n" +
+                "        return a;\n" +
+                "    }\n" +
+                "}";
+
+        String finalize="function finalize(key, value) {\n" +
+                "  if (key.property == 'size' ){\n" +
+                "    value.avg = value.sum / value.count;\n" +
+                "    value.variance = value.diff / value.count;\n" +
+                "    value.stddev = Math.sqrt(value.variance);\n" +
+                "    return value;\n" +
+                "  } return value;\n" +
+                "}";
+        DBObject query = this.getCachedFilter( filter );
+        String propertiesString = ListToString(properties);
+        map = map.replace("@1", ListToString(propertyStats));
+        map = map.replace("@2", ListToString(propertiesDate));
+        map = map.replace("@3", ListToString(propertiesNumbers));
+        map = map.replace("@4", ListToString(propertiesOthers));
+        LOG.debug( "Executing histogram map reduce job with following map:\n{}", map );
+        LOG.debug( "filter query is:\n{}", query );
+        DBCollection elmnts = getCollection( Element.class );
+        MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
+        cmd.setFinalize(finalize);
+        MapReduceOutput output = elmnts.mapReduce( cmd );
+        List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+
+        DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
+        BasicDBObject old = new BasicDBObject( "_id", key );
+        BasicDBObject res = new BasicDBObject( old.toMap() );
+        res.put( "results", results );
+        histCollection.update( old, res, true, false );
+
+        DBCursor cursor = histCollection.find( new BasicDBObject( "_id", key ) );
+
+        if ( cursor.count() == 0 ) {
+            return null;
+        }
+        long end = System.currentTimeMillis();
+        LOG.debug( "The map-reduce job took {} seconds", (end - start)/1000 );
+        return (DBObject) cursor.next().get( "results" );
+
+
+
+
+    }
+
+    private String ListToString(List<String> properties) {
+        String propertiesString="[";
+        for (String p : properties){
+            propertiesString += "'"+p +"'," ;
+        }
+        if (properties.size()>0)
+            propertiesString = propertiesString.substring(0, propertiesString.length() - 1);
+        propertiesString += "]";
+        return propertiesString;
+    }
+
+    private DBObject histogramMapReduce( int key, List<String> properties, Filter filter ) {
+        long start = System.currentTimeMillis();
+        String map = "function() {\n" +
+                "    var ar = @1;\n" +
+                "    for (x in ar) {\n" +
+                "        property = ar[x];\n" +
+                "        if (this[property] != null) {\n" +
+                "            if (this[property].status != 'CONFLICT') {\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: this[property].value\n" +
+                "                }, 1);\n" +
+                "            } else {\n" +
+                "                emit({\n" +
+                "                    property: property,\n" +
+                "                    value: 'CONFLICT'\n" +
+                "                }, 1);\n" +
+                "            }\n" +
+                "        } else {\n" +
+                "            emit({\n" +
+                "                property: property,\n" +
+                "                value: 'Unknown'\n" +
+                "            }, 1);\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+
+        String reduce= "function(key, values) {\n" +
+                "    var res = 0;\n" +
+                "    values.forEach(function(v) {\n" +
+                "        res += v;\n" +
+                "    });\n" +
+                "    return Array.sum(values);\n" +
+                "}";
+        DBObject query = this.getCachedFilter( filter );
+        String propertiesString = ListToString(properties);
+        map = map.replace("@1", propertiesString);
+        LOG.debug( "Executing histogram map reduce job with following map:\n{}", map );
+        LOG.debug( "filter query is:\n{}", query );
+        DBCollection elmnts = getCollection( Element.class );
+        MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
+
+        MapReduceOutput output = elmnts.mapReduce( cmd );
+        List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+
+        DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
+        BasicDBObject old = new BasicDBObject( "_id", key );
+        BasicDBObject res = new BasicDBObject( old.toMap() );
+        res.put( "results", results );
+        histCollection.update( old, res, true, false );
+
+        DBCursor cursor = histCollection.find( new BasicDBObject( "_id", key ) );
+
+        if ( cursor.count() == 0 ) {
+            return null;
+        }
+        long end = System.currentTimeMillis();
+        LOG.debug( "The map-reduce job took {} seconds", (end - start)/1000 );
+        return (DBObject) cursor.next().get( "results" );
     }
 
 }

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.DBObject;
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -56,7 +57,7 @@ public class MongoPersistenceLayerTest {
     Map<String, String> config = new HashMap<String, String>();
     config.put("db.host", "localhost");
     config.put("db.port", "27017");
-    config.put("db.name", "c3po_test_db");
+    config.put("db.name", "c3po");
 
     DataHelper.init();
 
@@ -70,16 +71,16 @@ public class MongoPersistenceLayerTest {
 
   @After
   public void tearDown() {
-    if (this.pLayer.isConnected()) {
-      this.pLayer.clearCache();
-      this.pLayer.remove(Element.class, null);
-      this.pLayer.remove(Property.class, null);
-      try {
-        this.pLayer.close();
-      } catch (C3POPersistenceException e) {
-        LOG.warn("Could not close the connection in a clear fashion");
-      }
-    }
+   // if (this.pLayer.isConnected()) {
+   //   this.pLayer.clearCache();
+   //   this.pLayer.remove(Element.class, null);
+  //    this.pLayer.remove(Property.class, null);
+   //   try {
+   //     this.pLayer.close();
+   //   } catch (C3POPersistenceException e) {
+    //    LOG.warn("Could not close the connection in a clear fashion");
+   //   }
+   // }
   }
 
   @Test
@@ -255,6 +256,23 @@ public class MongoPersistenceLayerTest {
       Assert.assertEquals(new Long(1), htms);
     }
   }
+
+  @Test
+  public void SuperMapReduceTest() throws Exception {
+
+    setup();
+
+      List<String> properties=new ArrayList<String>();
+      properties.add("mimetype");
+      properties.add("format");
+    properties.add("wordcount");
+    DBObject dbObject = pLayer.mapReduce(0, properties, null);
+
+
+
+  }
+
+
 
   private void insertTestData() {
     Element e1 = new Element("test", "test1", "Some name 1");
