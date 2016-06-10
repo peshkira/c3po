@@ -1,5 +1,6 @@
 package helpers;
 
+import com.google.common.collect.Lists;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import controllers.Application;
@@ -21,7 +22,7 @@ public class TemplatesLoader {
     static final String PATH_TEMPLATE_CONFIG = System.getProperty("user.home") + File.separator + ".c3po.template_config";
     static TemplatesLoader templatesLoader = new TemplatesLoader(new File(PATH_TEMPLATE_CONFIG));
     static List<String> userAddedProperties = new ArrayList<String>();
-    static String[] defaultProps = {"content_type", "created", "valid"}; //{ "mimetype", "format", "format_version", "valid", "wellformed","creating_application_name", "created" };
+    static String[] defaultProps = {};
     @ElementList
     List<TemplateFilter> filters;
     @ElementList
@@ -39,11 +40,6 @@ public class TemplatesLoader {
         return getCurrentTemplate(filter);
     }
 
-    //public static List<String> getTemplates() {
-     //   return templatesToString();
-
-   // }
-
     public void setTemplates(List<Template> templates) {
         this.templates = templates;
     }
@@ -53,20 +49,18 @@ public class TemplatesLoader {
         if (!templatesLoader.isSet()) {
             templatesLoader.loadFromFile(new File(PATH_TEMPLATE_CONFIG));
         }
-        //if (filter == null) {
-        //    return;
-        //}
 
-        //Application.PROPS = templatesLoader.getDefaultTemplate();
         Map mapFilter = filterToString(filter);
 
         List<String> templateProperties = templatesLoader.getProps(mapFilter);
-        if (templateProperties==null)
-            return;
-        templateProperties.addAll(userAddedProperties);
-        if (templateProperties.size()!=0)
+        if (templateProperties == null)
+            templateProperties = new ArrayList<String>();
+        if (userAddedProperties != null)
+            templateProperties.addAll(userAddedProperties);
+        if (templateProperties.size() != 0)
             Application.PROPS = templateProperties.toArray(new String[0]);
     }
+
 
     public static List<String> templatesToString() {
         return templatesLoader.toArrayString();
@@ -156,7 +150,7 @@ public class TemplatesLoader {
     private static List<String> getProperties(Template tmp_template) {
         List<String> result = null;
         if (tmp_template == null)
-            return result;
+            return Lists.newArrayList(getDefaultTemplate());
 
         result = new ArrayList<String>();
         for (TemplateProperty prop : tmp_template.getProperties())
@@ -217,7 +211,6 @@ public class TemplatesLoader {
                 }
             }
         }
-        String[] defaultProps = {"content_type", "valid", "format"};
         return defaultProps;
 
     }
