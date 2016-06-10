@@ -57,7 +57,7 @@ public class MongoPersistenceLayerTest {
     Map<String, String> config = new HashMap<String, String>();
     config.put("db.host", "localhost");
     config.put("db.port", "27017");
-    config.put("db.name", "c3po");
+    config.put("db.name", "c3po_test_db");
 
     DataHelper.init();
 
@@ -71,16 +71,16 @@ public class MongoPersistenceLayerTest {
 
   @After
   public void tearDown() {
-   // if (this.pLayer.isConnected()) {
-   //   this.pLayer.clearCache();
-   //   this.pLayer.remove(Element.class, null);
-  //    this.pLayer.remove(Property.class, null);
-   //   try {
-   //     this.pLayer.close();
-   //   } catch (C3POPersistenceException e) {
-    //    LOG.warn("Could not close the connection in a clear fashion");
-   //   }
-   // }
+    if (this.pLayer.isConnected()) {
+      this.pLayer.clearCache();
+      this.pLayer.remove(Element.class, null);
+     this.pLayer.remove(Property.class, null);
+      try {
+        this.pLayer.close();
+      } catch (C3POPersistenceException e) {
+       LOG.warn("Could not close the connection in a clear fashion");
+      }
+    }
   }
 
   @Test

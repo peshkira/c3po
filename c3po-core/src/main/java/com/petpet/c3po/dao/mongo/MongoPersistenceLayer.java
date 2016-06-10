@@ -896,6 +896,114 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         return histogram;
     }
 
+    public Map<String, Map<String, Long>> parseMapReduce(DBObject object, List<String> properties){
+
+        List<String> propertyStats=new ArrayList<String>();
+        List<String> propertiesDate=new ArrayList<String>();
+        List<String> propertiesNumbers=new ArrayList<String>();
+        List<String> propertiesOthers=new ArrayList<String>();
+        for (String property : properties ){
+            Property p = this.getCache().getProperty(property);
+            if (property.equals("size")){
+                propertyStats.add(property);
+            }
+            else if ( p.getType().equals( PropertyType.DATE.toString() ) ) {
+                propertiesDate.add(property);
+            } else if ( p.getType().equals( PropertyType.INTEGER.toString() )
+                    || p.getType().equals( PropertyType.FLOAT.toString() ) ) {
+                propertiesNumbers.add(property);
+            } else {
+                propertiesOthers.add(property);
+            }
+        }
+
+        Map<String, Map<String, Long>> histograms= new HashMap<String, Map<String, Long>>();
+        Map<String, Long> histogram;
+
+        if ( object == null ) {
+         //   return histogram;
+        }
+
+        List<BasicDBObject> results = (List<BasicDBObject>) object;
+        for ( final BasicDBObject dbo : results ) {
+
+            String property =  ((BasicDBObject) dbo.get("_id")).getString("property");
+            String value = ((BasicDBObject) dbo.get("_id")).getString("value");
+            if (!property.equals("size")) {
+                long count = dbo.getLong("value");
+                if (histograms.get(property) == null) {
+                    histogram = new HashMap<String, Long>();
+                    histograms.put(property, histogram);
+                } else {
+                    histogram = histograms.get(property);
+                }
+                histogram.put(value, count);
+            } else {
+                if (histograms.get(property) == null) {
+                    histogram = new HashMap<String, Long>();
+                    histograms.put(property, histogram);
+                } else {
+                    histogram = histograms.get(property);
+                }
+                BasicDBObject v = (BasicDBObject) dbo.get("value");
+                long sum, min, max, avg, std, var, count;
+                try {
+                    count = v.getLong("count");
+                } catch (Exception e) {
+                    count = 0;
+                }
+                try {
+                    sum = v.getLong("sum");
+                } catch (Exception e) {
+                    sum = 0;
+                }
+                try {
+                    min = v.getLong("min");
+                } catch (Exception e) {
+                    min = 0;
+                }
+                try {
+                    max = v.getLong("max");
+                } catch (Exception e) {
+                    max = 0;
+                }
+                try {
+                    avg = v.getLong("avg");
+                } catch (Exception e) {
+                    avg = 0;
+                }
+                try {
+                    std = v.getLong("stddev");
+                } catch (Exception e) {
+                    std = 0;
+                }
+                try {
+                    var = v.getLong("variance");
+                } catch (Exception e) {
+                    var = 0;
+                }
+                histogram.put("sum", sum);
+                histogram.put("min", min);
+                histogram.put("max", max);
+                histogram.put("avg", avg);
+                histogram.put("std", std);
+                histogram.put("var", var);
+                histogram.put("count", count);
+            }
+
+
+        }
+
+
+
+        return histograms;
+    }
+    @Override
+    public <T extends Model> Map<String, Map<String, Long>> getHistograms(List<String> properties, Filter filter){
+        DBObject dbObject = mapReduce(0, properties, filter);
+        Map<String, Map<String, Long>> histograms = parseMapReduce(dbObject, properties);
+        return histograms;
+    }
 
 
     public DBObject mapReduce(int key, List<String> properties, Filter filter){
@@ -997,7 +1105,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                 "        if (this[property] != null) {\n" +
                 "            emit({\n" +
                 "                property: property,\n" +
-                "                value: this[property].value\n" +
+                "                value: property\n" +
                 "            }, {\n" +
                 "                sum: this[property].value,\n" +
                 "                min: this[property].value,\n" +
@@ -1048,14 +1156,14 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         map = map.replace("@2", ListToString(propertiesDate));
         map = map.replace("@3", ListToString(propertiesNumbers));
         map = map.replace("@4", ListToString(propertiesOthers));
-        LOG.debug( "Executing histogram map reduce job with following map:\n{}", map );
+       // LOG.debug( "Executing histogram map reduce job with following map:\n{}", map );
         LOG.debug( "filter query is:\n{}", query );
         DBCollection elmnts = getCollection( Element.class );
         MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
         cmd.setFinalize(finalize);
         MapReduceOutput output = elmnts.mapReduce( cmd );
         List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
-
+        LOG.debug( "MapReduce produced {} results", results.size() );
         DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
         BasicDBObject old = new BasicDBObject( "_id", key );
         BasicDBObject res = new BasicDBObject( old.toMap() );

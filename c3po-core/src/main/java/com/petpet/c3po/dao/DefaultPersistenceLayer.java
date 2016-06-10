@@ -192,4 +192,9 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
     return this.persistence.getResult();
   }
 
+  @Override
+  public <T extends Model> Map<String, Map<String, Long>> getHistograms(List<String> properties, Filter filter) throws UnsupportedOperationException {
+    return null;
+  }
+
 }

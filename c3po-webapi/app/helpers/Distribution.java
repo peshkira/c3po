@@ -58,6 +58,7 @@ public class Distribution {
 	public String getType() {
 		return type;
 	}
+	public Long getValue(String key){ return this.getPropertyDistribution().get(key);}
 	public void setType(String type) {
 		this.type = type;
 	}

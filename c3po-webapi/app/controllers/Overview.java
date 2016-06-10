@@ -15,6 +15,7 @@
  ******************************************************************************/
 package controllers;
 
+import com.google.common.collect.Lists;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.Configurator;
@@ -48,8 +49,42 @@ public class Overview extends Controller {
 
         Filter filter = Filters.getFilterFromSession();
         TemplatesLoader.setProps(filter);
-        for (String property : Application.PROPS) {
-            Distribution d = Properties.getDistribution(property, filter);
+
+        ArrayList<String> properties = Lists.newArrayList(Application.PROPS);
+        properties.add("size");
+        Map<String, Distribution> distributions = Properties.getDistributions(properties, filter);
+        Iterator<Map.Entry<String, Distribution>> iterator = distributions.entrySet().iterator();
+        StatisticsToPrint stats = new StatisticsToPrint();
+        while (iterator.hasNext()){
+            Map.Entry<String, Distribution> next = iterator.next();
+            if (next.getKey().equals("size")){
+                Distribution sizeDistribution = next.getValue();
+
+                stats.setAvg(Properties.round(sizeDistribution.getValue("avg") / 1024.0 / 1024.0, 3) + " MB");
+                stats.setCount(sizeDistribution.getValue("count").intValue() + " objects");
+                stats.setMax(Properties.round(sizeDistribution.getValue("max") / 1024.0 / 1024.0, 3) + " MB");
+                stats.setMin(Properties.round(sizeDistribution.getValue("min") / 1024.0 / 1024.0, 3) + " MB");
+                stats.setSd(Properties.round(sizeDistribution.getValue("std") / 1024.0 / 1024.0, 3) + " MB");
+                stats.setSize(Properties.round(sizeDistribution.getValue("sum") / 1024.0 / 1024.0, 3) + " MB");
+                stats.setVar(Properties.round(sizeDistribution.getValue("var") / 1024.0 / 1024.0, 3) + " MB^2");
+
+
+            } else {
+                Graph g = Properties.interpretDistribution(next.getValue(), null, null);
+                g.cutLongTail();
+                graphs.add(g);
+
+
+            }
+
+
+        }
+
+        allGraphs = new GraphData(graphs);
+
+        /*for (String property : Application.PROPS) {
+
+            //Distribution d = Properties.getDistribution(property, filter);
             Graph g = Properties.interpretDistribution(d, null, null);
             g.cutLongTail();
             graphs.add(g);
@@ -67,7 +102,7 @@ public class Overview extends Controller {
         stats.setMin(Properties.round(statistics.get("min") / 1024.0 / 1024.0, 3) + " MB");
         stats.setSd(Properties.round(statistics.get("sd") / 1024.0 / 1024.0, 3) + " MB");
         stats.setSize(Properties.round(statistics.get("sum") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setVar(Properties.round(statistics.get("var") / 1024.0 / 1024.0, 3) + " MB^2");
+        stats.setVar(Properties.round(statistics.get("var") / 1024.0 / 1024.0, 3) + " MB^2");*/
 
         return ok(overview.render(names, allGraphs, stats, TemplatesLoader.getCurrentTemplate()));
     }

@@ -6,11 +6,9 @@ import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.*;
 import com.petpet.c3po.utils.Configurator;
-import common.WebAppConstants;
 import helpers.Distribution;
 import helpers.Graph;
 import helpers.PropertyValuesFilter;
-import helpers.Statistics;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -18,9 +16,6 @@ import play.mvc.Result;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static helpers.StringParser.DistibutionRangeValueToString;
@@ -177,7 +172,11 @@ public class Properties extends Controller {
     }
 
     public static Distribution getDistribution(String property, Filter filter) {
-        Distribution result = new Distribution();
+        List<String> properties=new ArrayList<String>();
+        properties.add(property);
+        Map<String, Distribution> distributions = getDistributions(properties, filter);
+        return distributions.get(property);
+        /*Distribution result = new Distribution();
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         Property p = persistence.getCache().getProperty(property);
         if (filter == null)
@@ -188,15 +187,50 @@ public class Properties extends Controller {
         result.setProperty(p.getKey());
         result.setType(p.getType());
         result.setFilter(filter);
-        return result;
+        return result;*/
     }
 
 
-    public static Map<String, Double> getStatistics(Filter filter, String property) {
+    public static Map<String, Distribution> getDistributions(List<String> properties, Filter filter){
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        Map<String, Double> result = new HashMap<String, Double>();
+        if (filter == null)
+            filter = new Filter();
+        Filter tmpFilter = Filters.normalize(filter);
+        Map<String, Map<String, Long>> histograms = persistence.getHistograms(properties, tmpFilter);
+        Map<String, Distribution> distibutions=new HashMap<String, Distribution>();
+        Iterator<Map.Entry<String, Map<String, Long>>> iterator = histograms.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Map<String, Long>> next = iterator.next();
+            String propertyName = next.getKey();
+            Property p = persistence.getCache().getProperty(propertyName);
+            Distribution d = new Distribution();
+            d.setPropertyDistribution(next.getValue());
+            d.setProperty(propertyName);
+            d.setType(p.getType());
+            d.setFilter(filter);
+            distibutions.put(propertyName,d);
+        }
+        return distibutions;
+    }
+
+
+    public static Map<String, Long> getStatistics(Filter filter, String property) {
+        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        Map<String, Long> result = new HashMap<String, Long>();
         Property p = persistence.getCache().getProperty(property);
         if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
+            List<String> properties=new ArrayList<String>();
+            properties.add(property);
+            Map<String, Distribution> distributions = getDistributions(properties, filter);
+            Distribution distribution = distributions.get(property);
+            return distribution.getPropertyDistribution();
+        }
+        return result;
+
+
+
+
+       /* if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
             Logger.debug("Calculating numeric statistics for the property '" + property + "'");
             Filter tmpFilter= Filters.normalize(filter);
             NumericStatistics ns = persistence.getNumericStatistics(p, tmpFilter);
@@ -208,11 +242,11 @@ public class Properties extends Controller {
             result.put("count", (double) ns.getCount());
             result.put("sum", ns.getSum());
    }
-        return result;
+        return result;*/
     }
 
 
-    public static Map<String, Double> getStatistics(String property) {
+    public static Map<String, Long> getStatistics(String property) {
         Filter f = Filters.getFilterFromSession();
         return getStatistics(f, property);
     }
