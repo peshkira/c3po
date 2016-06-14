@@ -18,6 +18,7 @@ package controllers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 import helpers.TemplatesLoader;
 import org.dom4j.Document;
@@ -114,6 +115,22 @@ public class Export extends Controller {
 
 	public static Result exportFilterToCSV() {
 		Logger.debug("Received an exportFilterToCSV call");
+		Map<String, String[]> stringMap = request().queryString();
+		if (stringMap !=null && !stringMap.isEmpty()){
+			Filter f=new Filter();
+			for (Map.Entry<String, String[]> stringEntry : stringMap.entrySet()) {
+				String key = stringEntry.getKey();
+				String[] value = stringEntry.getValue();
+				// if (value.length==1)
+				//     f.addFilterCondition(new FilterCondition(key,value[0]));
+				// else
+				f.addFilterCondition(new FilterCondition(key,value));
+			}
+			Filters.setFilterFromSession(f);
+
+
+		}
+
 		CSVGenerator generator = getGenerator();
 		Filter filter = Filters.getFilterFromSession();
 		String collection= Properties.getCollection();

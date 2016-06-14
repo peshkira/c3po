@@ -18,6 +18,15 @@ $(document).ready(
 				});
 			});
 
+			var button2 = $('<a  href="#" class="green_button">Reset</a>')
+				.appendTo($('#more'));
+			button2.click(function() {
+
+				window.location.href = "/c3po/overview/reset";
+
+				
+			});
+
 		});
 
 function showPopup(properties) {

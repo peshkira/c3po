@@ -283,6 +283,7 @@ public class ConflictResolutionProcessor {
                     output += "http://" + url + "/c3po/objects/" + next.getId();
                 }
                 output += ";" + "http://" + url + "/c3po/overview/filter?" + getQuery;
+                output += ";" + "http://" + url + "/c3po/export/csv/filter?" + getQuery;
                 out.println(output);
         }
         out.close();

@@ -162,4 +162,8 @@ public class Overview extends Controller {
     }
 
 
+    public static Result resetTemplate() {
+        TemplatesLoader.resetTemplates();
+        return redirect("/c3po/overview");
+    }
 }

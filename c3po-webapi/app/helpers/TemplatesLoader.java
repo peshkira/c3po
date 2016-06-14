@@ -21,7 +21,7 @@ import java.util.*;
 public class TemplatesLoader {
     static final String PATH_TEMPLATE_CONFIG = System.getProperty("user.home") + File.separator + ".c3po.template_config";
     static TemplatesLoader templatesLoader = new TemplatesLoader(new File(PATH_TEMPLATE_CONFIG));
-    static List<String> userAddedProperties = new ArrayList<String>();
+    static List<String> userAddedProperties ;
     static String[] defaultProps = {};
     @ElementList
     List<TemplateFilter> filters;
@@ -33,6 +33,7 @@ public class TemplatesLoader {
     }
 
     public TemplatesLoader() {
+        userAddedProperties = new ArrayList<String>();
     }
 
     public static String getCurrentTemplate() {
@@ -59,6 +60,11 @@ public class TemplatesLoader {
             templateProperties.addAll(userAddedProperties);
         if (templateProperties.size() != 0)
             Application.PROPS = templateProperties.toArray(new String[0]);
+    }
+
+    public static void resetTemplates(){
+        templatesLoader = new TemplatesLoader(new File(PATH_TEMPLATE_CONFIG));
+
     }
 
 
@@ -108,11 +114,13 @@ public class TemplatesLoader {
     public void loadFromFile(File file) {
         Serializer serlzr = new Persister();
         TemplatesLoader configRead = null;
+        userAddedProperties = new ArrayList<String>();
         try {
             configRead = serlzr.read(TemplatesLoader.class, file);
             if (configRead != null) {
                 setFilters(configRead.getFilters());
                 setTemplates(configRead.getTemplates());
+
             }
         } catch (Exception e) {
             Logger.debug("No template config file was found. Using default values");

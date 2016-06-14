@@ -24,6 +24,7 @@ GET           /c3po/filter/values            controllers.Properties.getValuesUnc
 GET           /c3po/overview                 controllers.Overview.index()
 GET           /c3po/overview/graph           controllers.Overview.addGraph(property: String)
 GET           /c3po/overview/filter          controllers.Overview.indexFiltered()
+GET          /c3po/overview/reset           controllers.Overview.resetTemplate()
 
 # Elements Page
 GET           /c3po/objects                  controllers.Elements.index()
