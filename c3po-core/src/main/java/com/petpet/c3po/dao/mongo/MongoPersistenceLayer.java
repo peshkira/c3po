@@ -450,7 +450,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         MongoModelSerializer serializer = this.getSerializer( object.getClass() );
         DBObject objectToUpdate = serializer.serialize( object );
         BasicDBObject set = new BasicDBObject( "$set", objectToUpdate );
-        WriteResult update = dbCollection.update(filter, set, true, true);
+        WriteResult update = dbCollection.update(filter, set, false, true);
         setResult(update);
     }
 

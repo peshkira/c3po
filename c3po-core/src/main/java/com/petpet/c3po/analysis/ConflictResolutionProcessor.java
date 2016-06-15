@@ -56,7 +56,7 @@ public class ConflictResolutionProcessor {
             if (map.get("count") != null)
                 result += (int) map.get("count");
         }
-        updateContentType(filter);
+       // updateContentType(filter);
         return result;
     }
 
