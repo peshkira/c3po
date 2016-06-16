@@ -24,6 +24,16 @@ public class Rule implements Serializable {
 
     public String name;
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String description;
+
     public void setFilter(Filter filter) {
         this.filter = filter;
     }

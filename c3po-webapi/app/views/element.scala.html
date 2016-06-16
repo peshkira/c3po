@@ -90,6 +90,7 @@
                 }
 
                 var ruleName = $('#ruleName');
+                var ruleDescription = $('#ruleName');
 
                 function createRule() {
                     var inputs = document.getElementsByClassName("my-checked-property-value");
@@ -106,7 +107,7 @@
                     }
                     var conditions=viewModel.SelectedData();
                     var uid=document.getElementById('uid').innerHTML;
-                    var result={"conditions": conditions, "valuesToDelete": valuesToDelete, "uid": uid, "ruleName" : ruleName.val()};
+                    var result={"conditions": conditions, "valuesToDelete": valuesToDelete, "uid": uid, "ruleName" : ruleName.val(), "ruleDescription": ruleDescription.val()};
                     $.ajax({
                         type: 'POST',
                         url: '/c3po/conflicts',
@@ -209,9 +210,11 @@
                         <!--/ko-->
                 </table>
 
-                <input type="text" id="ruleName" value="Type in the rule name">
+                <input type="text" id="ruleName" value="Rule name">
                 <a id="ruleCreate" class="grey_button" href="javascript:void(0);" >Create a rule</a>
-                <a id="ruleCreateAndExecute" class="grey_button" href="javascript:void(0);"  >Create and execute a rule</a>
+                <a id="ruleCreateAndExecute" class="grey_button" href="javascript:void(0);"  >Create and execute a rule</a> <br>
+
+                <textarea rows="1" cols="67">Rule description</textarea>
 
             </div>
             <div>

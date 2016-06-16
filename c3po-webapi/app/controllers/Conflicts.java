@@ -146,10 +146,12 @@ public class Conflicts {
         }
 
         String ruleName = json.get("ruleName").asText();
-
+        String ruleDescription = json.get("ruleDescription").asText();
         rule.setElement(ruleElement);
         rule.setFilter(ruleFilter);
         rule.setName(ruleName);
+        rule.setDescription(ruleDescription);
+
         rules.add(rule);
         System.out.println("data = " + json);
         saveRules();
@@ -238,7 +240,7 @@ public class Conflicts {
         Filter filter = Filters.getFilterFromSession();
         String url = request().host();
         String filename= "conflicts_overview_table_" +session(WebAppConstants.SESSION_ID) + ".csv";
-        String path = filename;
+        String path = System.getProperty( "user.home" ) + File.separator +filename;
 
         File file = crp.printCSV(path, url, filter);
 
