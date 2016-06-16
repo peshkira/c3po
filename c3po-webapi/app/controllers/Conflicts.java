@@ -238,7 +238,7 @@ public class Conflicts {
         Filter filter = Filters.getFilterFromSession();
         String url = request().host();
         String filename= "conflicts_overview_table_" +session(WebAppConstants.SESSION_ID) + ".csv";
-        String path = "exports"+File.separator +filename;
+        String path = filename;
 
         File file = crp.printCSV(path, url, filter);
 
