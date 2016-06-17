@@ -89,9 +89,6 @@
                     MAPPING.ToMyData(data);
                 }
 
-                var ruleName = $('#ruleName');
-                var ruleDescription = $('#ruleName');
-
                 function createRule() {
                     var inputs = document.getElementsByClassName("my-checked-property-value");
                     var valuesToDelete=[];
@@ -107,7 +104,9 @@
                     }
                     var conditions=viewModel.SelectedData();
                     var uid=document.getElementById('uid').innerHTML;
-                    var result={"conditions": conditions, "valuesToDelete": valuesToDelete, "uid": uid, "ruleName" : ruleName.val(), "ruleDescription": ruleDescription.val()};
+                    var name = document.getElementById("ruleName").value;
+                    var description = document.getElementById("ruleDescription").value;
+                    var result={"conditions": conditions, "valuesToDelete": valuesToDelete, "uid": uid, "ruleName" : name, "ruleDescription": description};
                     $.ajax({
                         type: 'POST',
                         url: '/c3po/conflicts',
@@ -140,7 +139,7 @@
                 $('#ruleCreateAndExecute').on('click', function(){
                     createRule();
                     var ruleNames=[];
-                    ruleNames.push(ruleName.val());
+                    ruleNames.push(document.getElementById("ruleName").value);
                     $.ajax({
                         type: 'POST',
                         url: '/c3po/conflicts/resolve',
@@ -214,7 +213,7 @@
                 <a id="ruleCreate" class="grey_button" href="javascript:void(0);" >Create a rule</a>
                 <a id="ruleCreateAndExecute" class="grey_button" href="javascript:void(0);"  >Create and execute a rule</a> <br>
 
-                <textarea rows="1" cols="67">Rule description</textarea>
+                <textarea id="ruleDescription" rows="1" cols="67">Rule description</textarea>
 
             </div>
             <div>
