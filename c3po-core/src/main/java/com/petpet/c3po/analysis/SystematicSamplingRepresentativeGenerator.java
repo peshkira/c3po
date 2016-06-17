@@ -97,7 +97,7 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
         }
         if (cursor.hasNext()) {
           Element next = cursor.next();
-          result.add(next.getId());
+          result.add(next.getUid());
         }
         //cursor = this.pl.find( Element.class, this.getFilter() );
       }
