@@ -28,6 +28,16 @@ public class TemplatesLoader {
     @ElementList
     static List<Template> templates;
 
+    public static String getCurrentTemplateName() {
+        return currentTemplateName;
+    }
+
+    public static void setCurrentTemplateName(String currentTemplateName) {
+        TemplatesLoader.currentTemplateName = currentTemplateName;
+    }
+
+    static private String currentTemplateName;
+
     public TemplatesLoader(File file) {
         loadFromFile(file);
     }
@@ -51,9 +61,20 @@ public class TemplatesLoader {
             templatesLoader.loadFromFile(new File(PATH_TEMPLATE_CONFIG));
         }
 
-        Map mapFilter = filterToString(filter);
+        List<String> templateProperties=new ArrayList<String>();
+        if (getCurrentTemplateName()!=null) {
+            for (Template tmpl : templates) {
+                if (tmpl.getName().equals(getCurrentTemplateName())) {
+                    templateProperties.addAll(getProperties(tmpl));
+                    setCurrentTemplateName(null);
+                    break;
+                }
+            }
+        } else {
+            Map mapFilter = filterToString(filter);
+            templateProperties.addAll(templatesLoader.getProps(mapFilter));
+        }
 
-        List<String> templateProperties = templatesLoader.getProps(mapFilter);
         if (templateProperties == null)
             templateProperties = new ArrayList<String>();
         if (userAddedProperties != null)

@@ -278,5 +278,34 @@
                 </property>
 			</properties>
 		</template>
+
+		<template>
+        			<ID>7</ID>
+        			<name>Conflict</name>
+        			<message>This template serves conflicted situations</message>
+        			<properties class="java.util.ArrayList">
+        				<property>
+        					<name>content_type</name>
+        					<render_type>histogram</render_type>
+        				</property>
+        				<property>
+        					<name>mimetype</name>
+        					<render_type>histogram</render_type>
+        				</property>
+        				<property>
+        					<name>valid</name>
+        					<render_type>histogram</render_type>
+        				</property>
+        				<property>
+                            <name>puid</name>
+                            <render_type>histogram</render_type>
+                        </property>
+                        <property>
+                            <name>format</name>
+                            <render_type>histogram</render_type>
+                        </property>
+        			</properties>
+        		</template>
+
 	</templates>
 </configuration>

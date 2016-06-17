@@ -148,16 +148,19 @@ public class Overview extends Controller {
     public static Result indexFiltered() {
         Map<String, String[]> stringMap = request().queryString();
         Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
+        String templateName=null;
         Filter f=new Filter();
         for (Map.Entry<String, String[]> stringEntry : stringMap.entrySet()) {
             String key = stringEntry.getKey();
             String[] value = stringEntry.getValue();
-           // if (value.length==1)
-           //     f.addFilterCondition(new FilterCondition(key,value[0]));
-           // else
+            if (key.equals("template"))
+                templateName=value[0];
+            else
                 f.addFilterCondition(new FilterCondition(key,value));
         }
+
         Filters.setFilterFromSession(f);
+        TemplatesLoader.setCurrentTemplateName(templateName);
         return redirect("/c3po/overview");
     }
 
