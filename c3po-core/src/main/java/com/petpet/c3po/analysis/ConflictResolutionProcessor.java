@@ -105,10 +105,35 @@ public class ConflictResolutionProcessor {
                     List<String> mrSources = mr.getSources();
                 }
             }
-
         }
+    }
+
+    public static long getConflictsCount(Filter filter){
+        LOG.info("Calculating conflicts count");
+        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
+        String map2 = "function map() {\n" +
+                "    if ((this['format'] != null && this['format'].status != null && this['format'].status == 'CONFLICT') ||\n" +
+                "        (this['mimetype'] != null && this['mimetype'].status != null && this['mimetype'].status == 'CONFLICT') ||\n" +
+                "        (this['format_version'] != null && this['format_version'].status != null && this['format_version'].status == 'CONFLICT')) {\n" +
+                "        emit('CONFLICT', 1);\n" +
+                "    }\n" +
+                "   \n" +
+                "}";
+
+        String reduce = "function reduce(key, values) {" +
+                "var res = 0;" +
+                "values.forEach(function (v) {" +
+                "res += v;" +
+                "});" +
+                "return res;" +
+                "}";
 
 
+        List<BasicDBObject> basicDBObjects = persistence.mapReduceRaw(map2, reduce, filter);
+        BasicDBObject basicDBObject = basicDBObjects.get(0);
+
+        Double conflictsDouble  = basicDBObject.getDouble("value");
+        return conflictsDouble.longValue();
     }
 
 

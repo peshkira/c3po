@@ -36,6 +36,16 @@ public class StatisticsToPrint {
 
   private String var;
 
+  public String getConflicts() {
+    return conflicts;
+  }
+
+  public void setConflicts(String conflicts) {
+    this.conflicts = conflicts;
+  }
+
+  private String conflicts;
+
   public String getCount() {
     return count;
   }

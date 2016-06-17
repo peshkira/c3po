@@ -16,6 +16,7 @@
 package controllers;
 
 import com.google.common.collect.Lists;
+import com.petpet.c3po.analysis.ConflictResolutionProcessor;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.Configurator;
@@ -45,7 +46,7 @@ public class Overview extends Controller {
         Logger.debug("Received an index call in overview");
         final List<String> names = Properties.getCollectionNames();
         List<Graph> graphs = new ArrayList<Graph>();
-
+        ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
 
         Filter filter = Filters.getFilterFromSession();
         TemplatesLoader.setProps(filter);
@@ -53,13 +54,16 @@ public class Overview extends Controller {
         ArrayList<String> properties = Lists.newArrayList(Application.PROPS);
         properties.add("size");
         Map<String, Distribution> distributions = Properties.getDistributions(properties, filter);
+        Long conflictsCount= crp.getConflictsCount(filter);
         Iterator<Map.Entry<String, Distribution>> iterator = distributions.entrySet().iterator();
+
+
+
         StatisticsToPrint stats = new StatisticsToPrint();
         while (iterator.hasNext()){
             Map.Entry<String, Distribution> next = iterator.next();
             if (next.getKey().equals("size")){
                 Distribution sizeDistribution = next.getValue();
-
                 stats.setAvg(Properties.round(sizeDistribution.getValue("avg") / 1024.0 / 1024.0, 3) + " MB");
                 stats.setCount(sizeDistribution.getValue("count").intValue() + " objects");
                 stats.setMax(Properties.round(sizeDistribution.getValue("max") / 1024.0 / 1024.0, 3) + " MB");
@@ -67,7 +71,7 @@ public class Overview extends Controller {
                 stats.setSd(Properties.round(sizeDistribution.getValue("std") / 1024.0 / 1024.0, 3) + " MB");
                 stats.setSize(Properties.round(sizeDistribution.getValue("sum") / 1024.0 / 1024.0, 3) + " MB");
                 stats.setVar(Properties.round(sizeDistribution.getValue("var") / 1024.0 / 1024.0, 3) + " MB^2");
-
+                stats.setConflicts(conflictsCount + " (" + Properties.round(100.0*conflictsCount/sizeDistribution.getValue("count").intValue(),3) + "%)");
 
             } else {
                 Graph g = Properties.interpretDistribution(next.getValue(), null, null);
