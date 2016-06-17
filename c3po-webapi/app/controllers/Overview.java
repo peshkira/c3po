@@ -71,7 +71,7 @@ public class Overview extends Controller {
                 stats.setSd(Properties.round(sizeDistribution.getValue("std") / 1024.0 / 1024.0, 3) + " MB");
                 stats.setSize(Properties.round(sizeDistribution.getValue("sum") / 1024.0 / 1024.0, 3) + " MB");
                 stats.setVar(Properties.round(sizeDistribution.getValue("var") / 1024.0 / 1024.0, 3) + " MB^2");
-                stats.setConflicts(conflictsCount + " (" + Properties.round(100.0*conflictsCount/sizeDistribution.getValue("count").intValue(),3) + "%)");
+                stats.setConflicts(Properties.round(100.0*conflictsCount/sizeDistribution.getValue("count").intValue(),3)+ "%" + " (" +  conflictsCount  + " objects)");
 
             } else {
                 Graph g = Properties.interpretDistribution(next.getValue(), null, null);
@@ -86,27 +86,7 @@ public class Overview extends Controller {
 
         allGraphs = new GraphData(graphs);
 
-        /*for (String property : Application.PROPS) {
 
-            //Distribution d = Properties.getDistribution(property, filter);
-            Graph g = Properties.interpretDistribution(d, null, null);
-            g.cutLongTail();
-            graphs.add(g);
-            //addToAllGraphs(g);
-
-
-        }
-       // if (allGraphs.getGraphs().size()==0)
-        allGraphs = new GraphData(graphs);
-        Map<String, Double> statistics = Properties.getStatistics("size");
-        StatisticsToPrint stats = new StatisticsToPrint();
-        stats.setAvg(Properties.round(statistics.get("average") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setCount(statistics.get("count").intValue() + " objects");
-        stats.setMax(Properties.round(statistics.get("max") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setMin(Properties.round(statistics.get("min") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setSd(Properties.round(statistics.get("sd") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setSize(Properties.round(statistics.get("sum") / 1024.0 / 1024.0, 3) + " MB");
-        stats.setVar(Properties.round(statistics.get("var") / 1024.0 / 1024.0, 3) + " MB^2");*/
 
         return ok(overview.render(names, allGraphs, stats, TemplatesLoader.getCurrentTemplate()));
     }
