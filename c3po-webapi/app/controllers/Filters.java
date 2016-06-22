@@ -78,7 +78,7 @@ public class Filters extends Controller {
                     break;
                 case BOOL:
                     try {
-                        propertyValue = Double.parseDouble(propertyValueString);
+                        propertyValue = Boolean.parseBoolean(propertyValueString);
                     } catch (Exception ex){
                         if (propertyValueString.equals("Unknown"))
                             propertyValue = null;

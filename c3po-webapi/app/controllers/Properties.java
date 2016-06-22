@@ -342,9 +342,10 @@ public class Properties extends Controller {
     }
 
     public static PropertyValuesFilter getValues(String property, String algorithm, String width, String selectedValue) {
+        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        Property p = persistence.getCache().getProperty(property);
         if (property.equals("collection")) {
-            PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-            Property p = persistence.getCache().getProperty(property);
+
             PropertyValuesFilter pvf = new PropertyValuesFilter();
             pvf.setProperty(p.getKey());
             pvf.setType(p.getType());
@@ -354,12 +355,20 @@ public class Properties extends Controller {
             pvf.setSelected(getCollection());
             return pvf;
         } else {
-            Distribution d = Properties.getDistribution(property, null);
-            Graph graph = Properties.interpretDistribution(d, algorithm, width);
+
             PropertyValuesFilter result = new PropertyValuesFilter();
-            result.setProperty(property);
-            result.setType(d.getType());
-            result.setValues(graph.getKeys());
+            if (allPropertyValues.containsKey(property)){
+                result.setProperty(property);
+                result.setType(p.getType());
+                result.setValues(allPropertyValues.get(property));
+            } else {
+                Distribution d = Properties.getDistribution(property, null);
+                Graph graph = Properties.interpretDistribution(d, algorithm, width);
+                result.setProperty(property);
+                result.setType(d.getType());
+                result.setValues(graph.getKeys());
+                allPropertyValues.put(property,graph.getKeys());
+            }
             result.setSelected(selectedValue);
             if (selectedValue != null)
                 result.setSelected(selectedValue);
@@ -414,4 +423,7 @@ public class Properties extends Controller {
         }
         return value;
     }
+    static Map<String, List<String>> allPropertyValues=new HashMap<String, List<String>>();
+
+
 }

@@ -130,8 +130,10 @@ public class ConflictResolutionProcessor {
 
 
         List<BasicDBObject> basicDBObjects = persistence.mapReduceRaw(map2, reduce, filter);
+        if (basicDBObjects.size()==0){
+            return 0;
+        }
         BasicDBObject basicDBObject = basicDBObjects.get(0);
-
         Double conflictsDouble  = basicDBObject.getDouble("value");
         return conflictsDouble.longValue();
     }
