@@ -89,7 +89,7 @@ $(document).ready(function(){
 			var div=createFilterConditionHolder();
 			if (div){
 				addSelectFilterConditionProperty(div,availableProperties,pvf.property);
-				addSelectFilterConditionValue(div,pvf.values, pvf.selected);
+				addSelectFilterConditionValue(div,pvf.property ,pvf.values, pvf.selected);
 			}
 
 		//	addNewFilter();
@@ -218,7 +218,7 @@ $(document).ready(function(){
 		});
 	};
 
-	function addSelectFilterConditionValue(div, values, selected) {
+	function addSelectFilterConditionValue(div, property, values, selected) {
 		// first remove filtervalues if property was already selected
 		if (div.children('select').length > 1) {
 			(div.children('select:last')).remove();
