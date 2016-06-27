@@ -74,7 +74,7 @@
               if (val === "") {
                   $(this).effect("highlight", {color:'#FF1400'} , "slow");
               } else {
-                var text = $('<input type="text" placeholder="nr of samples" />').appendTo(config);
+                var text = $('<input type="text" placeholder="nr of samples" value="11"/>').appendTo(config);
 
                 if (val == "distsampling") {
                 	$.ajax ({
