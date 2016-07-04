@@ -154,7 +154,8 @@ public class Conflicts {
         rule.setFilter(ruleFilter);
         rule.setName(ruleName);
         rule.setDescription(ruleDescription);
-
+        if (rules.isEmpty())
+            loadRules();
         rules.add(rule);
         System.out.println("data = " + json);
         saveRules();
