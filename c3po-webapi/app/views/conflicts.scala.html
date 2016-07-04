@@ -45,8 +45,7 @@
                             },
                             {title: "Rule name", "data": "name"},
                             {title: "Rule description", "data": "description"},
-                            {title: "Affected property","data": "element.metadata[].property.key"},
-                            {title: "New value","data": "element.metadata[].values"}
+                            {title: "Affected property","data": "element.metadata[].property.key"}
 
                         ]
                     });
@@ -83,7 +82,7 @@
                     async: false,
                     success: function (oData) {
                         notif({
-                            msg: "<b>Success:</b> A rule has been executed. " + oData,
+                            msg: "<b>Success:</b> Rules has been executed. " + oData,
                             type: "success",
                             position: "center",
                             timeout: 3000,
@@ -95,7 +94,29 @@
                 });
             });
             $('#deleteButton').on('click', function () {
-                var rows = table.rows('.selected').remove().draw();
+                var ruleNames= $.map(table.rows('.selected').data(), function(item){
+                    return item.name;
+                });
+                $.ajax({
+                    type: 'DELETE',
+                    url: '/c3po/conflicts',
+                    data: JSON.stringify(ruleNames),
+                    contentType: "application/json; charset=utf-8",
+                    async: false,
+                    success: function (oData) {
+                        notif({
+                            msg: "<b>Success:</b> Rules removal operation is done. " + oData,
+                            type: "info",
+                            position: "center",
+                            timeout: 3000,
+                            multiline: true,
+                            autohide: false,
+                            callback: function(){window.location.reload();}
+                        });
+                    }
+                });
+
+
             });
         })
 
@@ -157,6 +178,6 @@
         <div name="runSection">
             <br> <br>
         <a  id="runButton" class="green_button" href="javascript:void(0);">Execute conflict resolution with selected rules</a>
-
+            <a  id="deleteButton" class="red_button" href="javascript:void(0);">Delete selected rules</a>
     </div>
 }

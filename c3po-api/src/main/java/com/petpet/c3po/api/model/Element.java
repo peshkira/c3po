@@ -91,6 +91,8 @@ public class Element implements Model, Serializable {
     this.collection = collection;
   }
 
+  public Element(){}
+
   public String getCollection() {
     return collection;
   }

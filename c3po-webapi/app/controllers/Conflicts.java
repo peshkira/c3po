@@ -1,5 +1,7 @@
 package controllers;
 
+import ch.qos.logback.core.util.FileUtil;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -7,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.collect.Lists;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -159,7 +162,27 @@ public class Conflicts {
     }
 
     public static Result deleteRule() {
-        return play.mvc.Results.TODO;
+        List<Rule> tmpRules=new ArrayList<Rule>();
+        JsonNode json = request().body().asJson();
+        Iterator<JsonNode> jsonNodeIterator = json.elements();
+        int count=0;
+        while (jsonNodeIterator.hasNext()){
+
+            JsonNode next = jsonNodeIterator.next();
+            String ruleName = next.asText();
+
+            Iterator<Rule> iterator = rules.iterator();
+            while (iterator.hasNext()){
+                Rule next1 = iterator.next();
+                if (next1.getName().equals(ruleName)) {
+                    iterator.remove();
+                    count++;
+                }
+
+            }
+
+        }
+        return ok(String.valueOf(count) + " rule/-s were removed.");
     }
     public static void saveRules(){
         Logger.debug("Saving the rules");
@@ -167,11 +190,17 @@ public class Conflicts {
         File file = new File(path);
         try
         {
-            FileOutputStream fileOut = new FileOutputStream(file);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(rules);
-            out.close();
-            fileOut.close();
+            //FileOutputStream fileOut = new FileOutputStream(file);
+            JsonNode jsonNode = Json.toJson(rules);
+            String rulesJSON2 = jsonNode.toString();
+
+            FileWriter fileWriter=new FileWriter(path);
+            fileWriter.write(rulesJSON2);
+            fileWriter.close();
+            //ObjectOutputStream out = new ObjectOutputStream(fileOut);
+           // out.writeObject(rules);
+            //out.close();
+            //fileOut.close();
             Logger.debug("The rules are saved to :" + path);
         }catch(IOException i)
         {
@@ -189,18 +218,27 @@ public class Conflicts {
         try
         {
             FileInputStream fileIn = new FileInputStream(file);
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            tmpRules = (List<Rule>) in.readObject();
-            in.close();
-            fileIn.close();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fileIn));
+            StringBuilder out = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+            }
+            System.out.println(out.toString());   //Prints the string content read from input stream
+            reader.close();
+            JsonNode parse = Json.parse(out.toString());
+            Rule[] rules = Json.fromJson(parse, Rule[].class);
+            tmpRules= Lists.newArrayList(rules);
+
+            //  FileReader fileReader=new FileReader(path);
+          //  ObjectInputStream in = new ObjectInputStream(fileIn);
+           // tmpRules = (List<Rule>) in.readObject();
+           // in.close();
+           // fileIn.close();
         }catch(IOException i)
         {
             i.printStackTrace();
-            return;
-        }catch(ClassNotFoundException c)
-        {
-            Logger.debug("Rule class not found");
-            c.printStackTrace();
             return;
         }
         rules.addAll(tmpRules);
