@@ -19,7 +19,7 @@ public class PackagingRepresentativeGenerator extends RepresentativeGenerator {
     /**
      * Default logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(SizeRepresentativeGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PackagingRepresentativeGenerator.class);
 
     /**
      * The persistence layer.
