@@ -81,9 +81,9 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
             while (result.size() < limit) {
 
                 int offset = (int) (Math.random() * skip + result.size() * skip);
-                LOG.debug("Trying to picking an element with index {}", offset);
+                LOG.debug("Trying to pick an element with index {}", offset);
                 if (offset >= count)
-                    continue;
+                    offset=(int)count-1;
                 // skip the offset
                 while (i < offset) {
                     i++;
