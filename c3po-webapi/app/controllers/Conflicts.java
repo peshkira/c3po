@@ -119,27 +119,26 @@ public class Conflicts {
 
 
             for (MetadataRecord mr : element.getMetadata()){
-                if (mr.getProperty().getId().equals(property))
+                if (mr.getProperty().equals(property))
                 {
 
                     if (mr.getStatus().equals("CONFLICT")){
                         int indexOf = mr.getValues().indexOf(value);
-                        mr.getValues().remove(indexOf);
-                        mr.getSources().remove(indexOf);
-
-                        if (mr.getValues().size()==1){
-                            String v = mr.getValues().get(0);
-                            mr.setValue(v);
-                            mr.getValues().clear();
-                            mr.setStatus("SINGLE_RESULT");
+                        if (indexOf>=0){
+                            mr.getValues().remove(indexOf);
+                            mr.getSources().remove(indexOf);
+                            if (mr.getValues().size()==1)
+                                mr.setStatus("SINGLE_RESULT");
                         }
 
                     } else {
-                        if (mr.getValue()!=null){
+                        if (mr.getValues()!=null){
                             int i = sourceNames.indexOf(source);
-                            mr.getSources().remove(String.valueOf(i));
-                            if (mr.getSources().size()==0)
-                                mr.setValue(null);
+                            int indexOf = mr.getValues().indexOf(i);
+                            mr.getSources().remove(indexOf);
+                            mr.getValues().remove(indexOf);
+                            if (mr.getValues().size()==1)
+                                mr.setStatus("SINGLE_RESULT");
                         }
                     }
                     ruleElement.getMetadata().add(mr);

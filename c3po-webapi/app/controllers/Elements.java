@@ -165,8 +165,8 @@ public class Elements extends Controller {
 			String status = mr.getStatus();
 			List<String> values = mr.getValues();
 			List<String> sources = mr.getSources();
-			Property property = mr.getProperty();
-			String value = mr.getValue();
+			String propertyKey = mr.getProperty();
+			Property property = persistence.getCache().getProperty(propertyKey);
 
 			List<String> tmp_sources=new ArrayList<String>();
 			for (String s:sources){
@@ -185,7 +185,7 @@ public class Elements extends Controller {
 				int i = sources.indexOf(source);
 				if (i>=0){
 					if (!status.equals("CONFLICT")){
-						tmp.put(source, value);
+						tmp.put(source, values.get(i));
 					} else if (status.equals("CONFLICT")){
 						tmp.put(source, values.get(i));
 					}
@@ -194,7 +194,7 @@ public class Elements extends Controller {
 				}
 
 				if (sources.isEmpty()) {
-					tmp.put("C3PO", value);
+					tmp.put("C3PO",  values.get(i));
 				} else {
 					tmp.put("C3PO", nullStr);
 				}
