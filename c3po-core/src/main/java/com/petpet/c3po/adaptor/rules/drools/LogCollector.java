@@ -89,7 +89,7 @@ public class LogCollector {
    */
   public synchronized void logMetadataRecordValue(int loglevel, MetadataRecord record) {
     this.log(loglevel,
-        "    " + record.getProperty().getId() + " : \'" + record.getValue()
+        "    " + record.getProperty() + " : \'" + record.getValues()
             + "\'");
   }
 

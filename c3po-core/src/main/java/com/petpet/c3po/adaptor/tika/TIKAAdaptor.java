@@ -100,7 +100,7 @@ public class TIKAAdaptor extends AbstractAdaptor {
         if ( prop.getType().equals( PropertyType.INTEGER.name() ) || prop.getType().equals( PropertyType.FLOAT.name() ) ) {
           value = value.split( " " )[0];
         }
-        MetadataRecord record = new MetadataRecord( prop, value );
+        MetadataRecord record = new MetadataRecord( prop.getKey(), value );
         Source source = this.getSource( "Tika", this.version );
         record.setSources( Arrays.asList( source.getId() ) );
         records.add( record );

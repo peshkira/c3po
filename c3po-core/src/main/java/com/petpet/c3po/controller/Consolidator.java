@@ -204,7 +204,7 @@ public class Consolidator implements Runnable {
     private void storeProperties( Element element ) {
         Cache cache = this.persistence.getCache();
         for ( MetadataRecord mr : element.getMetadata() ) {
-            Property p = mr.getProperty();
+            Property p = cache.getProperty(mr.getProperty());
             PropertyType type = PropertyType.valueOf( p.getType() );
             cache.getProperty( p.getKey(), type ); // make sure it is stored
 

@@ -109,7 +109,7 @@ public class InferDateFromFileNameRule implements PostProcessingRule {
         try {
           Long.valueOf( date );
 
-          MetadataRecord c = new MetadataRecord( created, date );
+          MetadataRecord c = new MetadataRecord( created.getKey(), date );
           e.getMetadata().add( c );
 
         } catch ( NumberFormatException nfe ) {

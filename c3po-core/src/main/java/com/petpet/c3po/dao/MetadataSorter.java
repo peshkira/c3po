@@ -22,12 +22,12 @@ public class MetadataSorter implements Comparator<MetadataRecord> {
 
   @Override
   public int compare(MetadataRecord o1, MetadataRecord o2) {
-    int compare = o1.getProperty().getId().compareTo(o2.getProperty().getId());
+    int compare = o1.getProperty().compareTo(o2.getProperty());
     if (compare != 0) {
       return compare;
     }
 
-    compare = o1.getValue().compareTo(o2.getValue());
+    compare = 0;//o1.getValues().compareTo(o2.getValues());
     if (compare != 0) {
       return compare;
     }

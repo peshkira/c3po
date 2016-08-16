@@ -212,7 +212,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     public MongoPersistenceLayer() {
         this.deserializers = new HashMap<String, MongoModelDeserializer>();
-        this.deserializers.put( Element.class.getName(), new MongoElementDeserialzer( this ) );
+        this.deserializers.put( Element.class.getName(), new MongoElementDeserialzer( ) );
         this.deserializers.put( Property.class.getName(), new MongoPropertyDeserialzer() );
         this.deserializers.put( Source.class.getName(), new MongoSourceDeserializer() );
         this.deserializers.put( ActionLog.class.getName(), new MongoActionLogDeserializer() );
@@ -435,7 +435,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     @Override
     public <T extends Model> void update( T object, Filter f ) {
         DBObject filter = this.getCachedFilter( f );
-
+        String filterString=filter.toString();
         if ( filter.keySet().isEmpty() ) {
             LOG.warn( "Cannot update an object without a filter" );
             return;
@@ -450,6 +450,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         MongoModelSerializer serializer = this.getSerializer( object.getClass() );
         DBObject objectToUpdate = serializer.serialize( object );
         BasicDBObject set = new BasicDBObject( "$set", objectToUpdate );
+        String setString = set.toString();
         WriteResult update = dbCollection.update(filter, set, false, true);
         setResult(update);
     }
@@ -1038,7 +1039,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                 "            if (this[property].status != 'CONFLICT') {\n" +
                 "                emit({\n" +
                 "                    property: property,\n" +
-                "                    value: this[property].value\n" +
+                "                    value: this[property].values[0]\n" +
                 "                }, 1);\n" +
                 "            } else {\n" +
                 "                emit({\n" +
@@ -1058,7 +1059,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                 "        property = propertiesNumbers[x];\n" +
                 "        if (this[property] != null) {\n" +
                 "            if (this[property].status !== 'CONFLICT') {\n" +
-                "                var idx = Math.floor(this[property].value / 10);\n" +
+                "                var idx = Math.floor(this[property].values[0] / 10);\n" +
                 "                emit({\n" +
                 "                    property: property,\n" +
                 "                    value: idx\n" +
@@ -1079,7 +1080,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                 "\n" +
                 "    for (x in propertiesDate) {\n" +
                 "        property = propertiesDate[x];\n" +
-                "        if (this[property] != null && this[property].value != undefined) {\n" +
+                "        if (this[property] != null && this[property].values[0] != undefined) {\n" +
                 "            if (this[property].status !== 'CONFLICT') {\n" +
                 "                var date = new Date(this[property].value);\n" +
                 "                emit({\n" +
@@ -1107,9 +1108,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                 "                property: property,\n" +
                 "                value: property\n" +
                 "            }, {\n" +
-                "                sum: this[property].value,\n" +
-                "                min: this[property].value,\n" +
-                "                max: this[property].value,\n" +
+                "                sum: this[property].values[0],\n" +
+                "                min: this[property].values[0],\n" +
+                "                max: this[property].values[0],\n" +
                 "                count: 1,\n" +
                 "                diff: 0,\n" +
                 "            });\n" +

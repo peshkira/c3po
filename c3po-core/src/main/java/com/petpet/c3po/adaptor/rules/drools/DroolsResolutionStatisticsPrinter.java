@@ -57,9 +57,9 @@ public class DroolsResolutionStatisticsPrinter {
           output.println("----element: " + element.getUid());
         }
         for (MetadataRecord metadataRecord : element.getMetadata()) {
-          if (metadataRecord.getProperty().getId().equals(property)) {
+         // if (metadataRecord.getProperty().getId().equals(property)) {
             if (!csvStyle) {
-              output.println("    " + metadataRecord.getValue());
+        //      output.println("    " + metadataRecord.getValue());
             }
             for (String sourceID : metadataRecord.getSources()) {
               Source source = MetadataUtil.resolveSourceID(sourceID);
@@ -69,17 +69,17 @@ public class DroolsResolutionStatisticsPrinter {
               } else {
 
                 output.println(prepareLine(property, element.getUid(),
-                    metadataRecord.getValue(), source.getName(),
+           //         metadataRecord.getValue(), source.getName(),
                     source.getVersion(), source.getId()));
               }
             }
           }
         }
       }
-    }
-    if (!csvStyle) {
-      output.println("======================================");
-    }
+ //   }
+   // if (!csvStyle) {
+  //    output.println("======================================");
+   // }
 
   }
 

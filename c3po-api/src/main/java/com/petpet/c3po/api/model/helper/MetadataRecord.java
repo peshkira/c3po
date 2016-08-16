@@ -57,12 +57,7 @@ public class MetadataRecord implements Serializable {
   /**
    * The property to which the value of this record belongs.
    */
-  private Property property;
-
-  /**
-   * The actual measured value.
-   */
-  private String value;
+  private String property;
 
   /**
    * A list for the conflicting values;
@@ -87,6 +82,7 @@ public class MetadataRecord implements Serializable {
   public MetadataRecord() {
     this.sources = new ArrayList<String>();
     this.status = Status.OK.name();
+    this.values=new ArrayList<String>();
   }
 
   /**
@@ -96,11 +92,17 @@ public class MetadataRecord implements Serializable {
    * @param p
    * @param value
    */
-  public MetadataRecord(Property p, String value) {
+  public MetadataRecord(String p, String value) {
     this();
     this.property = p;
-    this.value = value;
-    this.status = Status.SINGLE_RESULT.name();
+    this.values.add(value);
+  }
+
+  public MetadataRecord(String p, String value, String sourceID) {
+    this();
+    this.property = p;
+    this.values.add(value);
+    this.sources.add(sourceID);
   }
 
   /**
@@ -111,25 +113,17 @@ public class MetadataRecord implements Serializable {
    * @param value
    * @param status
    */
-  public MetadataRecord(Property p, String value, Status status) {
+  public MetadataRecord(String p, String value, Status status) {
     this( p, value );
     this.status = status.name();
   }
 
-  public Property getProperty() {
+  public String getProperty() {
     return this.property;
   }
 
-  public void setProperty( Property p ) {
+  public void setProperty( String p ) {
     this.property = p;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue( String value ) {
-    this.value = value;
   }
 
   public String getStatus() {
@@ -161,7 +155,7 @@ public class MetadataRecord implements Serializable {
 
   @Override
   public String toString() {
-    return "MetadataRecord [property=" + property.getId() + ", value=" + value
+    return "MetadataRecord [property=" + property + ", values=" + values
         + ", status=" + status + ", sources=" + sources + "]";
   }
 

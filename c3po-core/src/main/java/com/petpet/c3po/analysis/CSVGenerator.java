@@ -240,10 +240,6 @@ public class CSVGenerator {
   private String getValueFromMetaDataRecord( List<MetadataRecord> value ) {
     String result = "";
     if ( value.size() != 0 ) {
-      final String v = value.get( 0 ).getValue();
-      if (v!=null)
-        result=v;
-      else{
         List<String> values = value.get(0).getValues();
         List<String> sources = value.get(0).getSources();
         for (int i=0; i< values.size();i++){
@@ -252,7 +248,7 @@ public class CSVGenerator {
           result+=s+"["+source.getName()+":"+source.getVersion()+"]"+";";
         }
         result = result.substring(0, result.length() - 1);
-      }
+
 
      // result = (v == null) ? "CONFLICT" : replace( v.toString() );
     }

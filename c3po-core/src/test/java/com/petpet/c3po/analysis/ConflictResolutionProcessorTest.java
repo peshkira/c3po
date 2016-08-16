@@ -166,7 +166,7 @@ public class ConflictResolutionProcessorTest {
         Rule rule=new Rule();
         Element element=new Element(null,null);
         Property creating_application_version = pLayer.getCache().getProperty("creating_application_version");
-        MetadataRecord mr=new MetadataRecord(creating_application_version,"10 (107b)");
+        MetadataRecord mr=new MetadataRecord(creating_application_version.getKey(),"10 (107b)");
         element.getMetadata().add(mr);
 
         Filter filter=new Filter();

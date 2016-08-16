@@ -18,8 +18,10 @@ package com.petpet.c3po.dao.mongo;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
@@ -44,6 +46,15 @@ public class MongoElementSerializer implements MongoModelSerializer {
   @Override
   public DBObject serialize( Object object ) {
 
+    /*BasicDBObject document = null;
+    if ( object != null && object instanceof Element ) {
+      Element element = (Element) object;
+      Gson gson=new Gson();
+      String s = gson.toJson(element);
+      document = (BasicDBObject) JSON.parse(s);
+    }
+    return document;
+*/
     BasicDBObject document = null;
 
     if ( object != null && object instanceof Element ) {
@@ -65,22 +76,25 @@ public class MongoElementSerializer implements MongoModelSerializer {
      // BasicDBObject meta = new BasicDBObject();
       for ( MetadataRecord r : element.getMetadata() ) {
         BasicDBObject key = new BasicDBObject();
-
         key.put( "status", r.getStatus() );
+        key.put( "sources", r.getSources() );
+        key.put( "values", r.getValues() );
+        document.put( r.getProperty(), key );
 
-        if ( r.getStatus().equals( Status.CONFLICT.name() ) ) {
+
+       /* if ( r.getStatus().equals( Status.CONFLICT.name() ) ) {
           BasicDBObject conflicting;
           List<Object> values;
           List<Object> sources;
-          if ( document.containsField( r.getProperty().getId() ) ) {
-            conflicting = (BasicDBObject) document.get( r.getProperty().getId() );
+          if ( document.containsField( r.getProperty() ) ) {
+            conflicting = (BasicDBObject) document.get( r.getProperty() );
             values = (List<Object>) conflicting.get( "values" );
             if ( values == null ) {
               values = new ArrayList<Object>();
               values.add( conflicting.get( "value" ) );
             }
             sources = (List<Object>) conflicting.get( "sources" );
-            values.add( DataHelper.getTypedValue( r.getProperty().getType(), r.getValue() ) );
+            values.addAll(r.getValues());// DataHelper.getTypedValue( r.getProperty().getType(), r.getValue() ) );
             sources.add( r.getSources().get( 0 ) );
 
           } else {
@@ -88,10 +102,10 @@ public class MongoElementSerializer implements MongoModelSerializer {
             values = new ArrayList<Object>();
             sources = new ArrayList<Object>();
 
-            if ( r.getValue() == null || r.getValue().equals( "" ) ) {
-              for ( String s : r.getValues() ) {
-                values.add( DataHelper.getTypedValue( r.getProperty().getType(), s ) );
-              }
+            if ( r.getValues() == null || r.getValues().equals( "" ) ) {
+             // for ( String s : r.getValues() ) {
+                values.addAll(r.getValues());// DataHelper.getTypedValue( r.getProperty().getType(), s ) );
+            //  }
               sources.addAll( r.getSources() );
             } else {
 
@@ -110,7 +124,7 @@ public class MongoElementSerializer implements MongoModelSerializer {
           key.put( "sources", r.getSources() );
           document.put( r.getProperty().getId(), key );
         }
-
+*/
       }
 
       //if ( !meta.keySet().isEmpty() ) {

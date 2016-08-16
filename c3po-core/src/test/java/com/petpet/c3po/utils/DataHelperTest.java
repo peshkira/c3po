@@ -54,7 +54,7 @@ public class DataHelperTest {
     Source source2 = p.getCache().getSource("ffident", "0.2");
     final Element e = new Element("test_collection", "uid1", "name1");
     e.setId("some id");
-    final MetadataRecord mr = new MetadataRecord(property, "application/pdf");
+    final MetadataRecord mr = new MetadataRecord(property.getKey(), "application/pdf");
     mr.setStatus(MetadataRecord.Status.OK.name());
     mr.setSources(Arrays.asList(source.getId(), source2.getId()));
     e.setMetadata(Arrays.asList(mr));
@@ -70,7 +70,7 @@ public class DataHelperTest {
     Assert.assertEquals(e.getCollection(), elmnt.getCollection());
     Assert.assertEquals(1, e.getMetadata().size());
     
-    Assert.assertEquals(e.getMetadata().get(0).getProperty().getKey(), elmnt.getMetadata().get(0).getProperty().getKey());
+    Assert.assertEquals(e.getMetadata().get(0).getProperty(), elmnt.getMetadata().get(0).getProperty());
 
     p.remove(elmnt);
     } else {
@@ -90,8 +90,8 @@ public class DataHelperTest {
     Property p1 = new Property(key1);
     Property p2 = new Property(key2);
 
-    MetadataRecord r1 = new MetadataRecord(p1, "42");
-    MetadataRecord r2 = new MetadataRecord(p2, "21");
+    MetadataRecord r1 = new MetadataRecord(p1.getKey(), "42");
+    MetadataRecord r2 = new MetadataRecord(p2.getKey(), "21");
 
     e.setMetadata(Arrays.asList(r1, r2));
 
@@ -115,8 +115,8 @@ public class DataHelperTest {
     Source s1 = new Source("tool", "v0.1");
     Source s2 = new Source("tool", "v0.2");
 
-    MetadataRecord r1 = new MetadataRecord(p1, "42");
-    MetadataRecord r2 = new MetadataRecord(p1, "21");
+    MetadataRecord r1 = new MetadataRecord(p1.getKey(), "42");
+    MetadataRecord r2 = new MetadataRecord(p1.getKey(), "21");
     r1.setStatus(Status.CONFLICT.name());
     r1.setSources(Arrays.asList(s1.getId()));
     r2.setStatus(Status.CONFLICT.name());

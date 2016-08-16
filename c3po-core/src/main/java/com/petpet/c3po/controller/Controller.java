@@ -15,7 +15,6 @@
  ******************************************************************************/
 package com.petpet.c3po.controller;
 
-import com.petpet.c3po.adaptor.browsershot.BrowserShotAdaptor;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -132,7 +131,6 @@ public class Controller {
         // and add them to this map.
         this.knownAdaptors.put( "FITS", FITSAdaptor.class );
         this.knownAdaptors.put( "TIKA", TIKAAdaptor.class );
-        this.knownAdaptors.put("BrowserShot", BrowserShotAdaptor.class);
 
         // TODO detect these automatically from the class path
         // and add them to this map.
@@ -143,7 +141,6 @@ public class Controller {
         this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
         this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
         this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
-        this.knownRules.put(Constants.CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE, BrowsershotDissimilarityCountRule.class);
         this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
         this.knownRules.put(Constants.CNF_CONTENT_TYPE_IDENTIFICATION_RULE, ContentTypeIdentificationRule.class);
         this.knownRules.put(Constants.CNF_FILE_EXTENSION_IDENTIFICATION_RULE, FileExtensionIdentificationRule.class);

@@ -18,6 +18,7 @@ package com.petpet.c3po.dao.mongo;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -33,7 +34,36 @@ import com.petpet.c3po.api.model.helper.MetadataRecord;
  * 
  */
 public class MongoElementDeserialzer implements MongoModelDeserializer {
+  public MongoElementDeserialzer() {
+  }
 
+/*  *//**
+   * Deserializes {@link DBObject}s to elements.
+   *//*
+  @Override
+  public Element deserialize( Object object ) {
+    if ( object == null || !(object instanceof DBObject) ) {
+      return null;
+    }
+
+    DBObject dbObject = (DBObject) object;
+
+    return this.parseElement( dbObject );
+
+  }
+
+  *//**
+   * Parses the element from a db object returned by the db.
+   *
+   * @param obj
+   *          the object to parse.
+   * @return the Element.
+   *//*
+  private Element parseElement( final DBObject obj ) {
+    Gson gson=new Gson();
+   Element element = gson.fromJson(obj.toString(), Element.class);
+    return element;
+  }*/
   /**
    * Needs a reference to the persistence layer in order to obtain the sources
    * for each meta data record.
@@ -83,13 +113,13 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
         continue;
       DBObject prop = (DBObject) meta.get( key );
       Property p = this.persistence.getCache().getProperty( key );
-      rec.setProperty( p );
+      rec.setProperty( p.getKey() );
       rec.setStatus( prop.get( "status" ).toString() );
 
-      Object value = prop.get( "value" );
-      if ( value != null ) {
-        rec.setValue( value.toString() );
-      }
+      //Object value = prop.get( "value" );
+      //if ( value != null ) {
+      //  rec.setValue( value.toString() );
+      //}
 
       // because of boolean and other type conversions.
       List<?> tmp = (List) prop.get( "values" );

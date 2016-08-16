@@ -16,10 +16,7 @@
 package com.petpet.c3po.api.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
@@ -156,7 +153,7 @@ public class Element implements Model, Serializable {
     Iterator<MetadataRecord> iterator = this.metadata.iterator();
     while ( iterator.hasNext() ) {
       MetadataRecord next = iterator.next();
-      if ( next.getProperty().getId().equals( property ) ) {
+      if ( next.getProperty().equals( property ) ) {
         result.add( next );
         iterator.remove();
       }
@@ -187,7 +184,7 @@ public class Element implements Model, Serializable {
         MetadataRecord newRecord = new MetadataRecord();
         newRecord.setProperty(record.getProperty());
         newRecord.setStatus(record.getStatus());
-        newRecord.setValue(record.getValue());
+        newRecord.setValues(record.getValues());
         newRecord.setValues(record.getValues());
         newRecord.setSources(new ArrayList<String>(1));
         newRecord.getSources().add(sourceID);
@@ -214,8 +211,8 @@ public class Element implements Model, Serializable {
    *          no sources.
    */
   public void mergeMetadata(MetadataRecord record1, MetadataRecord record2) {
-    if (record1.getProperty().getId().equals(record2.getProperty().getId())
-        && record1.getValue().equals(record2.getValue())) {
+    if (record1.getProperty().equals(record2.getProperty())
+        && record1.getValues().equals(record2.getValues())) {
       if (this.metadata.remove(record2)) {
         record1.getSources().addAll(record2.getSources());
 
@@ -273,5 +270,140 @@ public class Element implements Model, Serializable {
     this.logEntries.add(new LogEntry(metadataProperty, metadataValueOld,
         changeType, ruleName));
   }
+
+
+  public void updateStatus(){
+    Map<String, Integer> propertyOccurence = calculatePropertyOccurence();
+    Map<String, List <String>> propertyValOccurence = calculatePropertyValOccurence();
+
+    for (MetadataRecord mr : metadata) {
+      int propCount = propertyOccurence.get(mr.getProperty());
+      int propValCount = propertyValOccurence.get(mr.getProperty()).size();
+      if (propValCount > 1 )
+        mr.setStatus(MetadataRecord.Status.CONFLICT.name());
+      else {
+        if (propCount > 1)
+          mr.setStatus(MetadataRecord.Status.OK.name());
+        else
+          mr.setStatus(MetadataRecord.Status.SINGLE_RESULT.name());
+      }
+    }
+  }
+
+  private Map<String, Integer> calculatePropertyOccurence() {
+    Map<String, Integer> distribution=new HashMap<String, Integer>();
+    for (MetadataRecord mr : metadata) {
+      String property = mr.getProperty();
+      int size = mr.getSources().size();
+      Integer count = distribution.get(property);
+        distribution.put(property,size);
+
+    }
+    return distribution;
+  }
+
+  private Map<String, List <String>> calculatePropertyValOccurence() {
+    Map<String, List <String>> distribution=new HashMap<String, List <String>>();
+    for (MetadataRecord mr  : metadata) {
+      String property = mr.getProperty();
+
+      for (String value : mr.getValues()) {
+        List<String> strings = distribution.get(property);
+        if (strings!=null){
+          if (!strings.contains(value))
+            strings.add(value);
+        } else {
+          strings =new ArrayList<String>();
+          strings.add(value);
+          distribution.put(property, strings);
+        }
+      }
+    }
+    return distribution;
+  }
+
+
+
+  public void addMetadataRecord(String property, String value, String sourceID){
+  //  MetadataRecord metadataRecord = new MetadataRecord(property, value, sourceID);
+  //  if (!this.metadata.contains(metadataRecord))
+    //  this.metadata.add(metadataRecord);
+             for (MetadataRecord metadataRecord : getMetadata()) {
+               if (metadataRecord.getProperty().equals(property)) {
+                 metadataRecord.getValues().add(value);
+                 metadataRecord.getSources().add(sourceID);
+                 return;
+               }
+             }
+    MetadataRecord metadataRecord = new MetadataRecord(property, value, sourceID);
+    getMetadata().add(metadataRecord);
+
+
+               /*
+                if (element.getUid().equals(uid)) {
+                    //Two elements have the same uid
+                    if (element.getProperty().equals(property)) {
+                        //Two elements have the same uid, property
+                        if (element.getValue().equals(value)) {
+                            //Two elements have the same uid, property, value
+                            if (element.getToolname().equals(toolname) && element.getToolversion().equals(toolversion)) {
+                                //Two elements have the same uid, property, value, source
+                                //THIS IS DUBLICATE!!!
+                            } else {
+                                //Two elements have the same uid, property, value, but not source
+                                Element newElement = new Element(template, property, value, toolname, toolversion, MetadataRecord.Status.OK.name());
+                                element.setStatus(MetadataRecord.Status.OK.name());
+                                elements.add(newElement);
+                                return;
+                                //THIS is status OK
+                                //change status of both elements to OK
+                            }
+                        } else {
+                            //Two elements have the same uid, property, but not value
+                            //THIS is conflict
+                            //change status of both elements to conflict
+                        }
+                    } else {
+                        //Two elements have the same uid, but not property
+                            //this is single_result
+                    }
+
+                } else {
+                    //Two elements do not have the same uid
+                    //this is single_result
+
+                }
+            }
+
+            addNewElement...
+
+
+                if (element.getProperty().equals(property)) {
+                    sameProperty = true;
+                    if (element.getValue().equals(value)){
+                        samePropertyValue = true;
+                        if (element.getToolname().equals(toolname) && element.getToolversion().equals(toolversion))
+                            sameSource = true;
+                    }
+                }
+            }
+
+            if (sameProperty && sam)
+            Iterator<MetadataRecord> iterator = metadataRecords.iterator();
+            while (iterator.hasNext()) {
+                MetadataRecord next = iterator.next();
+                Property propertyNormalized = getProperty(property);
+                if (next.getProperty().getKey().equals(propertyNormalized.getKey())) {           //THERE ARE TWO VALUES FOR A PROPERTY
+                    next.addValue(value, sources);
+                    return;
+                }
+            }
+            MetadataRecord metadataRecord = new MetadataRecord(getProperty(property), value, sources);
+            metadataRecords.add(metadataRecord);
+        }*/
+  }
+
+
+
 
 }

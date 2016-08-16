@@ -41,7 +41,7 @@ public class MongoFilterSerializer {
   /**
    * A list of properties to exclude from wrapping. This is mongo specific.
    */
-  private static final String[] EXCLUDE = { "_id", "uid", "collection", "name" };
+  private static final String[] EXCLUDE = { "_id", "uid", "collection", "name", "key", "version" };
 
   /**
    * A static exists query for Mongo.
@@ -122,12 +122,15 @@ public class MongoFilterSerializer {
       return result + ".status";
     }
     else {
-      if (value.getClass().isArray() && ((Object[]) value).length>1){
+      return result + ".values";
+    }
+
+     /* if (value.getClass().isArray() && ((Object[]) value).length>1){
         return result + ".values";
       }
       else
-        return result + ".value";
-    }
+        return result + ".value";*/
+   // }
   }
 
   /**
@@ -208,14 +211,35 @@ public class MongoFilterSerializer {
             if (val.getClass().isArray())
             {
               Object[] valArray = (Object[]) val;
-              if (valArray.length>1)
-                res.add(new BasicDBObject(this.mapFieldToProperty(field, val), valArray));
-              else
-              {
-                res.add(new BasicDBObject(this.mapFieldToProperty(field, valArray[0]), valArray[0]));
+              res.add(new BasicDBObject(this.mapFieldToProperty(field, val), valArray));
+            }
+            else{
+              if ( Arrays.asList( EXCLUDE ).contains( field ) ) {
+                res.add(new BasicDBObject(field + ".values",val));
+              } else {
+                if (val.equals("CONFLICT")){
+                  field += ".status";
+                  res.add(new BasicDBObject(field, val));
+                } else {
+                  res.add(new BasicDBObject(field + ".values", val));
+                }
               }
-            } else
-              res.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
+
+/*
+
+                if (val !=null) {
+                BasicDBObject elemMatch = new BasicDBObject("$elemMatch", val);
+                res.add(new BasicDBObject(this.mapFieldToProperty(field, val), elemMatch));
+              } else {
+                res.add(new BasicDBObject(this.mapFieldToProperty(field, val), val));
+
+              }*/
+
+
+
+
+
+            }
           }
         }
         return res;

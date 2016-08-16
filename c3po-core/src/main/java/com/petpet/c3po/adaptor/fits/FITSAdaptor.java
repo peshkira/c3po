@@ -25,6 +25,10 @@ import org.apache.commons.digester3.SimpleRegexMatcher;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
@@ -32,6 +36,9 @@ import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * An adaptor for FITS <url>https://github.com/harvard-lts/fits</url> meta data.
@@ -70,11 +77,7 @@ public class FITSAdaptor extends AbstractAdaptor {
         // nothing to do...
     }
 
-    /**
-     * Parses the meta data and retrieves it. This method makes use of a
-     * {@link DigesterContext} object that is pushed upon the digester stack. This
-     * helper object has some methods for handling some special cases.
-     */
+
     @Override
     public Element parseElement( String name, String data ) {
         Element element = null;
@@ -85,18 +88,40 @@ public class FITSAdaptor extends AbstractAdaptor {
         }
         try {
 
-            DigesterContext context = new DigesterContext( this, this.getPreProcessingRules() );
-            this.digester.push( context );
+            //DigesterContext context = new DigesterContext( this, this.getPreProcessingRules() );
+            //this.digester.push( context );
 
-            context = (DigesterContext) this.digester.parse( new StringReader( data ) );
-            element = context.getElement();
-            List<MetadataRecord> values = context.getValues();
+            //context = (DigesterContext) this.digester.parse( new StringReader( data ) );
+            //element = context.getElement();
+            //List<MetadataRecord> values = context.getValues();
 
            // values.add(getFileExtensionMetadataRecord(name));
 
-            if ( element != null ) {
-                element.setMetadata( values );
-            }
+
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            InputSource source = new InputSource(new StringReader(data));
+            Document doc = dBuilder.parse(source);
+
+            org.w3c.dom.Element fits = (org.w3c.dom.Element) doc.getElementsByTagName("fits").item(0);
+
+            org.w3c.dom.Element identification = (org.w3c.dom.Element) fits.getElementsByTagName("identification").item(0);
+            org.w3c.dom.Element fileinfo = (org.w3c.dom.Element) fits.getElementsByTagName("fileinfo").item(0);
+            org.w3c.dom.Element filestatus = (org.w3c.dom.Element) fits.getElementsByTagName("filestatus").item(0);
+            org.w3c.dom.Element metadata = (org.w3c.dom.Element) fits.getElementsByTagName("metadata").item(0);
+
+            element = createElement(fileinfo);
+
+            readIdentification(identification, element);
+            readFileinfo(fileinfo, element);
+            readFileStatus(filestatus, element);
+            readMetadata(metadata, element);
+            element.updateStatus();
+
+
+            //if ( element != null ) {
+            //    element.setMetadata( values );
+            //}
 
         } catch ( IOException e ) {
             LOG.warn( "An exception occurred while processing {}: {}", name, e.getMessage() );
@@ -109,34 +134,14 @@ public class FITSAdaptor extends AbstractAdaptor {
         return element;
     }
 
-    /**
-     * Returns the prefix of this adaptor ('fits').
-     */
-    @Override
-    public String getAdaptorPrefix() {
-        return "fits";
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Property getProperty( String key ) {
-        return super.getProperty( key );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Source getSource( String name, String version ) {
-        return super.getSource( name, version );
-    }
-    private MetadataRecord getFileExtensionMetadataRecord(String name) {
+   /* private MetadataRecord getFileExtensionMetadataRecord(String name) {
         MetadataRecord mr= new MetadataRecord();
-        mr.setProperty(new Property("file_extension"));
+        mr.setProperty(getProperty("file_extension").getKey());
         mr.setValue(FilenameUtils.getExtension(name));
         mr.setStatus("OK");
         return mr;
-    }
+    }*/
 
     /**
      * Creates SAX based rules.
@@ -289,6 +294,135 @@ public class FITSAdaptor extends AbstractAdaptor {
         this.digester.addCallParam( pattern, 2, "toolname" );
         this.digester.addCallParam( pattern, 3, "toolversion" );
         this.digester.addCallParamPath( pattern, 4 );
+    }
+
+
+
+
+    private void readMetadata(org.w3c.dom.Element metadata, Element element) {
+        NodeList childNodes = metadata.getChildNodes();
+        for (int i=0;i<childNodes.getLength();i++){
+            NodeList childChildNodes = childNodes.item(i).getChildNodes();
+            for (int j=0;j<childChildNodes.getLength();j++) {
+                Node item = childChildNodes.item(j);
+                if (item!= null && item.getNodeType() == Node.ELEMENT_NODE)
+                    readGenericMetadata(item, element);
+            }
+        }
+    }
+
+    private void readFileStatus(org.w3c.dom.Element filestatus, Element element) {
+        NodeList childNodes = filestatus.getChildNodes();
+        for (int i=0;i<childNodes.getLength();i++){
+            readGenericMetadata(childNodes.item(i), element);
+        }
+    }
+
+    private void readFileinfo(org.w3c.dom.Element fileinfo, Element element) {
+        NodeList childNodes = fileinfo.getChildNodes();
+        for (int i=0;i<childNodes.getLength();i++){
+            readGenericMetadata(childNodes.item(i), element);
+        }
+    }
+
+    private void readGenericMetadata(Node item, Element element) {
+        if (item.getNodeType() == org.w3c.dom.Node.TEXT_NODE){
+            //ignore "/n" values!
+        } else if (item.getNodeType() == Node.ELEMENT_NODE) {
+            org.w3c.dom.Element elementDOM = (org.w3c.dom.Element) item;
+            String propertyName = elementDOM.getNodeName();
+            String toolname = elementDOM.getAttribute("toolname");
+            String toolversion = elementDOM.getAttribute("toolversion");
+            String nodeValue = elementDOM.getTextContent();
+            Source source = getSource(toolname, toolversion);
+            Property property = getProperty(propertyName);
+            element.addMetadataRecord(property.getKey(), nodeValue, source.getId());
+        }
+    }
+
+
+    private void readIdentification(org.w3c.dom.Element identification, Element element) {
+
+        NodeList identities = identification.getElementsByTagName("identity");
+        for (int i=0; i < identities.getLength();i++){
+            org.w3c.dom.Element identity = (org.w3c.dom.Element) identities.item(i);
+            String formatValue = identity.getAttribute("format");
+            String mimetypeValue = identity.getAttribute("mimetype");
+            NodeList tools = identity.getElementsByTagName("tool");
+            for (int j=0;j<tools.getLength();j++){
+                org.w3c.dom.Element tool = (org.w3c.dom.Element) tools.item(j);
+                String toolname = tool.getAttribute("toolname");
+                String toolversion = tool.getAttribute("toolversion");
+                Source source = getSource(toolname, toolversion);
+                element.addMetadataRecord("format", formatValue, source.getId());
+                element.addMetadataRecord("mimetype", mimetypeValue, source.getId());
+            }
+
+
+            NodeList externalIdentifiers = identity.getElementsByTagName("externalIdentifier");
+
+            for (int k=0; k< externalIdentifiers.getLength();k++){
+                org.w3c.dom.Element ider = (org.w3c.dom.Element) externalIdentifiers.item(k);
+                String externalIdentifierToolname = ider.getAttribute("toolname");
+                String externalIdentifierToolversion = ider.getAttribute("toolversion");
+                Source source = getSource(externalIdentifierToolname, externalIdentifierToolversion);
+                String externalIdentifierValue = ider.getTextContent();
+                element.addMetadataRecord("puid",externalIdentifierValue,source.getId());
+            }
+
+            NodeList versions = identity.getElementsByTagName("version");
+
+            for (int l=0; l< versions.getLength();l++){
+                org.w3c.dom.Element version = (org.w3c.dom.Element) versions.item(l);
+                String versionToolname = version.getAttribute("toolname");
+                String versionToolversion = version.getAttribute("toolversion");
+                Source source = getSource(versionToolname, versionToolversion);
+                String versionValue = version.getTextContent();
+                element.addMetadataRecord("version", versionValue, source.getId());
+            }
+        }
+    }
+
+    private Element createElement(org.w3c.dom.Element fileinfo) {
+        String filename = fileinfo.getElementsByTagName("filename").item(0).getTextContent();
+        String filepath = fileinfo.getElementsByTagName("filepath").item(0).getTextContent();
+        return new Element(filename,this.substringPath(filepath));
+    }
+
+    public Element createElementTemplate(String name, String uid ) {
+        Element result =new Element(uid, this.substringPath( name ) );
+        return result;
+    }
+
+    private String substringPath( String str ) {
+        if ( str != null ) {
+            str = str.substring( str.lastIndexOf( "/" ) + 1 );
+            str = str.substring( str.lastIndexOf( "\\" ) + 1 );
+        }
+        return str;
+    }
+
+    /**
+     * Returns the prefix of this adaptor ('fits').
+     */
+    @Override
+    public String getAdaptorPrefix() {
+        return "fits";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Property getProperty( String key ) {
+        String prop = FITSHelper.getPropertyKeyByFitsName( key );
+        return super.getProperty( prop );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Source getSource( String name, String version ) {
+        return super.getSource( name, version );
     }
 
 }

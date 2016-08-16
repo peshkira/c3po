@@ -330,7 +330,7 @@ public class ProfileGenerator {
 
         Element sample = samples.addElement( "sample" ).addAttribute( "id", id );
         for ( MetadataRecord mr : element.getMetadata() ) {
-            LOG.debug( "Metadata record: {}", mr.getProperty().getKey() );
+            LOG.debug( "Metadata record: {}", mr.getProperty() );
             if ( mr.getValues().size()==0)
                 continue;
             if ( mr.getStatus().equals( Status.CONFLICT.toString() ) ) {
@@ -338,7 +338,7 @@ public class ProfileGenerator {
                     Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
                             .getSources().get( i ) ) ) );
                     Source source = sources.next();
-                    sample.addElement( "record" ).addAttribute( "name", mr.getProperty().getKey() ).addAttribute( "value",
+                    sample.addElement( "record" ).addAttribute( "name", mr.getProperty() ).addAttribute( "value",
                             mr.getValues().get( i ).toString() ).addAttribute( "tool", source.getName() + " " + source.getVersion() );
                 }
 
@@ -346,8 +346,8 @@ public class ProfileGenerator {
                 Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
                         .getSources().get( 0 ) ) ) );
                 Source source = sources.next();
-                sample.addElement( "record" ).addAttribute( "name", mr.getProperty().getKey() ).addAttribute( "value",
-                        mr.getValue().toString() ).addAttribute( "tool", source.getName() + " " + source.getVersion() );
+                sample.addElement( "record" ).addAttribute( "name", mr.getProperty() ).addAttribute( "value",
+                        mr.getValues().toString() ).addAttribute( "tool", source.getName() + " " + source.getVersion() );
             }
         }
     }

@@ -1,27 +1,18 @@
-package com.petpet.c3po.adaptor.fits;
+package com.petpet.c3po.dao.mongo;
 
-import com.petpet.c3po.adaptor.rules.*;
-import com.petpet.c3po.api.adaptor.ProcessingRule;
+import com.mongodb.DBObject;
+import com.petpet.c3po.adaptor.fits.FITSAdaptor;
 import com.petpet.c3po.api.model.Element;
-import com.petpet.c3po.api.model.Source;
-import com.petpet.c3po.api.model.helper.MetadataRecord;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.utils.Configurator;
-import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.*;
 
 import static org.junit.Assert.*;
 
 /**
- * Created by artur on 22/07/16.
+ * Created by artur on 12/08/16.
  */
-public class FITSAdaptorTest {
+public class MongoElementSerializerTest {
     @Test
-    public void parseElement() throws Exception {
-
-        String name="012891.doc";
+    public void serialize() throws Exception {
         String data="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<fits xmlns=\"http://hul.harvard.edu/ois/xml/ns/fits/fits_output\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd\" version=\"0.6.0\" timestamp=\"12/27/11 8:05 PM\">\n" +
                 "  <identification>\n" +
@@ -62,69 +53,11 @@ public class FITSAdaptorTest {
                 "    </document>\n" +
                 "  </metadata>\n" +
                 "</fits>\n";
-
-
-        List<ProcessingRule> rules = getRules( "test" );
-            FITSAdaptor a=new FITSAdaptor();
-        a.setRules(rules);
-        a.setCache( configurator.getPersistence().getCache() );
-        Element element = a.parseElement(name, data);
-        List<MetadataRecord> metadata = element.getMetadata();
-        Iterator<MetadataRecord> iterator = metadata.iterator();
-        while (iterator.hasNext()){
-            MetadataRecord next = iterator.next();
-            String key = next.getProperty();
-            List<String> value = next.getValues();
-            List<String> sources = next.getSources();
-            String s = sources.get(0);
-            String v=value.get(0);
-            if (key.equals("pagecount")){
-                Source source = configurator.getPersistence().getCache().getSource(s);
-                Assert.assertEquals(source.getName(), "NLNZ Metadata Extractor");
-            }
-
-        }
-
-    }
-
-    private Configurator configurator=Configurator.getDefaultConfigurator();
-
-    private final Map<String, Class<? extends ProcessingRule>> knownRules=new HashMap<String, Class<? extends ProcessingRule>>();
-
-    private List<ProcessingRule> getRules( String name ) {
-        configurator.configure();
-        this.knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
-        this.knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
-        this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
-        this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
-        this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
-        this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
-        this.knownRules.put(Constants.CNF_CONTENT_TYPE_IDENTIFICATION_RULE, ContentTypeIdentificationRule.class);
-        this.knownRules.put(Constants.CNF_FILE_EXTENSION_IDENTIFICATION_RULE, FileExtensionIdentificationRule.class);
-        List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
-        rules.add( new AssignCollectionToElementRule( name ) ); // always on...
-
-        for ( String key : Constants.RULE_KEYS ) {
-
-
-                Class<? extends ProcessingRule> clazz = this.knownRules.get( key );
-
-                if ( clazz != null ) {
-
-                    try {
-
-                        ProcessingRule rule = clazz.newInstance();
-                        rules.add( rule );
-
-                    } catch ( Exception e ) {
-
-                    }
-
-                }
-
-        }
-
-        return rules;
+        FITSAdaptor fa=new FITSAdaptor();
+        Element test = fa.parseElement("test", data);
+        MongoElementSerializer serializer=new MongoElementSerializer();
+        DBObject serialize = serializer.serialize(test);
+        String toString = serialize.toString();
     }
 
 }
