@@ -36,6 +36,7 @@ import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
 import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.common.Constants;
 import com.petpet.c3po.gatherer.LocalFileGatherer;
 import com.petpet.c3po.utils.Configurator;
@@ -217,6 +218,7 @@ public class MongoPersistenceLayerTest {
       this.pLayer.clearCache();
       this.pLayer.remove(Element.class, null);
       this.pLayer.remove(Property.class, null);
+      this.pLayer.remove(Source.class, null);
       try {
         this.pLayer.close();
       } catch (C3POPersistenceException e) {

@@ -212,7 +212,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     public MongoPersistenceLayer() {
         this.deserializers = new HashMap<String, MongoModelDeserializer>();
-        this.deserializers.put( Element.class.getName(), new MongoElementDeserialzer( ) );
+        this.deserializers.put( Element.class.getName(), new MongoElementDeserialzer( this ) );
         this.deserializers.put( Property.class.getName(), new MongoPropertyDeserialzer() );
         this.deserializers.put( Source.class.getName(), new MongoSourceDeserializer() );
         this.deserializers.put( ActionLog.class.getName(), new MongoActionLogDeserializer() );

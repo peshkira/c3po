@@ -1,16 +1,31 @@
 package com.petpet.c3po.adaptor.fits;
 
 import com.petpet.c3po.adaptor.rules.*;
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.dao.MongoPersistenceLayerTest;
+import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
+import com.petpet.c3po.gatherer.LocalFileGatherer;
 import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.DataHelper;
+import com.petpet.c3po.utils.XMLUtils;
+import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.*;
 
@@ -89,23 +104,78 @@ public class FITSAdaptorTest {
 
     private Configurator configurator=Configurator.getDefaultConfigurator();
 
-    private final Map<String, Class<? extends ProcessingRule>> knownRules=new HashMap<String, Class<? extends ProcessingRule>>();
+
+
+
+    MongoPersistenceLayer pLayer;
+    final Logger LOG = LoggerFactory.getLogger(MongoPersistenceLayerTest.class);
+    Map<String, Class<? extends ProcessingRule>> knownRules;
+    Map<String, Class<? extends AbstractAdaptor>> knownAdaptors;
+
+    @Before
+    public void setUp() throws Exception {
+        pLayer = new MongoPersistenceLayer();
+
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("db.host", "localhost");
+        config.put("db.port", "27017");
+        config.put("db.name", "c3po_test_db");
+
+        config.put(Constants.OPT_COLLECTION_NAME, "test");
+        config.put(Constants.OPT_COLLECTION_LOCATION, "src/test/resources/fits/");
+        config.put(Constants.OPT_INPUT_TYPE, "FITS");
+        config.put(Constants.OPT_RECURSIVE, "True");
+        Map<String, String> adaptorcnf = this.getAdaptorConfig( config, "FITS" );
+        DataHelper.init();
+        XMLUtils.init();
+        FITSHelper.init();
+        knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
+        knownAdaptors.put( "FITS", FITSAdaptor.class );
+
+
+        DataHelper.init();
+
+        try {
+            pLayer.establishConnection(config);
+            Configurator.getDefaultConfigurator().setPersistence(pLayer);
+        } catch (C3POPersistenceException e) {
+            LOG.warn("Could not establish a connection to the persistence layer. All tests will be skipped");
+        }
+
+
+        AbstractAdaptor adaptor=new FITSAdaptor();
+
+        LocalFileGatherer lfg=new LocalFileGatherer(config);
+        LinkedBlockingQueue<Element> q=new LinkedBlockingQueue<Element>(10000);
+
+
+        knownRules = new HashMap<String, Class<? extends ProcessingRule>>();
+
+
+        knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
+        knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
+
+
+        LOG.debug( "Initializing helpers." );
+
+
+        // knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
+        // knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
+        // knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
+
+        adaptor.setConfig(adaptorcnf);
+
+    }
 
     private List<ProcessingRule> getRules( String name ) {
-        configurator.configure();
-        this.knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
-        this.knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
-        this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
-        this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
-        this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
-        this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
-        this.knownRules.put(Constants.CNF_CONTENT_TYPE_IDENTIFICATION_RULE, ContentTypeIdentificationRule.class);
-        this.knownRules.put(Constants.CNF_FILE_EXTENSION_IDENTIFICATION_RULE, FileExtensionIdentificationRule.class);
         List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
         rules.add( new AssignCollectionToElementRule( name ) ); // always on...
 
         for ( String key : Constants.RULE_KEYS ) {
 
+
+
+            if ( true ) {
 
                 Class<? extends ProcessingRule> clazz = this.knownRules.get( key );
 
@@ -113,18 +183,50 @@ public class FITSAdaptorTest {
 
                     try {
 
+                        LOG.debug( "Adding rule '{}'", key );
+
                         ProcessingRule rule = clazz.newInstance();
                         rules.add( rule );
 
-                    } catch ( Exception e ) {
-
+                    } catch ( InstantiationException e ) {
+                        LOG.warn( "Could not initialize the processing rule for key '{}'", key );
+                    } catch ( IllegalAccessException e ) {
+                        LOG.warn( "Could not access the processing rule for key '{}'", key );
                     }
 
                 }
-
+            }
         }
 
         return rules;
     }
+
+    @After
+    public void tearDown() throws Exception {
+        if (this.pLayer.isConnected()) {
+            this.pLayer.clearCache();
+            this.pLayer.remove(Element.class, null);
+            this.pLayer.remove(Property.class, null);
+            this.pLayer.remove(Source.class, null);
+            try {
+                this.pLayer.close();
+            } catch (C3POPersistenceException e) {
+                LOG.warn("Could not close the connection in a clear fashion");
+            }
+        }
+
+    }
+
+    private Map<String, String> getAdaptorConfig( Map<String, String> config, String prefix ) {
+        final Map<String, String> adaptorcnf = new HashMap<String, String>();
+        for ( String key : config.keySet() ) {
+            if ( key.startsWith( "c3po.adaptor." ) || key.startsWith( "c3po.adaptor." + prefix.toLowerCase() ) ) {
+                adaptorcnf.put( key, config.get( key ) );
+            }
+        }
+
+        return adaptorcnf;
+    }
+
 
 }

@@ -215,7 +215,7 @@ public class MongoFilterSerializer {
             }
             else{
               if ( Arrays.asList( EXCLUDE ).contains( field ) ) {
-                res.add(new BasicDBObject(field + ".values",val));
+                res.add(new BasicDBObject(field,val));
               } else {
                 if (val.equals("CONFLICT")){
                   field += ".status";

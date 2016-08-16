@@ -59,7 +59,7 @@ public class MongoFilterSerializerTest {
 
     DBObject filter = ser.serialize(f);
 
-    String expected = "{ \"$and\" : [ { \"mimetype.value\" : \"applciation/pdf\"}]}";
+    String expected = "{ \"$and\" : [ { \"mimetype.values\" : \"applciation/pdf\"}]}";
     Assert.assertEquals(expected, filter.toString());
   }
 
@@ -89,7 +89,7 @@ public class MongoFilterSerializerTest {
     DBObject filter = ser.serialize(f);
 
     String val = filter.toString();
-    String expr = "{ \"$and\" : [ { \"$or\" : [ { \"mimetype.value\" : \"applciation/pdf\"} , { \"mimetype.value\" : \"text/html\"} , { \"mimetype.value\" : \"text/xml\"}]}]}";
+    String expr = "{ \"$and\" : [ { \"$or\" : [ { \"mimetype.values\" : \"applciation/pdf\"} , { \"mimetype.values\" : \"text/html\"} , { \"mimetype.values\" : \"text/xml\"}]}]}";
     Assert.assertEquals(expr, val);
   }
 

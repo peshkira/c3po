@@ -10,6 +10,7 @@ import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.adaptor.ProcessingRule;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
@@ -151,6 +152,7 @@ public class ConflictResolutionProcessorTest {
             this.pLayer.clearCache();
             this.pLayer.remove(Element.class, null);
             this.pLayer.remove(Property.class, null);
+            this.pLayer.remove(Source.class, null);
             try {
                 this.pLayer.close();
             } catch (C3POPersistenceException e) {

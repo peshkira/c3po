@@ -142,7 +142,7 @@ public class DataHelperTest {
     Assert.assertNull(value.get("value"));
     List<Object> values = (List<Object>) value.get("values");
     Assert.assertNotNull(values);
-    Assert.assertEquals(2, values.size());
+    Assert.assertEquals(1, values.size());
   }
 
   @Test
