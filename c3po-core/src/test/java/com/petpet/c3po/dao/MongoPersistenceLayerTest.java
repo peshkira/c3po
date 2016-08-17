@@ -170,7 +170,7 @@ public class MongoPersistenceLayerTest {
     ExecutorService executor = Executors.newFixedThreadPool(2);
     executor.execute(adaptor);
     executor.shutdown();
-    Thread.sleep(1000);
+    Thread.sleep(500);
     //q.poll(10, TimeUnit.SECONDS);
     while(!q.isEmpty()) {
       pLayer.insert(q.poll());

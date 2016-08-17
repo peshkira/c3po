@@ -203,10 +203,9 @@ public class MongoFilterSerializer {
           res.add( new BasicDBObject( "$and", and ));
 
         } else {
-          if (val==null){
+          if (val==null || val.equals("Unknown")){
             val=NOTEXISTS;
             res.add( new BasicDBObject( this.mapFieldToProperty( field, val ), val ));
-            res.add( new BasicDBObject( field + ".values", val ));
           } else {
             if (val.getClass().isArray())
             {

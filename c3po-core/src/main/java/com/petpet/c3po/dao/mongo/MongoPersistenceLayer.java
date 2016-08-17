@@ -836,7 +836,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      *          the class we want to store.
      * @return the {@link DBCollection}.
      */
-    private <T extends Model> DBCollection getCollection( Class<T> clazz ) {
+    public <T extends Model> DBCollection getCollection( Class<T> clazz ) {
         return this.collections.get( clazz.getName() );
     }
 
@@ -852,7 +852,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      * @return the cached filter or the updated version.
      * @see MongoFilterSerializer;
      */
-    private DBObject getCachedFilter( Filter f ) {
+    public DBObject getCachedFilter( Filter f ) {
         Filter filter = (Filter) this.dbCache.getObject( LAST_FILTER );
         DBObject result = null;
 
