@@ -60,9 +60,21 @@ public class Samples extends Controller {
       options.put("properties", Arrays.asList(properties));
       sg.setOptions(options);
     }
+    if (alg.equals("sfd")) {
+		List<String> list = Arrays.asList(props.split(","));
+		HashMap<String, Object> options = new HashMap<String, Object>();
+		options.put("pcoverage", list.get(0));
+		options.put("tcoverage", list.get(1));
+		options.put("threshold", list.get(2));
+		options.put("proportion", list.get(3));
+		List<String> tmp_props=new ArrayList<String>();
+		for (int i=4;i<list.size();i++)
+			tmp_props.add(list.get(i));
+		options.put("properties", tmp_props);
+		sg.setOptions(options);
+	  }
 
     List<Element> samples = new ArrayList<Element>();
-    if (filter != null) {
       List<String> output = sg.execute(size);
       
       for (String uid: output){
@@ -73,7 +85,6 @@ public class Samples extends Controller {
 		  if (next!=null)
 		  	samples.add(next);
       }
-    }
 
 
 	  return ok(play.libs.Json.toJson(samples));

@@ -3,13 +3,17 @@ package com.petpet.c3po.analysis;
 import com.mongodb.*;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 import static com.mongodb.MapReduceCommand.OutputType.INLINE;
@@ -29,34 +33,30 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
      */
     private static final Logger LOG = LoggerFactory.getLogger(SystematicSamplingRepresentativeGenerator.class);
 
-    public Map<String, Object> getSamplingOptions() {
-        return samplingOptions;
-    }
-
-    public void setSamplingOptions(Map<String, Object> samplingOptions) {
-        this.samplingOptions = samplingOptions;
-    }
-
-    Map<String, Object> samplingOptions;
+    //Map<String, Object> samplingOptions;
 
     public SelectiveFeatureDistributionSampling(){
         this.pl = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
-        samplingOptions=new HashMap<String, Object>();
+        options=new HashMap<String, Object>();
     }
     Map<List<String>, Integer> tuples;
+    long start, stop;
+    double pcovSC, tmp_Tsp;
+    int sample_size;
     @Override
     public List<String> execute() {
+        start = System.currentTimeMillis();
         List<String> result=new ArrayList<String>();
         List<BasicDBObject>  results = runMapReduce();
         tuples = readResults(results);
         long popC = pl.count(Element.class, filter);
         int Tcp=tuples.size();
         double Tsp = Tcp * tcoverage;
-        double pcovSC=0;
-        double tmp_Tsp=0;
+        pcovSC=0;
+        tmp_Tsp=0;
         int tmp_threshold=0;
         Iterator<Map.Entry<List<String>, Integer>> tuplesIterator = tuples.entrySet().iterator();
-        while ((pcovSC<pcoverage && tmp_Tsp<Tsp && tmp_threshold<threshold) && tuplesIterator.hasNext()){
+        while ((pcovSC<=pcoverage && tmp_Tsp<=Tsp && tmp_threshold<=threshold) && tuplesIterator.hasNext()){
             Map.Entry<List<String>, Integer> next = tuplesIterator.next();
             int popT = next.getValue();
             double tmp_pcovTC = popT / (double) popC;
@@ -70,14 +70,80 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
             }
             result.addAll(samples);
         }
+        sample_size = result.size();
+        stop = System.currentTimeMillis();
+        exportResults();
+
         return result;
     }
+
+    private void exportResults() {
+        writeSamplesToCSV();
+        writeResultsToXML();
+    }
+
+    private void writeResultsToXML() {
+        /*
+        One txt with
+Input params used
+Resulting pcoverage of the sample
+Resulting tcoverage of the sample
+Sample size
+Timestamp
+Runtime of algorithm
+Source collection and filter
+Anything else that is interesting about inputs, outputs,settings,params
+        */
+        long time=(stop-start)/1000;
+        final Document document = DocumentHelper.createDocument();
+
+        org.dom4j.Element input=document.addElement("input");
+
+        input.addElement("pcoverage", Double.toString(pcoverage));
+        input.addElement("tcoverage", Double.toString(tcoverage));
+        input.addElement("threshold", Double.toString(threshold));
+        input.addElement("proportion", proportion);
+        org.dom4j.Element props = input.addElement("properties");
+        for (String property : properties) {
+            props.addElement("property", property);
+        }
+
+        java.util.Date date= new java.util.Date();
+        Timestamp timestamp = new Timestamp(date.getTime());
+
+        input.addElement("timestamp", timestamp.toString());
+        org.dom4j.Element processing_time = input.addElement("processing_time", Long.toString(time));
+        processing_time.addAttribute("unit", "seconds");
+
+        org.dom4j.Element output = document.addElement("output");
+
+        output.addElement("filter", filter.toString());
+        output.addElement("tcoverage",  Double.toString(tmp_Tsp));
+        output.addElement("pcoverage", Double.toString(pcovSC) );
+        output.addElement("sample_size", Integer.toString(sample_size) );
+
+        document.toString();
+    }
+
+    private void writeSamplesToCSV() {
+        CSVGenerator csvGenerator=new CSVGenerator(pl);
+
+        final Iterator<Property> allprops = pl.find( Property.class, null );
+        final List<Property> props = csvGenerator.getProperties( allprops );
+        String output="";
+        csvGenerator.write(sampleElements.iterator(),props,output);
+
+
+    }
+
+    List<Element> sampleElements=new ArrayList<Element>();
 
     List<String> pickSamples(Iterator<Element> iterator, int count){
         List<String> result=new ArrayList<String>();
         int i=0;
         while(iterator.hasNext() && i < count){
             Element next = iterator.next();
+            sampleElements.add(next);
             String uid = next.getUid();
             result.add(uid);
             i++;
@@ -126,6 +192,11 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         return pl.find(Element.class,f);
     }
 
+    @Override
+    public void setOptions( Map<String, Object> options ) {
+        this.options = options;
+        readOptions();
+    }
 
 
 
@@ -140,7 +211,6 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
             }
             tmp.put(strings,value);
         }
-
 
         Map<List<String>, Integer> listIntegerMap = sortByValue(tmp);
         return listIntegerMap;
@@ -191,7 +261,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
 
     @Override
     public List<String> execute(int limit) {
-        return null;
+        return execute();
     }
     List<String> properties;
     double pcoverage;
@@ -199,16 +269,16 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
     String proportion;
     int threshold;
     public void readOptions(){
-        if ( samplingOptions.get("properties") !=null)
-            properties = (List<String>) samplingOptions.get("properties");
-        if ( samplingOptions.get("pcoverage") !=null)
-            pcoverage=(double) samplingOptions.get("pcoverage");
-        if ( samplingOptions.get("tcoverage") !=null)
-            tcoverage=(double) samplingOptions.get("tcoverage");
-        if ( samplingOptions.get("threshold") !=null)
-            threshold=(int) samplingOptions.get("threshold");
-        if ( samplingOptions.get("proportion") !=null)
-            proportion=(String) samplingOptions.get("proportion");
+        if ( options.get("properties") !=null)
+            properties = (List<String>) options.get("properties");
+        if ( options.get("pcoverage") !=null)
+            pcoverage=(double) Double.parseDouble( (String) options.get("pcoverage"));
+        if ( options.get("tcoverage") !=null)
+            tcoverage=(double) Double.parseDouble( (String) options.get("tcoverage"));
+        if ( options.get("threshold") !=null)
+            threshold=(int) Integer.parseInt( (String) options.get("threshold"));
+        if ( options.get("proportion") !=null)
+            proportion=(String) options.get("proportion");
     }
 
     @Override

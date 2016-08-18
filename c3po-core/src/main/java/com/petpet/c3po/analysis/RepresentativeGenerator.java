@@ -36,13 +36,13 @@ public abstract class RepresentativeGenerator {
    * going to be used. Note, that the filter can only specify the collection,
    * meaning that all data should be considered.
    */
-  public Filter filter;
+  protected Filter filter;
 
   /**
    * A simple map to hold the configuration of the representative generator if
    * any is needed at all.
    */
-  private Map<String, Object> options;
+  protected Map<String, Object> options;
 
   /**
    * Retrieves a list of identifiers for the representative sample objects. It

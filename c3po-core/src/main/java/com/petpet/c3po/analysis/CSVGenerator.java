@@ -141,7 +141,7 @@ public class CSVGenerator {
    * @param output
    *          the output file where to write to.
    */
-  private void write( Iterator<Element> matrix, List<Property> props, String output ) {
+  public void write( Iterator<Element> matrix, List<Property> props, String output ) {
     try {
 
       final File file = new File( output );
@@ -264,7 +264,7 @@ public class CSVGenerator {
    *          the iterator over the properties
    * @return a list of properties or an empty list.
    */
-  private List<Property> getProperties( final Iterator<Property> cursor ) {
+  public List<Property> getProperties( final Iterator<Property> cursor ) {
     final List<Property> result = new ArrayList<Property>();
 
     while ( cursor.hasNext() ) {

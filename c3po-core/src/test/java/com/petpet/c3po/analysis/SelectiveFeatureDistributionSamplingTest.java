@@ -187,20 +187,15 @@ public class SelectiveFeatureDistributionSamplingTest {
         props.add("puid");
         props.add("created");
 
-        String alg = "sfd";
-        int size = 1000;
-        String name = "test";
-        double pcoverage=1;
-        double tcoverage=1;
         String proportion="linear";
 
         Map<String, Object> samplesOptions = new HashMap<String, Object>();
         samplesOptions.put("properties", props );
-        samplesOptions.put("pcoverage", pcoverage );
-        samplesOptions.put("tcoverage", tcoverage );
+        samplesOptions.put("pcoverage", "1" );
+        samplesOptions.put("tcoverage", "1");
         samplesOptions.put("proportion", proportion );
-        samplesOptions.put("threshold", size );
-        sfd.setSamplingOptions(samplesOptions);
+        samplesOptions.put("threshold", "1000" );
+        sfd.setOptions(samplesOptions);
         sfd.readOptions();
         sfd.setFilter(null);
         sfd.execute();

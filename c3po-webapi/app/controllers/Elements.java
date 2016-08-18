@@ -103,7 +103,10 @@ public class Elements extends Controller {
 				List<String> sourcesFullName= new ArrayList<String>();
 				for (String s: sources) {
 					Source source = persistence.getCache().getSource(s);
-					sourcesFullName.add(source.getName()+":"+source.getVersion());
+					if (source!=null)
+						sourcesFullName.add(source.getName()+":"+source.getVersion());
+					else
+						sourcesFullName.add("Null");
 				}
 				mr.setSources(sourcesFullName);
 			}
@@ -170,9 +173,11 @@ public class Elements extends Controller {
 
 			List<String> tmp_sources=new ArrayList<String>();
 			for (String s:sources){
-				Integer integer = Integer.valueOf(s);
-				tmp_sources.add(sourceNames.get(integer));
-
+				Source source = persistence.getCache().getSource(s);
+				if (source!=null)
+					tmp_sources.add(source.getName() + " (" + source.getVersion()+ ")");//sourceNames.get(integer));
+				else
+					tmp_sources.add("Null");
 			}
 			sources=tmp_sources;
 			ObjectNode tmp=Json.newObject();
@@ -184,15 +189,10 @@ public class Elements extends Controller {
 			for (String source: sourceNames){
 				int i = sources.indexOf(source);
 				if (i>=0){
-					if (!status.equals("CONFLICT")){
-						tmp.put(source, values.get(i));
-					} else if (status.equals("CONFLICT")){
-						tmp.put(source, values.get(i));
-					}
+					tmp.put(source, values.get(i));
 				} else{
 					tmp.put(source, nullStr);
 				}
-
 				if (sources.isEmpty()) {
 					tmp.put("C3PO",  values.get(i));
 				} else {

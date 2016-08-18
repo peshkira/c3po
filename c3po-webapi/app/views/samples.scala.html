@@ -35,6 +35,8 @@
       input and selects sample objects that together have (nearly) the same distribution as the whole collection or
       filter. Note, that if you select too many properties, or a special combination of properties, it could happen, that
       no representatives can be found.</div>
+      <div class="algorithmname">SelectiveFeatureDistributionSampling</div>
+      <div class="algorithmdescription">Put description here.</div>
   </div>
 </div>
 
@@ -55,7 +57,8 @@
           var algorithms = [
                             {'key':'size', 'name':'Size\'o\'Matic'},
                             {'key':'syssampling', 'name': 'Sys Sampling'},
-                            {'key': 'distsampling', 'name':'Dist Sampling'}
+                            {'key': 'distsampling', 'name':'Dist Sampling'},
+                            {'key': 'sfd', 'name':'Selective Feature Dist Sampling'}
                            ];
            
           var popup = $('#filterpopup');
@@ -69,16 +72,26 @@
           });
 
           $(sel).change(function() {
-        	  $(this).siblings().remove()
+        	  $(this).siblings().remove();
               var val = $(this).val();
               if (val === "") {
                   $(this).effect("highlight", {color:'#FF1400'} , "slow");
               } else {
-                var text = $('<input type="text" placeholder="nr of samples" value="11"/>').appendTo(config);
 
-                if (val == "distsampling") {
+
+
+                  if (val=="sfd"){
+                      var pcoverage = $('<input id="pcoverage" type="text" placeholder="pcoverage from 0 to 1" value="pcoverage"/>').appendTo(config);
+                      var tcoverage = $('<input id="tcoverage" type="text" placeholder="tcoverage from 0 to 1" value="tcoverage"/>').appendTo(config);
+                      var text = $('<input id="threshold" type="text" placeholder="number of samples" value="number of samples"/>').appendTo(config);
+                      var proportion = $('<select id="proportion"><option>linear</option><option>log</option><option>no</option></select>').appendTo(config);
+                  }
+                else
+                      var text = $('<input type="text" placeholder="nr of samples" value="11"/>').appendTo(config);
+
+                if (val == "distsampling" || val=="sfd") {
                 	$.ajax ({
-                        headers: { 
+                        headers: {
                             Accept : "application/json; charset=utf-8",
                         },
                         type:     'GET',
@@ -93,7 +106,7 @@
                         }
                     });
                 }
-                
+
                 var btn = $('<a id="btn_runsamples" class="green_button" href="#">Apply</a>').appendTo(config);
                 
                 
@@ -110,9 +123,22 @@
                       }
                     }
 
-                    var options = [];
-                    if (alg == "distsampling") {
+                    var options=[];
+                    if (alg == "distsampling" ) {
                         options = $('.popupconfig select:last').val();
+                    }
+                    if (alg == "sfd") {
+                        options.push($('#pcoverage').val());
+                        options.push($('#tcoverage').val());
+                        options.push($('#threshold').val());
+                        options.push($('#proportion').val());
+                        options.push($('.popupconfig select:last').val());
+                        //options["pcoverage"]=$('#pcoverage').val();
+                        //options["tcoverage"]=$('#tcoverage').val();
+                        //options["samples"]=$('#threshold').val();
+                       // options["proportion"]=$('#proportion').val();
+                       // options["properties"] = $('.popupconfig select:last').val();
+
                     }
                     
                     hidePopupDialog();
