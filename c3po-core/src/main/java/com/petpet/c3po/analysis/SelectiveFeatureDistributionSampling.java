@@ -10,11 +10,18 @@ import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static com.mongodb.MapReduceCommand.OutputType.INLINE;
 
@@ -43,13 +50,14 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
     long start, stop;
     double pcovSC, tmp_Tsp;
     int sample_size;
+    long popC;
     @Override
     public List<String> execute() {
         start = System.currentTimeMillis();
         List<String> result=new ArrayList<String>();
         List<BasicDBObject>  results = runMapReduce();
         tuples = readResults(results);
-        long popC = pl.count(Element.class, filter);
+        popC = pl.count(Element.class, filter);
         int Tcp=tuples.size();
         double Tsp = Tcp * tcoverage;
         pcovSC=0;
@@ -77,12 +85,86 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         return result;
     }
 
-    private void exportResults() {
-        writeSamplesToCSV();
-        writeResultsToXML();
+    private String exportResults() {
+        String writeSamplesToCSV = writeSamplesToCSV();
+        String writeResultsToXML = writeResultsToXML();
+        String writePTTables = writePTTables();
+        String outputFileLocation=System.getProperty("java.io.tmpdir") + "/sfd_results.zip";
+        try {
+
+            FileOutputStream fos = new FileOutputStream(outputFileLocation);
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            addToZipFile(writeSamplesToCSV, zos);
+            addToZipFile(writeResultsToXML, zos);
+            addToZipFile(writePTTables, zos);
+            zos.close();
+            fos.close();
+
+            LOG.info("Writing a zip-file with results to {}", outputFileLocation);
+            System.out.println("Writing a zip-file with results to " + outputFileLocation);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputFileLocation;
     }
 
-    private void writeResultsToXML() {
+
+    public static void addToZipFile(String fileName, ZipOutputStream zos) throws FileNotFoundException, IOException {
+
+        System.out.println("Writing '" + fileName + "' to zip file");
+
+        File file = new File(fileName);
+        FileInputStream fis = new FileInputStream(file);
+        ZipEntry zipEntry = new ZipEntry(fileName);
+        zos.putNextEntry(zipEntry);
+
+        byte[] bytes = new byte[1024];
+        int length;
+        while ((length = fis.read(bytes)) >= 0) {
+            zos.write(bytes, 0, length);
+        }
+
+        zos.closeEntry();
+        fis.close();
+    }
+
+    private String writePTTables() {
+        String result="sample_size, pcoverage, tcoverage,";
+        double pcovTC=0;
+        double Tsp=0;
+        int sample_size=0;
+        for (Map.Entry<List<String>, Integer> listIntegerEntry : tuples.entrySet()) {
+            List<String> key = listIntegerEntry.getKey();
+            Integer value = listIntegerEntry.getValue();
+            double tmp_pcovTC = value / (double) popC;
+            pcovTC+=tmp_pcovTC;
+            double tmp_Tsp=1/(double) tuples.size();
+            Tsp+=tmp_Tsp;
+            int samplesPerTuple = samplesPerTuple(tmp_pcovTC);
+            sample_size+=samplesPerTuple;
+            result += "\n " + sample_size + ", " + Double.toString(pcovTC) +", " + Double.toString(Tsp) + ",";
+        }
+
+
+        String outputFileLocation=System.getProperty("java.io.tmpdir") + "/PTtable.csv";
+        File f=new File(outputFileLocation);
+        try {
+            f.createNewFile();
+            final FileWriter writer = new FileWriter( f );
+
+            writer.write(result);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputFileLocation;
+
+    }
+
+    private String writeResultsToXML() {
         /*
         One txt with
 Input params used
@@ -96,44 +178,80 @@ Anything else that is interesting about inputs, outputs,settings,params
         */
         long time=(stop-start)/1000;
         final Document document = DocumentHelper.createDocument();
+        org.dom4j.Element sfd_results = document.addElement("sfd_results");
+        org.dom4j.Element input=sfd_results.addElement("input");
 
-        org.dom4j.Element input=document.addElement("input");
-
-        input.addElement("pcoverage", Double.toString(pcoverage));
-        input.addElement("tcoverage", Double.toString(tcoverage));
-        input.addElement("threshold", Double.toString(threshold));
-        input.addElement("proportion", proportion);
+        org.dom4j.Element pcoverage = input.addElement("pcoverage" );
+        pcoverage.addText(Double.toString(this.pcoverage));
+        org.dom4j.Element tcoverage = input.addElement("tcoverage");
+        tcoverage.addText(Double.toString(this.tcoverage));
+        org.dom4j.Element threshold = input.addElement("threshold");
+        threshold.addText( Double.toString(this.threshold));
+        org.dom4j.Element proportion = input.addElement("proportion");
+        proportion.addText(this.proportion);
         org.dom4j.Element props = input.addElement("properties");
         for (String property : properties) {
-            props.addElement("property", property);
+            org.dom4j.Element property1 = props.addElement("property");
+            property1.addText( property);
         }
+        org.dom4j.Element output = sfd_results.addElement("output");
 
         java.util.Date date= new java.util.Date();
         Timestamp timestamp = new Timestamp(date.getTime());
 
-        input.addElement("timestamp", timestamp.toString());
-        org.dom4j.Element processing_time = input.addElement("processing_time", Long.toString(time));
+        org.dom4j.Element timestamp1 = output.addElement("timestamp");
+        timestamp1.addText( timestamp.toString());
+        org.dom4j.Element processing_time = output.addElement("processing_time");
+        processing_time.addText( Long.toString(time));
         processing_time.addAttribute("unit", "seconds");
 
-        org.dom4j.Element output = document.addElement("output");
-
-        output.addElement("filter", filter.toString());
-        output.addElement("tcoverage",  Double.toString(tmp_Tsp));
-        output.addElement("pcoverage", Double.toString(pcovSC) );
-        output.addElement("sample_size", Integer.toString(sample_size) );
+        org.dom4j.Element filter = output.addElement("filter");
+        if (this.filter !=null)
+            filter.addText( this.filter.toString());
+        else
+            filter.addText(  "empty");
+        org.dom4j.Element tcoverage1 = output.addElement("tcoverage");
+        tcoverage1.addText( Double.toString(tmp_Tsp));
+        org.dom4j.Element pcoverage1 = output.addElement("pcoverage");
+        pcoverage1.addText( Double.toString(pcovSC));
+        org.dom4j.Element sample_size = output.addElement("sample_size");
+        sample_size.addText(Integer.toString(this.sample_size));
 
         document.toString();
+
+
+        String outputFileLocation=System.getProperty("java.io.tmpdir") + "/results.xml";
+        File f=new File(outputFileLocation);
+        try {
+            f.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            final OutputFormat format = OutputFormat.createPrettyPrint();
+            final XMLWriter writer = new XMLWriter( new FileWriter( outputFileLocation ), format );
+            writer.write( document );
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputFileLocation;
     }
 
-    private void writeSamplesToCSV() {
+    private String writeSamplesToCSV() {
         CSVGenerator csvGenerator=new CSVGenerator(pl);
 
         final Iterator<Property> allprops = pl.find( Property.class, null );
         final List<Property> props = csvGenerator.getProperties( allprops );
-        String output="";
-        csvGenerator.write(sampleElements.iterator(),props,output);
-
-
+        String outputFileLocation=System.getProperty("java.io.tmpdir") + "/samples.csv";
+        File f=new File(outputFileLocation);
+        try {
+            f.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        csvGenerator.write(sampleElements.iterator(),props,outputFileLocation);
+        return outputFileLocation;
     }
 
     List<Element> sampleElements=new ArrayList<Element>();

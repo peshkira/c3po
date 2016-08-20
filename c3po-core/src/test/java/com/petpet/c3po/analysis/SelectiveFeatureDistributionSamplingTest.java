@@ -52,7 +52,7 @@ public class SelectiveFeatureDistributionSamplingTest {
         Map<String, String> config = new HashMap<String, String>();
         config.put("db.host", "localhost");
         config.put("db.port", "27017");
-        config.put("db.name", "c3po_test_db");
+        config.put("db.name", "c3po");
 
         config.put(Constants.OPT_COLLECTION_NAME, "test");
         config.put(Constants.OPT_COLLECTION_LOCATION, "src/test/resources/fits/");
@@ -110,9 +110,9 @@ public class SelectiveFeatureDistributionSamplingTest {
         executor.shutdown();
         Thread.sleep(500);
         //q.poll(10, TimeUnit.SECONDS);
-        while(!q.isEmpty()) {
-            pLayer.insert(q.poll());
-        }
+      //  while(!q.isEmpty()) {
+     //       pLayer.insert(q.poll());
+      //  }
 
     }
     private Map<String, String> getAdaptorConfig( Map<String, String> config, String prefix ) {
@@ -163,10 +163,10 @@ public class SelectiveFeatureDistributionSamplingTest {
     @After
     public void tearDown() throws Exception {
         if (this.pLayer.isConnected()) {
-            this.pLayer.clearCache();
-            this.pLayer.remove(Element.class, null);
-            this.pLayer.remove(Property.class, null);
-            this.pLayer.remove(Source.class, null);
+         //   this.pLayer.clearCache();
+         //   this.pLayer.remove(Element.class, null);
+         //   this.pLayer.remove(Property.class, null);
+        //    this.pLayer.remove(Source.class, null);
             try {
                 this.pLayer.close();
             } catch (C3POPersistenceException e) {

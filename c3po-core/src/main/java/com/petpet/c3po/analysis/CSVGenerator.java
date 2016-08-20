@@ -143,7 +143,6 @@ public class CSVGenerator {
    */
   public void write( Iterator<Element> matrix, List<Property> props, String output ) {
     try {
-
       final File file = new File( output );
 
       LOG.info( "Will export data in {}", file.getAbsolutePath() );
