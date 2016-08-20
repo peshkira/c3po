@@ -18,6 +18,7 @@
     algorithms are always applied with respect to the current filter, so please double check. <a id="algorithms"
       href="#algorithm_descriptions">Tell me more about these algorithms!</a>
   </p>
+    <div id="download"></div>
   <div id="objects"></div>
 </div>
 
@@ -161,6 +162,12 @@
               type:     'GET',
               url:      '/c3po/samples/get?alg=' + alg + '&size=' + size + '&props=' + options,
               success:  function (oData) {
+                  if (alg=="sfd"){
+                      var download=$('#download');
+                      var tmp="/c3po/samples/export";
+                      $('Download the table<a class="green_button" href="samples/export">Download results</a>').appendTo(download);
+
+                  }
                 showSamples(oData);  
                 stopSpinner();
               },

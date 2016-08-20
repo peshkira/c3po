@@ -36,6 +36,7 @@ POST          /c3po/objects/uploadFile       controllers.Elements.uploadFile()
 # Samples Page
 GET           /c3po/samples                  controllers.Samples.index()
 GET           /c3po/samples/get              controllers.Samples.getSamples(alg: String, size: Int, props: String ?= "")
+GET           /c3po/samples/export           controllers.Samples.exportResults()
 
 # Export Page
 GET           /c3po/export                   controllers.Export.index()

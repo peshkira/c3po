@@ -15,6 +15,9 @@
  ******************************************************************************/
 package controllers;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import common.WebAppConstants;
 import org.bson.types.ObjectId;
 
 import play.Logger;
@@ -67,6 +71,7 @@ public class Samples extends Controller {
 		options.put("tcoverage", list.get(1));
 		options.put("threshold", list.get(2));
 		options.put("proportion", list.get(3));
+		options.put("location",  "exports/" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip");
 		List<String> tmp_props=new ArrayList<String>();
 		for (int i=4;i<list.size();i++)
 			tmp_props.add(list.get(i));
@@ -85,11 +90,21 @@ public class Samples extends Controller {
 		  if (next!=null)
 		  	samples.add(next);
       }
-
-
 	  return ok(play.libs.Json.toJson(samples));
   }
-  
+	public static Result exportResults(){
+		Logger.debug("Exporting the template config file");
+		String path = "exports/" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip";
+		File file = new File(path);
+		try {
+			response().setContentType("application/zip");
+			response().setHeader("Content-disposition","attachment; filename="+session(WebAppConstants.SESSION_ID) + "_sfd_results.zip");
+			return ok(new FileInputStream(file));
+		} catch (FileNotFoundException e) {
+			return internalServerError(e.getMessage());
+		}
+
+	}
 
 	  public static Result indexAsJson() {
 	    response().setContentType( "application/json" );

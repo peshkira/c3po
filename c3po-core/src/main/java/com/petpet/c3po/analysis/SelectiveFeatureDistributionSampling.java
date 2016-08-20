@@ -80,18 +80,21 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         }
         sample_size = result.size();
         stop = System.currentTimeMillis();
-        exportResults();
+        exportResults(location);
 
         return result;
     }
 
-    private String exportResults() {
+    private String exportResults(String location) {
         String writeSamplesToCSV = writeSamplesToCSV();
         String writeResultsToXML = writeResultsToXML();
         String writePTTables = writePTTables();
         String outputFileLocation=System.getProperty("java.io.tmpdir") + "/sfd_results.zip";
+        if (location!=null)
+            outputFileLocation=location;
         try {
-
+            File f =new File(outputFileLocation);
+            f.createNewFile();
             FileOutputStream fos = new FileOutputStream(outputFileLocation);
             ZipOutputStream zos = new ZipOutputStream(fos);
             addToZipFile(writeSamplesToCSV, zos);
@@ -386,6 +389,7 @@ Anything else that is interesting about inputs, outputs,settings,params
     double tcoverage;
     String proportion;
     int threshold;
+    String location;
     public void readOptions(){
         if ( options.get("properties") !=null)
             properties = (List<String>) options.get("properties");
@@ -397,6 +401,8 @@ Anything else that is interesting about inputs, outputs,settings,params
             threshold=(int) Integer.parseInt( (String) options.get("threshold"));
         if ( options.get("proportion") !=null)
             proportion=(String) options.get("proportion");
+        if ( options.get("location") !=null)
+            location=(String) options.get("location");
     }
 
     @Override
