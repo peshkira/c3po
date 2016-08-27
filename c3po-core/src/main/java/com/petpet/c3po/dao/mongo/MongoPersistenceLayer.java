@@ -871,7 +871,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
 
 
-    public <T extends Model> Map<String, Long> getValueHistogramFor( List<String> properties, Filter filter )
+    /*public <T extends Model> Map<String, Long> getValueHistogramFor( List<String> properties, Filter filter )
             throws UnsupportedOperationException {
 
         Map<String, Long> histogram = new HashMap<String, Long>();
@@ -895,9 +895,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         }
 
         return histogram;
-    }
+    }*/
 
-    public Map<String, Map<String, Long>> parseMapReduce(DBObject object, List<String> properties){
+    /*public Map<String, Map<String, Long>> parseMapReduce(DBObject object, List<String> properties){
 
         List<String> propertyStats=new ArrayList<String>();
         List<String> propertiesDate=new ArrayList<String>();
@@ -999,14 +999,318 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         return histograms;
     }
+
+*/
+
+
+    public Map<String, Long> parseMapReduce(DBObject object, String property){
+
+        Map<String, Long> histogram=new HashMap<String, Long>();
+
+        if ( object == null ) {
+            return histogram;
+        }
+
+        List<BasicDBObject> results = (List<BasicDBObject>) object;
+        for ( final BasicDBObject dbo : results ) {
+
+            String p =  ((BasicDBObject) dbo.get("_id")).getString("property");
+            String val = ((BasicDBObject) dbo.get("_id")).getString("value");
+            try{
+                long count = dbo.getLong("value");
+                histogram.put(val, count);
+            } catch (Exception e){
+                BasicDBObject v = (BasicDBObject) dbo.get("value");
+                long sum, min, max, avg, std, var, count;
+                try {
+                    count = v.getLong("count");
+                } catch (Exception ex) {
+                    count = 0;
+                }
+                try {
+                    sum = v.getLong("sum");
+                } catch (Exception ex) {
+                    sum = 0;
+                }
+                try {
+                    min = v.getLong("min");
+                } catch (Exception ex) {
+                    min = 0;
+                }
+                try {
+                    max = v.getLong("max");
+                } catch (Exception ex) {
+                    max = 0;
+                }
+                try {
+                    avg = v.getLong("avg");
+                } catch (Exception ex) {
+                    avg = 0;
+                }
+                try {
+                    std = v.getLong("stddev");
+                } catch (Exception ex) {
+                    std = 0;
+                }
+                try {
+                    var = v.getLong("variance");
+                } catch (Exception ex) {
+                    var = 0;
+                }
+                histogram.put("sum", sum);
+                histogram.put("min", min);
+                histogram.put("max", max);
+                histogram.put("avg", avg);
+                histogram.put("std", std);
+                histogram.put("var", var);
+                histogram.put("count", count);
+            }
+        }
+        return histogram;
+    }
     @Override
     public <T extends Model> Map<String, Map<String, Long>> getHistograms(List<String> properties, Filter filter){
-        DBObject dbObject = mapReduce(0, properties, filter);
-        Map<String, Map<String, Long>> histograms = parseMapReduce(dbObject, properties);
+        Map<String, Map<String, Long>> histograms=new HashMap<String, Map<String, Long>>();
+        for (String property : properties) {
+            DBObject dbObject=null;
+            if (!property.equals("size"))
+                dbObject = mapReduce(0, property, filter);
+            else
+                dbObject = mapReduceStats(0, property, filter);
+            Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
+            histograms.put(property,stringLongMap);
+        }
+       // DBObject dbObject = mapReduce(0, properties, filter);
+       // Map<String, Map<String, Long>> histograms = parseMapReduce(dbObject, properties);
         return histograms;
     }
 
+    public DBObject mapReduce(int key, String property, Filter filter){
+        LOG.debug( "Starting mapReduce for the following property: {}", property );
+        long start = System.currentTimeMillis();
+        Property prop = getCache().getProperty(property);
+        String propType = prop.getType();
+        String map="";
+        String reduce="";
+        if (propType.equals(PropertyType.STRING.toString())){
+            map="function() {\n" +
+                    "    property = '"+property+"';\n" +
+                    "        if (this[property] != null) {\n" +
+                    "            if (this[property].status != 'CONFLICT') {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: this[property].values[0]\n" +
+                    "                }, 1);\n" +
+                    "            } else {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: 'CONFLICT'\n" +
+                    "                }, 1);\n" +
+                    "            }\n" +
+                    "        } else {\n" +
+                    "            emit({\n" +
+                    "                property: property,\n" +
+                    "                value: 'Unknown'\n" +
+                    "            }, 1);\n" +
+                    "        }\n" +
+                    "    }";
+            reduce="function reduce(key, values) {\n" +
+                    "    var res = 0;\n" +
+                    "    values.forEach(function(v) {\n" +
+                    "        res += v;\n" +
+                    "    });\n" +
+                    "    return res;\n" +
+                    "}";
 
+        } else if  (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
+            map="function() {\n" +
+                    "    property = '"+property+"';\n" +
+                    "        if (this[property] != null) {\n" +
+                    "            if (this[property].status != 'CONFLICT') {\n" +
+                    "                var idx = Math.floor(this[property].values[0] / 10);" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: idx\n" +
+                    "                }, 1);\n" +
+                    "            } else {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: 'CONFLICT'\n" +
+                    "                }, 1);\n" +
+                    "            }\n" +
+                    "        } else {\n" +
+                    "            emit({\n" +
+                    "                property: property,\n" +
+                    "                value: 'Unknown'\n" +
+                    "            }, 1);\n" +
+                    "        }\n" +
+                    "    }";
+            reduce="function reduce(key, values) {\n" +
+                    "    var res = 0;\n" +
+                    "    values.forEach(function(v) {\n" +
+                    "        res += v;\n" +
+                    "    });\n" +
+                    "    return res;\n" +
+                    "}";
+
+        } else if  (propType.equals(PropertyType.DATE.toString())) {
+            map="function() {\n" +
+                    "    property = '"+property+"';\n" +
+                    "        if (this[property] != null) {\n" +
+                    "            if (this[property].status != 'CONFLICT') {\n" +
+                    "                var date = new Date(this[property].values[0]);" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: date.getFullYear()\n" +
+                    "                }, 1);\n" +
+                    "            } else {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: 'CONFLICT'\n" +
+                    "                }, 1);\n" +
+                    "            }\n" +
+                    "        } else {\n" +
+                    "            emit({\n" +
+                    "                property: property,\n" +
+                    "                value: 'Unknown'\n" +
+                    "            }, 1);\n" +
+                    "        }\n" +
+                    "    }";
+            reduce="function reduce(key, values) {\n" +
+                    "    var res = 0;\n" +
+                    "    values.forEach(function(v) {\n" +
+                    "        res += v;\n" +
+                    "    });\n" +
+                    "    return res;\n" +
+                    "}";
+
+
+        } else if  (propType.equals(PropertyType.BOOL.toString())) {
+            map="function() {\n" +
+                    "    property = '"+property+"';\n" +
+                    "        if (this[property] != null) {\n" +
+                    "            if (this[property].status != 'CONFLICT') {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: this[property].values[0]\n" +
+                    "                }, 1);\n" +
+                    "            } else {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: 'CONFLICT'\n" +
+                    "                }, 1);\n" +
+                    "            }\n" +
+                    "        } else {\n" +
+                    "            emit({\n" +
+                    "                property: property,\n" +
+                    "                value: 'Unknown'\n" +
+                    "            }, 1);\n" +
+                    "        }\n" +
+                    "    }";
+            reduce="function reduce(key, values) {\n" +
+                    "    var res = 0;\n" +
+                    "    values.forEach(function(v) {\n" +
+                    "        res += v;\n" +
+                    "    });\n" +
+                    "    return res;\n" +
+                    "}";
+        }
+        DBObject query = this.getCachedFilter( filter );
+        LOG.debug( "Filter query is:\n{}", query );
+        DBCollection elmnts = getCollection( Element.class );
+        MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
+        MapReduceOutput output = elmnts.mapReduce( cmd );
+        List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+        LOG.debug( "MapReduce produced {} results", results.size() );
+        DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
+        BasicDBObject old = new BasicDBObject( "_id", key );
+        BasicDBObject res = new BasicDBObject( old.toMap() );
+        res.put( "results", results );
+        histCollection.update( old, res, true, false );
+
+        DBCursor cursor = histCollection.find( new BasicDBObject( "_id", key ) );
+
+        if ( cursor.count() == 0 ) {
+            return null;
+        }
+        long end = System.currentTimeMillis();
+        LOG.debug( "MapReduce took {} seconds", (end - start)/1000 );
+        return (DBObject) cursor.next().get( "results" );
+    }
+
+
+    public DBObject mapReduceStats(int key, String property, Filter filter){
+        LOG.debug( "Starting mapReduceStats for the following property: {}", property );
+        long start = System.currentTimeMillis();
+        Property prop = getCache().getProperty(property);
+        String propType = prop.getType();
+        String map="";
+        String reduce="";
+        String finalize="";
+        if  (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
+            map="function() {\n" +
+                    "    property = '"+property+"';\n" +
+                    " if (this[property] != null) {\n" +
+                    "            emit({\n" +
+                    "                property: property,\n" +
+                    "                value: property\n" +
+                    "            }, {\n" +
+                    "                sum: this[property].values[0],\n" +
+                    "                min: this[property].values[0],\n" +
+                    "                max: this[property].values[0],\n" +
+                    "                count: 1,\n" +
+                    "                diff: 0,\n" +
+                    "            });\n" +
+                    "        }" +
+                    "    }";
+            reduce="function reduce(key, values) {\n" +
+                    "var a = values[0];\n" +
+                    "        for (var i = 1; i < values.length; i++) {\n" +
+                    "            var b = values[i];\n" +
+                    "            var delta = a.sum / a.count - b.sum / b.count;\n" +
+                    "            var weight = (a.count * b.count) / (a.count + b.count);\n" +
+                    "            a.diff += b.diff + delta * delta * weight;\n" +
+                    "            a.sum = b.sum*1+ a.sum*1;\n" +
+                    "            a.count += b.count;\n" +
+                    "            a.min = Math.min(a.min, b.min);\n" +
+                    "            a.max = Math.max(a.max, b.max);\n" +
+                    "        }\n" +
+                    "return a;" +
+                    "}";
+            finalize="function finalize(key, value) {\n" +
+                    "    value.avg = value.sum / value.count;\n" +
+                    "    value.variance = value.diff / value.count;\n" +
+                    "    value.stddev = Math.sqrt(value.variance);\n" +
+                    "    return value;\n" +
+                    "}";
+
+        }
+        DBObject query = this.getCachedFilter( filter );
+        LOG.debug( "filter query is:\n{}", query );
+        DBCollection elmnts = getCollection( Element.class );
+        MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
+        cmd.setFinalize(finalize);
+        MapReduceOutput output = elmnts.mapReduce( cmd );
+
+        List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+        LOG.debug( "MapReduce produced {} results", results.size() );
+        DBCollection histCollection = this.db.getCollection( TBL_HISTOGRAMS );
+        BasicDBObject old = new BasicDBObject( "_id", key );
+        BasicDBObject res = new BasicDBObject( old.toMap() );
+        res.put( "results", results );
+        histCollection.update( old, res, true, false );
+
+        DBCursor cursor = histCollection.find( new BasicDBObject( "_id", key ) );
+
+        if ( cursor.count() == 0 ) {
+            return null;
+        }
+        long end = System.currentTimeMillis();
+        LOG.debug( "The map-reduce job took {} seconds", (end - start)/1000 );
+        return (DBObject) cursor.next().get( "results" );
+    }
+
+/*
     public DBObject mapReduce(int key, List<String> properties, Filter filter){
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<String> propertyStats=new ArrayList<String>();
@@ -1082,7 +1386,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                 "        property = propertiesDate[x];\n" +
                 "        if (this[property] != null && this[property].values[0] != undefined) {\n" +
                 "            if (this[property].status !== 'CONFLICT') {\n" +
-                "                var date = new Date(this[property].value);\n" +
+                "                var date = new Date(this[property].values[0]);\n" +
                 "                emit({\n" +
                 "                    property: property,\n" +
                 "                    value: date.getFullYear()\n" +
@@ -1183,7 +1487,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
 
 
-    }
+    }*/
 
     private String ListToString(List<String> properties) {
         String propertiesString="[";
@@ -1196,7 +1500,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         return propertiesString;
     }
 
-    private DBObject histogramMapReduce( int key, List<String> properties, Filter filter ) {
+    /*private DBObject histogramMapReduce( int key, List<String> properties, Filter filter ) {
         long start = System.currentTimeMillis();
         String map = "function() {\n" +
                 "    var ar = @1;\n" +
@@ -1255,6 +1559,6 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         long end = System.currentTimeMillis();
         LOG.debug( "The map-reduce job took {} seconds", (end - start)/1000 );
         return (DBObject) cursor.next().get( "results" );
-    }
+    }*/
 
 }
