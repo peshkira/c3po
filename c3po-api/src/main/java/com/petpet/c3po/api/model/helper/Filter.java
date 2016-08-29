@@ -215,4 +215,16 @@ public class Filter implements Serializable{
     return true;
   }
 
+  public String toString(){
+    String result="";
+    for (FilterCondition condition : conditions) {
+      result+=condition.getField()+":"+condition.getValue()+",";
+    }
+    if (conditions.size()>0)
+      result = result.substring(0, result.length() - 1);
+
+    return result;
+
+  }
+
 }

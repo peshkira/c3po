@@ -144,48 +144,41 @@ public class CSVGenerator {
   public void write( Iterator<Element> matrix, List<Property> props, String output ) {
     try {
       final File file = new File( output );
-
       LOG.info( "Will export data in {}", file.getAbsolutePath() );
-
       if ( file.getParentFile() != null && !file.getParentFile().exists() ) {
         file.getParentFile().mkdirs();
       }
-
       file.createNewFile();
-
-      final FileWriter writer = new FileWriter( file );
+      StringBuilder result=new StringBuilder();
+      FileWriter writer = new FileWriter( file );
 
       // build header of csv
-      writer.append( "uid, " );
+      result.append( "uid," );
       for ( Property p : props ) {
-        writer.append( p.getKey() + ", " );
+        result.append( p.getKey() + "," );
       }
-      writer.append( "\n" );
+      result.append( " \n " );
 
       // for all elements append the values in the correct column
       while ( matrix.hasNext() ) {
-        try{
           Element next = matrix.next();
-
+          List<MetadataRecord> mrs = next.getMetadata();
           // first the uid
-          writer.append( replace( next.getUid() ) + ", " );
+          result.append( replace( next.getUid() ) + "," );
 
           // then the properties
           for ( Property p : props ) {
-            List<MetadataRecord> value = next.removeMetadata( p.getId() );
-
-            assert value.size() == 0 || value.size() == 1;
-
-            final String val = this.getValueFromMetaDataRecord( value );
-            writer.append( val );
-            writer.append( ", " );
+            for (MetadataRecord mr : mrs) {
+              if (mr.getProperty().equals(p.getKey())){
+                String val = this.getValueFromMetaDataRecord( mr );
+                result.append( val+"," );
+              }
+            }
           }
-          writer.append( "\n" );
-        } catch (Exception e) {}
-
+        result.append( " \n " );
 
       }
-
+      writer.write(result.toString());
       writer.flush();
       writer.close();
 
@@ -236,22 +229,25 @@ public class CSVGenerator {
    *          the list of records.
    * @return the output string for the csv cell.
    */
-  private String getValueFromMetaDataRecord( List<MetadataRecord> value ) {
+  private String getValueFromMetaDataRecord( MetadataRecord mr ) {
     String result = "";
-    if ( value.size() != 0 ) {
-        List<String> values = value.get(0).getValues();
-        List<String> sources = value.get(0).getSources();
+    /*if ( mr.getValues().size() != 0 ) {
+        List<String> values = mr.getValues();
+        List<String> sources = mr.getSources();
         for (int i=0; i< values.size();i++){
           String s = values.get(i);
           Source source = this.persistence.getCache().getSource(sources.get(i));
-          result+=s+"["+source.getName()+":"+source.getVersion()+"]"+";";
+          if (source==null)
+            result+=s+"[null]"+";";
+           else
+          result+=replace(s)+"["+source.getName()+":"+source.getVersion()+"]"+";";
         }
         result = result.substring(0, result.length() - 1);
 
 
-     // result = (v == null) ? "CONFLICT" : replace( v.toString() );
-    }
-
+      result = (mr.getStatus().equals("CONFLICT")) ? "CONFLICT" : replace( values.get(0).toString() );
+    }*/
+    result = (mr.getStatus().equals("CONFLICT")) ? "CONFLICT" : replace( mr.getValues().get(0).toString() );
     return result;
   }
 

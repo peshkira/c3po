@@ -4,8 +4,10 @@ import com.mongodb.*;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 import org.dom4j.Document;
@@ -39,6 +41,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
      * Default logger.
      */
     private static final Logger LOG = LoggerFactory.getLogger(SystematicSamplingRepresentativeGenerator.class);
+    private Map<String, List<Integer>> bins;
 
     //Map<String, Object> samplingOptions;
 
@@ -48,7 +51,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
     }
     Map<List<String>, Integer> tuples;
     long start, stop;
-    double pcovSC, tmp_Tsp;
+    double pcovSC, tmp_Tsp, Tsp;
     int sample_size;
     long popC;
     @Override
@@ -59,12 +62,12 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         tuples = readResults(results);
         popC = pl.count(Element.class, filter);
         int Tcp=tuples.size();
-        double Tsp = Tcp * tcoverage;
+        Tsp = Tcp * tcoverage;
         pcovSC=0;
         tmp_Tsp=0;
         int tmp_threshold=0;
         Iterator<Map.Entry<List<String>, Integer>> tuplesIterator = tuples.entrySet().iterator();
-        while ((pcovSC<=pcoverage && tmp_Tsp<=Tsp && tmp_threshold<=threshold) && tuplesIterator.hasNext()){
+        while ((pcovSC<pcoverage && tmp_Tsp<Tsp && tmp_threshold<threshold) && tuplesIterator.hasNext()){
             Map.Entry<List<String>, Integer> next = tuplesIterator.next();
             int popT = next.getValue();
             double tmp_pcovTC = popT / (double) popC;
@@ -143,8 +146,8 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
             Integer value = listIntegerEntry.getValue();
             double tmp_pcovTC = value / (double) popC;
             pcovTC+=tmp_pcovTC;
-            double tmp_Tsp=1/(double) tuples.size();
-            Tsp+=tmp_Tsp;
+            double tmp_Tsp1=1/(double) tuples.size();
+            Tsp+=tmp_Tsp1;
             int samplesPerTuple = samplesPerTuple(tmp_pcovTC);
             sample_size+=samplesPerTuple;
             result += "\n " + sample_size + ", " + Double.toString(pcovTC) +", " + Double.toString(Tsp) + ",";
@@ -214,7 +217,7 @@ Anything else that is interesting about inputs, outputs,settings,params
         else
             filter.addText(  "empty");
         org.dom4j.Element tcoverage1 = output.addElement("tcoverage");
-        tcoverage1.addText( Double.toString(tmp_Tsp));
+        tcoverage1.addText( Double.toString(tmp_Tsp/Tsp));
         org.dom4j.Element pcoverage1 = output.addElement("pcoverage");
         pcoverage1.addText( Double.toString(pcovSC));
         org.dom4j.Element sample_size = output.addElement("sample_size");
@@ -306,9 +309,17 @@ Anything else that is interesting about inputs, outputs,settings,params
 
 
     public Iterator<Element> getSamplesForValues(List<String> values){
-        Filter f=new Filter();
+        Filter f=new Filter(this.filter);
         for (int i = 0; i < properties.size(); i++) {
-            f.addFilterCondition(new FilterCondition(properties.get(i), values.get(i)));
+            String val = values.get(i);
+            String prop = properties.get(i);
+            Property property = pl.getCache().getProperty(prop);
+            if (property.getType().equals(PropertyType.INTEGER.name()) && val.contains("-") && !val.startsWith("-")){
+                BetweenFilterCondition betweenFilterCondition = BetweenFilterCondition.getBetweenFilterCondition(val, prop);
+                f.addFilterCondition(betweenFilterCondition);
+            }
+            else
+                f.addFilterCondition(new FilterCondition(properties.get(i), values.get(i)));
         }
         return pl.find(Element.class,f);
     }
@@ -328,7 +339,7 @@ Anything else that is interesting about inputs, outputs,settings,params
             BasicDBList basicDBList = (BasicDBList) result.get("_id");
             List<String> strings=new ArrayList<>();
             for (Object o : basicDBList) {
-                strings.add((String) o);
+                strings.add( o.toString());
             }
             tmp.put(strings,value);
         }
@@ -363,6 +374,50 @@ Anything else that is interesting about inputs, outputs,settings,params
                 "    }\n" +
                 "    emit(toEmit, 1);\n" +
                 "}";
+
+
+        map="function() {\n" +
+                "    var properties = @1;\n" +
+                "    var bins= @2;\n" +
+                "var toEmit=[];\n" +
+                "    for (x in properties) {\n" +
+                "        property = properties[x];\n" +
+                "        if (this[property] != null) {\n" +
+                "            if (this[property].status != 'CONFLICT') {\n" +
+                "                if (property=='created') {                    \n" +
+                "                    var date = new Date(this[property].values[0]);                    \n" +
+                "                    toEmit.push(date.getFullYear().toString());             \n" +
+                "                }\n" +
+                "                else{\n" +
+                "                    var val=this[property].values[0];\n" +
+                "                    if (bins[property]!=null){\n" +
+                "                        var skipped=false;\n" +
+                "                        for (t in bins[property]){\n" +
+                "                            threshold = bins[property][t];  \n" +
+                "                            if (val>=threshold[0] && val<=threshold[1]){\n" +
+                "                                toEmit.push(threshold[0]+'-'+threshold[1]);\n" +
+                "                                skipped=true;\n" +
+                "                                break;\n" +
+                "                            }   \n" +
+                "                        }\n" +
+                "                        if (!skipped)\n" +
+                "                            toEmit.push(val); \n" +
+                "                    }\n" +
+                "                    else\n" +
+                "                        toEmit.push(val); \n" +
+                "                } \n" +
+                "            }\n" +
+                "            else {\n" +
+                "                toEmit.push(\"CONFLICT\"); \n" +
+                "            }\n" +
+                "        } \n" +
+                "        else {\n" +
+                "            toEmit.push(\"Unknown\");\n" +
+                "        }\n" +
+                "    }\n" +
+                "    emit(toEmit, 1);" +
+                "}\n";
+
         String reduce= "function reduce(key, values) {\n" +
                 "        var res = 0;\n" +
                 "        values.forEach(function(v) {\n" +
@@ -372,6 +427,7 @@ Anything else that is interesting about inputs, outputs,settings,params
                 "    }";
         DBObject query = pl.getCachedFilter( filter );
         map = map.replace("@1", ListToString(properties));
+        map=map.replace("@2", binsToJSON());
         LOG.debug( "filter query is:\n{}", query );
         DBCollection elmnts = pl.getCollection( Element.class );
         MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
@@ -403,11 +459,48 @@ Anything else that is interesting about inputs, outputs,settings,params
             proportion=(String) options.get("proportion");
         if ( options.get("location") !=null)
             location=(String) options.get("location");
+        if ( options.get("bins") !=null)
+            bins=(Map<String, List<Integer>>) options.get("bins");
     }
 
     @Override
     public String getType() {
         return null;
+    }
+
+    private String binsToJSON(){
+        String result="{";
+        for (Map.Entry<String, List<Integer>> entry : bins.entrySet()) {
+            String key = entry.getKey();
+            List<Integer> value = entry.getValue();
+            String binThresholds = getBinThresholds(value);
+            result+="'"+key+"':"+binThresholds+",";
+        }
+        if (bins.size()>0)
+            result = result.substring(0, result.length() - 1);
+        result += "}";
+
+        return result;
+    }
+
+    private String getBinThresholds(List<Integer> binThresholds) {
+        if (binThresholds==null)
+            return "[]";
+        String result="[";
+        for (int i = 0; i < binThresholds.size(); i++) {
+            String threshold="[";
+            if (i==0){
+                threshold +="0," + (binThresholds.get(i)-1);
+            } else {
+                threshold +=binThresholds.get(i-1)+","+(binThresholds.get(i)-1);
+            }
+            threshold+="]";
+            result+=threshold+",";
+        }
+        if (binThresholds.size()>0)
+            result = result.substring(0, result.length() - 1);
+        result += "]";
+        return result;
     }
 
     private String ListToString(List<String> properties) {

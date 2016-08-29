@@ -180,22 +180,41 @@ public class SelectiveFeatureDistributionSamplingTest {
         SelectiveFeatureDistributionSampling sfd=new SelectiveFeatureDistributionSampling();
 
         List<String> props = new ArrayList<String>();
-        props.add("mimetype");
-        props.add("puid");
-        props.add("created");
+        props.add("size");
+        props.add("wordcount");
+        props.add("pagecount");
 
         String proportion="linear";
 
+        Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
+        List<Integer> bins=new ArrayList<Integer>();
+        bins.add(5);
+        bins.add(20);
+        bins.add(40);
+        bins.add(100);
+        bins.add(1000);
+        bins.add(10000);
+        bins.add(10000000);
+        bins.add(1000000000);
+        binThresholds.put("size", bins);
+        binThresholds.put("wordcount", bins);
+        binThresholds.put("pagecount", bins);
+
+
+        Filter f =new Filter();
+        f.addFilterCondition(new FilterCondition("file_extension", "doc"));
+        f.addFilterCondition(new FilterCondition("mimetype", "application"));
         Map<String, Object> samplesOptions = new HashMap<String, Object>();
         samplesOptions.put("properties", props );
         samplesOptions.put("pcoverage", "1" );
         samplesOptions.put("tcoverage", "1");
         samplesOptions.put("proportion", proportion );
-        samplesOptions.put("threshold", "1000" );
+        samplesOptions.put("threshold", "50" );
+        samplesOptions.put("bins", binThresholds);
         sfd.setOptions(samplesOptions);
         sfd.readOptions();
         sfd.setFilter(null);
-        sfd.execute();
+       // sfd.execute();
 
     }
 

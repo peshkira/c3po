@@ -71,6 +71,25 @@ public class Samples extends Controller {
 		options.put("tcoverage", list.get(1));
 		options.put("threshold", list.get(2));
 		options.put("proportion", list.get(3));
+
+
+		Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
+		List<Integer> bins=new ArrayList<Integer>();
+		bins.add(5);
+		bins.add(20);
+		bins.add(40);
+		bins.add(100);
+		bins.add(1000);
+		bins.add(10000);
+		bins.add(10000000);
+		bins.add(1000000000);
+		binThresholds.put("size", bins);
+		binThresholds.put("wordcount", bins);
+		binThresholds.put("pagecount", bins);
+
+		options.put("bins", binThresholds);
+
+
 		options.put("location",  "exports/" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip");
 		List<String> tmp_props=new ArrayList<String>();
 		for (int i=4;i<list.size();i++)

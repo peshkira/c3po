@@ -18,11 +18,7 @@ package com.petpet.c3po.analysis;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import com.petpet.c3po.utils.VocabularyDP;
 import org.bson.types.ObjectId;
@@ -369,8 +365,10 @@ public class ProfileGenerator {
     private void processStringProperty( final Filter filter, final Element prop, final Property p ) {
         for ( final String s : PROPERTIES ) {
             if ( p.getKey().equals( s ) ) {
-
-                Map<String, Long> histogram = this.persistence.getValueHistogramFor( p, filter );
+                List<String> properties=new ArrayList<String>();
+                properties.add(p.getKey());
+                Map<String, Map<String, Long>> histograms = this.persistence.getHistograms(properties, filter, null);
+                Map<String, Long> histogram = histograms.get(p.getKey());
 
                 for ( String key : histogram.keySet() ) {
                     Long val = histogram.get( key );
@@ -384,7 +382,11 @@ public class ProfileGenerator {
 
     private void processBoolProperty( final Filter filter, final Element prop, final Property p ) {
 
-        Map<String, Long> histogram = this.persistence.getValueHistogramFor( p, filter );
+        List<String> properties=new ArrayList<String>();
+        properties.add(p.getKey());
+        Map<String, Map<String, Long>> histograms = this.persistence.getHistograms(properties, filter, null);
+        Map<String, Long> histogram = histograms.get(p.getKey());
+
         for ( String key : histogram.keySet() ) {
             Long val = histogram.get( key );
             prop.addElement( "item" ).addAttribute( "value", key ).addAttribute( "count", val + "" );
@@ -394,19 +396,28 @@ public class ProfileGenerator {
 
     // if also a histogram is done, do not forget the bin_width...
     private void processNumericProperty( final Filter filter, final Element prop, final Property p ) {
-        NumericStatistics numericStatistics = this.persistence.getNumericStatistics( p, filter );
 
-        prop.addAttribute( "count", numericStatistics.getCount() + "" );
-        prop.addAttribute( "sum", numericStatistics.getSum() + "" );
-        prop.addAttribute( "min", numericStatistics.getMin() + "" );
-        prop.addAttribute( "max", numericStatistics.getMax() + "" );
-        prop.addAttribute( "avg", numericStatistics.getAverage() + "" );
-        prop.addAttribute( "var", numericStatistics.getVariance() + "" );
-        prop.addAttribute( "sd", numericStatistics.getStandardDeviation() + "" );
+        List<String> properties=new ArrayList<String>();
+        properties.add(p.getKey());
+        Map<String, Map<String, Long>> histograms = this.persistence.getHistograms(properties, filter, null);
+        Map<String, Long> histogram = histograms.get(p.getKey());
+
+        prop.addAttribute( "count", histogram.get("count") + "" );
+        prop.addAttribute( "sum", histogram.get("sum") + "" );
+        prop.addAttribute( "min", histogram.get("min") + "" );
+        prop.addAttribute( "max", histogram.get("max") + "" );
+        prop.addAttribute( "avg", histogram.get("avg") + "" );
+        prop.addAttribute( "var", histogram.get("var") + "" );
+        prop.addAttribute( "sd", histogram.get("std") + "" );
     }
 
     private void processDateProperty( Filter filter, Element prop, Property p ) {
-        Map<String, Long> histogram = this.persistence.getValueHistogramFor( p, filter );
+
+        List<String> properties=new ArrayList<String>();
+        properties.add(p.getKey());
+        Map<String, Map<String, Long>> histograms = this.persistence.getHistograms(properties, filter, null);
+        Map<String, Long> histogram = histograms.get(p.getKey());
+
 
         for ( String key : histogram.keySet() ) {
             Long val = histogram.get( key );

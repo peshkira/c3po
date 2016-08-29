@@ -106,51 +106,6 @@ public interface PersistenceLayer {
    */
   Cache getCache();
 
-  /**
-   * Returns statistics for the given numeric property for all elements
-   * according to the given filter. The values of the property have to have a
-   * numeric data type as the computation might/will involve mathematical
-   * calculations.
-   * 
-   * As this method is a higher-level query it can only support numeric
-   * properties and the Element.class
-   * 
-   * @param p
-   *          the property for which the statistcs will be created.
-   * @param filter
-   *          the filter to apply.
-   * @return {@link NumericStatistics} object containing statistics like: min,
-   *         max, avg, sd, var, etc.
-   * @throws UnsupportedOperationException
-   *           if the operation is not supported by the implementing backend
-   * @throws IllegalArgumentException
-   *           if the arguments are not appropriate, e.g. if the datatype of the
-   *           property is not of a numeric type.
-   */
-  NumericStatistics getNumericStatistics( Property p, Filter filter ) throws UnsupportedOperationException,
-      IllegalArgumentException;
-
-  /**
-   * Returns a property value histogram for the given property and type and
-   * respecting the given filter.
-   * 
-   * As this method is a higher-level query it should only support the Element
-   * class.
-   * 
-   * @param p
-   *          the property for which the value histogram will be created in the
-   *          corresponding model object
-   * @param filter
-   *          the filter that has to be applied before the operation is
-   *          conducted
-   * @return a map with the distinct values as keys (strings) and their
-   *         occurrences as map-values (long)
-   * 
-   * @throws UnsupportedOperationException
-   *           if the current persistence layer cannot create such a histogram.
-   */
-  <T extends Model> Map<String, Long> getValueHistogramFor( Property p, Filter filter )
-      throws UnsupportedOperationException;
 
   /**
    * Inserts the given object to the underlying data store.
@@ -212,7 +167,7 @@ public interface PersistenceLayer {
   Map<String,Object> getResult();
 
 
-  public <T extends Model> Map<String, Map<String, Long>> getHistograms(List<String> properties, Filter filter)
+  public <T extends Model> Map<String, Map<String, Long>> getHistograms(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds)
           throws UnsupportedOperationException;
 
 }

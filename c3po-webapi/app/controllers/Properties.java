@@ -88,10 +88,10 @@ public class Properties extends Controller {
         switch (pType){
             case INTEGER:
             case FLOAT:
-                Distribution mergedDistribution = processNumericDistribution(d, algorithm, width);
-                result = new Graph(mergedDistribution.getProperty(), mergedDistribution.getPropertyValues(), mergedDistribution.getPropertyValueCounts());
+               // Distribution mergedDistribution = processNumericDistribution(d, algorithm, width);
+              //  result = new Graph(mergedDistribution.getProperty(), mergedDistribution.getPropertyValues(), mergedDistribution.getPropertyValueCounts());
 
-                break;
+              //  break;
             case DATE:
             case BOOL:
             case STRING:
@@ -196,7 +196,19 @@ public class Properties extends Controller {
         if (filter == null)
             filter = new Filter();
         Filter tmpFilter = Filters.normalize(filter);
-        Map<String, Map<String, Long>> histograms = persistence.getHistograms(properties, tmpFilter);
+        Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
+        List<Integer> bins=new ArrayList<Integer>();
+        bins.add(5);
+        bins.add(20);
+        bins.add(40);
+        bins.add(100);
+        bins.add(1000);
+        bins.add(10000);
+        bins.add(10000000);
+        //binThresholds.put("size", bins);
+        binThresholds.put("wordcount", bins);
+        binThresholds.put("pagecount", bins);
+        Map<String, Map<String, Long>> histograms = persistence.getHistograms(properties, tmpFilter, binThresholds);
         Map<String, Distribution> distibutions=new HashMap<String, Distribution>();
         Iterator<Map.Entry<String, Map<String, Long>>> iterator = histograms.entrySet().iterator();
         while (iterator.hasNext()){

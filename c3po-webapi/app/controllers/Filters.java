@@ -245,8 +245,8 @@ public class Filters extends Controller {
     }
 
     public static BetweenFilterCondition getBetweenFilterCondition(String string, String propertyName) {
-        String[] split = string.split(" \\|");
-        String[] values = split[0].split(" \\- ");
+        //String[] split = string.split(" \\|");
+        String[] values = string.split("\\-");
         int left = Integer.parseInt(values[0]);
         int right = Integer.parseInt(values[1]);
         BetweenFilterCondition result = new BetweenFilterCondition(propertyName,

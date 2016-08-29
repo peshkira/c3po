@@ -26,6 +26,7 @@ import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
+import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 
 /**
@@ -78,7 +79,13 @@ public class MongoElementSerializer implements MongoModelSerializer {
         BasicDBObject key = new BasicDBObject();
         key.put( "status", r.getStatus() );
         key.put( "sources", r.getSources() );
-        key.put( "values", r.getValues() );
+        String property = r.getProperty();
+        String type = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(property).getType();
+        List<Object> objectValues=new ArrayList<Object>();
+        for (String s : r.getValues()) {
+          objectValues.add(DataHelper.getTypedValue(type,s));
+        }
+        key.put( "values", objectValues );
         document.put( r.getProperty(), key );
 
 

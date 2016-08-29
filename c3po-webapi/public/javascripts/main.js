@@ -62,7 +62,6 @@ $(document).ready(function(){
 		$.ajax ({
 			type:     'POST',
 			url:      '/c3po/collections?name='+collection,
-			timeout:  5000,
 			success:  function (oData) {
 				startSpinner();
 				$('#ajax_collection').text(collection);
@@ -109,7 +108,6 @@ $(document).ready(function(){
 			},
 			type:     'GET',
 			url:      '/c3po/properties',
-			timeout:  5000,
 			async: false,
 			success:  function (oData) {
 				elem = oData;
@@ -145,7 +143,6 @@ $(document).ready(function(){
 				$.ajax({
 					type:     'DELETE',
 					url:      '/c3po/filter?property=' + property + '&value=' + value,
-					timeout:  5000,
 					success:  function(oData) {
 						stopSpinner();
 						window.location.reload();
@@ -179,7 +176,6 @@ $(document).ready(function(){
 					type:     'DELETE',
 					async:    false,
 					url:      '/c3po/filter?property='+old,
-					timeout:  5000
 				});
 
 				var collection = "";
@@ -187,7 +183,6 @@ $(document).ready(function(){
 					type:     'GET',
 					async:    false,
 					url:      '/c3po/settings?key=current.collection',
-					timeout:  5000,
 					success: function (oData) {
 						collection = oData;
 					}
@@ -199,7 +194,6 @@ $(document).ready(function(){
 					type:     'GET',
 					async:    false,
 					url:      '/c3po/property?name=' + property,
-					timeout:  5000,
 					success: function (oData) {
 						if (oData.type == 'INTEGER') {
 							showIntegerPropertyDialog('getValuesForProperty("' + url + '")');
@@ -291,7 +285,6 @@ $(document).ready(function(){
 				url:      '/c3po/feedback',
 				dataType: 'json',
 				data: data,
-				timeout:  5000,
 				async: false,
 				success:  function (oData) {
 					hideValueOptionDialog(false);                                        
@@ -375,7 +368,6 @@ function addNewFilter() {
 		},
 		type:     'GET',
 		url:      '/c3po/properties',
-		timeout:  5000,
 		async: false,
 		success:  function (oData) {
 			addNewPropertiesSelect(oData);
@@ -441,7 +433,6 @@ function addNewPropertiesSelect(properties) {
 					type:     'DELETE',
 					async:    false,
 					url:      '/c3po/filter?property='+old,
-					timeout:  5000
 				});
 
 				var collection = "";
@@ -449,7 +440,6 @@ function addNewPropertiesSelect(properties) {
 					type:     'GET',
 					async:    false,
 					url:      '/c3po/settings?key=current.collection',
-					timeout:  5000,
 					success: function (oData) {
 						collection = oData;
 					}
@@ -461,7 +451,6 @@ function addNewPropertiesSelect(properties) {
 					type:     'GET',
 					async:    false,
 					url:      '/c3po/property?name=' + property,
-					timeout:  5000,
 					success: function (oData) {
 						if (oData.type == 'INTEGER') {
 							showIntegerPropertyDialog('getValuesForProperty("' + url + '")');
@@ -487,7 +476,6 @@ function showOtherProperty(url, div) {
 	$.ajax ({
 		type:     'GET',
 		url:      url,
-		timeout:  5000,
 		success:  function (oData) {
 			showValuesSelect(div, oData);
 		}
@@ -553,7 +541,6 @@ function getValuesForProperty(url) {
 	$.ajax ({
 		type:     'GET',
 		url:      url,
-		timeout:  5000,
 		success:  function (oData) {
 			var div = $(".propertyfilter:last");
 			hidePopupDialog();
@@ -588,7 +575,6 @@ function changeSetting(setting, value) {
 	$.ajax ({
 		type:     'POST',
 		url:      '/c3po/settings?setting='+setting+'&value='+value,
-		timeout:  5000,
 		async:    false
 	});
 }; 
