@@ -95,7 +95,7 @@ public class DataHelperTest {
 
     e.setMetadata(Arrays.asList(r1, r2));
 
-    DBObject document = new MongoElementSerializer().serialize(e);
+//     DBObject document = new MongoElementSerializer().serialize(e);
 
    // Assert.assertEquals(uid, document.get("uid"));
    // Assert.assertEquals(name, document.get("name"));

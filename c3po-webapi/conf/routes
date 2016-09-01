@@ -43,6 +43,7 @@ GET           /c3po/export                   controllers.Export.index()
 GET           /c3po/export/profile           controllers.Export.profile()
 GET           /c3po/export/csv/all           controllers.Export.exportAllToCSV()
 GET           /c3po/export/csv/filter        controllers.Export.exportFilterToCSV()
+GET           /c3po/export/histogram/:property  controllers.Export.printHistogramToCSV(property: String)
 
 # Mail
 POST          /c3po/feedback                 controllers.Mail.send()

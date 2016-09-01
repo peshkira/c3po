@@ -18,8 +18,11 @@ package controllers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import com.petpet.c3po.api.model.Property;
 import helpers.TemplatesLoader;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -224,11 +227,31 @@ public class Export extends Controller {
 			//do nothing...
 			//just regenerate the profile...
 		}
-
-
-
 		return isNew; 
 
 	}
 
+    public static Result printHistogramToCSV(String property) {
+		String result="";
+		PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+		Property realProperty = p.getCache().getProperty(property);
+		if (realProperty==null)
+			return ok("There is no such property");
+		Filter filterFromSession = Filters.getFilterFromSession();
+
+		List<String> properties=new ArrayList<String>();
+		properties.add(property);
+		Map<String, Map<String, Long>> histograms = p.getHistograms(properties, filterFromSession, null);
+		Map<String, Long> histogram = histograms.get(property);
+		result = histogramToCSV(histogram);
+		return ok(result);
+	}
+
+	private static String histogramToCSV(Map<String, Long> histogram) {
+		String result="value,count,\n";
+		for (Map.Entry<String, Long> stringLongEntry : histogram.entrySet()) {
+			result+=stringLongEntry.getKey()+","+stringLongEntry.getValue()+", \n";
+		}
+		return result;
+	}
 }
