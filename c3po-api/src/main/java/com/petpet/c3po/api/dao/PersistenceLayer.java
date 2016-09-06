@@ -170,4 +170,5 @@ public interface PersistenceLayer {
   public <T extends Model> Map<String, Map<String, Long>> getHistograms(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds)
           throws UnsupportedOperationException;
 
+    <T extends Model> Map<String, Map<String, Long>> getStats(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds);
 }

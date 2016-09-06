@@ -662,7 +662,19 @@ public class MongoPersistenceLayer implements PersistenceLayer {
             String val = ((BasicDBObject) dbo.get("_id")).getString("value");
             try{
                 long count = dbo.getLong("value");
-                histogram.put(val, count);
+                String type = getCache().getProperty(p).getType();
+                if (type.equals(PropertyType.DATE.toString()))
+                {
+                    try {
+                        Double v = Double.parseDouble(val);
+                        int i = v.intValue();
+                        histogram.put(String.valueOf(i), count);
+                    }
+                    catch (NumberFormatException nfe){
+                        histogram.put(val, count);
+                    }
+                } else
+                    histogram.put(val, count);
             } catch (Exception e){
                 BasicDBObject v = (BasicDBObject) dbo.get("value");
                 long sum, min, max, avg, std, var, count;
@@ -720,18 +732,23 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         }
         for (String property : properties) {
             DBObject dbObject=null;
-            if (!property.equals("size"))
-                dbObject = mapReduce(0, property, filter, binThresholds.get(property));
-            else
-                if (binThresholds.get("size")==null)
-                    dbObject = mapReduceStats(0, property, filter);
-                else
-                    dbObject = mapReduce(0, property, filter, binThresholds.get(property));
+            dbObject = mapReduce(0, property, filter, binThresholds.get(property));
             Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
             histograms.put(property,stringLongMap);
         }
-       // DBObject dbObject = mapReduce(0, properties, filter);
-       // Map<String, Map<String, Long>> histograms = parseMapReduce(dbObject, properties);
+        return histograms;
+    }
+
+
+    @Override
+    public <T extends Model> Map<String, Map<String, Long>> getStats(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds){
+        Map<String, Map<String, Long>> histograms=new HashMap<String, Map<String, Long>>();
+        for (String property : properties) {
+            DBObject dbObject=null;
+            dbObject = mapReduceStats(0, property, filter);
+            Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
+            histograms.put(property,stringLongMap);
+        }
         return histograms;
     }
 

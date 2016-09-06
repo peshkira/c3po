@@ -31,6 +31,8 @@ import helpers.Graph;
 import helpers.PropertyValuesFilter;
 import helpers.SessionFilters;
 import helpers.StringParser;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
@@ -275,7 +277,34 @@ public class Filters extends Controller {
                     BetweenFilterCondition bfc = getBetweenFilterCondition(value.toString(), property);
                     result.addFilterCondition(bfc);
                 }
-            } else {
+            } if (p.getType().equals(PropertyType.DATE.toString()) ) {
+                if (value == null || value.toString().equals("Unknown"))
+                    result.addFilterCondition(new FilterCondition(property, null));
+                else {
+                    Calendar c=Calendar.getInstance();
+                    int year = Integer.parseInt(value.toString());
+                    c.setTimeZone(TimeZone.getDefault());
+                    c.set(year, 0, 1, 0, 1);
+                    Date timeFrom = c.getTime();
+                    c=Calendar.getInstance();
+                    c.set(year, 11, 31, 23, 59);
+                    Date timeTo = c.getTime();
+
+/*
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date d1 = new ISODate dateFormat.parse("2014-01-01 00:00:00");
+                    DateTimeFormatter year = ISODateTimeFormat.year();
+                    Date d2 = dateFormat.parse("2014-01-01 00:00:05");*/
+                    BetweenFilterCondition bfc = new BetweenFilterCondition(property,
+                            BetweenFilterCondition.Operator.GTE,
+                            timeFrom,
+                            BetweenFilterCondition.Operator.LT,
+                            timeTo);
+                    result.addFilterCondition(bfc);
+                }
+
+            }
+            else {
                 if (value == null || value.toString().equals("Unknown"))
                     result.addFilterCondition(new FilterCondition(property, null));
                 else

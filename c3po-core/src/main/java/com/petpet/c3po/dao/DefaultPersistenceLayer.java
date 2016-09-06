@@ -181,6 +181,10 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
     return null;
   }
 
+  @Override
+  public <T extends Model> Map<String, Map<String, Long>> getStats(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds) {
+    return null;
+  }
 
 
 }

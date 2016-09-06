@@ -205,10 +205,21 @@ public class Properties extends Controller {
         bins.add(1000);
         bins.add(10000);
         bins.add(10000000);
-        //binThresholds.put("size", bins);
+        binThresholds.put("size", bins);
         binThresholds.put("wordcount", bins);
         binThresholds.put("pagecount", bins);
+        Map<String, Map<String, Long>> stats=null;
+        if (properties.contains("size")){
+            List<String> statsProperties=new ArrayList<String>();
+            statsProperties.add("size");
+            stats = persistence.getStats(statsProperties, tmpFilter, binThresholds);
+            properties.remove("size");
+        }
         Map<String, Map<String, Long>> histograms = persistence.getHistograms(properties, tmpFilter, binThresholds);
+        if (stats!=null){
+            Map<String, Long> size = stats.get("size");
+            histograms.put("size", size);
+        }
         Map<String, Distribution> distibutions=new HashMap<String, Distribution>();
         Iterator<Map.Entry<String, Map<String, Long>>> iterator = histograms.entrySet().iterator();
         while (iterator.hasNext()){
