@@ -146,7 +146,8 @@ public class FITSAdaptor extends AbstractAdaptor {
             String toolversion = elementDOM.getAttribute("toolversion");
             String nodeValue = elementDOM.getTextContent();
             Source source = getSource(toolname, toolversion);
-            element.addMetadataRecord(propertyName, nodeValue, source.getId());
+            Property property = getProperty(propertyName);
+            element.addMetadataRecord(property.getKey(), nodeValue, source.getId());
         }
     }
 
@@ -164,8 +165,10 @@ public class FITSAdaptor extends AbstractAdaptor {
                 String toolname = tool.getAttribute("toolname");
                 String toolversion = tool.getAttribute("toolversion");
                 Source source = getSource(toolname, toolversion);
-                element.addMetadataRecord("format", formatValue, source.getId());
-                element.addMetadataRecord("mimetype", mimetypeValue, source.getId());
+                Property format = getProperty("format");
+                Property mimetype = getProperty("mimetype");
+                element.addMetadataRecord(format.getKey(), formatValue, source.getId());
+                element.addMetadataRecord(mimetype.getKey(), mimetypeValue, source.getId());
             }
 
 
@@ -177,7 +180,8 @@ public class FITSAdaptor extends AbstractAdaptor {
                 String externalIdentifierToolversion = ider.getAttribute("toolversion");
                 Source source = getSource(externalIdentifierToolname, externalIdentifierToolversion);
                 String externalIdentifierValue = ider.getTextContent();
-                element.addMetadataRecord("puid",externalIdentifierValue,source.getId());
+                Property puid = getProperty("puid");
+                element.addMetadataRecord(puid.getKey(),externalIdentifierValue,source.getId());
             }
 
             NodeList versions = identity.getElementsByTagName("version");
@@ -188,7 +192,8 @@ public class FITSAdaptor extends AbstractAdaptor {
                 String versionToolversion = version.getAttribute("toolversion");
                 Source source = getSource(versionToolname, versionToolversion);
                 String versionValue = version.getTextContent();
-                element.addMetadataRecord("version", versionValue, source.getId());
+                Property formatversion = getProperty("formatversion");
+                element.addMetadataRecord(formatversion.getKey(), versionValue, source.getId());
             }
         }
     }
