@@ -6,6 +6,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.ContentTypeMapping;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public class ContentTypeIdentificationRule implements PostProcessingRule {
                     tmp.setProperty(new Property("content_type", PropertyType.STRING).getKey());
                     tmp.getValues().add(content_type);
                     tmp.setStatus("SINGLE_RESULT");
-                    tmp.getSources().add(new Source("C3PO", "0.6").getId());
+                    Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
+                    tmp.getSources().add(c3PO.getId());
                 }
                 break;
             }

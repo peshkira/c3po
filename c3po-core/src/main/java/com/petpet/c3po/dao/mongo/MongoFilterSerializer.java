@@ -101,7 +101,7 @@ public class MongoFilterSerializer {
 
 
   /**
-   * Wraps the field within a metadata.[field].value if necessary, so that it
+   * Wraps the field within a metadata.[field].values if necessary, so that it
    * corresponds to the current element structure.
    * 
    * @param f
@@ -210,7 +210,12 @@ public class MongoFilterSerializer {
             if (val.getClass().isArray())
             {
               Object[] valArray = (Object[]) val;
-              res.add(new BasicDBObject(this.mapFieldToProperty(field, val), valArray));
+              if (valArray.length>1)
+                res.add(new BasicDBObject(this.mapFieldToProperty(field, val), valArray));
+              else
+              {
+                res.add(new BasicDBObject(this.mapFieldToProperty(field, val), valArray[0]));
+              }
             }
             else{
               if ( Arrays.asList( EXCLUDE ).contains( field ) ) {

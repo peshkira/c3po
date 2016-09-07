@@ -6,6 +6,7 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.utils.Configurator;
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.List;
@@ -22,7 +23,8 @@ public class FileExtensionIdentificationRule implements PostProcessingRule {
         tmp.setProperty(new Property("file_extension", PropertyType.STRING).getKey());
         tmp.getValues().add(file_extension);
         tmp.setStatus("SINGLE_RESULT");
-        tmp.getSources().add(new Source("C3PO", "0.6").getId());
+        Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
+        tmp.getSources().add(c3PO.getId());
         e.getMetadata().add(tmp);
         return e;
     }

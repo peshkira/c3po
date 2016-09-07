@@ -323,7 +323,6 @@ public class Element implements Model, Serializable {
   }
 
 
-
   public void addMetadataRecord(String property, String value, String sourceID){
   //  MetadataRecord metadataRecord = new MetadataRecord(property, value, sourceID);
   //  if (!this.metadata.contains(metadataRecord))

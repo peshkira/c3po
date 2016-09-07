@@ -143,48 +143,35 @@ public class ConflictResolutionProcessor {
         LOG.info("Generating a csv file with conflict overview table");
         MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
         String map2 = "function map() {\n" +
-                "var result=null;\n" +
-                "if (    (this['format'] != null && this['format'].status != null && this['format'].status == 'CONFLICT') || \n" +
-                "(this['mimetype'] !=null && this['mimetype'].status != null && this['mimetype'].status == 'CONFLICT') || \n" +
-                "(this['format_version'] !=null && this['format_version'].status != null && this['format_version'].status == 'CONFLICT') ) {\n" +
-                "result={}; var format={};\n" +
-                "if (this['format'] != null){\n" +
-                "var format={};\n" +
-                "format.status=this['format'].status;\n" +
-                "if (this['format'].status == 'CONFLICT'){\n" +
-                "format.values=this['format'].values;\n" +
-                "} else{\n" +
-                "format.values=[this['format'].value];\n" +
-                "}\n" +
-                "format.sources=this['format'].sources;\n" +
-                "} \n" +
-                "result.format=format;\n" +
-                "var format_version={};\n" +
-                "if (this['format_version'] !=null) {\n" +
-                "format_version.status=this['format_version'].status;\n" +
-                "if (this['format_version'].status == 'CONFLICT'){\n" +
-                "format_version.values=this['format_version'].values;\n" +
-                "} else{\n" +
-                "format_version.values=[this['format_version'].value];\n" +
-                "}\n" +
-                "format_version.sources=this['format_version'].sources;\n" +
-                "}\n" +
-                "result.format_version=format_version;\n" +
-                "var mimetype={};\n" +
-                "if (this['mimetype'] !=null ){\n" +
-                "mimetype.status=this['mimetype'].status;\n" +
-                "if (this['mimetype'].status == 'CONFLICT'){\n" +
-                "mimetype.values=this['mimetype'].values;\n" +
-                "} else{\n" +
-                "mimetype.values=[this['mimetype'].value];\n" +
-                "}\n" +
-                "mimetype.sources=this['mimetype'].sources;\n" +
-                "}\n" +
-                "result.mimetype=mimetype;\n" +
-                "}\n" +
-                "if (result!=null)  {\n" +
-                "emit(result,1);\n" +
-                "}    \n" +
+                "\tvar result=null;\n" +
+                "\tif (    (this['format'] != null && this['format'].status != null && this['format'].status == 'CONFLICT') || \n" +
+                "\t\t(this['mimetype'] !=null && this['mimetype'].status != null && this['mimetype'].status == 'CONFLICT') || \n" +
+                "\t\t(this['format_version'] !=null && this['format_version'].status != null && this['format_version'].status == 'CONFLICT') ) {\n" +
+                "\t\tresult={}; var format={};\n" +
+                "\t\tif (this['format'] != null){\n" +
+                "\t\t\tformat.status=this['format'].status;\n" +
+                "\t\t\tformat.values=this['format'].values;\n" +
+                "\t\t\tformat.sources=this['format'].sources;\n" +
+                "\t\t} \n" +
+                "\t\tresult.format=format;\n" +
+                "\t\tvar format_version={};\n" +
+                "\t\tif (this['format_version'] !=null) {\n" +
+                "\t\t\tformat_version.status=this['format_version'].status;\n" +
+                "\t\t\tformat_version.values=this['format_version'].values;\n" +
+                "\t\t\tformat_version.sources=this['format_version'].sources;\n" +
+                "\t\t}\n" +
+                "\t\tresult.format_version=format_version;\n" +
+                "\t\tvar mimetype={};\n" +
+                "\t\tif (this['mimetype'] !=null ){\n" +
+                "\t\t\tmimetype.status=this['mimetype'].status;\n" +
+                "\t\t\tmimetype.values=this['mimetype'].values;\n" +
+                "\t\t\tmimetype.sources=this['mimetype'].sources;\n" +
+                "\t\t}\n" +
+                "\t\tresult.mimetype=mimetype;\n" +
+                "\t}\n" +
+                "\tif (result!=null)  {\n" +
+                "\t\temit(result,1);\n" +
+                "\t}    \n" +
                 "}    ";
 
         String reduce = "function reduce(key, values) {" +
@@ -328,7 +315,7 @@ public class ConflictResolutionProcessor {
         out.close();
         return file;
     }
-
+    static PersistenceLayer persistenceLayer=Configurator.getDefaultConfigurator().getPersistence();
     public static String basicDBListsToCSV(BasicDBList value, BasicDBList source, List<String> sources) {
 
         String[] result = new String[sources.size()];
@@ -340,7 +327,9 @@ public class ConflictResolutionProcessor {
                 for (int i = 0; i < value.size(); i++) {
                     String valueConflicted = value.get(i).toString();
                     Integer sourceID = Integer.parseInt(source.get(i).toString());
-                    result[sourceID] = valueConflicted;
+                    Source source1 = persistenceLayer.getCache().getSource(source.get(i).toString());
+                    String sourceString=source1.getName()+":"+source1.getVersion();
+                    result[sources.indexOf(sourceString)] = valueConflicted;
                 }
             } else {
                 String valueConflicted = value.get(0).toString();

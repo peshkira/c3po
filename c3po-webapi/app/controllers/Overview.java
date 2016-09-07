@@ -64,7 +64,7 @@ public class Overview extends Controller {
             Map.Entry<String, Distribution> next = iterator.next();
             if (next.getKey().equals("size")){
                 Distribution sizeDistribution = next.getValue();
-                if (sizeDistribution==null)
+                if (sizeDistribution.getPropertyValues().size()==0)
                     continue;
                 stats.setAvg(Properties.round(sizeDistribution.getValue("avg") / 1024.0 / 1024.0, 3) + " MB");
                 stats.setCount(sizeDistribution.getValue("count").intValue() + " objects");

@@ -2,8 +2,23 @@ package com.petpet.c3po.dao.mongo;
 
 import com.mongodb.DBObject;
 import com.petpet.c3po.adaptor.fits.FITSAdaptor;
+import com.petpet.c3po.adaptor.rules.AssignCollectionToElementRule;
+import com.petpet.c3po.adaptor.rules.CreateElementIdentifierRule;
+import com.petpet.c3po.adaptor.rules.EmptyValueProcessingRule;
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
+import com.petpet.c3po.api.adaptor.ProcessingRule;
+import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.common.Constants;
+import com.petpet.c3po.dao.DBCache;
+import com.petpet.c3po.dao.MongoPersistenceLayerTest;
+import com.petpet.c3po.utils.Configurator;
+import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -11,6 +26,56 @@ import static org.junit.Assert.*;
  * Created by artur on 12/08/16.
  */
 public class MongoElementSerializerTest {
+
+    private DBCache cache;
+    public static MongoPersistenceLayer pLayer = new MongoPersistenceLayer();
+    private Iterator cursor;
+    static Logger LOG = LoggerFactory.getLogger(MongoPersistenceLayerTest.class);
+
+    private static List<ProcessingRule> getRules(String name ) {
+        List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
+        rules.add( new AssignCollectionToElementRule( name ) ); // always on...
+
+        for ( String key : Constants.RULE_KEYS ) {
+
+
+            if ( true ) {
+
+                Class<? extends ProcessingRule> clazz = knownRules.get( key );
+
+                if ( clazz != null ) {
+
+                    try {
+
+                        LOG.debug( "Adding rule '{}'", key );
+
+                        ProcessingRule rule = clazz.newInstance();
+                        rules.add( rule );
+
+                    } catch ( InstantiationException e ) {
+                        LOG.warn( "Could not initialize the processing rule for key '{}'", key );
+                    } catch ( IllegalAccessException e ) {
+                        LOG.warn( "Could not access the processing rule for key '{}'", key );
+                    }
+
+                }
+            }
+        }
+
+        return rules;
+    }
+
+    private Map<String, String> getAdaptorConfig( Map<String, String> config, String prefix ) {
+        final Map<String, String> adaptorcnf = new HashMap<String, String>();
+        for ( String key : config.keySet() ) {
+            if ( key.startsWith( "c3po.adaptor." ) || key.startsWith( "c3po.adaptor." + prefix.toLowerCase() ) ) {
+                adaptorcnf.put( key, config.get( key ) );
+            }
+        }
+
+        return adaptorcnf;
+    }
+    static Map<String, Class<? extends ProcessingRule>> knownRules;
     @Test
     public void serialize() throws Exception {
         String data="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -53,8 +118,40 @@ public class MongoElementSerializerTest {
                 "    </document>\n" +
                 "  </metadata>\n" +
                 "</fits>\n";
-        FITSAdaptor fa=new FITSAdaptor();
-        Element test = fa.parseElement("test", data);
+
+
+
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("db.host", "localhost");
+        config.put("db.port", "27017");
+        config.put("db.name", "c3po_test_db");
+        config.put(Constants.OPT_COLLECTION_NAME, "test");
+        config.put(Constants.OPT_COLLECTION_LOCATION, "src/test/resources/fits/");
+        config.put(Constants.OPT_INPUT_TYPE, "FITS");
+        config.put(Constants.OPT_RECURSIVE, "True");
+
+
+
+        pLayer.establishConnection(config);
+        Configurator.getDefaultConfigurator().setPersistence(pLayer);
+
+
+
+        AbstractAdaptor adaptor=new FITSAdaptor();
+        adaptor.configure();
+
+        knownRules = new HashMap<String, Class<? extends ProcessingRule>>();
+
+
+        knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
+        knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
+
+        adaptor.setRules(  getRules( "test") );
+        adaptor.setCache(pLayer.getCache());
+
+
+
+        Element test = adaptor.parseElement("test", data);
         MongoElementSerializer serializer=new MongoElementSerializer();
         DBObject serialize = serializer.serialize(test);
         String toString = serialize.toString();

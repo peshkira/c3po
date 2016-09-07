@@ -966,6 +966,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         }
         DBObject query = this.getCachedFilter( filter );
         LOG.debug( "Filter query is:\n{}", query );
+        String queryString=query.toString();
         DBCollection elmnts = getCollection( Element.class );
         MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
         MapReduceOutput output = elmnts.mapReduce( cmd );
