@@ -73,17 +73,17 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
             }
 
         } else {
-            long skip = Math.round((double) count / limit);
+            long skip = count / limit;
             LOG.debug("Calculated skip is: {}", skip);
 
             Iterator<Element> cursor = this.pl.find(Element.class, this.getFilter());
             int i = 0;
             while (result.size() < limit) {
-
-                int offset = (int) (Math.random() * skip + result.size() * skip);
-                LOG.debug("Trying to pick an element with index {}", offset);
+                Double tmp1=Math.random() * skip + result.size() * skip;
+                long offset = tmp1.longValue();
+               // LOG.debug("Trying to pick an element with index {}", offset);
                 if (offset >= count)
-                    offset=(int)count-1;
+                    offset=0;
                 // skip the offset
                 while (i < offset) {
                     i++;
@@ -94,7 +94,7 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
                 if (cursor.hasNext()) {
                     Element next = cursor.next();
                     result.add(next.getUid());
-                    LOG.debug("Picked an element with index {}", offset);
+                 //   LOG.debug("Picked an element with index {}", offset);
                 }
                 //cursor = this.pl.find( Element.class, this.getFilter() );
             }
