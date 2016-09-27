@@ -109,7 +109,7 @@ public class Conflicts {
         List<String> sourceNames=new ArrayList<String>();
         while (sourceIterator.hasNext()){
             Source next = sourceIterator.next();
-            sourceNames.add(next.getName() + " (" + next.getVersion()+ ")");
+            sourceNames.add(next.toString());
         }
         Iterator<JsonNode> elements = valuesToDelete.elements();
         while (elements.hasNext()){
