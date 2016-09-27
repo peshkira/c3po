@@ -88,5 +88,9 @@ public class Source implements Model {
   public void setVersion( String version ) {
     this.version = version;
   }
+  @Override
+  public String toString(){
+    return name+":"+version;
+  }
 
 }

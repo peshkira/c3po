@@ -98,7 +98,7 @@ public class Elements extends Controller {
 		if (iterator.hasNext()) {
 			Element result = iterator.next();
 			List<MetadataRecord> metadata = result.getMetadata();
-			for(MetadataRecord mr: metadata){
+			/*for(MetadataRecord mr: metadata){
 				List<String> sources = mr.getSources();
 				List<String> sourcesFullName= new ArrayList<String>();
 				for (String s: sources) {
@@ -109,7 +109,7 @@ public class Elements extends Controller {
 						sourcesFullName.add("Null");
 				}
 				mr.setSources(sourcesFullName);
-			}
+			}*/
 			if (iterator.hasNext()) {
 				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
 			}
@@ -159,7 +159,8 @@ public class Elements extends Controller {
 		List<String> sourceNames=new ArrayList<String>();
 		while (sourceIterator.hasNext()){
 			Source next = sourceIterator.next();
-			sourceNames.add(next.getName() + " (" + next.getVersion()+ ")");
+			sourceNames.add(next.toString());
+			//sourceNames.add(next.getName() + " (" + next.getVersion()+ ")");
 		}
 		List<MetadataRecord> metadata = element.getMetadata();
 		ArrayNode result = new ArrayNode(new JsonNodeFactory(false));
@@ -171,7 +172,7 @@ public class Elements extends Controller {
 			String propertyKey = mr.getProperty();
 			Property property = persistence.getCache().getProperty(propertyKey);
 
-			List<String> tmp_sources=new ArrayList<String>();
+			/*List<String> tmp_sources=new ArrayList<String>();
 			for (String s:sources){
 				Source source = persistence.getCache().getSource(s);
 				if (source!=null)
@@ -179,7 +180,7 @@ public class Elements extends Controller {
 				else
 					tmp_sources.add("Null");
 			}
-			sources=tmp_sources;
+			sources=tmp_sources;*/
 			ObjectNode tmp=Json.newObject();
 
 			tmp.put("Property", property.getKey());
@@ -193,11 +194,11 @@ public class Elements extends Controller {
 				} else{
 					tmp.put(source, nullStr);
 				}
-				if (sources.isEmpty()) {
-					tmp.put("C3PO",  values.get(i));
-				} else {
-					tmp.put("C3PO", nullStr);
-				}
+				//if (sources.isEmpty()) {
+				//	tmp.put("C3PO",  values.get(i));
+				//} else {
+				//	tmp.put("C3PO", nullStr);
+				//}
 			}
 
 			result.add(tmp);

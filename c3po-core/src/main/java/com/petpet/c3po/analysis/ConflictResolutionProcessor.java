@@ -195,7 +195,7 @@ public class ConflictResolutionProcessor {
         String header = "";
         while (sourceIterator.hasNext()) {
             Source next = sourceIterator.next();
-            sources.add(next.getName() + ":" + next.getVersion());
+            sources.add(next.toString());
         }
         header += "Count;";
         for (String source : sources)
@@ -328,7 +328,7 @@ public class ConflictResolutionProcessor {
                     String valueConflicted = value.get(i).toString();
                     Integer sourceID = Integer.parseInt(source.get(i).toString());
                     Source source1 = persistenceLayer.getCache().getSource(source.get(i).toString());
-                    String sourceString=source1.getName()+":"+source1.getVersion();
+                    String sourceString=source1.toString();
                     result[sources.indexOf(sourceString)] = valueConflicted;
                 }
             } else {

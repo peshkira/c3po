@@ -72,6 +72,7 @@ public class Conflicts {
         JsonNode elementJson=null;
         if (cursor.hasNext()) {
             DBObject next = cursor.next();
+          //  next = deserialiseSources(next);
             String jsonStr = JSON.serialize( next );
             elementJson = Json.parse(jsonStr);
         }
@@ -159,6 +160,40 @@ public class Conflicts {
         System.out.println("data = " + json);
         saveRules();
         return ok();
+    }
+
+    private static DBObject deserialiseSources(DBObject next) {
+        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
+        BasicDBObject dbObject = (BasicDBObject) next;
+        for (Object o : dbObject.values()) {
+            if (o instanceof BasicDBObject){
+            BasicDBObject basicDBObject = (BasicDBObject) o;
+            Object value = basicDBObject.values();
+            if (value instanceof BasicDBObject){
+                BasicDBObject valueBasicDBObject = (BasicDBObject) value;
+                Object sources = valueBasicDBObject.get("sources");
+                if (sources instanceof BasicDBList){
+                    BasicDBList sourcesList = (BasicDBList) sources;
+                    List<String> newSources=new ArrayList<>();
+                    Iterator<Object> iterator = sourcesList.iterator();
+                    while(iterator.hasNext()){
+                        String sourceID = (String) iterator.next();
+                        Source source = persistence.getCache().getSource(sourceID);
+                        newSources.add(source.getName()+":"+source.getVersion());
+                    }
+                    sourcesList.clear();
+                    for (String newSource : newSources) {
+                        sourcesList.add(newSource);
+                    }
+                }
+
+            }
+
+
+        }
+        }
+
+        return next;
     }
 
     public static Result deleteRule() {

@@ -29,7 +29,7 @@ public class ContentTypeIdentificationRule implements PostProcessingRule {
                     tmp.getValues().add(content_type);
                     tmp.setStatus("SINGLE_RESULT");
                     Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
-                    tmp.getSources().add(c3PO.getId());
+                    tmp.getSources().add(c3PO.toString());
                 }
                 break;
             }

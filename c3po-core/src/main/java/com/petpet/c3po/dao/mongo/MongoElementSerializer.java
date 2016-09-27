@@ -18,7 +18,6 @@ package com.petpet.c3po.dao.mongo;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -60,7 +59,7 @@ public class MongoElementSerializer implements MongoModelSerializer {
 
     if ( object != null && object instanceof Element ) {
       Element element = (Element) object;
-
+      element.updateStatus();
       document = new BasicDBObject();
       if ( element.getName() != null && !element.getName().equals( "" ) ) {
         document.put( "name", element.getName() );
