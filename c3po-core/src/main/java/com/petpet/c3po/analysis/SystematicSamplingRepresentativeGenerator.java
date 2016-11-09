@@ -77,9 +77,10 @@ public class SystematicSamplingRepresentativeGenerator extends RepresentativeGen
             LOG.debug("Calculated skip is: {}", skip);
 
             Iterator<Element> cursor = this.pl.find(Element.class, this.getFilter());
-            int i = 0;
+
             while (result.size() < limit) {
-                Double tmp1=Math.random() * skip + result.size() * skip;
+                int i = 0;
+                Double tmp1=Math.random() * skip;
                 long offset = tmp1.longValue();
                // LOG.debug("Trying to pick an element with index {}", offset);
                 if (offset >= count)

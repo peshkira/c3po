@@ -465,7 +465,6 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBObject query = this.getCachedFilter( filter );
         DBCollection dbCollection = this.getCollection( clazz );
         f = this.filterSerializer.mapFieldToProperty( f, new Object() );
-
         return dbCollection.distinct( f, query );
 
     }
@@ -633,7 +632,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     public DBObject getCachedFilter( Filter f ) {
         Filter filter = (Filter) this.dbCache.getObject( LAST_FILTER );
-        DBObject result = null;
+        DBObject result = new BasicDBList();
 
         //if ( filter != null && filter.equals( f ) ) {
         // result = (DBObject) this.dbCache.getObject( LAST_FILTER_QUERY );
