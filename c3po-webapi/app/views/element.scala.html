@@ -1,15 +1,89 @@
 @(collections: List[String], element: com.petpet.c3po.api.model.Element)
 
 @scripts = {
+
+
     <script type="text/javascript" href="/assets/javascripts/header.js"></script>
 
     <script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js" type="text/javascript"></script>
 
+    <script type="text/javascript" src="http://www.bacubacu.com/colresizable/js/colResizable-1.5.min.js"></script>
     <script type="text/javascript" src="/assets/javascripts/notifIt.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/assets/stylesheets/notifIt.css">
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.8.21/themes/smoothness/jquery-ui.css">
+
+
+
+    <style>
+
+        table{
+            line-height: 1.4em;
+            font-style: normal;
+            border-collapse:separate;
+        }
+
+
+
+        thead th{
+            padding:15px;
+            color:#fff;
+            text-shadow:1px 1px 1px #568F23;
+            border:1px solid #93CE37;
+            border-bottom:3px solid #9ED929;
+            background-color:#9DD929;
+            background: #91c525;
+            -webkit-border-top-left-radius:5px;
+            -webkit-border-top-right-radius:5px;
+            -moz-border-radius:5px 5px 0px 0px;
+            border-top-left-radius:5px;
+            border-top-right-radius:5px;
+        }
+
+
+        thead th:empty{
+            background:transparent;
+            border:none;
+        }
+
+        tfoot td{
+            color: #9CD009;
+            font-size:32px;
+            text-align:center;
+            padding:10px 0px;
+            text-shadow:1px 1px 1px #444;
+        }
+        tfoot th{
+            color:#666;
+        }
+
+        tbody td{
+            padding:10px;
+            text-align:center;
+            background-color:#DEF3CA;
+            border: 1px solid #FFFFFF;
+            -moz-border-radius:2px;
+            -webkit-border-radius:2px;
+            border-radius:2px;
+            color:#666;
+            text-shadow:1px 1px 1px #fff;
+        }
+
+        tr:nth-child(even) td
+        {
+            background-color: #ffffff;
+        }
+
+        table{
+            border-collapse: collapse;
+        }
+
+    </style>
 
     <script>
+
+
+
 
             $('document').ready(function () {
 
@@ -127,7 +201,7 @@
                 }
 
                 $('#ruleCreate').on('click', function () {
-                    //createRule();
+                    createRule();
                     notif({
                         msg: "<b>Success:</b> A new rule has been created",
                         type: "success",
@@ -160,6 +234,8 @@
                         }
                     });
                 });
+                //$( "table" ).resizable("option", "maxWidth", $('#body').width() - 260);
+                //$("table").colResizable({liveDrag:true});
             });
 
     </script>
@@ -178,25 +254,26 @@
             </div>
 
             <style>
-            table { width: 500px; }
-            .grow { width: 100%; }​
 
             </style>
             <div id="table" >
-                <table border="1" width="500px" >
-                    <tr>
-                        <th>Rule trigger</th>
-                            <!--ko foreach: ColumNames-->
-                        <th data-bind="text: $data"></th>
-                            <!--/ko-->
-                    </tr>
+                <table border="1"  >
+                    <thead>
+                        <tr>
+                            <th>Rule trigger</th>
+                                <!--ko foreach: ColumNames-->
+                            <th data-bind="text: $data"></th>
+                                <!--/ko-->
+                        </tr>
+                    </thead>
+                    <tbody>
                         <!--ko foreach: MyData-->
                     <tr>
-                        <td  width="5">
+                        <td >
                             <div><input data-bind="click: $root.checkboxClick" type="checkbox"/></div>
                         </td>
                             <!--ko foreach: {data: $root.ColumNames, as: 'columnName'}-->
-                        <td width="5">
+                        <td >
                                 <!-- ko if: $parent[columnName]    -->
                                     <!-- ko ifnot:  columnName==='Status'  ||  columnName==='Property'   -->
                                 <input class="my-checked-property-value" data-bind="attr: {  data_source: columnName, data_property:$parent['Property']  }, value: $parent[columnName] " type="checkbox" />
@@ -207,6 +284,7 @@
                             <!--/ko-->
                     </tr>
                         <!--/ko-->
+                    </tbody>
                 </table>
 
                 <input type="text" id="ruleName" value="Rule name">
