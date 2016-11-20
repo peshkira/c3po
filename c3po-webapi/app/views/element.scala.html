@@ -2,17 +2,12 @@
 
 @scripts = {
 
-
-    <script type="text/javascript" href="/assets/javascripts/header.js"></script>
-
     <script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js" type="text/javascript"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js" type="text/javascript"></script>
 
-    <script type="text/javascript" src="http://www.bacubacu.com/colresizable/js/colResizable-1.5.min.js"></script>
+
     <script type="text/javascript" src="/assets/javascripts/notifIt.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/assets/stylesheets/notifIt.css">
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.8.21/themes/smoothness/jquery-ui.css">
-
 
 
     <style>
@@ -21,6 +16,7 @@
             line-height: 1.4em;
             font-style: normal;
             border-collapse:separate;
+            word-break: break-all;
         }
 
 
@@ -38,6 +34,7 @@
             -moz-border-radius:5px 5px 0px 0px;
             border-top-left-radius:5px;
             border-top-right-radius:5px;
+            word-break: break-all;
         }
 
 
@@ -67,6 +64,7 @@
             border-radius:2px;
             color:#666;
             text-shadow:1px 1px 1px #fff;
+            word-break: break-all;
         }
 
         tr:nth-child(even) td
@@ -156,11 +154,17 @@
 
                     return module;
                 })();
+                $( "table" ).resizable();
+                $( "th" ).resizable({handles: "se"});
+                $( "td" ).resizable({handles: "se"});
 
                 ko.applyBindings(viewModel);
                 window.onload = function () {
                     MAPPING.ToColumNames(data);
                     MAPPING.ToMyData(data);
+                    $( "table" ).resizable();
+                    $( "th" ).resizable({handles: "se"});
+                    $( "td" ).resizable({handles: "se"});
                 }
 
                 function createRule() {
@@ -234,8 +238,7 @@
                         }
                     });
                 });
-                //$( "table" ).resizable("option", "maxWidth", $('#body').width() - 260);
-                //$("table").colResizable({liveDrag:true});
+
             });
 
     </script>
@@ -256,13 +259,15 @@
             <style>
 
             </style>
+
+
             <div id="table" >
                 <table border="1"  >
                     <thead>
                         <tr>
-                            <th>Rule trigger</th>
+                            <th >Rule trigger</th>
                                 <!--ko foreach: ColumNames-->
-                            <th data-bind="text: $data"></th>
+                            <th data-bind=" text: $data"></th>
                                 <!--/ko-->
                         </tr>
                     </thead>
