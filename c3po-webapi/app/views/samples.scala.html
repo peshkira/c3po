@@ -68,18 +68,19 @@
                     ];
 
                     var popup = $('#filterpopup');
+                    popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
                     var config = popup.children('.popupconfig');
-                    $(config).append('<p">Choose an algorithm:</p>');
+
+                    $(config).append("<p>Choose an algorithm:</p>");
                     var sel = $('<select></select>').appendTo(config);
 
-                    popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
                     $(sel).append("<option/>");
                     $.each(algorithms, function (i, alg) {
                         $(sel).append("<option value=" + alg['key'] + ">" + alg['name'] + "</option>");
                     });
 
                     $(sel).change(function () {
-                        $(config).siblings().remove();
+                        $(this).siblings().remove();
                         var val = $(this).val();
                         if (val === "") {
                             $(this).effect("highlight", {color: '#FF1400'}, "slow");
@@ -148,11 +149,6 @@
                                     options.push($('#threshold').val());
                                     options.push($('#proportion').val());
                                     options.push($('.popupconfig select:last').val());
-                                    //options["pcoverage"]=$('#pcoverage').val();
-                                    //options["tcoverage"]=$('#tcoverage').val();
-                                    //options["samples"]=$('#threshold').val();
-                                    // options["proportion"]=$('#proportion').val();
-                                    // options["properties"] = $('.popupconfig select:last').val();
 
                                 }
 
@@ -179,8 +175,7 @@
                             if (alg == "sfd") {
                                 var download = $('#download');
                                 var tmp = "/c3po/samples/export";
-                                $('Download the table<a class="green_button" href="samples/export">Download results</a>').appendTo(download);
-
+                                download.append('Download the results: <a class="green_button" href="samples/export">Download results</a>');
                             }
                             showSamples(oData);
                             stopSpinner();

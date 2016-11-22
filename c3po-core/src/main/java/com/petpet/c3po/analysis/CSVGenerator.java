@@ -158,7 +158,7 @@ public class CSVGenerator {
         result.append( p.getKey() + "," );
       }
       result.append( " \n " );
-
+      boolean found=false;
       // for all elements append the values in the correct column
       while ( matrix.hasNext() ) {
           Element next = matrix.next();
@@ -168,12 +168,17 @@ public class CSVGenerator {
 
           // then the properties
           for ( Property p : props ) {
+            found=false;
             for (MetadataRecord mr : mrs) {
               if (mr.getProperty().equals(p.getKey())){
                 String val = this.getValueFromMetaDataRecord( mr );
-                result.append( val+"," );
+                result.append( replace(val)+"," );
+                found=true;
+                break;
               }
             }
+            if (found==false)
+              result.append("," );
           }
         result.append( " \n " );
 

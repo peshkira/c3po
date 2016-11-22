@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Timestamp;
@@ -123,7 +125,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
 
         File file = new File(fileName);
         FileInputStream fis = new FileInputStream(file);
-        ZipEntry zipEntry = new ZipEntry(fileName);
+        ZipEntry zipEntry = new ZipEntry(file.getName());
         zos.putNextEntry(zipEntry);
 
         byte[] bytes = new byte[1024];
@@ -150,7 +152,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
             Tsp+=tmp_Tsp1;
             int samplesPerTuple = samplesPerTuple(tmp_pcovTC);
             sample_size+=samplesPerTuple;
-            result += "\n " + sample_size + ", " + Double.toString(pcovTC) +", " + Double.toString(Tsp) + ",";
+            result += "\n " + sample_size + ", " + Double.toString( new BigDecimal(pcovTC).setScale(3, RoundingMode.HALF_UP).doubleValue()) +", " + Double.toString(new BigDecimal(Tsp).setScale(3, RoundingMode.HALF_UP).doubleValue()) + ",";
         }
 
 
@@ -351,32 +353,6 @@ Anything else that is interesting about inputs, outputs,settings,params
 
     private List<BasicDBObject> runMapReduce() {
         String map="function() {\n" +
-                "    var properties = @1;\n" +
-                "    var toEmit=[];\n" +
-                "    for (x in properties) {\n" +
-                "        property = properties[x];\n" +
-                "        if (this[property] != null) {\n" +
-                "            if (this[property].status != 'CONFLICT') {\n" +
-                "               if (property=='created') {" +
-                "                    var date = new Date(this[property].values[0]);" +
-                "                    toEmit.push(date.getFullYear().toString());" +
-                "               } " +
-            "                   else    " +
-                "                   toEmit.push(this[property].values[0]); \n" +
-                "            } \n" +
-                "            else {\n" +
-                "                toEmit.push(\"CONFLICT\"); \n" +
-                "            }\n" +
-                "        } \n" +
-                "        else {\n" +
-                "            toEmit.push(\"Unknown\");\n" +
-                "        }\n" +
-                "    }\n" +
-                "    emit(toEmit, 1);\n" +
-                "}";
-
-
-        map="function() {\n" +
                 "    var properties = @1;\n" +
                 "    var bins= @2;\n" +
                 "var toEmit=[];\n" +

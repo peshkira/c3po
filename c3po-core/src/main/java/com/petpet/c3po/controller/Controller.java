@@ -144,6 +144,7 @@ public class Controller {
         this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
         this.knownRules.put(Constants.CNF_CONTENT_TYPE_IDENTIFICATION_RULE, ContentTypeIdentificationRule.class);
         this.knownRules.put(Constants.CNF_FILE_EXTENSION_IDENTIFICATION_RULE, FileExtensionIdentificationRule.class);
+        this.knownRules.put(Constants.CNF_CREATED_YEAR_IDENTIFICATION_RULE, CreatedYearIdentificationRule.class);
     }
 
     /**
