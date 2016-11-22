@@ -49,6 +49,20 @@ public class Overview extends Controller {
         ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
 
         Filter filter = Filters.getFilterFromSession();
+
+        List<FilterCondition> conditions = filter.getConditions();
+        String fieldTail=null;
+        Iterator<FilterCondition> iterator1 = conditions.iterator();
+        while (iterator1.hasNext()){
+            FilterCondition condition = iterator1.next();
+            if (condition.getValue().equals("NOLONGTAIL")){
+                fieldTail = condition.getField();
+                iterator1.remove();
+                break;
+            }
+        }
+
+
         TemplatesLoader.setProps(filter);
 
         ArrayList<String> properties = Lists.newArrayList(Application.PROPS);
@@ -77,7 +91,8 @@ public class Overview extends Controller {
 
             } else {
                 Graph g = Properties.interpretDistribution(next.getValue(), null, null);
-                g.cutLongTail();
+                if (!next.getKey().equals(fieldTail))
+                    g.cutLongTail();
                 graphs.add(g);
 
 

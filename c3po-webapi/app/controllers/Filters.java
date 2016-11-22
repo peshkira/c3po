@@ -56,8 +56,12 @@ public class Filters extends Controller {
                         propertyValueString = gr.getKeys().get(value);
                 }
             }
-            if (propertyValueString.equals("Rest")){
-                return ok("Cannot show distribution for 'Rest' value");
+            if (propertyValueString.equals("Other")){
+
+                filter.addFilterCondition(new FilterCondition(propertyName, "NOLONGTAIL"));
+                Filters.setFilterFromSession(filter);
+                return ok();
+                //return ok("Cannot show distribution for 'Rest' value");
 
             }
             Object propertyValue = null;
