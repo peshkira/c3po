@@ -1,193 +1,207 @@
 @(collections: List[String])
-@import helper._ 
+
 
 @scripts = {
-<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/multi-select.css")" />
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.multi-select.js")"></script>
+
 }
 
 @main("c3po - samples", collections, scripts) {
-<div id="samples" class="content">
-  <div id="more">
-    <a id="btn_samples" href="#" class="green_button">Get Samples</a>
-  </div>
-  <h2>Sample Objects</h2>
-  <p>
-    Sample objects are such objects that are representative to your collection (or filter). The definition of
-    representativeness can vary a lot, so c3po offers you different algorithms for the selection. You can choose the
-    type of algorithm and the number of samples (max 100), so that it fits your use case best. Remember that the
-    algorithms are always applied with respect to the current filter, so please double check. <a id="algorithms"
-      href="#algorithm_descriptions">Tell me more about these algorithms!</a>
-  </p>
-    <div id="download"></div>
-  <div id="objects"></div>
-</div>
+    <div id="samples" class="content">
+        <div id="more">
+            <a id="btn_samples" href="#" class="green_button">Get Samples</a>
+        </div>
+        <h2>Sample Objects</h2>
+        <p>
+            Sample objects are such objects that are representative to your collection (or filter). The definition of
+            representativeness can vary a lot, so c3po offers you different algorithms for the selection. You can choose the
+            type of algorithm and the number of samples (max 100), so that it fits your use case best. Remember that the
+            algorithms are always applied with respect to the current filter, so please double check. <a id="algorithms"
+        href="#algorithm_descriptions">Tell me more about these algorithms!</a>
+        </p>
+        <div id="download"></div>
+        <div id="objects"></div>
+    </div>
 
-<div id="algorithm_descriptions" class="content">
-  <div class="algorithms">
-    <div class="algorithmname">Size'o'Matic 3000</div>
-    <div class="algorithmdescription">The Size'o'Matic 3000 selects the smallest and the largest objects and fills
-      the rest of the representative set with random objects near to the average objects size.</div>
-    <div class="algorithmname">SysSampler</div>
-    <div class="algorithmdescription">This algorithm implements a common statistical approach, called systematic
-      sampling. It divides the collection in bins and selects one element per bin at random. All elements have equal
-      probability to be chosen.</div>
-    <div class="algorithmname">DistSampler</div>
-    <div class="algorithmdescription">The distribution sampling algorithm takes a small number of properties as
-      input and selects sample objects that together have (nearly) the same distribution as the whole collection or
-      filter. Note, that if you select too many properties, or a special combination of properties, it could happen, that
-      no representatives can be found.</div>
-      <div class="algorithmname">SelectiveFeatureDistributionSampling</div>
-      <div class="algorithmdescription">Put description here.</div>
-  </div>
-</div>
+    <div id="algorithm_descriptions" class="content">
+        <div class="algorithms">
+            <div class="algorithmname">Size'o'Matic 3000</div>
+            <div class="algorithmdescription">
+                The Size'o'Matic 3000 selects the smallest and the largest objects and fills
+                the rest of the representative set with random objects near to the average objects size.</div>
+            <div class="algorithmname">SysSampler</div>
+            <div class="algorithmdescription">This algorithm implements a common statistical approach, called systematic
+                sampling. It divides the collection in bins and selects one element per bin at random. All elements have equal
+                probability to be chosen.</div>
+            <div class="algorithmname">DistSampler</div>
+            <div class="algorithmdescription">The distribution sampling algorithm takes a small number of properties as
+                input and selects sample objects that together have (nearly) the same distribution as the whole collection or
+                filter. Note, that if you select too many properties, or a special combination of properties, it could happen, that
+                no representatives can be found.</div>
+            <div class="algorithmname">SelectiveFeatureDistributionSampling</div>
+            <div class="algorithmdescription">
+                This algorithm picks samples according to 5 parameters: pcoverage, tcoverage, sample size, list of properties, proportion</div>
+        </div>
+    </div>
 
-<script type="text/javascript">
-   $(document).ready(function() {
-      $("a#algorithms").click(function() {
-          event.preventDefault();
-          $("div#algorithm_descriptions").toggle('normal');
-          $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
-      });
+    <script type="text/javascript">
+            $(document).ready(function () {
+                $("a#algorithms").click(function () {
+                    event.preventDefault();
+                    $("div#algorithm_descriptions").toggle('normal');
+                    $('html,body').animate({scrollTop: $(this.hash).offset().top}, 500);
+                });
 
-      $("a#btn_samples").click(function() {
-          showAlgOptionsDialog();
-      });
+                $("a#btn_samples").click(function () {
+                    showAlgOptionsDialog();
+                });
 
-      function showAlgOptionsDialog() {
-          $("#overlay").addClass('activeoverlay');
-          var algorithms = [
-                            {'key':'size', 'name':'Size\'o\'Matic'},
-                            {'key':'syssampling', 'name': 'Sys Sampling'},
-                            {'key': 'distsampling', 'name':'Dist Sampling'},
-                            {'key': 'sfd', 'name':'Selective Feature Dist Sampling'}
-                           ];
-           
-          var popup = $('#filterpopup');
-          var config = popup.children('.popupconfig');
-          var sel = $('<select></select>').appendTo(config);
+                function showAlgOptionsDialog() {
+                    $("#overlay").addClass('activeoverlay');
+                    var algorithms = [
+                        {'key': 'size', 'name': 'Size\'o\'Matic'},
+                        {'key': 'syssampling', 'name': 'Sys Sampling'},
+                        {'key': 'distsampling', 'name': 'Dist Sampling'},
+                        {'key': 'sfd', 'name': 'Selective Feature Dist Sampling'}
+                    ];
 
-          popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
-          $(sel).append("<option/>");
-          $.each(algorithms, function(i, alg) {
-              $(sel).append("<option value=" + alg['key'] + ">" + alg['name'] +"</option>");              
-          });
+                    var popup = $('#filterpopup');
+                    var config = popup.children('.popupconfig');
+                    $(config).append('<p">Choose an algorithm:</p>');
+                    var sel = $('<select></select>').appendTo(config);
 
-          $(sel).change(function() {
-        	  $(this).siblings().remove();
-              var val = $(this).val();
-              if (val === "") {
-                  $(this).effect("highlight", {color:'#FF1400'} , "slow");
-              } else {
+                    popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
+                    $(sel).append("<option/>");
+                    $.each(algorithms, function (i, alg) {
+                        $(sel).append("<option value=" + alg['key'] + ">" + alg['name'] + "</option>");
+                    });
+
+                    $(sel).change(function () {
+                        $(config).siblings().remove();
+                        var val = $(this).val();
+                        if (val === "") {
+                            $(this).effect("highlight", {color: '#FF1400'}, "slow");
+                        } else {
+
+                            if (val == "sfd") {
+                                var pcoverageDiv = $('<div class="harmony"><p>Specify property coverage, [0-1]:</p> </div>').appendTo(config);
+                                var pcoverage = $('<input id="pcoverage" type="text" placeholder="pcoverage from 0 to 1" value="0.8"/>').appendTo(pcoverageDiv);
+                                var tcoverageDiv = $('<div class="harmony"><p>Specify tuple coverage, [0-1]:</p> </div>').appendTo(config);
+                                var tcoverage = $('<input id="tcoverage" type="text" placeholder="tcoverage from 0 to 1" value="0.8"/>').appendTo(tcoverageDiv);
+                                var sampleCountDiv = $('<div class="harmony"><p>Specify number of samples:</p> </div>').appendTo(config);
+                                var text = $('<input id="threshold" type="text" placeholder="number of samples" value="11"/>').appendTo(sampleCountDiv);
+                                var proportionDiv = $('<div class="harmony"><p>Choose a proportion:</p> </div>').appendTo(config);
+                                var proportion = $('<select id="proportion"><option>linear</option><option>log</option><option>no</option></select>').appendTo(proportionDiv);
+                            }
+                            else {
+                                var sampleCountDiv = $('<div class="harmony"><p>Specify number of samples:</p> </div>').appendTo(config);
+                                var text = $('<input id="threshold" type="text" placeholder="number of samples" value="11"/>').appendTo(sampleCountDiv);
+
+                            }
+
+                            if (val == "distsampling" || val == "sfd") {
+                                $.ajax({
+                                    headers: {
+                                        Accept: "application/json; charset=utf-8",
+                                    },
+                                    type: 'GET',
+                                    url: '/c3po/properties',
+                                    timeout: 5000,
+                                    async: false,
+                                    success: function (properties) {
+                                        var propselDiv = $('<div class="harmony"><p>Choose properties of interest:</p> </div>').appendTo(config);
+                                        var propsel = $('<select id="propSelect" multiple="multiple">').appendTo(propselDiv);
+
+                                        $.each(properties, function (i, value) {
+                                            $(propsel).append($('<option>').text(value).attr('value', value));
+                                        });
+                                        $(propsel).multiSelect();
+
+                                    }
+                                });
+                            }
+
+                            var btn = $('<a id="btn_runsamples" class="green_button" href="#">Apply</a>').appendTo(config);
 
 
+                            $(btn).click(function () {
+                                var alg = sel.val();
+                                var size = 10;
+                                var tSize = text.val();
 
-                  if (val=="sfd"){
-                      var pcoverage = $('<input id="pcoverage" type="text" placeholder="pcoverage from 0 to 1" value="pcoverage"/>').appendTo(config);
-                      var tcoverage = $('<input id="tcoverage" type="text" placeholder="tcoverage from 0 to 1" value="tcoverage"/>').appendTo(config);
-                      var text = $('<input id="threshold" type="text" placeholder="number of samples" value="number of samples"/>').appendTo(config);
-                      var proportion = $('<select id="proportion"><option>linear</option><option>log</option><option>no</option></select>').appendTo(config);
-                  }
-                else
-                      var text = $('<input type="text" placeholder="nr of samples" value="11"/>').appendTo(config);
+                                if (tSize) {
+                                    var s = parseInt(tSize);
+                                    if (s !== NaN && s > 0 && s <= 100) {
+                                        size = s;
+                                    }
+                                }
 
-                if (val == "distsampling" || val=="sfd") {
-                	$.ajax ({
-                        headers: {
-                            Accept : "application/json; charset=utf-8",
-                        },
-                        type:     'GET',
-                        url:      '/c3po/properties',
-                        timeout:  5000,
-                        async: false,
-                        success:  function (properties) {
-                        	var propsel = $('<select multiple>').appendTo(config);
-                            $.each(properties, function(i, value) {
-                                $(propsel).append($('<option>').text(value).attr('value', value));
+                                var options = [];
+                                if (alg == "distsampling") {
+                                    options = $('.popupconfig select:last').val();
+                                }
+                                if (alg == "sfd") {
+                                    options.push($('#pcoverage').val());
+                                    options.push($('#tcoverage').val());
+                                    options.push($('#threshold').val());
+                                    options.push($('#proportion').val());
+                                    options.push($('.popupconfig select:last').val());
+                                    //options["pcoverage"]=$('#pcoverage').val();
+                                    //options["tcoverage"]=$('#tcoverage').val();
+                                    //options["samples"]=$('#threshold').val();
+                                    // options["proportion"]=$('#proportion').val();
+                                    // options["properties"] = $('.popupconfig select:last').val();
+
+                                }
+
+                                hidePopupDialog();
+                                startSpinner();
+                                getSamples(alg, size, options);
                             });
                         }
                     });
-                }
 
-                var btn = $('<a id="btn_runsamples" class="green_button" href="#">Apply</a>').appendTo(config);
-                
-                
-                
-                $(btn).click(function() {
-                    var alg = sel.val();
-                    var size = 10;
-                    var tSize = text.val();  
+                    popup.css({'display': 'block', 'z-index': 11});
 
-                    if (tSize) {
-                      var s = parseInt(tSize);
-                      if (s !== NaN && s > 0 && s <= 100) {
-                          size = s;
-                      }
-                    }
 
-                    var options=[];
-                    if (alg == "distsampling" ) {
-                        options = $('.popupconfig select:last').val();
-                    }
-                    if (alg == "sfd") {
-                        options.push($('#pcoverage').val());
-                        options.push($('#tcoverage').val());
-                        options.push($('#threshold').val());
-                        options.push($('#proportion').val());
-                        options.push($('.popupconfig select:last').val());
-                        //options["pcoverage"]=$('#pcoverage').val();
-                        //options["tcoverage"]=$('#tcoverage').val();
-                        //options["samples"]=$('#threshold').val();
-                       // options["proportion"]=$('#proportion').val();
-                       // options["properties"] = $('.popupconfig select:last').val();
+                };
 
-                    }
-                    
-                    hidePopupDialog();
-                    startSpinner();
-                    getSamples(alg, size, options);
-                });
-              }
-          });
+                function getSamples(alg, size, options) {
+                    $.ajax({
+                        headers: {
+                            Accept: "application/json; charset=utf-8",
+                        },
+                        type: 'GET',
+                        url: '/c3po/samples/get?alg=' + alg + '&size=' + size + '&props=' + options,
+                        success: function (oData) {
+                            if (alg == "sfd") {
+                                var download = $('#download');
+                                var tmp = "/c3po/samples/export";
+                                $('Download the table<a class="green_button" href="samples/export">Download results</a>').appendTo(download);
 
-          popup.css({'display': 'block', 'z-index':11});
+                            }
+                            showSamples(oData);
+                            stopSpinner();
+                        },
+                        error: function (oData) {
+                            stopSpinner();
+                        }
+                    });
+                };
 
-         
-      };
+                function showSamples(samples) {
+                    var objects = $('div#objects');
+                    objects.fadeOut('normal', function () {
+                        $(this).children().remove();
+                        $.each(samples, function (i, sample) {
+                            objects.append('<a href="/c3po/objects/' + sample.id + '">' + sample.name + '</a><br />');
+                        });
+                        objects.fadeIn('normal');
+                    });
+                };
+            });
 
-      function getSamples(alg, size, options) {
-        $.ajax ({
-              headers: { 
-                   Accept : "application/json; charset=utf-8",
-               },
-              type:     'GET',
-              url:      '/c3po/samples/get?alg=' + alg + '&size=' + size + '&props=' + options,
-              success:  function (oData) {
-                  if (alg=="sfd"){
-                      var download=$('#download');
-                      var tmp="/c3po/samples/export";
-                      $('Download the table<a class="green_button" href="samples/export">Download results</a>').appendTo(download);
-
-                  }
-                showSamples(oData);  
-                stopSpinner();
-              },
-              error: function(oData) {
-                stopSpinner();
-              }
-          });
-      };
-
-      function showSamples(samples) {
-          var objects = $('div#objects');
-          objects.fadeOut('normal', function(){
-              $(this).children().remove();
-              $.each(samples, function(i, sample){
-                  objects.append('<a href="/c3po/objects/' + sample.id +'">' + sample.name + '</a><br />');
-              });
-              objects.fadeIn('normal');
-          });
-      }; 
-   });
-   
-   </script>
+    </script>
 }

@@ -326,16 +326,18 @@ public class ConflictResolutionProcessor {
             if (size > 1) {
                 for (int i = 0; i < value.size(); i++) {
                     String valueConflicted = value.get(i).toString();
-                    Integer sourceID = Integer.parseInt(source.get(i).toString());
-                    Source source1 = persistenceLayer.getCache().getSource(source.get(i).toString());
-                    String sourceString=source1.toString();
+                  //  Integer sourceID = Integer.parseInt(source.get(i).toString());
+                  //  Source source1 = persistenceLayer.getCache().getSource(source.get(i).toString());
+                    String sourceString= source.get(i).toString();//source1.toString();
                     result[sources.indexOf(sourceString)] = valueConflicted;
                 }
             } else {
                 String valueConflicted = value.get(0).toString();
                 for (int i = 0; i < source.size(); i++) {
-                    Integer sourceID = Integer.parseInt(source.get(i).toString());
-                    result[sourceID] = valueConflicted;
+                    String sourceString= source.get(i).toString();//source1.toString();
+                    result[sources.indexOf(sourceString)] = valueConflicted;
+                    //Integer sourceID = Integer.parseInt(source.get(i).toString());
+                    //result[sourceID] = valueConflicted;
                 }
             }
         }

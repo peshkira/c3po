@@ -35,7 +35,6 @@ h4 {font-size:1.2em;line-height:1.25;margin-bottom:1.25em;}
 h5 {font-size:1em;font-weight:bold;margin-bottom:1.5em;}
 h6 {font-size:1em;font-weight:bold;}
 h1 img, h2 img, h3 img, h4 img, h5 img, h6 img {margin:0;}
-p {margin:0 0 1.5em;}
 .left {float:left !important;}
 p .left {margin:1.5em 1.5em 1.5em 0;padding:0;}
 .right {float:right !important;}
@@ -103,6 +102,8 @@ form.inline p {margin-bottom:0;}
 .info a {color:#205791;}
 
 html, body {height: 100%;} /* because of footer */
+
+.harmony { margin: 1em;}
 
 /* grid.css */
 .container {width:1500px;margin:0 auto;padding-bottom: 20px;}
@@ -383,7 +384,7 @@ img.smalllogo{
 position:absolute;
 z-index:10;
 margin-left:25%;
-top: 35%;
+top: 5%;
 width:50%;
     margin-bottom:50px;
 border: 4px solid #68A200;
@@ -451,7 +452,7 @@ display: none;
     outline: none;
     width: 400px;
     height: 75px;
-    vertical-align:bottom;
+    vertical-align:top;
 }
 
 #filterpopup .popupconfig textarea:focus {
@@ -540,6 +541,7 @@ display: none;
     padding:5px 13px;
     text-decoration:none;
     text-shadow:1px 1px 0px #aade7c;
+    margin: 1em 0;
 }
 
 .green_button:hover {
