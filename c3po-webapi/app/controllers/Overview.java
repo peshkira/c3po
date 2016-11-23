@@ -55,7 +55,7 @@ public class Overview extends Controller {
         Iterator<FilterCondition> iterator1 = conditions.iterator();
         while (iterator1.hasNext()){
             FilterCondition condition = iterator1.next();
-            if (condition.getValue().equals("NOLONGTAIL")){
+            if (condition.getValue()!=null && condition.getValue().equals("NOLONGTAIL")){
                 fieldTail = condition.getField();
                 iterator1.remove();
                 break;

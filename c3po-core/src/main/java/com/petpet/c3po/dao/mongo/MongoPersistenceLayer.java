@@ -309,7 +309,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     public <T extends Model> Iterator<T> find( Class<T> clazz, Filter filter ) {
 
         DBObject query = this.getCachedFilter( filter );
-
+        LOG.debug("Finding objects with the query:");
+        LOG.debug(query.toString());
         DBCollection dbCollection = this.getCollection( clazz );
         MongoModelDeserializer modelDeserializer = this.getDeserializer( clazz );
 

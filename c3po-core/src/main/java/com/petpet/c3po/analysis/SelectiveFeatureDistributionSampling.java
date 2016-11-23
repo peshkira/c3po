@@ -42,7 +42,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
     /**
      * Default logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(SystematicSamplingRepresentativeGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SelectiveFeatureDistributionSampling.class);
     private Map<String, List<Integer>> bins;
 
     //Map<String, Object> samplingOptions;
@@ -109,7 +109,6 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
             fos.close();
 
             LOG.info("Writing a zip-file with results to {}", outputFileLocation);
-            System.out.println("Writing a zip-file with results to " + outputFileLocation);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -121,7 +120,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
 
     public static void addToZipFile(String fileName, ZipOutputStream zos) throws FileNotFoundException, IOException {
 
-        System.out.println("Writing '" + fileName + "' to zip file");
+        LOG.debug("Writing '" + fileName + "' to zip file");
 
         File file = new File(fileName);
         FileInputStream fis = new FileInputStream(file);
@@ -320,9 +319,14 @@ Anything else that is interesting about inputs, outputs,settings,params
                 BetweenFilterCondition betweenFilterCondition = BetweenFilterCondition.getBetweenFilterCondition(val, prop);
                 f.addFilterCondition(betweenFilterCondition);
             }
+            if (property.getType().equals(PropertyType.BOOL.name())){
+                f.addFilterCondition(new FilterCondition(properties.get(i), Boolean.parseBoolean(values.get(i))));
+            }
             else
                 f.addFilterCondition(new FilterCondition(properties.get(i), values.get(i)));
         }
+
+        long count = pl.count(Element.class, f);
         return pl.find(Element.class,f);
     }
 
