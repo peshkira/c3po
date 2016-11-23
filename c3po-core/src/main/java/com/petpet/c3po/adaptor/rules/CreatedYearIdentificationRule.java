@@ -25,18 +25,20 @@ public class CreatedYearIdentificationRule implements PostProcessingRule {
                 //Calendar cal=Calendar.getInstance();
                 if (!metadataRecord.getStatus().equals("CONFLICT")){
                     String s = metadataRecord.getValues().get(0);
-                    String substring = s.substring(0, 4);   //TODO: Find a better way to extract year
-                    //cal.setTime(new Date(metadataRecord.getValues().get(0)));
-                    //Integer created_year = cal.get(Calendar.YEAR);
-                    MetadataRecord tmp=new MetadataRecord();
-                    Property created_yearP = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty("created_year", PropertyType.STRING);
-                    tmp.setProperty(created_yearP.getKey());
+                    if (s.length()>4) {
+                        String substring = s.substring(0, 4);   //TODO: Find a better way to extract year
+                        //cal.setTime(new Date(metadataRecord.getValues().get(0)));
+                        //Integer created_year = cal.get(Calendar.YEAR);
+                        MetadataRecord tmp = new MetadataRecord();
+                        Property created_yearP = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty("created_year", PropertyType.STRING);
+                        tmp.setProperty(created_yearP.getKey());
 
-                    tmp.getValues().add(substring);
-                    tmp.setStatus("SINGLE_RESULT");
-                    Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
-                    tmp.getSources().add(c3PO.toString());
-                    e.getMetadata().add(tmp);
+                        tmp.getValues().add(substring);
+                        tmp.setStatus("SINGLE_RESULT");
+                        Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
+                        tmp.getSources().add(c3PO.toString());
+                        e.getMetadata().add(tmp);
+                    }
                     return e;
                 }
                 else{
