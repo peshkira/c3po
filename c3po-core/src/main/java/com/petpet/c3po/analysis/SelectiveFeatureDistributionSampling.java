@@ -54,8 +54,9 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
     Map<List<String>, Integer> tuples;
     long start, stop;
     double pcovSC, tmp_Tsp, Tsp;
-    int sample_size;
+    int sample_size, Tcp;
     long popC;
+
     @Override
     public List<String> execute() {
         start = System.currentTimeMillis();
@@ -63,7 +64,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         List<BasicDBObject>  results = runMapReduce();
         tuples = readResults(results);
         popC = pl.count(Element.class, filter);
-        int Tcp=tuples.size();
+        Tcp=tuples.size();
         Tsp = Tcp * tcoverage;
         pcovSC=0;
         tmp_Tsp=0;
@@ -293,7 +294,7 @@ Anything else that is interesting about inputs, outputs,settings,params
             return ((Double)(threshold*Math.log(tmp_pcovTC))).intValue();
 
         } else if (proportion.equals("no")){
-            return 1;
+            return ((Double) (threshold*1.0/Tcp)).intValue();
         }
         return 1;
     }

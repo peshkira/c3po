@@ -63,6 +63,7 @@ GET           /c3po/conflicts/csv            controllers.Conflicts.csv()
 POST          /c3po/conflicts                controllers.Conflicts.createRule()
 DELETE        /c3po/conflicts                controllers.Conflicts.deleteRule()
 POST          /c3po/conflicts/resolve        controllers.Conflicts.resolve()
+GET          /c3po/conflicts/overview       controllers.Conflicts.getOverview()
 
 # Profile page
 #GET     /c3po/profile/              controllers.Profiles.index()

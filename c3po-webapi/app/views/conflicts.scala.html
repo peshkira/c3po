@@ -93,6 +93,7 @@
                     }
                 });
             });
+
             $('#deleteButton').on('click', function () {
                 var ruleNames= $.map(table.rows('.selected').data(), function(item){
                     return item.name;
@@ -118,6 +119,26 @@
 
 
             });
+
+            $('#getConflictOverviewButton').on('click', function () {
+                var tableC = $('#conflictoverview');
+
+                tableC=tableC.DataTable( {
+                    paging: false,
+                    searching: false,
+                    info: false,
+                    ajax: '/c3po/conflicts/overview',
+                    aoColumns: [ { sWidth: "80%" }, { sWidth: "20%" }]
+
+                });
+
+
+
+            });
+
+
+
+
         })
 
         function format ( d ) {
@@ -164,12 +185,15 @@
 @main(title, collections, scripts) {
 
         <div class="content">
-            <h2> Conflict distribution table</h2>
-        <div class="export">
-            <ul>
-                <li>Download the table<a class="green_button" href="javascript:request('/c3po/conflicts/csv')">Download</a></li>
-            </ul>
-        </div>
+            <h2> Conflict overview table</h2>
+
+            <a id="getConflictOverviewButton"  class="green_button" href="javascript:void(0);">Get conflict overview table</a>
+            <table id="conflictoverview" class="display"> </table>
+
+
+
+
+
         </div>
     <div class="content">
         <h2>Available conflict resolution rules</h2>

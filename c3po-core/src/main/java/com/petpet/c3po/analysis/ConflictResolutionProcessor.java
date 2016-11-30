@@ -19,10 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -138,6 +135,138 @@ public class ConflictResolutionProcessor {
         return conflictsDouble.longValue();
     }
 
+    public static Map<String, Integer> getOverview( String url, Filter filter){
+        LOG.info("Generating a JSON file with conflict overview table");
+        Map<String, Integer> result=new HashMap<String, Integer>();
+        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
+        String map2 = "function map() {\n" +
+                "\tvar result=null;\n" +
+                "\tif (    (this['format'] != null && this['format'].status != null && this['format'].status == 'CONFLICT') || \n" +
+                "\t\t(this['mimetype'] !=null && this['mimetype'].status != null && this['mimetype'].status == 'CONFLICT') || \n" +
+                "\t\t(this['format_version'] !=null && this['format_version'].status != null && this['format_version'].status == 'CONFLICT') ) {\n" +
+                "\t\tresult={}; var format={};\n" +
+                "\t\tif (this['format'] != null){\n" +
+                "\t\t\tformat.status=this['format'].status;\n" +
+                "\t\t\tformat.values=this['format'].values;\n" +
+                "\t\t\tformat.sources=this['format'].sources;\n" +
+                "\t\t} \n" +
+                "\t\tresult.format=format;\n" +
+                "\t\tvar format_version={};\n" +
+                "\t\tif (this['format_version'] !=null) {\n" +
+                "\t\t\tformat_version.status=this['format_version'].status;\n" +
+                "\t\t\tformat_version.values=this['format_version'].values;\n" +
+                "\t\t\tformat_version.sources=this['format_version'].sources;\n" +
+                "\t\t}\n" +
+                "\t\tresult.format_version=format_version;\n" +
+                "\t\tvar mimetype={};\n" +
+                "\t\tif (this['mimetype'] !=null ){\n" +
+                "\t\t\tmimetype.status=this['mimetype'].status;\n" +
+                "\t\t\tmimetype.values=this['mimetype'].values;\n" +
+                "\t\t\tmimetype.sources=this['mimetype'].sources;\n" +
+                "\t\t}\n" +
+                "\t\tresult.mimetype=mimetype;\n" +
+                "\t}\n" +
+                "\tif (result!=null)  {\n" +
+                "\t\temit(result,1);\n" +
+                "\t}    \n" +
+                "}    ";
+
+        String reduce = "function reduce(key, values) {" +
+                "var res = 0;" +
+                "values.forEach(function (v) {" +
+                "res += v;" +
+                "});" +
+                "return res;" +
+                "}";
+
+        Iterator<Property> propertyIterator = persistence.find(Property.class, null);
+
+        List<BasicDBObject> basicDBObjects = persistence.mapReduceRaw(map2, reduce, filter);
+
+        int size = basicDBObjects.size();
+
+
+
+
+
+        for (BasicDBObject obj : basicDBObjects) {
+
+
+            Double count = obj.getDouble("value");
+
+            BasicDBObject id1 = (BasicDBObject) obj.get("_id");
+            if (id1.size() == 0) continue;
+            BasicDBObject format = (BasicDBObject) id1.get("format");
+            BasicDBObject format_version = (BasicDBObject) id1.get("format_version");
+            BasicDBObject mimetype = (BasicDBObject) id1.get("mimetype");
+
+            BasicDBList format_values = (BasicDBList) format.get("values");
+            BasicDBList format_sources = (BasicDBList) format.get("sources");
+
+            BasicDBList format_version_values = (BasicDBList) format_version.get("values");
+            BasicDBList format_version_sources = (BasicDBList) format_version.get("sources");
+
+            BasicDBList mimetype_values = (BasicDBList) mimetype.get("values");
+            BasicDBList mimetype_sources = (BasicDBList) mimetype.get("sources");
+
+            BasicDBList andQuery = new BasicDBList();
+            BasicDBObject query;
+
+            String getQuery = "";
+
+            if (format.size() > 0) {
+                query = new BasicDBObject();
+                if (format.getString("status").equals("CONFLICT")) {
+                    query.put("format.values", format_values);
+                    for (Object o : format_values) {
+                        getQuery += "format=" + o.toString() + "&";
+                    }
+                } else {
+                    query.put("format.value", format_values.get(0));
+                    getQuery += "format=" + format_values.get(0).toString() + "&";
+                }
+                andQuery.add(query);
+            }
+
+            if (format_version.size() > 0) {
+                query = new BasicDBObject();
+                if (format_version.getString("status").equals("CONFLICT")) {
+                    query.put("format_version.values", format_version_values);
+                    for (Object o : format_version_values) {
+                        getQuery += "format_version=" + o.toString() + "&";
+                    }
+                } else {
+                    query.put("format_version.value", format_version_values.get(0));
+                    getQuery += "format_version=" + format_version_values.get(0).toString() + "&";
+                }
+                andQuery.add(query);
+            }
+
+            if (mimetype.size() > 0) {
+                query = new BasicDBObject();
+                if (mimetype.getString("status").equals("CONFLICT")) {
+                    query.put("mimetype.values", mimetype_values);
+                    for (Object o : mimetype_values) {
+                        getQuery += "mimetype=" + o.toString() + "&";
+                    }
+                } else {
+                    query.put("mimetype.value", mimetype.get(0));
+                    getQuery += "mimetype=" + mimetype_values.get(0).toString() + "&";
+                }
+                getQuery = getQuery.substring(0, getQuery.length() - 1);
+                getQuery = getQuery.replace("+", "%2B").replace(" ", "%20");
+                andQuery.add(query);
+            }
+
+            String link= "http://" + url + "/c3po/overview/filter?" + getQuery + "&template=Conflict";
+
+            result.put(link,count.intValue());
+
+        }
+        result=sortByValues(result);
+        return result;
+
+    }
 
     public static File printCSV(String path, String url, Filter filter) {
         LOG.info("Generating a csv file with conflict overview table");
@@ -315,6 +444,21 @@ public class ConflictResolutionProcessor {
         out.close();
         return file;
     }
+
+
+    public static <K, V extends Comparable<V>> Map<K, V> sortByValues(final Map<K, V> map) {
+        Comparator<K> valueComparator =  new Comparator<K>() {
+            public int compare(K k1, K k2) {
+                int compare = map.get(k2).compareTo(map.get(k1));
+                if (compare == 0) return 1;
+                else return compare;
+            }
+        };
+        Map<K, V> sortedByValues = new TreeMap<K, V>(valueComparator);
+        sortedByValues.putAll(map);
+        return sortedByValues;
+    }
+
     static PersistenceLayer persistenceLayer=Configurator.getDefaultConfigurator().getPersistence();
     public static String basicDBListsToCSV(BasicDBList value, BasicDBList source, List<String> sources) {
 

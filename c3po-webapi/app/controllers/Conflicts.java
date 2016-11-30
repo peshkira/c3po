@@ -38,6 +38,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import static play.mvc.Controller.request;
 import static play.mvc.Controller.response;
 import static play.mvc.Controller.session;
@@ -327,4 +329,15 @@ public class Conflicts {
     }
 
 
+    public static Result getOverview() {
+        ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        Filter filter = Filters.getFilterFromSession();
+        String url = request().host();
+        Map<String, Integer> overview = crp.getOverview(url, filter);
+        ObjectNode jsonNodes = Json.newObject();
+       // jsonNodes.
+
+        JsonNode jsonNode = Json.toJson(overview);
+        return ok(jsonNode);
+    }
 }
