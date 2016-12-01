@@ -176,7 +176,7 @@ public class Conflicts {
                 Object sources = valueBasicDBObject.get("sources");
                 if (sources instanceof BasicDBList){
                     BasicDBList sourcesList = (BasicDBList) sources;
-                    List<String> newSources=new ArrayList<>();
+                    List<String> newSources=new ArrayList<String>();
                     Iterator<Object> iterator = sourcesList.iterator();
                     while(iterator.hasNext()){
                         String sourceID = (String) iterator.next();
