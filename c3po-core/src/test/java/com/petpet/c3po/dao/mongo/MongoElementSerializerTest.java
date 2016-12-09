@@ -14,6 +14,7 @@ import com.petpet.c3po.dao.DBCache;
 import com.petpet.c3po.dao.MongoPersistenceLayerTest;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
+import junit.framework.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,10 +152,22 @@ public class MongoElementSerializerTest {
 
 
 
-        Element test = adaptor.parseElement("test", data);
+        Element element = adaptor.parseElement("test", data);
+
         MongoElementSerializer serializer=new MongoElementSerializer();
-        DBObject serialize = serializer.serialize(test);
-        String toString = serialize.toString();
+        DBObject serializedElement = serializer.serialize(element);
+        String stringSerialised = serializedElement.toString();
+
+        MongoElementDeserialzer deserialzer=new MongoElementDeserialzer();
+
+        Element deserializedElement = deserialzer.deserialize(serializedElement);
+
+        String stringDeserialised = deserializedElement.toString();
+
+        Assert.assertEquals(element.getMetadata().size(),deserializedElement.getMetadata().size());
+
+
+
     }
 
 }

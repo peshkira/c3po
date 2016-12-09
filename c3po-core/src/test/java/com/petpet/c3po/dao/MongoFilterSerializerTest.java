@@ -30,7 +30,7 @@ import com.petpet.c3po.dao.mongo.MongoFilterSerializer;
 
 /**
  * Tests whether the {@link MongoFilterSerializer} follows the proposed
- * convention in {@link Filter}.
+ * convention in {@link filtering}.
  * 
  * @author Petar Petrov <me@petarpetrov.org>
  * 

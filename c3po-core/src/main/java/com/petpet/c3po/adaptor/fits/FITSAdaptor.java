@@ -147,7 +147,7 @@ public class FITSAdaptor extends AbstractAdaptor {
             String nodeValue = elementDOM.getTextContent();
             Source source = getSource(toolname, toolversion);
             Property property = getProperty(propertyName);
-            element.addMetadataRecord(property.getKey(), nodeValue, source.toString());
+            element.addMetadataRecord(property.getKey(), nodeValue, source.getId());
         }
     }
 
@@ -167,8 +167,8 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(toolname, toolversion);
                 Property format = getProperty("format");
                 Property mimetype = getProperty("mimetype");
-                element.addMetadataRecord(format.getKey(), formatValue, source.toString());
-                element.addMetadataRecord(mimetype.getKey(), mimetypeValue, source.toString());
+                element.addMetadataRecord(format.getKey(), formatValue, source.getId());
+                element.addMetadataRecord(mimetype.getKey(), mimetypeValue, source.getId());
             }
 
 
@@ -181,7 +181,7 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(externalIdentifierToolname, externalIdentifierToolversion);
                 String externalIdentifierValue = ider.getTextContent();
                 Property puid = getProperty("puid");
-                element.addMetadataRecord(puid.getKey(),externalIdentifierValue,source.toString());
+                element.addMetadataRecord(puid.getKey(),externalIdentifierValue,source.getId());
             }
 
             NodeList versions = identity.getElementsByTagName("version");
@@ -193,7 +193,7 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(versionToolname, versionToolversion);
                 String versionValue = version.getTextContent();
                 Property formatversion = getProperty("formatversion");
-                element.addMetadataRecord(formatversion.getKey(), versionValue, source.toString());
+                element.addMetadataRecord(formatversion.getKey(), versionValue, source.getId());
             }
         }
     }
@@ -240,12 +240,6 @@ public class FITSAdaptor extends AbstractAdaptor {
         return super.getSource( name, version );
     }
 
-
-    //private void getFileExtensionMetadataRecord(String name) {
-    //    Source source = getSource("C3PO", "0.5");
-    //    addMetadataRecord("file_extension", FilenameUtils.getExtension(name), source.getId());
-//
-    //}
 
 
 

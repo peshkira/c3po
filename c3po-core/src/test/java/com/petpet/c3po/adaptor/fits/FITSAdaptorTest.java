@@ -92,7 +92,8 @@ public class FITSAdaptorTest {
             List<String> value = next.getValues();
             List<String> sources = next.getSources();
             String s = sources.get(0);
-            Assert.assertEquals("file utility:5.03",s);
+            Source source = configurator.getPersistence().getCache().getSource(s);
+            Assert.assertEquals("file utility:5.03",source.toString());
             return;
             /*String v=value.get(0);
             if (key.equals("pagecount")){
