@@ -56,7 +56,7 @@ public class GatherCommand extends AbstractCLICommand implements Command {
     long start = System.currentTimeMillis();
 
     final Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure();
+    //configurator.configure();
 
     final Map<String, String> conf = new HashMap<String, String>();
     conf.put( Constants.OPT_COLLECTION_LOCATION, this.params.getLocation() );

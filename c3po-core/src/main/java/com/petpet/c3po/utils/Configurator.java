@@ -73,6 +73,8 @@ public final class Configurator {
    * @return the configurator.
    */
   public static Configurator getDefaultConfigurator() {
+    if (ConfiguratorHolder.UNIQUE_INSTANCE.getPersistence()==null)
+      ConfiguratorHolder.UNIQUE_INSTANCE.configure();
     return ConfiguratorHolder.UNIQUE_INSTANCE;
   }
 

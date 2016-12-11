@@ -50,7 +50,7 @@ public class ConfiguratorTest {
     this.helper.copyTestConfigFile();
     
     Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure();
+    //configurator.configure();
     
     PersistenceLayer persistence = configurator.getPersistence();
     

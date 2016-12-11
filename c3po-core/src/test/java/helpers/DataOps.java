@@ -39,7 +39,7 @@ public class DataOps {
         if (runTestsOnRealDataset) {               //REAL DATASET DETAILS!
             config.put("db.host", "localhost");
             config.put("db.port", "27017");
-            config.put("db.name", "c3po_test_db");
+            config.put("db.name", "c3po");
             config.put(Constants.OPT_COLLECTION_NAME, "test");
         }
         else {

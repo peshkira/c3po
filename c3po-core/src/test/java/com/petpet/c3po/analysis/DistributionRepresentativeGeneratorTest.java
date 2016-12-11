@@ -62,10 +62,10 @@ public class DistributionRepresentativeGeneratorTest extends TestCase {
     Map<String, Class<? extends AbstractAdaptor>> knownAdaptors;
     public void setUp() throws Exception {
 
-        Configurator.getDefaultConfigurator().configure();
+        Configurator defaultConfigurator = Configurator.getDefaultConfigurator();
 
         pLayer = new MongoPersistenceLayer();
-        Configurator.getDefaultConfigurator().setPersistence(pLayer);
+        defaultConfigurator.setPersistence(pLayer);
 
         config = new HashMap<String, String>();
         config.put("db.host", "localhost");

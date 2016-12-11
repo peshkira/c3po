@@ -22,6 +22,8 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +45,21 @@ public class DataHelperTest {
   
   private static final Logger LOG = LoggerFactory.getLogger(DataHelperTest.class);
 
+  PersistenceLayer pLayer;
+
+  @Before
+  public void setUp() throws Exception {
+    helpers.DataOps.insertData();
+    pLayer = Configurator.getDefaultConfigurator().getPersistence();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    helpers.DataOps.removeData();
+  }
+
   @Test
   public void shouldTestElementParsing() throws Exception {
-    Configurator.getDefaultConfigurator().configure();
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
     
     if (p.isConnected()) {

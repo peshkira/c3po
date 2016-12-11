@@ -179,7 +179,7 @@ public class MongoFilterSerializer {
     private List<BasicDBObject> getStatusList(List<String> statuses, String andOr) {
         List<BasicDBObject> result = new ArrayList<BasicDBObject>();
         if (statuses!=null && statuses.size()>0)
-            result.add(getAndOrList(statuses, "status", "$and"));
+            result.add(getAndOrList(statuses, "metadata.status", andOr));
         return result;
     }
 

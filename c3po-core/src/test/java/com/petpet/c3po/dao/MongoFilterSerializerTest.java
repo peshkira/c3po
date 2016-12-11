@@ -15,10 +15,14 @@
  ******************************************************************************/
 package com.petpet.c3po.dao;
 
-import java.util.Arrays;
+import java.util.*;
 
+import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.helper.filtering.PropertyFilterCondition;
+import com.petpet.c3po.utils.Configurator;
 import junit.framework.Assert;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -38,10 +42,19 @@ import com.petpet.c3po.dao.mongo.MongoFilterSerializer;
 public class MongoFilterSerializerTest {
 
   MongoFilterSerializer ser;
+  PersistenceLayer pLayer;
 
   @Before
-  public void setup() {
-    ser = new MongoFilterSerializer();
+  public void setUp() throws Exception {
+
+    helpers.DataOps.insertData();
+    pLayer = Configurator.getDefaultConfigurator().getPersistence();
+    ser=new MongoFilterSerializer();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    helpers.DataOps.removeData();
   }
 
   @Test
@@ -127,6 +140,41 @@ public class MongoFilterSerializerTest {
     String val = filter.toString();
     String expr = "{ \"$and\" : [ { \"puid.value\" : \"fmt/42\"} , { \"$or\" : [ { \"mimetype.value\" : \"applciation/pdf\"} , { \"mimetype.value\" : \"text/html\"} , { \"mimetype.value\" : \"text/xml\"}]}]}";
      //       Assert.assertEquals(expr, val);
+  }
+
+
+  @Test
+  public void ShouldTestSerialiseNew() throws Exception {
+    Filter f=new Filter();
+    List<PropertyFilterCondition> pfcs=new ArrayList<PropertyFilterCondition>();
+
+    PropertyFilterCondition pfc1=new PropertyFilterCondition();
+    pfc1.setProperty("format");
+    List<String> statuses=new ArrayList<String>();
+    statuses.add("CONFLICT");
+    statuses.add("OK");
+    pfc1.setStatuses(statuses);
+    List<String> values=new ArrayList<String>();
+    values.add("Hypertext Markup Language");
+    pfc1.setValues(values);
+
+    Map<String, String> sourcedvalues=new HashMap<String, String>();
+
+    sourcedvalues.put("ffident:0.2", "Hypertext Markup Language");
+
+
+    pfc1.setSourcedValues(sourcedvalues);
+
+
+    pfcs.add(pfc1);
+
+    f.setPropertyFilterConditions(pfcs);
+
+
+    DBObject dbObject = ser.serializeNew(f);
+    String s = dbObject.toString();
+    Assert.assertEquals("{ \"$and\" : [ { \"metadata.sourcedValues\" : { \"$elemMatch\" : { \"source\" : \"7\" , \"value\" : \"Hypertext Markup Language\"}}} , { \"metadata.property\" : \"format\"} , { \"$or\" : [ { \"metadata.status\" : \"CONFLICT\"} , { \"metadata.status\" : \"OK\"}]} , { \"$and\" : [ { \"metadata.sourcedValues.value\" : \"Hypertext Markup Language\"}]}]}",s);
+
   }
 
 }
