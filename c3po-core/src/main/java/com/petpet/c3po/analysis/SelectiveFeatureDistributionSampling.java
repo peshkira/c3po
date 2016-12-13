@@ -413,7 +413,14 @@ Anything else that is interesting about inputs, outputs,settings,params
         DBCollection elmnts = pl.getCollection( Element.class );
         MapReduceCommand cmd = new MapReduceCommand( elmnts, map, reduce, null, INLINE, query );
         MapReduceOutput output = elmnts.mapReduce( cmd );
-        List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+       // List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+
+        Iterator<DBObject> iterator = output.results().iterator();
+        List<BasicDBObject> results = new ArrayList<BasicDBObject> ();
+        while (iterator.hasNext()){
+            results.add( (BasicDBObject) iterator.next());
+
+        }
         return results;
     }
 

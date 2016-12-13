@@ -15,6 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.dao;
 
+import com.mongodb.*;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
@@ -22,6 +23,7 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 import junit.framework.Assert;
 import org.junit.After;
@@ -63,19 +65,19 @@ public class MongoPersistenceLayerTest {
 
     @Test
     public void shouldTestFindOne() throws Exception {
-        if (this.pLayer.isConnected()) {
+        //if (this.pLayer.isConnected()) {
 
-            this.insertTestData();
+           // this.insertTestData();
 
-            Iterator<Element> find = pLayer.find(Element.class, new Filter(new FilterCondition("uid", "test1")));
+            Iterator<Element> find = pLayer.find(Element.class, new Filter(new FilterCondition("uid", "/home/petrov/taverna/tmp/303/303034.csv")));
 
             Assert.assertTrue(find.hasNext());
 
             Element next = find.next();
-            Assert.assertEquals("test1", next.getUid());
+            Assert.assertEquals("/home/petrov/taverna/tmp/303/303034.csv", next.getUid());
 
             Assert.assertFalse(find.hasNext());
-        }
+       // }
     }
 
     @Test
@@ -113,29 +115,20 @@ public class MongoPersistenceLayerTest {
 
     @Test
     public void shouldTestInsert() throws Exception {
-        if (this.pLayer.isConnected()) {
 
             Iterator<Element> iter = pLayer.find(Element.class, null);
-            //  assertFalse(iter.hasNext());
-
-            //  this.insertTestData();
-
             iter = pLayer.find(Element.class, null);
             assertTrue(iter.hasNext());
-        }
     }
 
     @Test
     public void shouldTestUpdate() throws Exception {
-        if (this.pLayer.isConnected()) {
-            this.insertTestData();
-
-            Filter element1 = new Filter(new FilterCondition("uid", "test1"));
+            Filter element1 = new Filter(new FilterCondition("uid", "/home/petrov/taverna/tmp/303/303034.csv"));
             Iterator<Element> iter = this.pLayer.find(Element.class, element1);
             Assert.assertTrue(iter.hasNext());
 
             Element e = iter.next();
-            Assert.assertEquals("Some name 1", e.getName());
+            Assert.assertEquals("303034.csv", e.getName());
             String updated = "Updated Name";
 
             e.setName(updated);
@@ -147,13 +140,11 @@ public class MongoPersistenceLayerTest {
             e = iter.next();
 
             Assert.assertEquals(updated, e.getName());
-        }
     }
 
     @Test
     public void shouldTestUpdateAll() throws Exception {
-        if (this.pLayer.isConnected()) {
-            this.insertTestData();
+
 
             Filter filter = new Filter(new FilterCondition("collection", "test"));
             List<Element> elements = new ArrayList<Element>();
@@ -162,8 +153,6 @@ public class MongoPersistenceLayerTest {
             while (iter.hasNext()) {
                 elements.add(iter.next());
             }
-
-            //Assert.assertEquals(8, elements.size());
 
             Element upadtedElement = new Element("changed", "", "");
 
@@ -174,10 +163,8 @@ public class MongoPersistenceLayerTest {
             while (iter.hasNext()) {
                 Element e = iter.next();
                 Assert.assertEquals("test", e.getCollection());
-//        Assert.assertTrue(Arrays.asList("test1", "test2", "test3").contains(e.getUid()));
             }
 
-        }
     }
 
     @Test
@@ -197,8 +184,44 @@ public class MongoPersistenceLayerTest {
         }
     }
 
+
+    @Test
+    public void shouldTestAggregation() throws Exception {
+
+        MongoPersistenceLayer pLayer = (MongoPersistenceLayer) this.pLayer;
+        List<BasicDBObject> aggregationResult = pLayer.aggregate("lastmodified", null, true);
+        Map<String, Long> histograms = pLayer.parseAggregation(aggregationResult , "lastmodified",true);
+        Assert.assertEquals(new Long(0),histograms.get("std"));
+
+    }
+
     @Test
     public void shouldTestHistogramGeneration() throws Exception {
+
+
+        MongoPersistenceLayer pLayer = (MongoPersistenceLayer) this.pLayer;
+        DBCollection collection = pLayer.getCollection(Element.class);
+        List<DBObject> list=new ArrayList<DBObject>();
+
+        list.add(new BasicDBObject("$unwind", "$metadata"));
+        list.add(new BasicDBObject("$match", new BasicDBObject( "metadata.property", "format")));
+        BasicDBList arrayElemAt = new BasicDBList();
+        arrayElemAt.add("$metadata.sourcedValues");
+        arrayElemAt.add(0);
+        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("sourcedValue",  new BasicDBObject("$arrayElemAt", arrayElemAt))));
+        BasicDBList cond=new BasicDBList();
+        BasicDBList eq=new BasicDBList();
+        eq.add("$status");
+        eq.add("CONFLICT");
+        cond.add(new BasicDBObject("$eq", eq));
+        cond.add("CONFLICT");
+        cond.add("$sourcedValue.value");
+        list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$cond", cond))));
+        list.add(new BasicDBObject("$group", new BasicDBObject("_id", "$value").append("count", new BasicDBObject("$sum", 1))));
+
+        AggregationOutput aggregate = collection.aggregate(list);
+
+
 
         if (this.pLayer.isConnected()) {
             // this.insertTestData();

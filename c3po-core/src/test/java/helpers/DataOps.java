@@ -68,14 +68,15 @@ public class DataOps {
 
         knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
         knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
-
-        adaptor.setRules(  getRules( "test") );
+        knownRules.put(Constants.OPT_COLLECTION_NAME, AssignCollectionToElementRule.class);
+        adaptor.setRules(  getRules( config.get(Constants.OPT_COLLECTION_NAME)) );
         adaptor.setCache(pLayer.getCache());
         LocalFileGatherer lfg=new LocalFileGatherer(config);
         lfg.run();
         while (lfg.hasNext()){
             MetadataStream next = lfg.getNext();
             Element element = adaptor.parseElement(next.getName(), next.getData());
+            element.setCollection(config.get(Constants.OPT_COLLECTION_NAME));
             pLayer.insert(element);
 
         }

@@ -46,7 +46,7 @@ public class MongoFilterSerializerTest {
 
   @Before
   public void setUp() throws Exception {
-
+    System.out.println("Setting up the test. Inserting the data");
     helpers.DataOps.insertData();
     pLayer = Configurator.getDefaultConfigurator().getPersistence();
     ser=new MongoFilterSerializer();
@@ -54,6 +54,7 @@ public class MongoFilterSerializerTest {
 
   @After
   public void tearDown() throws Exception {
+    System.out.println("Tearing down the test. Removing the data");
     helpers.DataOps.removeData();
   }
 
@@ -173,7 +174,7 @@ public class MongoFilterSerializerTest {
 
     DBObject dbObject = ser.serializeNew(f);
     String s = dbObject.toString();
-    Assert.assertEquals("{ \"$and\" : [ { \"metadata.sourcedValues\" : { \"$elemMatch\" : { \"source\" : \"7\" , \"value\" : \"Hypertext Markup Language\"}}} , { \"metadata.property\" : \"format\"} , { \"$or\" : [ { \"metadata.status\" : \"CONFLICT\"} , { \"metadata.status\" : \"OK\"}]} , { \"$and\" : [ { \"metadata.sourcedValues.value\" : \"Hypertext Markup Language\"}]}]}",s);
+    Assert.assertEquals("{ \"$and\" : [ { \"metadata.sourcedValues\" : { \"$elemMatch\" : { \"source\" : \"31\" , \"value\" : \"Hypertext Markup Language\"}}} , { \"metadata.property\" : \"format\"} , { \"$or\" : [ { \"metadata.status\" : \"CONFLICT\"} , { \"metadata.status\" : \"OK\"}]} , { \"$and\" : [ { \"metadata.sourcedValues.value\" : \"Hypertext Markup Language\"}]}]}",s);
 
   }
 
