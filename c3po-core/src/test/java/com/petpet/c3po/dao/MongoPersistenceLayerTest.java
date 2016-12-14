@@ -240,6 +240,18 @@ public class MongoPersistenceLayerTest {
     }
 
     @Test
+    public void shouldTestCountConflicts() throws Exception{
+        MongoPersistenceLayer pLayer = (MongoPersistenceLayer) this.pLayer;
+        List<String> props=new ArrayList<String>();
+        props.add("format");
+        props.add("format_version");
+        props.add("creating_application_version");
+        long result = pLayer.countConflicts(null, props);
+
+        Assert.assertEquals(3,result);
+    }
+
+    @Test
     public void SuperMapReduceTest() throws Exception {
 
         //setup();

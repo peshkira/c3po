@@ -447,59 +447,19 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     public long countConflicts(Filter filter, List<String> properties){
         LOG.info("Calculating conflicts count");
         DBCollection collection = this.getCollection(Element.class);
-
-
         List<DBObject> list = new ArrayList<DBObject>();
         list.add(new BasicDBObject("$match", this.getCachedFilter(filter)));
         list.add(new BasicDBObject("$unwind", "$metadata"));
-        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("uid", "$uid")));
-
-
-
-        list.add(new BasicDBObject("$match", new BasicDBObject("metadata.property", property)));
-        BasicDBList arrayElemAt = new BasicDBList();
-        arrayElemAt.add("$metadata.sourcedValues");
-        arrayElemAt.add(0);
-        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("property", "$metadata.property").append("sourcedValue", new BasicDBObject("$arrayElemAt", arrayElemAt))));
-        BasicDBList cond = new BasicDBList();
-        BasicDBList eq = new BasicDBList();
-        eq.add("$status");
-        eq.add("CONFLICT");
-        cond.add(new BasicDBObject("$eq", eq));
-        cond.add("CONFLICT");
-        cond.add(conditionalValue);//"$sourcedValue.value");
-        list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$cond", cond)).append("property", 1)));
-
-
-
-
-
-        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
-        String map2 = "function map() {\n" +
-                "    if ((this['format'] != null && this['format'].status != null && this['format'].status == 'CONFLICT') ||\n" +
-                "        (this['mimetype'] != null && this['mimetype'].status != null && this['mimetype'].status == 'CONFLICT') ||\n" +
-                "        (this['format_version'] != null && this['format_version'].status != null && this['format_version'].status == 'CONFLICT')) {\n" +
-                "        emit('CONFLICT', 1);\n" +
-                "    }\n" +
-                "   \n" +
-                "}";
-
-        String reduce = "function reduce(key, values) {" +
-                "var res = 0;" +
-                "values.forEach(function (v) {" +
-                "res += v;" +
-                "});" +
-                "return res;" +
-                "}";
-
-
-        List<BasicDBObject> basicDBObjects = persistence.mapReduceRaw(map2, reduce, filter);
-        if (basicDBObjects.size()==0){
-            return 0;
-        }
-        BasicDBObject basicDBObject = basicDBObjects.get(0);
-        Double conflictsDouble  = basicDBObject.getDouble("value");
-        return conflictsDouble.longValue();
+        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("uid", 1).append("property","$metadata.property")));
+        list.add(new BasicDBObject("$match", new BasicDBObject( "property", new BasicDBObject("$in",properties))));
+        list.add(new BasicDBObject("$group", new BasicDBObject("_id", "$uid").append("statuses", new BasicDBObject("$addToSet", "$status"))));
+        BasicDBList in = new BasicDBList();
+        in.add("CONFLICT");
+        list.add(new BasicDBObject("$match", new BasicDBObject( "statuses", new BasicDBObject("$in",in))));
+        list.add(new BasicDBObject("$group", new BasicDBObject("_id", null).append("count", new BasicDBObject("$sum", 1))));
+        Iterable<DBObject> resultIterable = collection.aggregate(list).results();
+        BasicDBObject result =(BasicDBObject) resultIterable.iterator().next();
+        return result.getLong("count");
 
 
 
