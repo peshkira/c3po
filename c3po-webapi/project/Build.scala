@@ -10,7 +10,7 @@ object ApplicationBuild extends Build {
       "dom4j" % "dom4j" % "1.6.1",
       "org.apache.commons" % "commons-digester3" % "3.2",
       "org.apache.commons" % "commons-math" % "2.2",
-      "org.mongodb" % "mongo-java-driver" % "2.7.2",
+      "org.mongodb" % "mongo-java-driver" % "3.4.0",
       "com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.1"
     )
 

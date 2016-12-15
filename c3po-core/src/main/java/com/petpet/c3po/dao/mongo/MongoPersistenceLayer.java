@@ -188,7 +188,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     @Override
     public void establishConnection(Map<String, String> config) throws C3POPersistenceException {
-        this.close();
+        //this.close();
 
         if (config == null || config.keySet().isEmpty()) {
             throw new C3POPersistenceException("Cannot establish connection. No configuration provided");
@@ -348,11 +348,11 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     @Override
     public <T extends Model> void insert(T object) {
-
         DBCollection dbCollection = this.getCollection(object.getClass());
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
+        DBObject serialize = serializer.serialize(object);
 
-        WriteResult insert = dbCollection.insert(serializer.serialize(object));
+        WriteResult insert = dbCollection.insert(serialize);
         setResult(insert);
 
     }
@@ -829,8 +829,17 @@ public class MongoPersistenceLayer implements PersistenceLayer {
             basicAggregationStages = getBasicAggregationStages(property, filter, "$sourcedValue.value");
         } else if (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {  //TODO: choose a better strategy to address this. Think of bins for numerical values.
             basicAggregationStages = getBasicAggregationStages(property, filter, "$sourcedValue.value");
-            basicAggregationStages.add( new BasicDBObject("$bucketAuto", new BasicDBObject("groupBy", "$value").append("buckets", 10)));
         } else if (propType.equals(PropertyType.DATE.toString())) {
+
+           /* BasicDBList cond = new BasicDBList();
+            BasicDBList eq = new BasicDBList();
+            eq.add("$sourcedValue.value");
+            eq.add(0);
+            cond.add(new BasicDBObject("$ifNull", eq));
+            cond.add(new BasicDBObject("$year", "$sourcedValue.value"));
+            cond.add(-1);
+*/
+
             BasicDBObject conditionalValue = new BasicDBObject("$year", "$sourcedValue.value");
             basicAggregationStages = getBasicAggregationStages(property, filter, conditionalValue);
         } else if (propType.equals(PropertyType.BOOL.toString())) {
@@ -844,9 +853,12 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                                                                                 append("avg", new BasicDBObject("$avg", "$value")).
                                                                                 append("sum", new BasicDBObject("$sum", "$value")).
                                                                                 append("count", new BasicDBObject("$sum", 1))));
-        else
+        else {
+            if (propType.equals(PropertyType.INTEGER.toString()))
+                basicAggregationStages.add( new BasicDBObject("$bucketAuto", new BasicDBObject("groupBy", "$value").append("buckets", 10)));
             basicAggregationStages.add(new BasicDBObject("$group", new BasicDBObject("_id", "$value").append("count", new BasicDBObject("$sum", 1))));
-
+        }
+        //AggregationOutput aggregate = collection.aggregate(basicAggregationStages);
         Iterable<DBObject> resultIterable = collection.aggregate(basicAggregationStages).results();
         for (DBObject object : resultIterable) {
             result.add((BasicDBObject) object);
@@ -863,17 +875,23 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         list.add(new BasicDBObject("$match", this.getCachedFilter(filter)));
         list.add(new BasicDBObject("$unwind", "$metadata"));
         list.add(new BasicDBObject("$match", new BasicDBObject("metadata.property", property)));
+
         BasicDBList arrayElemAt = new BasicDBList();
         arrayElemAt.add("$metadata.sourcedValues");
         arrayElemAt.add(0);
+
         list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("property", "$metadata.property").append("sourcedValue", new BasicDBObject("$arrayElemAt", arrayElemAt))));
+        list.add(new BasicDBObject("$project", new BasicDBObject("value", conditionalValue).append("property",1).append("source", "$sourcedValue.source").append("status",1)));//  new BasicDBObject("$cond", cond)).append("property", 1)));
+
+
+
         BasicDBList cond = new BasicDBList();
         BasicDBList eq = new BasicDBList();
         eq.add("$status");
         eq.add("CONFLICT");
         cond.add(new BasicDBObject("$eq", eq));
         cond.add("CONFLICT");
-        cond.add(conditionalValue);//"$sourcedValue.value");
+        cond.add("$value");
         list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$cond", cond)).append("property", 1)));
 
         return list;

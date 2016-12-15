@@ -19,6 +19,8 @@ package com.petpet.c3po.adaptor.fits;
 import java.io.StringReader;
 import java.util.*;
 
+import com.mongodb.QueryBuilder;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,6 +149,8 @@ public class FITSAdaptor extends AbstractAdaptor {
             String nodeValue = elementDOM.getTextContent();
             Source source = getSource(toolname, toolversion);
             Property property = getProperty(propertyName);
+           // if (property.getType().equals(PropertyType.DATE))
+
             element.addMetadataRecord(property.getKey(), nodeValue, source.getId());
         }
     }

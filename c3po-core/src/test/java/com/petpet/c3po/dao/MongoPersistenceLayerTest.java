@@ -189,54 +189,48 @@ public class MongoPersistenceLayerTest {
     public void shouldTestAggregation() throws Exception {
 
         MongoPersistenceLayer pLayer = (MongoPersistenceLayer) this.pLayer;
-        List<BasicDBObject> aggregationResult = pLayer.aggregate("lastmodified", null, true);
-        Map<String, Long> histograms = pLayer.parseAggregation(aggregationResult , "lastmodified",true);
-        Assert.assertEquals(new Long(0),histograms.get("std"));
+        List<BasicDBObject> aggregationResult = pLayer.aggregate("created", null, false);
+        Map<String, Long> histograms = pLayer.parseAggregation(aggregationResult , "created",false);
+       // Assert.assertEquals(new Long(0),histograms.get("std"));
 
     }
 
     @Test
-    public void shouldTestHistogramGeneration() throws Exception {
+    public void shouldDebugAggregation() throws Exception {
 
 
         MongoPersistenceLayer pLayer = (MongoPersistenceLayer) this.pLayer;
         DBCollection collection = pLayer.getCollection(Element.class);
-        List<DBObject> list=new ArrayList<DBObject>();
 
+
+        List<DBObject> list = new ArrayList<DBObject>();
+        //first we unwind the array with metadata records
         list.add(new BasicDBObject("$unwind", "$metadata"));
-        list.add(new BasicDBObject("$match", new BasicDBObject( "metadata.property", "format")));
+        //then we find records which describe the property of interest, e.g. created
+        list.add(new BasicDBObject("$match", new BasicDBObject("metadata.property", "created")));
+
         BasicDBList arrayElemAt = new BasicDBList();
         arrayElemAt.add("$metadata.sourcedValues");
         arrayElemAt.add(0);
-        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("sourcedValue",  new BasicDBObject("$arrayElemAt", arrayElemAt))));
-        BasicDBList cond=new BasicDBList();
-        BasicDBList eq=new BasicDBList();
+
+        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("property", "$metadata.property").append("sourcedValue", new BasicDBObject("$arrayElemAt", arrayElemAt))));
+        list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$year", "$sourcedValue.value")).append("property",1).append("source", "$sourcedValue.source").append("status",1)));//  new BasicDBObject("$cond", cond)).append("property", 1)));
+        //list.add(new BasicDBObject("$project", new BasicDBObject("value", "$sourcedValue.value").append("property", 1).append("status",1).append("source",1)));
+
+
+
+        BasicDBList cond = new BasicDBList();
+        BasicDBList eq = new BasicDBList();
         eq.add("$status");
         eq.add("CONFLICT");
         cond.add(new BasicDBObject("$eq", eq));
         cond.add("CONFLICT");
-        cond.add("$sourcedValue.value");
-        list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$cond", cond))));
-        list.add(new BasicDBObject("$group", new BasicDBObject("_id", "$value").append("count", new BasicDBObject("$sum", 1))));
+        cond.add("$value");
+        //list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$cond", cond)).append("property", 1)));
 
         AggregationOutput aggregate = collection.aggregate(list);
 
 
-
-        if (this.pLayer.isConnected()) {
-            // this.insertTestData();
-
-            Property mimetype = this.pLayer.getCache().getProperty("mimetype");
-            // Map<String, Long> mimetypeHistogram = this.pLayer.getValueHistogramFor(mimetype, null);
-
-            // Assert.assertEquals(2, mimetypeHistogram.keySet().size());
-
-            //Long pdfs = mimetypeHistogram.get("application/pdf");
-            // Long htms = mimetypeHistogram.get("text/html");
-
-//      Assert.assertEquals(new Long(2), pdfs);
-//      Assert.assertEquals(new Long(1), htms);
-        }
     }
 
     @Test
@@ -274,8 +268,8 @@ public class MongoPersistenceLayerTest {
         properties.add("mimetype");
         properties.add("format");
         properties.add("wordcount");
-        Map<String, Map<String, Long>> stringMapMap = pLayer.getHistograms(properties, null, binThresholds);
-        org.junit.Assert.assertEquals(stringMapMap.size(), 3);
+//        Map<String, Map<String, Long>> stringMapMap = pLayer.getHistograms(properties, null, binThresholds);
+//        org.junit.Assert.assertEquals(stringMapMap.size(), 3);
 
 
     }

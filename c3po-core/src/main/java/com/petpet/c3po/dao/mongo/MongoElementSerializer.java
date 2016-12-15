@@ -15,9 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.dao.mongo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -27,6 +25,7 @@ import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 
@@ -61,7 +60,7 @@ public class MongoElementSerializer implements MongoModelSerializer {
 
     if ( object != null && object instanceof Element ) {
       Element element = (Element) object;
-      element.updateStatus();
+      updateStatus(element);
       document = new BasicDBObject();
       if ( element.getName() != null && !element.getName().equals( "" ) ) {
         document.put( "name", element.getName() );
@@ -82,18 +81,21 @@ public class MongoElementSerializer implements MongoModelSerializer {
         key.put( "status", r.getStatus() );
 
         List<DBObject> sourcedValues=new ArrayList<DBObject>();
+        String type = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(r.getProperty()).getType();
 
         for (Map.Entry<String, String> stringStringEntry : r.getSourcedValues().entrySet()) {
           BasicDBObject sourcedValue=new BasicDBObject();
           sourcedValue.put("source", stringStringEntry.getKey());
-          String type = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(r.getProperty()).getType();
           sourcedValue.put("value", DataHelper.getTypedValue(type,stringStringEntry.getValue()));
+          Object typedValue = DataHelper.getTypedValue(type, stringStringEntry.getValue());
+          if (type.equals(PropertyType.DATE.name()) && typedValue instanceof String)
+            break;
           sourcedValues.add(sourcedValue);
         }
-        key.put( "sourcedValues", sourcedValues );
-
-
-        meta.add(key);
+        if (sourcedValues.size()>0) {
+          key.put("sourcedValues", sourcedValues);
+          meta.add(key);
+        }
 
 
 
@@ -120,5 +122,33 @@ public class MongoElementSerializer implements MongoModelSerializer {
 
     return document;
   }
+
+  private void updateStatus(Element element) {
+    if (element.getMetadata()==null)
+      return;
+    for (MetadataRecord mr : element.getMetadata()) {
+      int sourceCount = distinctCount(mr.getSourcedValues().keySet());
+      int propValCount = distinctCount(mr.getSourcedValues().values());
+      if (propValCount > 1)
+        mr.setStatus(MetadataRecord.Status.CONFLICT.name());
+      else {
+        if (sourceCount > 1)
+          mr.setStatus(MetadataRecord.Status.OK.name());
+        else
+          mr.setStatus(MetadataRecord.Status.SINGLE_RESULT.name());
+      }
+    }
+  }
+
+  private int distinctCount(Collection<String> strings) {
+    List<String> unique=new ArrayList<String>();
+    for (String string : strings) {
+      if (!unique.contains(string))
+        unique.add(string);
+    }
+    return unique.size();
+  }
+
+
 
 }

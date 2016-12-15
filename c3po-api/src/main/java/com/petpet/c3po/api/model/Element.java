@@ -262,55 +262,6 @@ public class Element implements Model, Serializable {
     }
 
 
-    public void updateStatus() {
-        Map<String, Integer> propertyOccurence = calculatePropertyOccurence();
-        Map<String, List<String>> propertyValOccurence = calculatePropertyValOccurence();
-
-        for (MetadataRecord mr : metadata) {
-            int propCount = propertyOccurence.get(mr.getProperty());
-            int propValCount = propertyValOccurence.get(mr.getProperty()).size();
-            if (propValCount > 1)
-                mr.setStatus(MetadataRecord.Status.CONFLICT.name());
-            else {
-                if (propCount > 1)
-                    mr.setStatus(MetadataRecord.Status.OK.name());
-                else
-                    mr.setStatus(MetadataRecord.Status.SINGLE_RESULT.name());
-            }
-        }
-    }
-
-    private Map<String, Integer> calculatePropertyOccurence() {
-        Map<String, Integer> distribution = new HashMap<String, Integer>();
-        for (MetadataRecord mr : metadata) {
-            String property = mr.getProperty();
-            int size = mr.getSources().size();
-            Integer count = distribution.get(property);
-            distribution.put(property, size);
-
-        }
-        return distribution;
-    }
-
-    private Map<String, List<String>> calculatePropertyValOccurence() {
-        Map<String, List<String>> distribution = new HashMap<String, List<String>>();
-        for (MetadataRecord mr : metadata) {
-            String property = mr.getProperty();
-
-            for (String value : mr.getValues()) {
-                List<String> strings = distribution.get(property);
-                if (strings != null) {
-                    if (!strings.contains(value))
-                        strings.add(value);
-                } else {
-                    strings = new ArrayList<String>();
-                    strings.add(value);
-                    distribution.put(property, strings);
-                }
-            }
-        }
-        return distribution;
-    }
 
 
     public void addMetadataRecord(String property, String value, String sourceID) {
