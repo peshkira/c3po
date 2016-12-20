@@ -268,8 +268,8 @@ public class MongoPersistenceLayerTest {
         properties.add("mimetype");
         properties.add("format");
         properties.add("wordcount");
-//        Map<String, Map<String, Long>> stringMapMap = pLayer.getHistograms(properties, null, binThresholds);
-//        org.junit.Assert.assertEquals(stringMapMap.size(), 3);
+        Map<String, Map<String, Long>> stringMapMap = pLayer.getHistograms(properties, null, binThresholds);
+        org.junit.Assert.assertEquals(stringMapMap.size(), 3);
 
 
     }

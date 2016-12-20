@@ -16,6 +16,7 @@
 package com.petpet.c3po.dao.mongo;
 
 import com.mongodb.*;
+import com.mongodb.Cursor;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.*;
@@ -29,7 +30,9 @@ import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static com.mongodb.MapReduceCommand.OutputType.INLINE;
 
@@ -366,7 +369,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      * fields should be null or empty.
      *
      * @param object the object to update.
-     * @param filter the filter to apply in order to select the objects that will be
+     * @param Filter the filter to apply in order to select the objects that will be
      *               updated.
      */
     @Override
@@ -726,10 +729,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         }
         for (String property : properties) {
             DBObject dbObject = null;
-            List<BasicDBObject> aggregation = aggregate(property, filter, false);
-            Map<String, Long> stringLongMap = parseAggregation(aggregation, property,false);
-            //dbObject = mapReduce(0, property, filter, binThresholds.get(property));
-            //Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
+            //List<BasicDBObject> aggregation = aggregate(property, filter, false);
+            //Map<String, Long> stringLongMap = parseAggregation(aggregation, property,false);
+            dbObject = mapReduce(0, property, filter, binThresholds.get(property));
+            Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
             histograms.put(property, stringLongMap);
         }
         return histograms;
@@ -804,11 +807,11 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         Map<String, Map<String, Long>> histograms = new HashMap<String, Map<String, Long>>();
         for (String property : properties) {
             DBObject dbObject = null;
-           // dbObject = mapReduceStats(0, property, filter);
-           // Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
+            dbObject = mapReduceStats(0, property, filter);
+            Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
 
-            List<BasicDBObject> aggregation = aggregate(property, filter, true);
-            Map<String, Long> stringLongMap = parseAggregation(aggregation, property, true);
+           // List<BasicDBObject> aggregation = aggregate(property, filter, true);
+           // Map<String, Long> stringLongMap = parseAggregation(aggregation, property, true);
             histograms.put(property, stringLongMap);
         }
         return histograms;
@@ -823,7 +826,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         List<BasicDBObject> result = new ArrayList<BasicDBObject>();
         DBCollection collection = this.getCollection(Element.class);
-        List<DBObject> basicAggregationStages = new ArrayList<DBObject>();
+        BasicDBList basicAggregationStages = new BasicDBList();
+        BasicDBList basicDBList=new BasicDBList();
 
         if (propType.equals(PropertyType.STRING.toString())) {
             basicAggregationStages = getBasicAggregationStages(property, filter, "$sourcedValue.value");
@@ -856,13 +860,28 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         else {
             if (propType.equals(PropertyType.INTEGER.toString()))
                 basicAggregationStages.add( new BasicDBObject("$bucketAuto", new BasicDBObject("groupBy", "$value").append("buckets", 10)));
-            basicAggregationStages.add(new BasicDBObject("$group", new BasicDBObject("_id", "$value").append("count", new BasicDBObject("$sum", 1))));
+           // basicAggregationStages.add(new BasicDBObject("$group", new BasicDBObject("_id", "$value").append("count", new BasicDBObject("$sum", 1))));
         }
         //AggregationOutput aggregate = collection.aggregate(basicAggregationStages);
-        Iterable<DBObject> resultIterable = collection.aggregate(basicAggregationStages).results();
-        for (DBObject object : resultIterable) {
-            result.add((BasicDBObject) object);
+
+        String s = basicAggregationStages.toString();
+        List<DBObject> pipeline=new ArrayList<DBObject>();
+        for (Object basicAggregationStage : basicAggregationStages) {
+            pipeline.add((DBObject) basicAggregationStage);
         }
+        AggregationOptions build = AggregationOptions.builder().allowDiskUse(true).build();
+        Cursor aggregate = collection.aggregate(pipeline, build);
+       // while(aggregate.hasNext()){
+       //     result.add((BasicDBObject) aggregate.next());
+      //  }
+
+
+
+
+        //Iterable<DBObject> resultIterable = collection.aggregate(pipeline,build).results();
+        //for (DBObject object : resultIterable) {
+        //    result.add((BasicDBObject) object);
+        //}
 
         long end = System.currentTimeMillis();
         LOG.debug("The aggregation job took {} seconds", (end - start) / 1000);
@@ -870,9 +889,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         return result;
     }
 
-    private List<DBObject> getBasicAggregationStages(String property, Filter filter, Object conditionalValue) {
-        List<DBObject> list = new ArrayList<DBObject>();
-        list.add(new BasicDBObject("$match", this.getCachedFilter(filter)));
+    private BasicDBList getBasicAggregationStages(String property, Filter filter, Object conditionalValue) {
+        BasicDBList list = new BasicDBList();
+        //list.add(new BasicDBObject("$match", this.getCachedFilter(filter)));
         list.add(new BasicDBObject("$unwind", "$metadata"));
         list.add(new BasicDBObject("$match", new BasicDBObject("metadata.property", property)));
 
@@ -881,9 +900,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         arrayElemAt.add(0);
 
         list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("property", "$metadata.property").append("sourcedValue", new BasicDBObject("$arrayElemAt", arrayElemAt))));
-        list.add(new BasicDBObject("$project", new BasicDBObject("value", conditionalValue).append("property",1).append("source", "$sourcedValue.source").append("status",1)));//  new BasicDBObject("$cond", cond)).append("property", 1)));
-
-
+        //list.add(new BasicDBObject("$project", new BasicDBObject("value", conditionalValue).append("property",1).append("source", "$sourcedValue.source").append("status",1)));//  new BasicDBObject("$cond", cond)).append("property", 1)));
 
         BasicDBList cond = new BasicDBList();
         BasicDBList eq = new BasicDBList();
@@ -892,7 +909,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         cond.add(new BasicDBObject("$eq", eq));
         cond.add("CONFLICT");
         cond.add("$value");
-        list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$cond", cond)).append("property", 1)));
+        //list.add(new BasicDBObject("$project", new BasicDBObject("value", new BasicDBObject("$cond", cond)).append("property", 1)));
 
         return list;
     }
@@ -903,29 +920,36 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         Property prop = getCache().getProperty(property);
         String propType = prop.getType();
         String map = "";
+        String map2="";
         String reduce = "";
-        if (propType.equals(PropertyType.STRING.toString())) {
-            map = "function() {\n" +
+        if (propType.equals(PropertyType.STRING.toString()) || propType.equals(PropertyType.BOOL.toString())) {
+            map= "function() {\n" +
                     "    property = '" + property + "';\n" +
-                    "        if (this[property] != null) {\n" +
-                    "            if (this[property].status != 'CONFLICT') {\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: this[property].values[0]\n" +
-                    "                }, 1);\n" +
-                    "            } else {\n" +
+                    "    for (mr in this.metadata){\n" +
+                    "        metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property)\n" +
+                    "        {\n" +
+                    "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
                     "                    value: 'CONFLICT'\n" +
                     "                }, 1);\n" +
+                    "            } else {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: metadataRecord.sourcedValues[0].value\n" +
+                    "                }, 1);\n" +
+                    "\n" +
                     "            }\n" +
-                    "        } else {\n" +
-                    "            emit({\n" +
-                    "                property: property,\n" +
-                    "                value: 'Unknown'\n" +
-                    "            }, 1);\n" +
+                    "            return;\n" +
                     "        }\n" +
-                    "    }";
+                    "    }\n" +
+                    "    emit({\n" +
+                    "        property: property,\n" +
+                    "        value: 'Unknown'\n" +
+                    "        }, 1);\n" +
+                    "}";
+
             reduce = "function reduce(key, values) {\n" +
                     "    var res = 0;\n" +
                     "    values.forEach(function(v) {\n" +
@@ -935,35 +959,19 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "}";
 
         } else if (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
-           /* map="function() {\n" +
-                    "    property = '"+property+"';\n" +
-                    "        if (this[property] != null) {\n" +
-                    "            if (this[property].status != 'CONFLICT') {\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: this[property].values[0]\n" +
-                    "                }, 1);\n" +
-                    "            } else {\n" +
+            map="function() {\n" +
+                    "    property = '" + property + "';\n" +
+                    "    thresholds = " + getBinThresholds(bins) + ";\n" +
+                    "    for (mr in this.metadata){\n" +
+                    "        metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property){\n" +
+                    "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
                     "                    value: 'CONFLICT'\n" +
                     "                }, 1);\n" +
-                    "            }\n" +
-                    "        } else {\n" +
-                    "            emit({\n" +
-                    "                property: property,\n" +
-                    "                value: 'Unknown'\n" +
-                    "            }, 1);\n" +
-                    "        }\n" +
-                    "    }";*/
-
-
-            map = "function() {\n" +
-                    "    property = '" + property + "';\n" +
-                    "    thresholds = " + getBinThresholds(bins) + ";\n" +
-                    "        if (this[property] != null) {\n" +
-                    "            if (this[property].status != 'CONFLICT') {\n" +
-                    "                var val=this[property].values[0];\n" +
+                    "            } else {\n" +
+                    "                var val=metadataRecord.sourcedValues[0].value;\n" +
                     "                var skipped=false;\n" +
                     "                if (thresholds.length > 0)\n" +
                     "                    for (t in thresholds){\n" +
@@ -974,71 +982,18 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "                                value: threshold[0]+'-'+threshold[1]\n" +
                     "                            }, 1);\n" +
                     "                             skipped=true;\n" +
-                    "                             return;\n" +
-                    "                         }\n" +
-                    "\n" +
-                    "                    }\n" +
-                    "                if (!skipped)\n" +
-                    "                    emit({\n" +
-                    "                        property: property,\n" +
-                    "                        value: val\n" +
-                    "                    }, 1);\n" +
-                    "\n" +
-                    "            } else {\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: 'CONFLICT'\n" +
-                    "                }, 1);\n" +
-                    "            }\n" +
-                    "        } else {\n" +
-                    "            emit({\n" +
-                    "                property: property,\n" +
-                    "                value: 'Unknown'\n" +
-                    "            }, 1);\n" +
-                    "        }\n" +
-                    "    }";
-
-           /* map="function() {\n" +
-                    "    property = '"+property+"';\n" +
-                    "    thresholds = '"+ getBinThresholds(bins)+"';\n" +
-                    "        if (this[property] != null) {\n" +
-                    "            if (this[property].status != 'CONFLICT') {\n" +
-                    "                var val=this[property].values[0];\n" +
-                    "                var skipped=false;\n" +
-                    "                if (thresholds!=[])\n" +
-                    "                    for (t in thresholds){\n" +
-                    "                        threshold = thresholds[t];  \n" +
-                    "                        if (val>=threshold[0] && val<threshold[1]){\n" +
-                    "                             emit({\n" +
-                    "                                property: property,\n" +
-                    "                                value: threshold[1]\n" +
-                    "                            }, 1);\n" +
-                    "                             skipped=true;\n" +
                     "                             break;\n" +
                     "                         }\n" +
-                    "\n" +
                     "                    }\n" +
-                    "                if (!skipped)\n" +
-                    "                    emit({\n" +
-                    "                        property: property,\n" +
-                    "                        value: val\n" +
-                    "                    }, 1);\n" +
-                    "\n" +
-                    "            } else {\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: 'CONFLICT'\n" +
-                    "                }, 1);\n" +
                     "            }\n" +
-                    "        } else {\n" +
-                    "            emit({\n" +
-                    "                property: property,\n" +
-                    "                value: 'Unknown'\n" +
-                    "            }, 1);\n" +
+                    "            return;\n" +
                     "        }\n" +
-                    "    }";
-
-*/
+                    "    }\n" +
+                    "    emit({\n" +
+                    "        property: property,\n" +
+                    "        value: 'Unknown'\n" +
+                    "        }, 1);\n" +
+                    "}";
             reduce = "function reduce(key, values) {\n" +
                     "    var res = 0;\n" +
                     "    values.forEach(function(v) {\n" +
@@ -1050,26 +1005,31 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         } else if (propType.equals(PropertyType.DATE.toString())) {
             map = "function() {\n" +
                     "    property = '" + property + "';\n" +
-                    "        if (this[property] != null) {\n" +
-                    "            if (this[property].status != 'CONFLICT') {\n" +
-                    "                var date = new Date(this[property].values[0]);" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: date.getFullYear()\n" +
-                    "                }, 1);\n" +
-                    "            } else {\n" +
+                    "    for (mr in this.metadata){\n" +
+                    "        metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property){\n" +
+                    "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
                     "                    value: 'CONFLICT'\n" +
                     "                }, 1);\n" +
+                    "            } else {\n" +
+                    "                var date = new Date(metadataRecord.sourcedValues[0].value);\n" +
+                    "                var val=date.getFullYear();\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: val\n" +
+                    "                }, 1);\n" +
                     "            }\n" +
-                    "        } else {\n" +
-                    "            emit({\n" +
-                    "                property: property,\n" +
-                    "                value: 'Unknown'\n" +
-                    "            }, 1);\n" +
+                    "            return;\n" +
                     "        }\n" +
-                    "    }";
+                    "    }\n" +
+                    "    emit({\n" +
+                    "        property: property,\n" +
+                    "        value: 'Unknown'\n" +
+                    "        }, 1);\n" +
+                    "}";
+
             reduce = "function reduce(key, values) {\n" +
                     "    var res = 0;\n" +
                     "    values.forEach(function(v) {\n" +
@@ -1079,35 +1039,6 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "}";
 
 
-        } else if (propType.equals(PropertyType.BOOL.toString())) {
-            map = "function() {\n" +
-                    "    property = '" + property + "';\n" +
-                    "        if (this[property] != null) {\n" +
-                    "            if (this[property].status != 'CONFLICT') {\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: this[property].values[0]\n" +
-                    "                }, 1);\n" +
-                    "            } else {\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: 'CONFLICT'\n" +
-                    "                }, 1);\n" +
-                    "            }\n" +
-                    "        } else {\n" +
-                    "            emit({\n" +
-                    "                property: property,\n" +
-                    "                value: 'Unknown'\n" +
-                    "            }, 1);\n" +
-                    "        }\n" +
-                    "    }";
-            reduce = "function reduce(key, values) {\n" +
-                    "    var res = 0;\n" +
-                    "    values.forEach(function(v) {\n" +
-                    "        res += v;\n" +
-                    "    });\n" +
-                    "    return res;\n" +
-                    "}";
         }
         DBObject query = this.getCachedFilter(filter);
         LOG.debug("Filter query is:\n{}", query);
