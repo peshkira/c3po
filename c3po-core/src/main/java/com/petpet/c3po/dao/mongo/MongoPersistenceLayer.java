@@ -1103,19 +1103,36 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         if (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
             map = "function() {\n" +
                     "    property = '" + property + "';\n" +
-                    " if (this[property] != null) {\n" +
-                    "            emit({\n" +
-                    "                property: property,\n" +
-                    "                value: property\n" +
-                    "            }, {\n" +
-                    "                sum: this[property].values[0],\n" +
-                    "                min: this[property].values[0],\n" +
-                    "                max: this[property].values[0],\n" +
-                    "                count: 1,\n" +
-                    "                diff: 0,\n" +
-                    "            });\n" +
-                    "        }" +
-                    "    }";
+                    "    for (mr in this.metadata){\n" +
+                    "        metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property){\n" +
+                    "            if (metadataRecord.status == 'CONFLICT'){\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: 'CONFLICT'\n" +
+                    "                }, 1)\n" +
+                    "            } else {\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: property\n" +
+                    "                }, \n" +
+                    "                {\n" +
+                    "                    sum: metadataRecord.sourcedValues[0].value,\n" +
+                    "                    min: metadataRecord.sourcedValues[0].value,\n" +
+                    "                    max: metadataRecord.sourcedValues[0].value,\n" +
+                    "                    count: 1,\n" +
+                    "                    diff: 0\n" +
+                    "                }\n" +
+                    "                )\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    emit({\n" +
+                    "        property: property,\n" +
+                    "        value: 'Unknown'\n" +
+                    "        }, 1);\n" +
+                    "}\n";
             reduce = "function reduce(key, values) {\n" +
                     "var a = values[0];\n" +
                     "        for (var i = 1; i < values.length; i++) {\n" +
