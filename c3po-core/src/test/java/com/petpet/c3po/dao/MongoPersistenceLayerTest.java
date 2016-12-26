@@ -248,9 +248,6 @@ public class MongoPersistenceLayerTest {
     @Test
     public void SuperMapReduceTest() throws Exception {
 
-        //setup();
-
-
         Map<String, List<Integer>> binThresholds = new HashMap<String, List<Integer>>();
         List<Integer> bins = new ArrayList<Integer>();
         bins.add(5);
@@ -274,27 +271,4 @@ public class MongoPersistenceLayerTest {
 
     }
 
-
-    private void insertTestData() {
-        Element e1 = new Element("test", "test1", "Some name 1");
-        Element e2 = new Element("test", "test2", "Some name 2");
-        Element e3 = new Element("test", "test3", "Some name 3");
-
-        Property property = new Property("pagecount", PropertyType.INTEGER);
-        Property mimetype = new Property("mimetype");
-
-        MetadataRecord rec = new MetadataRecord(property.getKey(), "42");
-        MetadataRecord pdf = new MetadataRecord(mimetype.getKey(), "application/pdf");
-        MetadataRecord htm = new MetadataRecord(mimetype.getKey(), "text/html");
-
-        e1.setMetadata(Arrays.asList(rec, pdf));
-        e2.setMetadata(Arrays.asList(rec, pdf));
-        e3.setMetadata(Arrays.asList(rec, htm));
-
-        this.pLayer.insert(property);
-        this.pLayer.insert(mimetype);
-        this.pLayer.insert(e1);
-        this.pLayer.insert(e2);
-        this.pLayer.insert(e3);
-    }
 }

@@ -19,6 +19,7 @@ import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.helper.filtering.PropertyFilterCondition;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -91,6 +92,7 @@ public class Filter implements Serializable {
      */
     public Filter() {
         conditions = new ArrayList<FilterCondition>();
+        propertyFilterConditions=new ArrayList<PropertyFilterCondition>();
     }
 
     /**
@@ -101,6 +103,20 @@ public class Filter implements Serializable {
     public Filter(FilterCondition fc) {
         this();
         this.conditions.add(fc);
+    }
+
+    public Filter(String SRUString) throws ParseException {
+        this();
+        int i = SRUString.indexOf("&property");
+        while (i > -1){
+            String substring = SRUString.substring(0, i);
+            PropertyFilterCondition pfc=new PropertyFilterCondition(substring);
+            propertyFilterConditions.add(pfc);
+            SRUString.replace(substring,"");
+            i = SRUString.indexOf("&property");
+        }
+        PropertyFilterCondition pfc=new PropertyFilterCondition(SRUString);
+        propertyFilterConditions.add(pfc);
     }
 
     /**
@@ -227,6 +243,19 @@ public class Filter implements Serializable {
             result = result.substring(0, result.length() - 1);
 
         return result;
+
+    }
+
+    public String toSRUString(){
+        String result="";
+
+        for (PropertyFilterCondition pfc: propertyFilterConditions){
+            result +=pfc.toSRUString();
+        }
+        if (result.endsWith("&"))
+            result=result.substring(0,result.length()-1);
+        return result;
+
 
     }
 

@@ -376,10 +376,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     public <T extends Model> void update(T object, Filter f) {
         DBObject filter = this.getCachedFilter(f);
         String filterString = filter.toString();
-        if (filter.keySet().isEmpty()) {
-            LOG.warn("Cannot update an object without a filter");
-            return;
-        }
+       // if (filter.keySet().isEmpty()) {
+        ///    LOG.warn("Cannot update an object without a filter");
+      //      return;
+      //  }
 
         if (object == null) {
             LOG.warn("Cannot update a null object");

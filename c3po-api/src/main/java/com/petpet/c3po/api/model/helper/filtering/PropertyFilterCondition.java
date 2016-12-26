@@ -1,5 +1,6 @@
 package com.petpet.c3po.api.model.helper.filtering;
 
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -36,6 +37,57 @@ public class PropertyFilterCondition {
         values = new ArrayList<String>();
         sources = new ArrayList<String>();
     }
+    public PropertyFilterCondition(String SRUString) throws ParseException{
+        this();
+        try {
+            String[] split = SRUString.split("&");
+            String propSource = null;
+            String propValue = null;
+            for (String s : split) {
+                String[] subSplit = s.split("=");
+                String key = subSplit[0];
+                String value = subSplit[1];
+                if (key.equals("property")) {
+                    setProperty(value);
+                }
+                else if (key.equals("status")) {
+                    getStatuses().add(value);
+                }
+                else if (key.equals("source")) {
+                    propSource = value;
+                }
+                else if (key.equals("value")) {
+                    propValue = value;
+                    if (propSource != null) {
+                        getSourcedValues().put(propSource, propValue);
+                        propSource = null;
+                    }
+                }
+            }
+        }
+        catch (Exception e){
+            throw new ParseException("Could not parse the string to PropertyFilterCondition",0);
+        }
+    }
+
+    public String toSRUString() {
+        String result="";
+        result+="property"+"="+neutralizeStringForSRU(getProperty());
+        result+="&";
+        for (String status : getStatuses()) {
+            result+="status"+"="+neutralizeStringForSRU(status);
+            result+="&";
+        }
+        for (Map.Entry<String, String> stringStringEntry : sourcedValues.entrySet()) {
+            String source = stringStringEntry.getKey();
+            String value = stringStringEntry.getValue();
+            result+="source"+"="+neutralizeStringForSRU(source);
+            result+="&";
+            result+="value"+"="+neutralizeStringForSRU(value);
+            result+="&";
+        }
+        return result;
+    }
 
     public static enum PropertyFilterConditionType {
         STATUS,
@@ -43,6 +95,10 @@ public class PropertyFilterCondition {
         VALUE,
         SOURCE,
         SOURCEDVALUE
+    }
+
+    private String neutralizeStringForSRU(String input){
+        return input.replace("="," ").replace("&", " ");
     }
 
     public void addCondition(PropertyFilterConditionType type, Object value) {
@@ -53,6 +109,10 @@ public class PropertyFilterCondition {
             case SOURCE:
                 if (!sources.contains(value.toString()))
                     sources.add(value.toString());
+                break;
+            case STATUS:
+                if (!statuses.contains(value.toString()))
+                    statuses.add(value.toString());
                 break;
             case VALUE:
                 if (!values.contains(value.toString()))
