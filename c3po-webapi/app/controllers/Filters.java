@@ -22,7 +22,9 @@ import java.util.*;
 
 import com.google.common.collect.Lists;
 import com.petpet.c3po.api.dao.PersistenceLayer;
+import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.*;
 import com.petpet.c3po.utils.Configurator;
 
@@ -316,5 +318,15 @@ public class Filters extends Controller {
             }
         }
         return result;
+    }
+
+    public static Result getSources(){
+        List<String> sources=new ArrayList<String >();
+        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        Iterator<Source> sourceIterator = persistence.find(Source.class, null);
+        while(sourceIterator.hasNext()){
+            sources.add(sourceIterator.next().toString());
+        }
+        return ok(play.libs.Json.toJson(sources));
     }
 }

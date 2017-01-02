@@ -361,6 +361,29 @@ function stopSpinner() {
 //###############################
 //#			  Filter			#
 //###############################
+
+
+function applyFilter(){
+	var result={};
+	var pfcs = $('.propertyfiltercondition div');
+	for(var i = 0; i < pfcs.length; i++) {
+		var pfc = pfcs[i];
+		result.propertyname= pfc.sibling('#propertyname').val();
+		result.propertystatus = pfc.sibling('#propertystatus').val();
+		result.sourcedvalues=[];
+		var sourcedvalues=pfc.sibling('#sourcedvalues');
+		for(var j = 0; j < sourcedvalues.length; j++) {
+			var sv={};
+			var sourcedvalue=sourcedvalues[j];
+			sv.propertyvalue=sourcedvalue.sibling('#propertyvalue').val();
+			sv.propertyvaluesource = sourcedvalue.sibling('#propertyvaluesource').val();
+			result.sourcedvalues.push(sv);
+		}
+	}
+	alert(json.stringify(result));
+
+};
+
 function addNewFilter() {
 	$.ajax ({
 		headers: { 
@@ -377,12 +400,11 @@ function addNewFilter() {
 
 };
 
-//adds a new select with all properties for the next filter selection
 function addNewPropertiesSelect(properties) {
 	// check if the previous filter is already setup accordingly
-	var show = false; 
+	/*var show = false;
 	if ($('.propertyfilter:last')[0]) {
-		var selects = $('.propertyfilter:last select');
+		var selects = $('.propertyfilter:last div');
 		if(selects.length > 1 && $(selects[1]).val() !== "") {
 			show = true;
 		} else {
@@ -390,17 +412,17 @@ function addNewPropertiesSelect(properties) {
 		}
 	} else {
 		show = true;
-	}
+	}*/
 
 	// if previous filter is ready, then show
-	if (show) {
+	//if (show) {
 		// create new div
 		var div = $('<div class="propertyfilter"></div>').appendTo('#filter');
 
 		// append delete button and install delete handler
 		var deletediv = $('<div class="delete"><a class="red_button" href="#">x</a></div>').appendTo($(div));
-		$(deletediv).click(function() {
-			startSpinner();
+		deletediv.click(function() {
+			/*startSpinner();
 			var property = $(this).siblings('select:first').val();
 			$.ajax({
 				type:     'DELETE',
@@ -410,31 +432,51 @@ function addNewPropertiesSelect(properties) {
 					stopSpinner();
 					window.location.reload();
 				}
-			});
+			});*/
 			$(this).parent().remove();
 
 		});
 
 		// for each property add an option in the html select
-		var sel = $('<select>').appendTo($(div));
-		$(sel).append($('<option>').text("").attr('value',''));
+
+		var pfc=$('<div class="propertyfiltercondition"></div>').appendTo(div);
+		pfc.append('<text>Property name: </text>');
+		var propertyname = $('<select id="propertyname">').appendTo(pfc);
+		propertyname.append($('<option>').text("").attr('value',''));
 		$.each(properties, function(i, value) {
-			$(sel).append($('<option>').text(value).attr('value', value));
+			propertyname.append($('<option>').text(value).attr('value', value));
 		});
+
+		pfc.append('<text>Property status: </text>');
+		var propertystatus = $('<select id="propertystatus">').appendTo(pfc);
+		propertystatus.append($('<option>').text("").attr('value',''));
+		propertystatus.append($('<option>').text("OK").attr('value',"OK"));
+		propertystatus.append($('<option>').text("SINGLE_RESULT").attr('value',"SINGLE_RESULT"));
+		propertystatus.append($('<option>').text("CONFLICT").attr('value',"CONFLICT"));
+
+
+		var propertysourcedvalues = $('<div id="sourcedvalues" class="sourcedvalues"></div>').appendTo(pfc);
+
+		var sources=[];
+		$.ajax ({
+			headers: {
+				Accept : "application/json; charset=utf-8",
+			},
+			type:     'GET',
+			url:      '/c3po/filter/sources',
+			async: false,
+			success:  function (oData) {
+				sources=oData;
+			}
+		});
+
 
 		// if the select is clicked then get the values for the current
 		// option.
-		$(sel).change(function() {
+		propertyname.change(function() {
+
 			var property = $(this).val();
 			if (property) {
-				var old = $(this).parent().attr('oldValue');
-				$(this).parent().attr('oldValue', property);
-				$.ajax ({
-					type:     'DELETE',
-					async:    false,
-					url:      '/c3po/filter?property='+old,
-				});
-
 				var collection = "";
 				$.ajax ({
 					type:     'GET',
@@ -446,7 +488,6 @@ function addNewPropertiesSelect(properties) {
 				});
 
 				var url = '/c3po/filter/values?filter='+property+'&collection=' + collection;
-
 				$.ajax ({
 					type:     'GET',
 					async:    false,
@@ -455,49 +496,63 @@ function addNewPropertiesSelect(properties) {
 						if (oData.type == 'INTEGER') {
 							showIntegerPropertyDialog('getValuesForProperty("' + url + '")');
 
-						} else { 
-							showOtherProperty(url, div);
+						} else {
+							showOtherProperty(url, propertysourcedvalues, sources );   //TODO: make this function more separate
 						}	    
 					}
 				});
 
 
 			} else {
-				$(sel).effect("highlight", {color:'#FF1400'} , "slow");
+				$(propertyname).effect("highlight", {color:'#FF1400'} , "slow");
 				if ($(div).children('select').length > 1) {
 					($(div).children('select:last')).remove();
 				}
 			}
 		});
-	}
+	//}
 };
 
-function showOtherProperty(url, div) {
+
+function showOtherProperty(url, div, sources) {
+	startSpinner();
 	$.ajax ({
 		type:     'GET',
 		url:      url,
 		success:  function (oData) {
-			showValuesSelect(div, oData);
+			stopSpinner();
+			showValuesSelect(div, oData, sources);
 		}
 	});
 }
 
-function showValuesSelect(filterdiv, pvf) {
+function showValuesSelect(div, pvf, sources) {
 	// first remove filtervalues if property was already selected
-	if ($(filterdiv).children('select').length > 1) {
-		($(filterdiv).children('select:last')).remove();
-	}
-
-	var type = pvf.type;
-	var sel = $('<select>').appendTo($(filterdiv));
-	var values = pvf.values;
-
-	$(sel).append($('<option>').text("").attr('value',''));
-	$.each(values, function(i, value) {
-		$(sel).append($('<option>').text(value).attr('value', value));
+	var sourcedvalue=$('<div id="sourcedvalue">').append(div);
+	sourcedvalue.append('<text>Property value: </text>');
+	var propertyvalue=$('<select id="propertyvalue">').appendTo(sourcedvalue);
+	sourcedvalue.append('<text>Property value source: </text>');
+	var propertyvaluesource=$('<select id="propertyvaluesource">').appendTo(sourcedvalue);
+	sourcedvalue.append('<br>');
+	propertyvaluesource.append($('<option>').text("").attr('value',''));
+	$.each(sources, function(i, value) {
+		propertyvaluesource.append($('<option>').text(value).attr('value', value));
 	});
 
-	$(sel).change(function() {
+	propertyvalue.change(function() {
+		showValuesSelect(div, pvf, sources);
+	});
+
+	var type = pvf.type;
+	//var sel = $('<select>').appendTo($(filterdiv));
+	var values = pvf.values;
+
+	propertyvalue.append($('<option>').text("").attr('value',''));
+	$.each(values, function(i, value) {
+		propertyvalue.append($('<option>').text(value).attr('value', value));
+	});
+
+	/*select.change(function() {
 		var value = $(this).val();
 
 		if (value) {
@@ -506,9 +561,9 @@ function showValuesSelect(filterdiv, pvf) {
 				window.location.reload();
 			});
 		} else {
-			$(sel).effect("highlight", {color:'#FF1400'} , "slow");
+			select.effect("highlight", {color:'#FF1400'} , "slow");
 		}
-	});
+	});*/
 };
 
 function showIntegerPropertyDialog(func) {
