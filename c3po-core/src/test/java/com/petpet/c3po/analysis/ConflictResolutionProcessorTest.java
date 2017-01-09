@@ -96,9 +96,9 @@ public class ConflictResolutionProcessorTest {
         List<Rule> rules=new ArrayList<Rule>();
         rules.add(rule);
         crp.setRules(rules);
-        long conflictsCount = crp.getConflictsCount(filter);
+       // long conflictsCount = crp.getConflictsCount(filter);
 
-        Map<String, Integer> test = crp.getOverview("test", filter);
+        //Map<String, Integer> test = crp.getOverview("test", filter);
 
 //        long resolve = crp.resolve(null);
       //  Assert.assertEquals(resolve, 1);

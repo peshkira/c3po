@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
@@ -328,5 +329,51 @@ public class Filters extends Controller {
             sources.add(sourceIterator.next().toString());
         }
         return ok(play.libs.Json.toJson(sources));
+    }
+
+    public static Result apply(){
+        JsonNode json = request().body().asJson();
+
+        String SRU =toSRU(json);
+        Filter f=null;
+        try {
+            f=new Filter(SRU);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        if (f!=null)
+            setFilterFromSession(f);
+
+        //DynamicForm form = play.data.Form.form().bindFromRequest();
+        //DynamicForm.Dynamic dynamic = form.get();
+        //String s = dynamic.toString();
+
+        return ok();//redirect("/c3po/overview");
+    }
+
+    private static String toSRU(JsonNode json) {
+        String result="";
+        Iterator<JsonNode> iterator = json.iterator();
+        while (iterator.hasNext()){
+            JsonNode next = iterator.next();
+            String propertyname = next.get("propertyname").asText();
+            if (result.equals(""))
+                result+="property=" +propertyname;
+            else
+                result+="&property=" +propertyname;
+            String propertystatus = next.get("propertystatus").asText();
+            if (!propertystatus.equals(""))
+                result+="&status=" + propertystatus;
+            JsonNode sourcedvalues = next.get("sourcedvalues");
+            for (JsonNode sourcedvalue : sourcedvalues) {
+                String propertyvalue = sourcedvalue.get("propertyvalue").asText();
+                String propertyvaluesource = sourcedvalue.get("propertyvaluesource").asText();
+                if (!propertyvaluesource.equals(""))
+                    result+="&source=" + propertyvaluesource;
+                if (!propertyvalue.equals(""))
+                    result+="&value=" + propertyvalue;
+            }
+        }
+        return result;
     }
 }

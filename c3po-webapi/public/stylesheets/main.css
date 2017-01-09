@@ -353,13 +353,6 @@ img.smalllogo{
     
 }
 
-#sourcedvalues {
-    float: left;
-}
-
-#propertyfiltercondition {
-    float: left;
-}
 
 
 #collections h2{
@@ -466,11 +459,6 @@ display: none;
     box-shadow:0px 0px 3px #69E45C;
 }
 
-#applyfilter {
-    float:bottom;
-    font-size:16pt;
-    padding-bottom:2px;
-}
 
 #addfilter {
 	float:right;

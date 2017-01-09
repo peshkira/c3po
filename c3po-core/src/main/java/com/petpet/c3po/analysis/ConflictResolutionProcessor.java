@@ -1,5 +1,8 @@
 package com.petpet.c3po.analysis;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.POJONode;
 import com.google.gson.Gson;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -121,8 +124,15 @@ public class ConflictResolutionProcessor {
 
     private static long getConflictsCount(Filter filter, List<String> properties){
         MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
-        Gson gson=new Gson();
-        String s = gson.toJson(properties);
+        JsonNode node=new POJONode(properties);
+        String s="[";
+        for (String property : properties) {
+            s+="'" + property + "',";
+        }
+        s=s.substring(0,s.length()-1);
+        s+="]";
+        //String s = properties.toString();
+        //s = node.toString();
         String map="function map() {\n" +
                 "    properties = " + s + ";\n" +
                 "    for (mr in this.metadata){\n" +
@@ -219,8 +229,12 @@ public class ConflictResolutionProcessor {
     public static List<BasicDBObject> getOverview(Filter filter, List<String> properties){
         MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
 
-        Gson gson=new Gson();
-        String s = gson.toJson(properties);
+        String s="[";
+        for (String property : properties) {
+            s+="'" + property + "',";
+        }
+        s=s.substring(0,s.length()-1);
+        s+="]";
 
         String map="function map() {\n" +
                 "    var result={};\n" +

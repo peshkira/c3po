@@ -62,6 +62,9 @@ public class PropertyFilterCondition {
                         getSourcedValues().put(propSource, propValue);
                         propSource = null;
                     }
+                    else {
+                        getValues().add(value);
+                    }
                 }
             }
         }
