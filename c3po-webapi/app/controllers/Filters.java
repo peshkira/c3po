@@ -21,12 +21,17 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.deser.std.ArrayBlockingQueueDeserializer;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.POJONode;
 import com.google.common.collect.Lists;
+import com.mongodb.util.JSON;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.*;
+import com.petpet.c3po.api.model.helper.filtering.PropertyFilterCondition;
 import com.petpet.c3po.utils.Configurator;
 
 import common.WebAppConstants;
@@ -34,9 +39,12 @@ import helpers.Graph;
 import helpers.PropertyValuesFilter;
 import helpers.SessionFilters;
 import helpers.StringParser;
+import org.apache.commons.collections.ArrayStack;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import play.Logger;
+import play.api.Play;
+import play.api.libs.json.Json;
 import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -147,7 +155,17 @@ public class Filters extends Controller {
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<PropertyValuesFilter> result = new ArrayList<PropertyValuesFilter>();
         Filter filter = Filters.getFilterFromSession();
-        List<FilterCondition> fcs = filter.getConditions();
+
+        Map<String, Object> map=new HashMap<String, Object>();
+
+
+        //JsonNode jsonNode = toJSON(filter);
+
+
+        return ok(play.libs.Json.toJson(toJSON(filter)));
+
+
+       /* List<FilterCondition> fcs = filter.getConditions();
         for (FilterCondition fc : fcs) {
             Property p = persistence.getCache().getProperty(fc.getField());
             Object obj = fc.getValue();
@@ -178,7 +196,7 @@ public class Filters extends Controller {
             }
 
         }
-        return ok(play.libs.Json.toJson(result));
+        return ok(play.libs.Json.toJson(result));*/
     }
 
 
@@ -337,7 +355,10 @@ public class Filters extends Controller {
         String SRU =toSRU(json);
         Filter f=null;
         try {
-            f=new Filter(SRU);
+            if (SRU.equals(""))
+                f=new Filter();
+            else
+                f=new Filter(SRU);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -349,6 +370,63 @@ public class Filters extends Controller {
         //String s = dynamic.toString();
 
         return ok();//redirect("/c3po/overview");
+    }
+
+
+    private static Object toJSON(Filter filter){
+
+        /**
+         *
+         * for(var i = 0; i < pfcs.length; i++) {
+         var pfc = pfcs[i];
+         var result={};
+         result.propertyname=  pfc.querySelector('#propertyname').value;
+         result.propertystatus = pfc.querySelector('#propertystatus').value;
+         result.sourcedvalues=[];
+         var sourcedvalues=pfc.querySelector('#sourcedvalues');
+         for(var j = 0; j < sourcedvalues.childNodes.length; j++) {
+         var sourcedvalue=sourcedvalues.childNodes[j];
+         var sv={};
+         sv.propertyvalue=sourcedvalue.querySelector('#propertyvalue').value;
+         sv.propertyvaluesource = sourcedvalue.querySelector('#propertyvaluesource').value;
+         result.sourcedvalues.push(sv);
+         }
+         final.push(result);
+         }
+         //alert(JSON.stringify(final));
+
+         *
+         *
+         *
+         */
+        List<Object> maps= new ArrayList<Object>();
+        List<PropertyFilterCondition> propertyFilterConditions = filter.getPropertyFilterConditions();
+
+        for (PropertyFilterCondition propertyFilterCondition : propertyFilterConditions) {
+            Map<String, Object> map=new HashMap<String, Object>();
+            map.put("propertyname",propertyFilterCondition.getProperty());
+            List<String> statuses = propertyFilterCondition.getStatuses();
+            if (statuses.size()>0)
+                map.put("propertystatus", statuses.get(0));
+            List<Object> sourcedValues=new ArrayList<Object>();
+            for (Map.Entry<String, String> stringStringEntry : propertyFilterCondition.getSourcedValues().entrySet()) {
+                Map<String,String> sv=new HashMap<String, String>();
+                sv.put("propertyvalue",stringStringEntry.getValue());
+                sv.put("propertyvaluesource",stringStringEntry.getKey());
+                sourcedValues.add(sv);
+            }
+
+            for (String s : propertyFilterCondition.getValues()) {
+                Map<String,String> sv=new HashMap<String, String>();
+                sv.put("propertyvalue",s);
+                sv.put("propertyvaluesource","");
+                sourcedValues.add(sv);
+            }
+            if (sourcedValues.size()>0)
+                map.put("sourcedvalues", sourcedValues);
+            maps.add(map);
+        }
+        return maps;
     }
 
     private static String toSRU(JsonNode json) {

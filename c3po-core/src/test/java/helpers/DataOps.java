@@ -93,9 +93,6 @@ public class DataOps {
                 LOG.warn("Could not close the connection in a clear fashion");
             }
         }
-
-
-
     }
 
 

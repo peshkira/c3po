@@ -56,7 +56,7 @@ public class Properties extends Controller {
     public static List<String> getCollectionNames() {
         Logger.debug("Listing collection names");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        List<String> collections = (List<String>) persistence.distinct(Element.class, "collection", new Filter());
+        List<String> collections = new ArrayList<String>();//(List<String>) persistence.distinct(Element.class, "collection", new Filter());
         collections.add(0, "");
         Collections.sort(collections);
         return collections;

@@ -112,7 +112,7 @@ public class Filter implements Serializable {
             String substring = SRUString.substring(0, i);
             PropertyFilterCondition pfc=new PropertyFilterCondition(substring);
             propertyFilterConditions.add(pfc);
-            SRUString.replace(substring,"");
+            SRUString=SRUString.replace(substring + "&","");
             i = SRUString.indexOf("&property");
         }
         PropertyFilterCondition pfc=new PropertyFilterCondition(SRUString);

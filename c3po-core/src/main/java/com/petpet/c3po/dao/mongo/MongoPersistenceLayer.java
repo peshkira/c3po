@@ -639,7 +639,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     public DBObject getCachedFilter(Filter f) {
         Filter filter = (Filter) this.dbCache.getObject(LAST_FILTER);
         DBObject result = new BasicDBList();
-        result = this.filterSerializer.serialize(f);
+        result = this.filterSerializer.serializeNew(f);
 
         return result;
 

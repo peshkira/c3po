@@ -98,25 +98,32 @@ public class MongoFilterSerializer {
     public DBObject serializeNew(Filter filter) {
         DBObject result = new BasicDBObject();
 
+
+
         if (filter != null) {
             if (filter.getRaw() != null) {
                 Object o = com.mongodb.util.JSON.parse(filter.getRaw());
                 return (DBObject) o;
             }
+
+            if (filter.getConditions()!=null && filter.getConditions().size()>0)
+                return serialize(filter);
+            List<PropertyFilterCondition> propertyFilterConditions = filter.getPropertyFilterConditions();
+            List<BasicDBObject> and = new ArrayList<BasicDBObject>();
+
+            for (PropertyFilterCondition propertyFilterCondition : propertyFilterConditions) {
+                and.addAll(getSourcedValueList(propertyFilterCondition.getSourcedValues()));
+                and.addAll(getPropertyList(propertyFilterCondition.getProperty())) ;
+                and.addAll(getStatusList(propertyFilterCondition.getStatuses(), "$or"));
+                and.addAll(getSourceList(propertyFilterCondition.getSources(), "$and"));
+                and.addAll(getValueList(propertyFilterCondition.getValues(), "$and"));
+
+            }
+            if (and.size() > 0)
+                result.put("$and", and);
+
         }
 
-        List<PropertyFilterCondition> propertyFilterConditions = filter.getPropertyFilterConditions();
-        List<BasicDBObject> and = new ArrayList<BasicDBObject>();
-
-        for (PropertyFilterCondition propertyFilterCondition : propertyFilterConditions) {
-            and.addAll(getSourcedValueList(propertyFilterCondition.getSourcedValues()));
-            and.addAll(getPropertyList(propertyFilterCondition.getProperty())) ;
-            and.addAll(getStatusList(propertyFilterCondition.getStatuses(), "$or"));
-            and.addAll(getSourceList(propertyFilterCondition.getSources(), "$and"));
-            and.addAll(getValueList(propertyFilterCondition.getValues(), "$and"));
-
-        }
-        result.put("$and", and);
 
         return result;
 
