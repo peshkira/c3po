@@ -89,6 +89,10 @@ public class PropertyFilterCondition {
             result+="value"+"="+neutralizeStringForSRU(value);
             result+="&";
         }
+        for (String value : getValues()) {
+            result+="value"+"="+neutralizeStringForSRU(value);
+            result+="&";
+        }
         return result;
     }
 

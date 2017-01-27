@@ -389,7 +389,7 @@ function applyFilter() {
     //alert(JSON.stringify(final));
 
     $.ajax({
-        url: 'c3po/filter/apply',
+        url: '/c3po/filter/apply',
         type: "POST",
         data: JSON.stringify(final),
         contentType: "application/json",
@@ -448,7 +448,7 @@ function renderSourcedValues(selectPropertyName, holderPropertySourcedValues, so
 
 function addNewPropertiesSelectHolder(properties) {
 
-    var div = $('<div class="propertyfilter">').appendTo('#filter');
+    var div = $('.propertyfilter');
     var pfc = $('<div class="holderPropertyFilterCondition">').appendTo(div);
     var deletediv = $('<div class="delete"><a class="red_button" href="#">x</a></div>').appendTo($(pfc));
     deletediv.click(function () {

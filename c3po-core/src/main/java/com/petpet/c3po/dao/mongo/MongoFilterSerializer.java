@@ -17,14 +17,19 @@ package com.petpet.c3po.dao.mongo;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
 import com.petpet.c3po.api.model.helper.BetweenFilterCondition.Operator;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.api.model.helper.filtering.PropertyFilterCondition;
 import com.petpet.c3po.utils.Configurator;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -97,9 +102,6 @@ public class MongoFilterSerializer {
 
     public DBObject serializeNew(Filter filter) {
         DBObject result = new BasicDBObject();
-
-
-
         if (filter != null) {
             if (filter.getRaw() != null) {
                 Object o = com.mongodb.util.JSON.parse(filter.getRaw());
@@ -109,18 +111,91 @@ public class MongoFilterSerializer {
             if (filter.getConditions()!=null && filter.getConditions().size()>0)
                 return serialize(filter);
             List<PropertyFilterCondition> propertyFilterConditions = filter.getPropertyFilterConditions();
+
             List<BasicDBObject> and = new ArrayList<BasicDBObject>();
 
             for (PropertyFilterCondition propertyFilterCondition : propertyFilterConditions) {
-                and.addAll(getSourcedValueList(propertyFilterCondition.getSourcedValues()));
-                and.addAll(getPropertyList(propertyFilterCondition.getProperty())) ;
+                BasicDBObject metadata=new BasicDBObject();
+                BasicDBObject elemMatch = new BasicDBObject();
+                BasicDBObject elemMatchComponents = new BasicDBObject();
+
+                String propertyName = propertyFilterCondition.getProperty();
+
+                elemMatchComponents.put("property", propertyName);
+
+
+                //process separate property values
+                if (propertyFilterCondition.getValues().size()>0){
+                    List<Object> list=new ArrayList<Object>();
+                    for (String value : propertyFilterCondition.getValues()){
+                        list.add(normalizeValue(value,propertyName));
+                    }
+                    BasicDBObject all =new BasicDBObject("$all", list);
+                    elemMatchComponents.put("sourcedValues.value", all);
+                }
+
+                //process separate property value sources
+                if (propertyFilterCondition.getSources().size()>0){
+                    List<Object> list=new ArrayList<Object>();
+                    for (String source : propertyFilterCondition.getSources()){
+                        Source s = null;
+                        if (source.contains(":")) {
+                            String[] split = source.split(":");
+                            s = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource(split[0], split[1]);
+                        } else
+                            s = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource(source);
+                        list.add(s.getId());
+                    }
+                    BasicDBObject all =new BasicDBObject("$all", list);
+                    elemMatchComponents.put("sourcedValues.source", all);
+                }
+
+                //process property sourced values
+                if (propertyFilterCondition.getSourcedValues().size()>0){
+                    List<Object> list=new ArrayList<Object>();
+                    for (Map.Entry<String, String> stringStringEntry : propertyFilterCondition.getSourcedValues().entrySet()) {
+                        BasicDBObject elemMatchSourcedValue = produceElemMatch(stringStringEntry, propertyName);
+                        list.add(elemMatchSourcedValue);
+                    }
+                    BasicDBObject all =new BasicDBObject("$all", list);
+                    elemMatchComponents.put("sourcedValues", all);
+                }
+
+                //process separate property statuses
+                if (propertyFilterCondition.getStatuses().size()>0){
+                    List<Object> list=new ArrayList<Object>();
+                    for (String status : propertyFilterCondition.getStatuses()){
+                        list.add(status);
+                    }
+                    BasicDBObject all =new BasicDBObject("$in", list);
+                    elemMatchComponents.put("status", all);
+                }
+
+
+                elemMatch.put("$elemMatch", elemMatchComponents);
+                metadata.put("metadata", elemMatch);
+                and.add(metadata);
+            }
+
+            if (and.size() > 0)
+                result.put("$and", and);
+
+            /*if (filter.getConditions()!=null && filter.getConditions().size()>0)
+                return serialize(filter);
+            List<PropertyFilterCondition> propertyFilterConditions = filter.getPropertyFilterConditions();
+            List<BasicDBObject> and = new ArrayList<BasicDBObject>();
+
+            for (PropertyFilterCondition propertyFilterCondition : propertyFilterConditions) {
+                String propertyName = propertyFilterCondition.getProperty();
+                and.addAll(getSourcedValueList(propertyFilterCondition.getSourcedValues(), propertyName));
+                and.addAll(getPropertyList(propertyName)) ;
                 and.addAll(getStatusList(propertyFilterCondition.getStatuses(), "$or"));
                 and.addAll(getSourceList(propertyFilterCondition.getSources(), "$and"));
-                and.addAll(getValueList(propertyFilterCondition.getValues(), "$and"));
+                and.addAll(getValueList(propertyFilterCondition.getValues(), "$and", propertyName));
 
             }
             if (and.size() > 0)
-                result.put("$and", and);
+                result.put("$and", and);*/
 
         }
 
@@ -137,17 +212,17 @@ public class MongoFilterSerializer {
         return result;
     }
 
-    private List<BasicDBObject> getSourcedValueList(Map<String, String> sourcedValues) {
+    private List<BasicDBObject> getSourcedValueList(Map<String, String> sourcedValues, String propertyName) {
         List<BasicDBObject> result = new ArrayList<BasicDBObject>();
 
         for (Map.Entry<String, String> stringStringEntry : sourcedValues.entrySet()) {
-            BasicDBObject elemMatch = produceElemMatch(stringStringEntry);
+            BasicDBObject elemMatch = produceElemMatch(stringStringEntry, propertyName);
             result.add(elemMatch);
         }
         return result;
     }
 
-    private BasicDBObject produceElemMatch(Map.Entry<String, String> stringStringEntry) {
+    private BasicDBObject produceElemMatch(Map.Entry<String, String> stringStringEntry, String propertyName) {
         BasicDBObject result = new BasicDBObject();
 
         String key = stringStringEntry.getKey();
@@ -161,16 +236,16 @@ public class MongoFilterSerializer {
 
         BasicDBObject content = new BasicDBObject();
         content.put("source", s.getId());
-        content.put("value", stringStringEntry.getValue());
+        content.put("value", normalizeValue(stringStringEntry.getValue(), propertyName));
         elemMatch.put("$elemMatch", content);
         result.put("metadata.sourcedValues", elemMatch);
-        return result;
+        return elemMatch;
     }
 
-    private List<BasicDBObject> getValueList(List<String> values, String andOr) {
+    private List<BasicDBObject> getValueList(List<String> values, String andOr, String propertyName) {
         List<BasicDBObject> result = new ArrayList<BasicDBObject>();
         if (values!=null && values.size()>0)
-            result.add( getAndOrList(values, "metadata.sourcedValues.value",andOr));
+            result.add( getAndOrListValues(values, "metadata.sourcedValues.value",andOr, propertyName));
         return result;
     }
 
@@ -179,6 +254,64 @@ public class MongoFilterSerializer {
         if (sources!=null && sources.size()>0)
             result.add(getAndOrList(sources, "metadata.sourcedValues.source",andOr));
         return result;
+    }
+
+    private Object normalizeValue(String valueString, String propertyName){
+        Property property = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(propertyName);
+        Object result=null;
+
+
+        PropertyType pType = PropertyType.valueOf(property.getType());
+        switch (pType) {
+            case INTEGER:
+                try {
+                    result = Integer.parseInt(valueString);
+                } catch (NumberFormatException ex) {
+                    result = valueString.equals("Unknown") ? null : valueString;
+                }
+                break;
+            case FLOAT:
+                try {
+                    result= Double.parseDouble(valueString);
+                } catch (NumberFormatException ex) {
+                    result = valueString.equals("Unknown") ? null : valueString;
+                }
+                break;
+            case BOOL:
+                try {
+                    if (valueString.equals("Unknown"))
+                        result = null;
+                    else
+                        result = Boolean.parseBoolean(valueString);
+                } catch (Exception ex) {
+                    if (valueString.equals("Unknown"))
+                        result = null;
+                    else if (valueString.equals("CONFLICT"))
+                        result = "CONFLICT";
+                }
+                break;
+            case STRING:
+                result = valueString;
+                if (valueString.equals("Unknown"))
+                    result = null;
+                break;
+            case DATE:
+                if (valueString.equals("Unknown"))
+                    result = null;
+                else {
+                    DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
+                    try {
+                        result = dateFormat.parse(valueString);
+                    } catch (ParseException e) {
+                        result = valueString;
+                    }
+                }
+                break;
+        }
+
+        return result;
+
+
     }
 
 
@@ -199,7 +332,17 @@ public class MongoFilterSerializer {
         }
         BasicDBObject result = new BasicDBObject(andOr, basicList);
         return result;
+    }
 
+    private BasicDBObject getAndOrListValues(List<String> list, String expression, String andOr, String propertyName) {
+        if (list == null || list.size() == 0)
+            return null;
+        List<BasicDBObject> basicList = new ArrayList<BasicDBObject>();
+        for (String listElement : list) {
+            basicList.add(new BasicDBObject(expression, normalizeValue(listElement, propertyName)));
+        }
+        BasicDBObject result = new BasicDBObject(andOr, basicList);
+        return result;
     }
 
 
