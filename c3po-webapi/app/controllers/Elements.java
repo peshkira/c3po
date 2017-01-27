@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -166,39 +167,25 @@ public class Elements extends Controller {
 		ArrayNode result = new ArrayNode(new JsonNodeFactory(false));
 		String nullStr=null;
 		for(MetadataRecord mr: metadata){
-			String status = mr.getStatus();
 			List<String> values = mr.getValues();
 			List<String> sources = mr.getSources();
 			String propertyKey = mr.getProperty();
 			Property property = persistence.getCache().getProperty(propertyKey);
 
-			/*List<String> tmp_sources=new ArrayList<String>();
-			for (String s:sources){
-				Source source = persistence.getCache().getSource(s);
-				if (source!=null)
-					tmp_sources.add(source.getName() + " (" + source.getVersion()+ ")");//sourceNames.get(integer));
-				else
-					tmp_sources.add("Null");
-			}
-			sources=tmp_sources;*/
 			ObjectNode tmp=Json.newObject();
 
 			tmp.put("Property", property.getKey());
 
 			tmp.put("Status", mr.getStatus());
-
-			for (String source: sourceNames){
-				int i = sources.indexOf(source);
-				if (i>=0){
-					tmp.put(source, values.get(i));
-				} else{
-					tmp.put(source, nullStr);
-				}
-				//if (sources.isEmpty()) {
-				//	tmp.put("C3PO",  values.get(i));
-				//} else {
-				//	tmp.put("C3PO", nullStr);
-				//}
+			for (Map.Entry<String, String> stringStringEntry : mr.getSourcedValues().entrySet()) {
+				String source = stringStringEntry.getKey();
+				String value = stringStringEntry.getValue();
+			}
+			for (int i=0; i< sourceNames.size();i++){
+				if (sources.contains(String.valueOf(i)))
+					tmp.put(sourceNames.get(i),values.get(sources.indexOf(String.valueOf(i))));
+				 else
+					tmp.put(sourceNames.get(i),nullStr);
 			}
 
 			result.add(tmp);
