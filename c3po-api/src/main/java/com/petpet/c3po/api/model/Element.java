@@ -264,7 +264,7 @@ public class Element implements Model, Serializable {
 
 
 
-    public void addMetadataRecord(String property, String value, String sourceID) {
+    public void addMetadataRecord(String property, String value, String sourceID, String status) {
         //  MetadataRecord metadataRecord = new MetadataRecord(property, value, sourceID);
         //  if (!this.metadata.contains(metadataRecord))
         //  this.metadata.add(metadataRecord);
@@ -273,10 +273,11 @@ public class Element implements Model, Serializable {
                 // metadataRecord.getValues().add(value);
                 // metadataRecord.getSources().add(sourceID);
                 metadataRecord.getSourcedValues().put(sourceID, value);
+                metadataRecord.setStatus(status);
                 return;
             }
         }
-        MetadataRecord metadataRecord = new MetadataRecord(property, value, sourceID);
+        MetadataRecord metadataRecord = new MetadataRecord(property, value, sourceID, status);
         getMetadata().add(metadataRecord);
 
     }

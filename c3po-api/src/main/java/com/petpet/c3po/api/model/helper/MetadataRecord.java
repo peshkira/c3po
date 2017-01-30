@@ -116,6 +116,15 @@ public class MetadataRecord implements Serializable {
         this.sourcedValues.put(sourceID, value);
 
     }
+    public MetadataRecord(String p, String value, String sourceID, String status) {
+        this();
+        this.property = p;
+        this.values.add(value);
+        this.sources.add(sourceID);
+        this.sourcedValues.put(sourceID, value);
+        this.status = status;
+
+    }
 
 
     /**

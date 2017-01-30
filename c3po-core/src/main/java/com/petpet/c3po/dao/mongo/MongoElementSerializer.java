@@ -60,7 +60,7 @@ public class MongoElementSerializer implements MongoModelSerializer {
 
     if ( object != null && object instanceof Element ) {
       Element element = (Element) object;
-      updateStatus(element);
+      //updateStatus(element);
       document = new BasicDBObject();
       if ( element.getName() != null && !element.getName().equals( "" ) ) {
         document.put( "name", element.getName() );
@@ -123,31 +123,7 @@ public class MongoElementSerializer implements MongoModelSerializer {
     return document;
   }
 
-  private void updateStatus(Element element) {
-    if (element.getMetadata()==null)
-      return;
-    for (MetadataRecord mr : element.getMetadata()) {
-      int sourceCount = distinctCount(mr.getSourcedValues().keySet());
-      int propValCount = distinctCount(mr.getSourcedValues().values());
-      if (propValCount > 1)
-        mr.setStatus(MetadataRecord.Status.CONFLICT.name());
-      else {
-        if (sourceCount > 1)
-          mr.setStatus(MetadataRecord.Status.OK.name());
-        else
-          mr.setStatus(MetadataRecord.Status.SINGLE_RESULT.name());
-      }
-    }
-  }
 
-  private int distinctCount(Collection<String> strings) {
-    List<String> unique=new ArrayList<String>();
-    for (String string : strings) {
-      if (!unique.contains(string))
-        unique.add(string);
-    }
-    return unique.size();
-  }
 
 
 
