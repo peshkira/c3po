@@ -332,12 +332,14 @@ public class ConflictResolutionProcessor {
             }
             out = new PrintWriter(file);
         } catch (IOException e) {
-            LOG.error("An error occured during csv generation {}", e.getMessage());
+            LOG.error("An error occurred during csv generation {}", e.getMessage());
         }
 
         out.println(header);
-        for (BasicDBObject obj : basicDBObjects) {
 
+
+        for (BasicDBObject obj : basicDBObjects) {
+                Filter filter_tmp=new Filter();
                 String output = "";
                 Double count = obj.getDouble("value");
                 output += count.intValue();
@@ -347,24 +349,48 @@ public class ConflictResolutionProcessor {
                 BasicDBObject format_version = (BasicDBObject) id1.get("format_version");
                 BasicDBObject mimetype = (BasicDBObject) id1.get("mimetype");
 
-                BasicDBList format_values = (BasicDBList) format.get("values");
-                BasicDBList format_sources = (BasicDBList) format.get("sources");
-                output += basicDBListsToCSV(format_values, format_sources, sources);
+                if (format !=null && format.get("sourcedValues")!=null) {
+                    BasicDBList format_sourcedValues = (BasicDBList) format.get("sourcedValues");
+                    output += basicDBListsToCSV(format_sourcedValues, sources);
+                    PropertyFilterCondition pfc_format = new PropertyFilterCondition();
+                    pfc_format.addCondition(PropertyFilterCondition.PropertyFilterConditionType.PROPERTY, "format");
+                   // pfc_format.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, "CONFLICT");
+                    pfc_format.setSourcedValues(getSourcedValues(format_sourcedValues, sources));
+                    filter_tmp.getPropertyFilterConditions().add(pfc_format);
+                } else
+                    output += basicDBListsToCSV(new BasicDBList(), sources);
 
-                BasicDBList format_version_values = (BasicDBList) format_version.get("values");
-                BasicDBList format_version_sources = (BasicDBList) format_version.get("sources");
-                output += basicDBListsToCSV(format_version_values, format_version_sources, sources);
+                if (format_version !=null && format_version.get("sourcedValues")!=null) {
+                    BasicDBList format_version_sourcedValues = (BasicDBList) format_version.get("sourcedValues");
+                    output += basicDBListsToCSV(format_version_sourcedValues, sources);
+                    PropertyFilterCondition pfc_format_version = new PropertyFilterCondition();
+                    pfc_format_version.addCondition(PropertyFilterCondition.PropertyFilterConditionType.PROPERTY, "format_version");
+                    //pfc_format_version.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, "CONFLICT");
+                    pfc_format_version.setSourcedValues(getSourcedValues(format_version_sourcedValues, sources));
+                    filter_tmp.getPropertyFilterConditions().add(pfc_format_version);
+                } else
+                    output += basicDBListsToCSV(new BasicDBList(), sources);
 
-                BasicDBList mimetype_values = (BasicDBList) mimetype.get("values");
-                BasicDBList mimetype_sources = (BasicDBList) mimetype.get("sources");
-                output += basicDBListsToCSV(mimetype_values, mimetype_sources, sources);
+                if (mimetype !=null && mimetype.get("sourcedValues")!=null) {
+                    BasicDBList mimetype_sourcedValues = (BasicDBList) mimetype.get("sourcedValues");
+                    output += basicDBListsToCSV(mimetype_sourcedValues, sources);
+                    PropertyFilterCondition pfc_mimetype = new PropertyFilterCondition();
+                    pfc_mimetype.addCondition(PropertyFilterCondition.PropertyFilterConditionType.PROPERTY, "mimetype");
+                    //pfc_mimetype.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, "CONFLICT");
+                    pfc_mimetype.setSourcedValues(getSourcedValues(mimetype_sourcedValues, sources));
+                    filter_tmp.getPropertyFilterConditions().add(pfc_mimetype);
+                } else
+                    output += basicDBListsToCSV(new BasicDBList(), sources);
 
                 BasicDBList andQuery = new BasicDBList();
                 BasicDBObject query;
 
                 String getQuery = "";
 
-                if (format.size() > 0) {
+
+                String s = filter_tmp.toSRUString();
+
+            /*if (format.size() > 0) {
                     query = new BasicDBObject();
                     if (format.getString("status").equals("CONFLICT")) {
                         query.put("format.values", format_values);
@@ -406,20 +432,34 @@ public class ConflictResolutionProcessor {
                     getQuery = getQuery.substring(0, getQuery.length() - 1);
                     getQuery = getQuery.replace("+", "%2B").replace(" ", "%20");
                     andQuery.add(query);
-                }
-                query = new BasicDBObject("$and", andQuery);
-                Iterator<Element> elementIterator = persistence.findQ(Element.class, query);
+                }*/
+               // query = new BasicDBObject("$and", andQuery);
+                Iterator<Element> elementIterator = persistence.find(Element.class, filter_tmp);
                 output += ";";
                 if (elementIterator.hasNext()) {
                     Element next = elementIterator.next();
                     output += "http://" + url + "/c3po/objects/" + next.getId();
                 }
-                output += ";" + "http://" + url + "/c3po/overview/filter?" + getQuery + "&template=Conflict";
-                output += ";" + "http://" + url + "/c3po/export/csv/filter?" + getQuery;
+                output += ";" + "http://" + url + "/c3po/overview/filter?" + s + "&template=Conflict";
+                output += ";" + "http://" + url + "/c3po/export/csv/filter?" + s;
                 out.println(output);
         }
         out.close();
         return file;
+    }
+
+    private static Map<String, String> getSourcedValues(BasicDBList sourcedValues, List<String> sources) {
+        Map<String, String> result=new HashMap<>();
+
+        if (sourcedValues != null) {
+            for (int i = 0; i < sourcedValues.size(); i++) {
+                String valueConflicted = ((BasicDBObject) sourcedValues.get(i)).get("value").toString();
+                String sourceString= ((BasicDBObject) sourcedValues.get(i)).get("source").toString();
+                String source = persistenceLayer.getCache().getSource(sourceString).toString();
+                result.put(source,valueConflicted);
+            }
+        }
+        return result;
     }
 
 
@@ -437,29 +477,20 @@ public class ConflictResolutionProcessor {
     }
 
     static PersistenceLayer persistenceLayer=Configurator.getDefaultConfigurator().getPersistence();
-    public static String basicDBListsToCSV(BasicDBList value, BasicDBList source, List<String> sources) {
+    public static String basicDBListsToCSV(BasicDBList sourcedValues, List<String> sources) {
 
         String[] result = new String[sources.size()];
         for (int i = 0; i < result.length; i++)
             result[i] = "";
-        if (value != null && source != null) {
-            int size = value.size();
-            if (size > 1) {
-                for (int i = 0; i < value.size(); i++) {
-                    String valueConflicted = value.get(i).toString();
-                  //  Integer sourceID = Integer.parseInt(source.get(i).toString());
-                  //  Source source1 = persistenceLayer.getCache().getSource(source.get(i).toString());
-                    String sourceString= source.get(i).toString();//source1.toString();
-                    result[sources.indexOf(sourceString)] = valueConflicted;
-                }
-            } else {
-                String valueConflicted = value.get(0).toString();
-                for (int i = 0; i < source.size(); i++) {
-                    String sourceString= source.get(i).toString();//source1.toString();
-                    result[sources.indexOf(sourceString)] = valueConflicted;
-                    //Integer sourceID = Integer.parseInt(source.get(i).toString());
-                    //result[sourceID] = valueConflicted;
-                }
+
+
+        if (sourcedValues != null) {
+            for (int i = 0; i < sourcedValues.size(); i++) {
+                String valueConflicted = ((BasicDBObject) sourcedValues.get(i)).get("value").toString();
+              //  Integer sourceID = Integer.parseInt(source.get(i).toString());
+              //  Source source1 = persistenceLayer.getCache().getSource(source.get(i).toString());
+                String sourceString= ((BasicDBObject) sourcedValues.get(i)).get("source").toString();
+                result[Integer.valueOf(sourceString)] = valueConflicted;
             }
         }
         String output = "";

@@ -104,7 +104,7 @@ public class FITSAdaptor extends AbstractAdaptor {
             readFileinfo(fileinfo, element);
             readFileStatus(filestatus, element);
             readMetadata(metadata, element);
-            //element.updateStatus();
+           // element.updateStatus();
             return element;
         }  catch ( Exception e ) {
             LOG.warn( "An exception occurred while parsing {}: {}", name, e.getMessage() );

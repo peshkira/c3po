@@ -302,6 +302,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBObject query = this.getCachedFilter(filter);
         LOG.debug("Finding objects with the query:");
         LOG.debug(query.toString());
+        String debugString=query.toString();
         DBCollection dbCollection = this.getCollection(clazz);
         MongoModelDeserializer modelDeserializer = this.getDeserializer(clazz);
 
@@ -738,6 +739,24 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         return histograms;
     }
 
+    @Override
+    public <T extends Model> Map<String, Map<String, Long>> getValues(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds) {
+        Map<String, Map<String, Long>> histograms = new HashMap<String, Map<String, Long>>();
+        if (binThresholds == null) {
+            binThresholds = new HashMap<String, List<Integer>>();
+        }
+        for (String property : properties) {
+            DBObject dbObject = null;
+            //List<BasicDBObject> aggregation = aggregate(property, filter, false);
+            //Map<String, Long> stringLongMap = parseAggregation(aggregation, property,false);
+            dbObject = mapReduceAllValues(0, property, filter, binThresholds.get(property));
+            Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
+            histograms.put(property, stringLongMap);
+        }
+        return histograms;
+    }
+
+
     public Map<String, Long> parseAggregation(List<BasicDBObject> aggregation, String propert, Boolean getStats ) {
         Map<String, Long> histogram = new HashMap<String, Long>();
 
@@ -1020,6 +1039,153 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "                    property: property,\n" +
                     "                    value: val\n" +
                     "                }, 1);\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    emit({\n" +
+                    "        property: property,\n" +
+                    "        value: 'Unknown'\n" +
+                    "        }, 1);\n" +
+                    "}";
+
+            reduce = "function reduce(key, values) {\n" +
+                    "    var res = 0;\n" +
+                    "    values.forEach(function(v) {\n" +
+                    "        res += v;\n" +
+                    "    });\n" +
+                    "    return res;\n" +
+                    "}";
+
+
+        }
+        DBObject query = this.getCachedFilter(filter);
+        LOG.debug("Filter query is:\n{}", query);
+        String queryString = query.toString();
+        DBCollection elmnts = getCollection(Element.class);
+        MapReduceCommand cmd = new MapReduceCommand(elmnts, map, reduce, null, INLINE, query);
+        MapReduceOutput output = elmnts.mapReduce(cmd);
+        // List<BasicDBObject> results = (List<BasicDBObject>) output.getCommandResult().get( "results" );
+        Iterator<DBObject> iterator = output.results().iterator();
+        List<BasicDBObject> results = new ArrayList<BasicDBObject>();
+        while (iterator.hasNext()) {
+            results.add((BasicDBObject) iterator.next());
+
+        }
+
+        LOG.debug("MapReduce produced {} results", results.size());
+        DBCollection histCollection = this.db.getCollection(TBL_HISTOGRAMS);
+        BasicDBObject old = new BasicDBObject("_id", key);
+        BasicDBObject res = new BasicDBObject(old.toMap());
+        res.put("results", results);
+        histCollection.update(old, res, true, false);
+
+        DBCursor cursor = histCollection.find(new BasicDBObject("_id", key));
+
+        if (cursor.count() == 0) {
+            return null;
+        }
+        long end = System.currentTimeMillis();
+        LOG.debug("MapReduce took {} seconds", (end - start) / 1000);
+        return (DBObject) cursor.next().get("results");
+    }
+
+
+    public DBObject mapReduceAllValues(int key, String property, Filter filter, List<Integer> bins) {
+        LOG.debug("Starting mapReduce for the following property: {}", property);
+        long start = System.currentTimeMillis();
+        Property prop = getCache().getProperty(property);
+        String propType = prop.getType();
+        String map = "";
+        String map2="";
+        String reduce = "";
+        if (propType.equals(PropertyType.STRING.toString()) || propType.equals(PropertyType.BOOL.toString())) {
+            map= "function() {\n" +
+                    "    property = '" + property + "';\n" +
+                    "    for (mr in this.metadata){\n" +
+                    "        metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property)\n" +
+                    "        {\n" +
+                    "            for (i in metadataRecord.sourcedValues)\n" +
+                    "            {\n" +
+                    "                sv=metadataRecord.sourcedValues[i];\n" +
+                    "                emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: sv.value\n" +
+                    "                }, 1);\n" +
+                    "\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "    emit({\n" +
+                    "        property: property,\n" +
+                    "        value: 'Unknown'\n" +
+                    "        }, 1);\n" +
+                    "}";
+
+            reduce = "function reduce(key, values) {\n" +
+                    "    var res = 0;\n" +
+                    "    values.forEach(function(v) {\n" +
+                    "        res += v;\n" +
+                    "    });\n" +
+                    "    return res;\n" +
+                    "}";
+
+        } else if (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
+            map="function() {\n" +
+                    "    property = '" + property + "';\n" +
+                    "    thresholds = " + getBinThresholds(bins) + ";\n" +
+                    "    for (mr in this.metadata)" +
+                    "    {\n" +
+                    "        metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property)" +
+                    "        {\n" +
+                    "           for (i in metadataRecord.sourcedValues)" +
+                    "           {\n" +
+                    "                sv=metadataRecord.sourcedValues[i];\n" +
+                    "                var val=sv.value;\n" +
+                    "                if (thresholds.length > 0)\n" +
+                    "                    for (t in thresholds){\n" +
+                    "                        threshold = thresholds[t];  \n" +
+                    "                        if (val>=threshold[0] && val<=threshold[1]){\n" +
+                    "                             emit({\n" +
+                    "                                property: property,\n" +
+                    "                                value: threshold[0]+'-'+threshold[1]\n" +
+                    "                            }, 1);\n" +
+                    "                         }\n" +
+                    "                    }\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "         }\n" +
+                    "    }\n" +
+                    "    emit({\n" +
+                    "        property: property,\n" +
+                    "        value: 'Unknown'\n" +
+                    "        }, 1);\n" +
+                    "}";
+            reduce = "function reduce(key, values) {\n" +
+                    "    var res = 0;\n" +
+                    "    values.forEach(function(v) {\n" +
+                    "        res += v;\n" +
+                    "    });\n" +
+                    "    return res;\n" +
+                    "}";
+
+        } else if (propType.equals(PropertyType.DATE.toString())) {
+            map = "function() {\n" +
+                    "    property = '" + property + "';\n" +
+                    "    for (mr in this.metadata){\n" +
+                    "        metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property){\n" +
+                    "           for (i in metadataRecord.sourcedValues){\n" +
+                    "               sv=metadataRecord.sourcedValues[i];\n" +
+                    "               var date = new Date(sv.value);\n" +
+                    "               var val=date.getFullYear();\n" +
+                    "               emit({\n" +
+                    "                    property: property,\n" +
+                    "                    value: val\n" +
+                    "               }, 1);\n" +
                     "            }\n" +
                     "            return;\n" +
                     "        }\n" +

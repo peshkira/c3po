@@ -107,6 +107,7 @@ public class Filter implements Serializable {
 
     public Filter(String SRUString) throws ParseException {
         this();
+        SRUString=SRUString.replace( "%2B", "+").replace("%20"," ");
         int i = SRUString.indexOf("&property");
         while (i > -1){
             String substring = SRUString.substring(0, i);
@@ -254,6 +255,7 @@ public class Filter implements Serializable {
         }
         if (result.endsWith("&"))
             result=result.substring(0,result.length()-1);
+        result=result.replace("+", "%2B").replace(" ", "%20");
         return result;
 
 
