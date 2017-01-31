@@ -131,6 +131,7 @@ public class MongoFilterSerializer {
                         list.add(normalizeValue(value,propertyName));
                     }
                     BasicDBObject all =new BasicDBObject("$all", list);
+                    all.put("$size", list.size());
                     elemMatchComponents.put("sourcedValues.value", all);
                 }
 
@@ -147,6 +148,7 @@ public class MongoFilterSerializer {
                         list.add(s.getId());
                     }
                     BasicDBObject all =new BasicDBObject("$all", list);
+                    all.put("$size", list.size());
                     elemMatchComponents.put("sourcedValues.source", all);
                 }
 
@@ -158,6 +160,7 @@ public class MongoFilterSerializer {
                         list.add(elemMatchSourcedValue);
                     }
                     BasicDBObject all =new BasicDBObject("$all", list);
+                    all.put("$size", list.size());
                     elemMatchComponents.put("sourcedValues", all);
                 }
 

@@ -1272,12 +1272,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "    for (mr in this.metadata){\n" +
                     "        metadataRecord=this.metadata[mr];\n" +
                     "        if(metadataRecord.property == property){\n" +
-                    "            if (metadataRecord.status == 'CONFLICT'){\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: 'CONFLICT'\n" +
-                    "                }, 1)\n" +
-                    "            } else {\n" +
+                    "            {\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
                     "                    value: property\n" +
@@ -1312,7 +1307,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "            a.max = Math.max(a.max, b.max);\n" +
                     "        }\n" +
                     "return a;" +
-                    "}";
+                    "}"
+
+
+                        ;
             finalize = "function finalize(key, value) {\n" +
                     "    value.avg = value.sum / value.count;\n" +
                     "    value.variance = value.diff / value.count;\n" +
