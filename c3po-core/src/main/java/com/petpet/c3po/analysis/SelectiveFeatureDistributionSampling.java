@@ -312,11 +312,23 @@ Anything else that is interesting about inputs, outputs,settings,params
 
 
     public Iterator<Element> getSamplesForValues(List<String> values){
-        Filter f=new Filter(this.filter);
+        Filter f= new Filter(this.filter);
         f.setStrict(false);
         for (int i = 0; i < properties.size(); i++) {
             String val = values.get(i);
             String prop = properties.get(i);
+
+            //check if the existing filter contains this property
+            //if yes, then skip the property
+
+            boolean skip=false;
+            for (PropertyFilterCondition propertyFilterCondition : f.getPropertyFilterConditions()) {
+                if (propertyFilterCondition.getProperty().equals(prop))
+                    skip=true;
+            }
+            if (skip)
+                continue;
+
             Property property = pl.getCache().getProperty(prop);
             if (property.getType().equals(PropertyType.INTEGER.name()) && val.contains("-") && !val.startsWith("-")){
                 PropertyFilterCondition pfc=new PropertyFilterCondition();
