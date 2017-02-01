@@ -8,6 +8,7 @@ import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.api.model.helper.filtering.PropertyFilterCondition;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 import org.dom4j.Document;
@@ -312,19 +313,32 @@ Anything else that is interesting about inputs, outputs,settings,params
 
     public Iterator<Element> getSamplesForValues(List<String> values){
         Filter f=new Filter(this.filter);
+        f.setStrict(false);
         for (int i = 0; i < properties.size(); i++) {
             String val = values.get(i);
             String prop = properties.get(i);
             Property property = pl.getCache().getProperty(prop);
             if (property.getType().equals(PropertyType.INTEGER.name()) && val.contains("-") && !val.startsWith("-")){
-                BetweenFilterCondition betweenFilterCondition = BetweenFilterCondition.getBetweenFilterCondition(val, prop);
-                f.addFilterCondition(betweenFilterCondition);
+                PropertyFilterCondition pfc=new PropertyFilterCondition();
+                pfc.setProperty(prop);
+                pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                //BetweenFilterCondition betweenFilterCondition = BetweenFilterCondition.getBetweenFilterCondition(val, prop);
+                f.getPropertyFilterConditions().add(pfc);//addFilterCondition(betweenFilterCondition);
             }
             if (property.getType().equals(PropertyType.BOOL.name())){
-                f.addFilterCondition(new FilterCondition(properties.get(i), Boolean.parseBoolean(values.get(i))));
+                PropertyFilterCondition pfc=new PropertyFilterCondition();
+                pfc.setProperty(prop);
+                pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                f.getPropertyFilterConditions().add(pfc);
+                //f.addFilterCondition(new FilterCondition(properties.get(i), Boolean.parseBoolean(values.get(i))));
             }
-            else
-                f.addFilterCondition(new FilterCondition(properties.get(i), values.get(i)));
+            else {
+                PropertyFilterCondition pfc=new PropertyFilterCondition();
+                pfc.setProperty(prop);
+                pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                f.getPropertyFilterConditions().add(pfc);
+                //f.addFilterCondition(new FilterCondition(properties.get(i), values.get(i)));
+            }
         }
 
         long count = pl.count(Element.class, f);
@@ -360,44 +374,48 @@ Anything else that is interesting about inputs, outputs,settings,params
         String map="function() {\n" +
                 "    var properties = @1;\n" +
                 "    var bins= @2;\n" +
-                "var toEmit=[];\n" +
-                "    for (x in properties) {\n" +
-                "        property = properties[x];\n" +
-                "        if (this[property] != null) {\n" +
-                "            if (this[property].status != 'CONFLICT') {\n" +
-                "                if (property=='created') {                    \n" +
-                "                    var date = new Date(this[property].values[0]);                    \n" +
-                "                    toEmit.push(date.getFullYear().toString());             \n" +
-                "                }\n" +
-                "                else{\n" +
-                "                    var val=this[property].values[0];\n" +
-                "                    if (bins[property]!=null){\n" +
-                "                        var skipped=false;\n" +
-                "                        for (t in bins[property]){\n" +
-                "                            threshold = bins[property][t];  \n" +
-                "                            if (val>=threshold[0] && val<=threshold[1]){\n" +
-                "                                toEmit.push(threshold[0]+'-'+threshold[1]);\n" +
-                "                                skipped=true;\n" +
-                "                                break;\n" +
-                "                            }   \n" +
-                "                        }\n" +
-                "                        if (!skipped)\n" +
-                "                            toEmit.push(val); \n" +
+                "    var toEmit=[];\n" +
+                "    for (var x in properties) {\n" +
+                "        var found=false;\n" +
+                "        var property = properties[x];\n" +
+                "        for (var mr in this.metadata ){\n" +
+                "            var metadataRecord=this.metadata[mr];\n" +
+                "            if (metadataRecord.property==property){\n" +
+                "                found=true;\n" +
+                "                if (metadataRecord.status != 'CONFLICT'){\n" +
+                "                    if (metadataRecord.property=='created'){\n" +
+                "                        var date = metadataRecord.sourcedValues[0].value;\n" +
+                "                        toEmit.push(date.getFullYear().toString());  \n" +
                 "                    }\n" +
-                "                    else\n" +
-                "                        toEmit.push(val); \n" +
-                "                } \n" +
+                "                    else{\n" +
+                "                        var val = metadataRecord.sourcedValues[0].value;\n" +
+                "                        if (bins[property]!=null){\n" +
+                "                            var skipped=false;\n" +
+                "                            for (t in bins[property]){\n" +
+                "                                threshold = bins[property][t];  \n" +
+                "                                if (val>=threshold[0] && val<=threshold[1]){\n" +
+                "                                    toEmit.push(threshold[0]+'-'+threshold[1]);\n" +
+                "                                    skipped=true;\n" +
+                "                                    break;\n" +
+                "                                }   \n" +
+                "                            }\n" +
+                "                            if (!skipped)\n" +
+                "                                toEmit.push(val); \n" +
+                "                        }\n" +
+                "                        else\n" +
+                "                            toEmit.push(val); \n" +
+                "                    } \n" +
+                "                }\n" +
+                "                else \n" +
+                "                    toEmit.push(\"CONFLICT\"); \n" +
+                "                \n" +
                 "            }\n" +
-                "            else {\n" +
-                "                toEmit.push(\"CONFLICT\"); \n" +
-                "            }\n" +
-                "        } \n" +
-                "        else {\n" +
-                "            toEmit.push(\"Unknown\");\n" +
                 "        }\n" +
+                "        if (!found)\n" +
+                "            toEmit.push(\"Unknown\"); \n" +
                 "    }\n" +
-                "    emit(toEmit, 1);" +
-                "}\n";
+                "    emit(toEmit, 1);\n" +
+                "}";
 
         String reduce= "function reduce(key, values) {\n" +
                 "        var res = 0;\n" +

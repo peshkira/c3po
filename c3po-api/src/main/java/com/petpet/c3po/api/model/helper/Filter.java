@@ -67,6 +67,8 @@ public class Filter implements Serializable {
     private List<FilterCondition> conditions;
 
     public List<PropertyFilterCondition> getPropertyFilterConditions() {
+        if (propertyFilterConditions==null)
+            propertyFilterConditions=new ArrayList<PropertyFilterCondition>();
         return propertyFilterConditions;
     }
 
@@ -83,6 +85,8 @@ public class Filter implements Serializable {
     public void setRaw(String raw) {
         this.raw = raw;
     }
+
+    private boolean strict=true;
 
     private String raw;
 
@@ -137,6 +141,7 @@ public class Filter implements Serializable {
      */
     public Filter(Filter another) {
         this.conditions = new ArrayList<FilterCondition>(another.conditions);
+        this.propertyFilterConditions=new ArrayList<PropertyFilterCondition>(another.getPropertyFilterConditions());
     }
 
     public List<FilterCondition> getConditions() {
@@ -261,4 +266,11 @@ public class Filter implements Serializable {
 
     }
 
+    public boolean isStrict() {
+        return strict;
+    }
+
+    public void setStrict(boolean strict) {
+        this.strict = strict;
+    }
 }

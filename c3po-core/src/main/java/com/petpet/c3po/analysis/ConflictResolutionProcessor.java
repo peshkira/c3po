@@ -337,6 +337,7 @@ public class ConflictResolutionProcessor {
 
         out.println(header);
 
+        Map<String, Double> toSort = new HashMap<String, Double>();
 
         for (BasicDBObject obj : basicDBObjects) {
                 Filter filter_tmp=new Filter();
@@ -442,7 +443,13 @@ public class ConflictResolutionProcessor {
                 }
                 output += ";" + "http://" + url + "/c3po/overview/filter?" + s + "&template=Conflict";
                 output += ";" + "http://" + url + "/c3po/export/csv/filter?" + s;
-                out.println(output);
+                toSort.put(output,count);
+                //out.println(output);
+        }
+
+        toSort=sortByValues(toSort);
+        for (String s : toSort.keySet()) {
+            out.println(s);
         }
         out.close();
         return file;
