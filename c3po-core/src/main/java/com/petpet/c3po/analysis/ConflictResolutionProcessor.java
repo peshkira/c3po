@@ -185,6 +185,7 @@ public class ConflictResolutionProcessor {
             BasicDBObject id1 = (BasicDBObject) obj.get("_id");
             if (id1.size() == 0) continue;
             Filter f=new Filter();
+            f.setStrict(true);
             for (String property : properties) {
                 PropertyFilterCondition pfc = getFilterCondition(property, id1);
                 f.getPropertyFilterConditions().add(pfc);
