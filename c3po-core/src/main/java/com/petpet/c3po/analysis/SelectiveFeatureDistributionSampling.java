@@ -4,10 +4,7 @@ import com.mongodb.*;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
-import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
-import com.petpet.c3po.api.model.helper.Filter;
-import com.petpet.c3po.api.model.helper.FilterCondition;
-import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.api.model.helper.*;
 import com.petpet.c3po.api.model.helper.filtering.PropertyFilterCondition;
 import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
@@ -333,21 +330,33 @@ Anything else that is interesting about inputs, outputs,settings,params
             if (property.getType().equals(PropertyType.INTEGER.name()) && val.contains("-") && !val.startsWith("-")){
                 PropertyFilterCondition pfc=new PropertyFilterCondition();
                 pfc.setProperty(prop);
-                pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                if (val.equals("CONFLICT")){
+                    pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, MetadataRecord.Status.CONFLICT);
+                }
+                else
+                    pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
                 //BetweenFilterCondition betweenFilterCondition = BetweenFilterCondition.getBetweenFilterCondition(val, prop);
                 f.getPropertyFilterConditions().add(pfc);//addFilterCondition(betweenFilterCondition);
             }
             if (property.getType().equals(PropertyType.BOOL.name())){
                 PropertyFilterCondition pfc=new PropertyFilterCondition();
                 pfc.setProperty(prop);
-                pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                if (val.equals("CONFLICT")){
+                    pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, MetadataRecord.Status.CONFLICT);
+                }
+                else
+                    pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
                 f.getPropertyFilterConditions().add(pfc);
                 //f.addFilterCondition(new FilterCondition(properties.get(i), Boolean.parseBoolean(values.get(i))));
             }
             else {
                 PropertyFilterCondition pfc=new PropertyFilterCondition();
                 pfc.setProperty(prop);
-                pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                if (val.equals("CONFLICT")){
+                    pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, MetadataRecord.Status.CONFLICT);
+                }
+                else
+                    pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
                 f.getPropertyFilterConditions().add(pfc);
                 //f.addFilterCondition(new FilterCondition(properties.get(i), values.get(i)));
             }
@@ -369,9 +378,11 @@ Anything else that is interesting about inputs, outputs,settings,params
         Map<List<String>, Integer> tmp=new HashMap<List<String>, Integer>();
         for (BasicDBObject result : results) {
             int value = result.getInt("value");
-            BasicDBList basicDBList = (BasicDBList) result.get("_id");
+          //  BasicDBList basicDBList = (BasicDBList) result.get("_id");
+            BasicDBObject id = (BasicDBObject) result.get("_id");
+            Collection<Object> values = id.values();
             List<String> strings=new ArrayList<>();
-            for (Object o : basicDBList) {
+            for (Object o : values) {
                 strings.add( o.toString());
             }
             tmp.put(strings,value);
@@ -386,7 +397,7 @@ Anything else that is interesting about inputs, outputs,settings,params
         String map="function() {\n" +
                 "    var properties = @1;\n" +
                 "    var bins= @2;\n" +
-                "    var toEmit=[];\n" +
+                "    var toEmit={};\n" +
                 "    for (var x in properties) {\n" +
                 "        var found=false;\n" +
                 "        var property = properties[x];\n" +
@@ -397,7 +408,7 @@ Anything else that is interesting about inputs, outputs,settings,params
                 "                if (metadataRecord.status != 'CONFLICT'){\n" +
                 "                    if (metadataRecord.property=='created'){\n" +
                 "                        var date = metadataRecord.sourcedValues[0].value;\n" +
-                "                        toEmit.push(date.getFullYear().toString());  \n" +
+                "                        toEmit[property]=(date.getFullYear().toString());  \n" +
                 "                    }\n" +
                 "                    else{\n" +
                 "                        var val = metadataRecord.sourcedValues[0].value;\n" +
@@ -406,25 +417,25 @@ Anything else that is interesting about inputs, outputs,settings,params
                 "                            for (t in bins[property]){\n" +
                 "                                threshold = bins[property][t];  \n" +
                 "                                if (val>=threshold[0] && val<=threshold[1]){\n" +
-                "                                    toEmit.push(threshold[0]+'-'+threshold[1]);\n" +
+                "                                    toEmit[property]=(threshold[0]+'-'+threshold[1]);\n" +
                 "                                    skipped=true;\n" +
                 "                                    break;\n" +
                 "                                }   \n" +
                 "                            }\n" +
                 "                            if (!skipped)\n" +
-                "                                toEmit.push(val); \n" +
+                "                                toEmit[property]=(val); \n" +
                 "                        }\n" +
                 "                        else\n" +
-                "                            toEmit.push(val); \n" +
+                "                            toEmit[property]=(val); \n" +
                 "                    } \n" +
                 "                }\n" +
                 "                else \n" +
-                "                    toEmit.push(\"CONFLICT\"); \n" +
+                "                    toEmit[property]=(\"CONFLICT\"); \n" +
                 "                \n" +
                 "            }\n" +
                 "        }\n" +
                 "        if (!found)\n" +
-                "            toEmit.push(\"Unknown\"); \n" +
+                "            toEmit[property]=(\"Unknown\"); \n" +
                 "    }\n" +
                 "    emit(toEmit, 1);\n" +
                 "}";

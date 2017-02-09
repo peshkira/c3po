@@ -342,6 +342,7 @@ public class ConflictResolutionProcessor {
 
         for (BasicDBObject obj : basicDBObjects) {
                 Filter filter_tmp=new Filter();
+                filter_tmp.setStrict(true);
                 String output = "";
                 Double count = obj.getDouble("value");
                 output += count.intValue();
