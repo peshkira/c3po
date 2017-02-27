@@ -30,15 +30,14 @@ import common.WebAppConstants;
 import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.Json;
+import play.mvc.Http;
 import play.mvc.Result;
 import views.html.conflicts;
 
 import javax.swing.plaf.metal.MetalRadioButtonUI;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.util.*;
 
 import static play.mvc.Controller.request;
 import static play.mvc.Controller.response;
@@ -339,5 +338,49 @@ public class Conflicts {
 
         JsonNode jsonNode = Json.toJson(overview);
         return ok(jsonNode);
+    }
+
+    public static Result resolveNew(){
+        Http.RequestBody body = request().body();
+        String path = request().path();
+        String uri = request().uri();
+        uri=uri.replace(path+"?","");
+        uri=uri.replace( "%2B", "+").replace("%20"," ");
+        int i = uri.indexOf("&propertyToResolve");
+        String filter=uri.substring(0,i);
+        Filter f= null;
+        try {
+            f = new Filter(filter);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        String resolvingQuery = uri.substring(i+1, uri.length() );
+        String[] split = resolvingQuery.split("&");
+        Map<String,String> resolutions=new HashMap<String, String>();
+
+        String propertyToResolve=null ;
+        String resolveTo=null;
+        for (String s : split) {
+            String[] split1 = s.split("=");
+            String key = split1[0];
+            String value = split1[1];
+
+
+            if (key.equals("propertyToResolve")) {
+                propertyToResolve = value;
+            }
+            else if (key.equals("resolveTo")) {
+                resolveTo = value;
+                if (propertyToResolve != null) {
+                    resolutions.put(propertyToResolve,resolveTo);
+                    propertyToResolve = null;
+                }
+            }
+        }
+
+        ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        long resolve = crp.resolve(f, resolutions);
+
+        return ok();
     }
 }

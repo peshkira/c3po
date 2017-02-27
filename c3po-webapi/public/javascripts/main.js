@@ -180,6 +180,7 @@ function renderPFC(pfc, div, properties) {
     selectPropertyStatus.append($('<option>').text("OK").attr('value', "OK"));
     selectPropertyStatus.append($('<option>').text("SINGLE_RESULT").attr('value', "SINGLE_RESULT"));
     selectPropertyStatus.append($('<option>').text("CONFLICT").attr('value', "CONFLICT"));
+    selectPropertyStatus.append($('<option>').text("RESOLVED").attr('value', "RESOLVED"));
     selectPropertyStatus[0].value = pfc.propertystatus;
 
     //Property sourced values
@@ -468,7 +469,7 @@ function addNewPropertiesSelectHolder(properties) {
     propertystatus.append($('<option>').text("OK").attr('value', "OK"));
     propertystatus.append($('<option>').text("SINGLE_RESULT").attr('value', "SINGLE_RESULT"));
     propertystatus.append($('<option>').text("CONFLICT").attr('value', "CONFLICT"));
-
+    propertystatus.append($('<option>').text("RESOLVED").attr('value', "RESOLVED"));
     var propertysourcedvalues = $('<div id="holderSourcedValues">').appendTo(pfc);
 
 

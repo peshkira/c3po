@@ -117,6 +117,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     private Mongo mongo;
 
+    public DB getDb() {
+        return db;
+    }
+
     private DB db;
 
     private Cache dbCache;

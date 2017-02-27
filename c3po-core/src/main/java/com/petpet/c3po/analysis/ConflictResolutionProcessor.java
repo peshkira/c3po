@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.POJONode;
 import com.google.gson.Gson;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
+import com.mongodb.*;
 import com.petpet.c3po.adaptor.rules.ContentTypeIdentificationRule;
 import com.petpet.c3po.analysis.conflictResolution.Rule;
 import com.petpet.c3po.api.dao.PersistenceLayer;
@@ -59,6 +58,67 @@ public class ConflictResolutionProcessor {
                 result += (int) map.get("count");
         }
        // updateContentType(filter);
+        return result;
+    }
+
+    public long resolve(Filter filter, Map<String, String> resolutions){
+        long result = 0;
+        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
+        DB db = persistence.getDb();
+        DBObject cachedFilter = persistence.getCachedFilter(filter);
+
+        LOG.debug("Updating objects with the query:");
+        LOG.debug(cachedFilter.toString());
+        DBCollection elements = db.getCollection("elements");
+
+
+        /***
+         *
+          db.elements.update({ _id : ObjectId("5899f1c8fc4e9a2170fadff4")},
+         {$pull: {metadata: {property: "format", status: "CONFLICT"}}})
+
+         db.elements.update({ _id : ObjectId("5899f1c8fc4e9a2170fadff4")},
+         {$addToSet: {metadata:{property:"format" ,status: "RESOLVED", sourcedValues:[{source:"C3PO:0.6", value: "abracadabra"}]}}} )
+         *
+         */
+        WriteResult writeResult=null;
+        for (Map.Entry<String, String> stringStringEntry : resolutions.entrySet()) {
+
+            String propertyToResolve = stringStringEntry.getKey();
+            String resolveTo = stringStringEntry.getValue();
+            BasicDBObject metadata2 = new BasicDBObject("property", propertyToResolve);
+            metadata2.append("status", "RESOLVED");
+
+
+            BasicDBList sourcedValues=new BasicDBList();
+
+            String sourceIDC3PO = persistence.getCache().getSource("C3PO", "0.6").getId();
+            BasicDBObject sourcedValue=new BasicDBObject("source", sourceIDC3PO);
+            sourcedValue.append("value", resolveTo);
+
+            sourcedValues.add(sourcedValue);
+
+            metadata2.append("sourcedValues", sourcedValues);
+
+            BasicDBObject addToSet=new BasicDBObject("metadata", metadata2);
+            BasicDBObject update2=new BasicDBObject("$addToSet", addToSet);
+            writeResult = elements.update(cachedFilter, update2, false, true);
+
+
+
+
+
+            BasicDBObject metadata=new BasicDBObject("property", propertyToResolve);
+            metadata.append("status", "CONFLICT");
+            BasicDBObject pull=new BasicDBObject("metadata", metadata);
+            BasicDBObject update=new BasicDBObject("$pull", pull);
+            elements.update(cachedFilter, update, false, true);
+
+
+
+        }
+       // if (writeResult!=null)
+       //     result=writeResult.getN();
         return result;
     }
 
