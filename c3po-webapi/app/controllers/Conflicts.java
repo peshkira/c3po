@@ -44,6 +44,8 @@ import static play.mvc.Controller.response;
 import static play.mvc.Controller.session;
 import static play.mvc.Results.internalServerError;
 import static play.mvc.Results.ok;
+import static play.mvc.Results.redirect;
+
 /**
  * Created by artur on 01/04/16.
  */
@@ -366,7 +368,7 @@ public class Conflicts {
             String value = split1[1];
 
 
-            if (key.equals("propertyToResolve")) {
+            if (key.equals("propertyToResolve")) {http://localhost:9000/c3po/conflicts/resolve?property=format&source=Droid:3.0&value=Rich Text Format&status=CONFLICT&propertyToResolve=format&resolveTo=Rich Text Format
                 propertyToResolve = value;
             }
             else if (key.equals("resolveTo")) {
@@ -381,6 +383,6 @@ public class Conflicts {
         ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
         long resolve = crp.resolve(f, resolutions);
 
-        return ok();
+        return redirect("/c3po/overview");
     }
 }

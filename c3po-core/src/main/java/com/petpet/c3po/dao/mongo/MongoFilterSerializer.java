@@ -157,14 +157,27 @@ public class MongoFilterSerializer {
                 //process property sourced values
                 if (propertyFilterCondition.getSourcedValues().size()>0){
                     List<Object> list=new ArrayList<Object>();
+                    List<String> sourceIDs=new ArrayList<String>();
                     for (Map.Entry<String, String> stringStringEntry : propertyFilterCondition.getSourcedValues().entrySet()) {
-                        BasicDBObject elemMatchSourcedValue = produceElemMatch(stringStringEntry, propertyName);
-                        list.add(elemMatchSourcedValue);
+                        if (stringStringEntry.getValue().equals("UNKNOWN")){
+                            BasicDBObject elemMatchSourcedValue = produceElemMatch(stringStringEntry, propertyName);
+                            BasicDBObject tmp_elemMatch = (BasicDBObject) elemMatchSourcedValue.get("$elemMatch");
+                            sourceIDs.add( tmp_elemMatch.getString("source"));
+                        }
+                        else {
+                            BasicDBObject elemMatchSourcedValue = produceElemMatch(stringStringEntry, propertyName);
+                            list.add(elemMatchSourcedValue);
+                        }
+                        if (sourceIDs.size()>0) {
+                            BasicDBObject nin=new BasicDBObject("$nin", sourceIDs);
+                            elemMatchComponents.put("sourcedValues.source", nin);
+                        }
                     }
                     BasicDBObject all =new BasicDBObject("$all", list);
                     if (filter.isStrict())
                         all.put("$size", list.size());
-                    elemMatchComponents.put("sourcedValues", all);
+                    if (list.size()>0)
+                        elemMatchComponents.put("sourcedValues", all);
                 }
 
                 //process separate property statuses
