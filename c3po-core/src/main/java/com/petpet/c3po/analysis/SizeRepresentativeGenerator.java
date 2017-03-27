@@ -76,7 +76,7 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
     } else {
       List<String> properties=new ArrayList<String>();
       properties.add("size");
-      Map<String, Map<String, Long>> histograms = this.pl.getHistograms(properties, this.getFilter(), null);
+      Map<String, Map<String, Long>> histograms = this.pl.getStats(properties, this.getFilter(), null);
       Map<String, Long> sizeHistogram = histograms.get("size");
 
 

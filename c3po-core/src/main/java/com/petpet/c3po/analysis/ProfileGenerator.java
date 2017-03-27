@@ -331,19 +331,20 @@ public class ProfileGenerator {
                 continue;
             if ( mr.getStatus().equals( Status.CONFLICT.toString() ) ) {
                 for ( int i = 0; i < mr.getValues().size(); i++ ) {
-                    Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
-                            .getSources().get( i ) ) ) );
-                    Source source = sources.next();
+                   // Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
+                 //           .getSources().get( i ) ) ) );
+                   // Source source = sources.next();
                     sample.addElement( "record" ).addAttribute( "name", mr.getProperty() ).addAttribute( "value",
-                            mr.getValues().get( i ).toString() ).addAttribute( "tool", source.getName() + " " + source.getVersion() );
+                            mr.getValues().get( i ).toString() ).addAttribute( "tool", mr.getSources().get(0) );
                 }
 
             } else {
-                Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
-                        .getSources().get( 0 ) ) ) );
-                Source source = sources.next();
+
+                //Iterator<Source> sources = this.persistence.find( Source.class, new Filter( new FilterCondition( "_id", mr
+                 //       .getSources().get( 0 ) ) ) );
+                //Source source = sources.next();
                 sample.addElement( "record" ).addAttribute( "name", mr.getProperty() ).addAttribute( "value",
-                        mr.getValues().toString() ).addAttribute( "tool", source.getName() + " " + source.getVersion() );
+                        mr.getValues().toString() ).addAttribute( "tool", mr.getSources().get(0) );
             }
         }
     }
