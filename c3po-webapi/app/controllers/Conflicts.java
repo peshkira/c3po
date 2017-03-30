@@ -383,6 +383,7 @@ public class Conflicts {
         ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
         long resolve = crp.resolve(f, resolutions);
 
+        Logger.debug("Resolved conflicts: " + resolve);
         return redirect("/c3po/overview");
     }
 }

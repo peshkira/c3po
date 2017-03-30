@@ -67,7 +67,7 @@ public class ConflictResolutionProcessor {
         DB db = persistence.getDb();
         DBObject cachedFilter = persistence.getCachedFilter(filter);
 
-        LOG.debug("Updating objects with the query:");
+        LOG.debug("Applying the filter query:");
         LOG.debug(cachedFilter.toString());
         DBCollection elements = db.getCollection("elements");
 
@@ -85,40 +85,41 @@ public class ConflictResolutionProcessor {
         for (Map.Entry<String, String> stringStringEntry : resolutions.entrySet()) {
 
             String propertyToResolve = stringStringEntry.getKey();
+
+
+//First, the new metadata records are added
             String resolveTo = stringStringEntry.getValue();
             BasicDBObject metadata2 = new BasicDBObject("property", propertyToResolve);
             metadata2.append("status", "RESOLVED");
-
-
-            BasicDBList sourcedValues=new BasicDBList();
-
+            BasicDBList sourcedValues = new BasicDBList();
             String sourceIDC3PO = persistence.getCache().getSource("C3PO", "0.6").getId();
-            BasicDBObject sourcedValue=new BasicDBObject("source", sourceIDC3PO);
+            BasicDBObject sourcedValue = new BasicDBObject("source", sourceIDC3PO);
             sourcedValue.append("value", resolveTo);
-
             sourcedValues.add(sourcedValue);
-
             metadata2.append("sourcedValues", sourcedValues);
-
-            BasicDBObject addToSet=new BasicDBObject("metadata", metadata2);
-            BasicDBObject update2=new BasicDBObject("$addToSet", addToSet);
-            writeResult = elements.update(cachedFilter, update2, false, true);
-
-
-
-
-
+            BasicDBObject addToSet = new BasicDBObject("metadata", metadata2);
+            BasicDBObject update2 = new BasicDBObject("$addToSet", addToSet);
+            LOG.debug("Applying the update:");
+            LOG.debug(update2.toString());
+            writeResult = elements.update(cachedFilter, update2, true, true);
+            if (writeResult != null)
+                LOG.debug("The query affected the following number of objects: " + writeResult.toString());
+        }
+        for (Map.Entry<String, String> stringStringEntry : resolutions.entrySet()) {
+//Second, the metadata records wih conflicts are removed
+            String propertyToResolve = stringStringEntry.getKey();
             BasicDBObject metadata=new BasicDBObject("property", propertyToResolve);
             metadata.append("status", "CONFLICT");
             BasicDBObject pull=new BasicDBObject("metadata", metadata);
             BasicDBObject update=new BasicDBObject("$pull", pull);
-            elements.update(cachedFilter, update, false, true);
-
-
-
+            LOG.debug("Applying the update:");
+            LOG.debug(update.toString());
+            WriteResult update1 = elements.update(cachedFilter, update, false, true);
+            if (update1!=null)
+                LOG.debug("The query affected the following number of objects: "+ update1.toString());
         }
        // if (writeResult!=null)
-       //     result=writeResult.getN();
+           // result=writeResult.getN();
         return result;
     }
 
