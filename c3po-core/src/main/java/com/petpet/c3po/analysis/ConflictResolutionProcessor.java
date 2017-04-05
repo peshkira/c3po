@@ -71,6 +71,7 @@ public class ConflictResolutionProcessor {
         LOG.debug(cachedFilter.toString());
         DBCollection elements = db.getCollection("elements");
 
+        long countBeforeUpdate = elements.count(cachedFilter);
 
         /***
          *
@@ -105,21 +106,28 @@ public class ConflictResolutionProcessor {
             if (writeResult != null)
                 LOG.debug("The query affected the following number of objects: " + writeResult.toString());
         }
+
+        //Second, the metadata records wih conflicts are removed
+
+        BasicDBObject metadata=new BasicDBObject("status", "CONFLICT");
+
+
+        BasicDBList properties=new BasicDBList();
         for (Map.Entry<String, String> stringStringEntry : resolutions.entrySet()) {
-//Second, the metadata records wih conflicts are removed
             String propertyToResolve = stringStringEntry.getKey();
-            BasicDBObject metadata=new BasicDBObject("property", propertyToResolve);
-            metadata.append("status", "CONFLICT");
-            BasicDBObject pull=new BasicDBObject("metadata", metadata);
-            BasicDBObject update=new BasicDBObject("$pull", pull);
-            LOG.debug("Applying the update:");
-            LOG.debug(update.toString());
-            WriteResult update1 = elements.update(cachedFilter, update, false, true);
-            if (update1!=null)
-                LOG.debug("The query affected the following number of objects: "+ update1.toString());
+            properties.add(propertyToResolve);
         }
-       // if (writeResult!=null)
-           // result=writeResult.getN();
+
+        BasicDBObject in=new BasicDBObject("$in", properties);
+        metadata.append("property", in);
+        BasicDBObject pull=new BasicDBObject("metadata", metadata);
+        BasicDBObject update=new BasicDBObject("$pull", pull);
+        LOG.debug("Applying the update:");
+        LOG.debug(update.toString());
+        WriteResult update1 = elements.update(cachedFilter, update, false, true);
+        long countAfterUpdate = elements.count(cachedFilter);
+        result=countBeforeUpdate-countAfterUpdate;
+        LOG.debug("The query affected the following number of objects: "+ result);
         return result;
     }
 
