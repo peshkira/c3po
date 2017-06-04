@@ -64,6 +64,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     private static final String CNF_DB_NAME = "db.name";
 
+    private static final String CNF_DB_URI="db.uri";
+
     /**
      * The elements collection in the document store.
      */
@@ -202,13 +204,22 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         }
 
         try {
+            String uri = config.get(CNF_DB_URI);
             String name = config.get(CNF_DB_NAME);
-            String host = config.get(CNF_DB_HOST);
-            int port = Integer.parseInt(config.get(CNF_DB_PORT));
+            if (uri.length()>0)
+            {
+                MongoClientURI mongoClientURI = new MongoClientURI(uri);
+                mongo = new MongoClient(mongoClientURI);
+                this.db = this.mongo.getDB(name);
+            }
 
-            this.mongo = new Mongo(host, port);
-            this.db = this.mongo.getDB(name);
+            else {
+                String host = config.get(CNF_DB_HOST);
+                int port = Integer.parseInt(config.get(CNF_DB_PORT));
 
+                this.mongo = new Mongo(host, port);
+                this.db = this.mongo.getDB(name);
+            }
             DBObject uid = new BasicDBObject("uid", 1);
             DBObject key = new BasicDBObject("key", 1);
             DBObject unique = new BasicDBObject("unique", true);
