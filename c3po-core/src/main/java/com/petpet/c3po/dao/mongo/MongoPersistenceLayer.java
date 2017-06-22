@@ -206,7 +206,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         try {
             String uri = config.get(CNF_DB_URI);
             String name = config.get(CNF_DB_NAME);
-            if (uri.length()>0)
+            if (uri!=null && uri.length()>0)
             {
                 MongoClientURI mongoClientURI = new MongoClientURI(uri);
                 mongo = new MongoClient(mongoClientURI);
