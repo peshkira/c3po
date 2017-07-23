@@ -1,6 +1,7 @@
 package com.petpet.c3po.analysis;
 
 import com.mongodb.*;
+import com.opencsv.CSVWriter;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
@@ -92,6 +93,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
     private String exportResults(String location) {
         String writeSamplesToCSV = writeSamplesToCSV();
         String writeResultsToXML = writeResultsToXML();
+        String writeTuplesToCSV = writeTuplesToCSV();
         String writePTTables = writePTTables();
         String outputFileLocation=System.getProperty("java.io.tmpdir") + "/sfd_results.zip";
         if (location!=null)
@@ -104,12 +106,45 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
             addToZipFile(writeSamplesToCSV, zos);
             addToZipFile(writeResultsToXML, zos);
             addToZipFile(writePTTables, zos);
+            addToZipFile(writeTuplesToCSV, zos);
             zos.close();
             fos.close();
 
             LOG.info("Writing a zip-file with results to {}", outputFileLocation);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outputFileLocation;
+    }
+
+    private String writeTuplesToCSV() {
+        String outputFileLocation=System.getProperty("java.io.tmpdir") + "/tuples.csv";
+
+        try {
+            CSVWriter writer = new CSVWriter(new FileWriter(outputFileLocation), '\t');
+            String[] header=new String[properties.size()+1];
+            int i=0;
+            for (String property : properties) {
+                header[i]=property;
+                i++;
+            }
+            header[header.length-1]="count";
+            writer.writeNext(header);
+            for (Map.Entry<List<String>, Integer> listIntegerEntry : tuples.entrySet()) {
+                List<String> key = listIntegerEntry.getKey();
+                Integer value = listIntegerEntry.getValue();
+                String[] data=new String[properties.size()+1];
+                int j=0;
+                for (String property : key) {
+                    data[j]=property;
+                    j++;
+                }
+                data[data.length-1]=value.toString();
+                writer.writeNext(data);
+            }
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
