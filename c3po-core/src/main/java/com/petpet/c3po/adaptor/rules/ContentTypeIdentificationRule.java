@@ -9,6 +9,7 @@ import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.ContentTypeMapping;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -20,16 +21,15 @@ public class ContentTypeIdentificationRule implements PostProcessingRule {
         List<MetadataRecord> metadataRecords = e.getMetadata();
         MetadataRecord tmp=null;
         for (MetadataRecord mdrec: metadataRecords){
-            if (mdrec.getProperty().equals("mimetype") && !mdrec.getStatus().equals("CONFLICT")){
-                String mimetype=mdrec.getValues().get(0);
-                String content_type= ContentTypeMapping.getMappingByName(mimetype);
-                if (content_type!=null) {
-                    tmp = new MetadataRecord();
-                    tmp.setProperty(new Property("content_type", PropertyType.STRING).getKey());
-                    tmp.getValues().add(content_type);
-                    tmp.setStatus("SINGLE_RESULT");
-                    Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
-                    tmp.getSources().add(c3PO.toString());
+            if (mdrec.getProperty().equals("mimetype")) {
+                Collection<String> values = mdrec.getSourcedValues().values();
+                tmp = new MetadataRecord();
+                tmp.setProperty(new Property("content_type", PropertyType.STRING).getKey());
+                tmp.setStatus(mdrec.getStatus());
+                Source c3po = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
+                for (String value : values) {
+                    String content_type= ContentTypeMapping.getMappingByName(value);
+                    tmp.getSourcedValues().put(c3po.getId(),content_type);
                 }
                 break;
             }

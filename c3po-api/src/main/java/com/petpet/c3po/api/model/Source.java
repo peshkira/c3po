@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2013 Petar Petrov <me@petarpetrov.org>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,82 +15,78 @@
  ******************************************************************************/
 package com.petpet.c3po.api.model;
 
-import java.util.UUID;
-
 /**
  * The source represents a tool that has extracted specific measurements of
  * elements.
- * 
+ *
  * @author Petar Petrov <me@petarpetrov.org>
- * 
  */
 public class Source implements Model {
 
-  /**
-   * The id of the source.
-   */
-  private String id;
+    /**
+     * The id of the source.
+     */
+    private String id;
 
-  /**
-   * The name of the source.
-   */
-  private String name;
+    /**
+     * The name of the source.
+     */
+    private String name;
 
-  /**
-   * The version of the source.
-   */
-  private String version;
+    /**
+     * The version of the source.
+     */
+    private String version;
 
-  private static int i=0;
+    private static int i = 0;
 
-  /**
-   * A default constructor.
-   */
-  public Source() {
+    /**
+     * A default constructor.
+     */
+    public Source() {
 
-  }
+    }
 
-  /**
-   * Creates a new source with the name and the version and auto generates an
-   * id.
-   * 
-   * @param name
-   *          the name of the source.
-   * @param version
-   *          the version of the source.
-   */
-  public Source(String name, String version) {
-    this.id = Integer.toString(i++);
-    this.name = name;
-    this.version = version;
-  }
+    /**
+     * Creates a new source with the name and the version and auto generates an
+     * id.
+     *
+     * @param name    the name of the source.
+     * @param version the version of the source.
+     */
+    public Source(String name, String version) {
+        this.id = Integer.toString(i++);
+        this.name = name;
+        this.version = version;
+    }
 
-  public String getId() {
-    return id;
-  }
+    public String getId() {
+        return id;
+    }
 
-  public void setId( String id ) {
-    this.id = id;
-  }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName( String name ) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public String getVersion() {
-    return version;
-  }
+    public String getVersion() {
+        return version;
+    }
 
-  public void setVersion( String version ) {
-    this.version = version;
-  }
-  @Override
-  public String toString(){
-    return name+":"+version;
-  }
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    @Override
+    public String toString() {
+        return name + ":" + version;
+    }
 
 }

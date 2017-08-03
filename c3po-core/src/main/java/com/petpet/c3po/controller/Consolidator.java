@@ -92,18 +92,21 @@ public class Consolidator implements Runnable {
      */
     @Override
     public void run() {
+        Element el=null;
         try {
-            Element e = queue.poll(100, TimeUnit.SECONDS);
-            process( e );
+            el = queue.poll(100, TimeUnit.SECONDS);
+            process( el );
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        //this.running = true;
+
+        this.running = true;
         while (!(queue.isEmpty() && !isRunning()))
         {
+            Element el1=null;
             try {
-                Element e = queue.poll(2, TimeUnit.SECONDS);
-                process( e );
+                el1 = queue.poll(2, TimeUnit.SECONDS);
+                process( el1 );
             } catch ( InterruptedException e ) {
                 LOG.warn( "An error occurred in {}: {}", getName(), e.getMessage() );
                 break;
@@ -184,7 +187,6 @@ public class Consolidator implements Runnable {
         }
 
     }
-
     /**
      * Inserts the given element into the db.
      *

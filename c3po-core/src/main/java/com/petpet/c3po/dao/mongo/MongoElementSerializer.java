@@ -15,9 +15,9 @@
  ******************************************************************************/
 package com.petpet.c3po.dao.mongo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -25,6 +25,7 @@ import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.LogEntry;
 import com.petpet.c3po.api.model.helper.MetadataRecord;
 import com.petpet.c3po.api.model.helper.MetadataRecord.Status;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 
@@ -46,20 +47,20 @@ public class MongoElementSerializer implements MongoModelSerializer {
   @Override
   public DBObject serialize( Object object ) {
 
-    /*BasicDBObject document = null;
+   /* BasicDBObject document = null;
     if ( object != null && object instanceof Element ) {
       Element element = (Element) object;
       Gson gson=new Gson();
       String s = gson.toJson(element);
       document = (BasicDBObject) JSON.parse(s);
     }
-    return document;
-*/
+    return document;*/
+
     BasicDBObject document = null;
 
     if ( object != null && object instanceof Element ) {
       Element element = (Element) object;
-      element.updateStatus();
+      //updateStatus(element);
       document = new BasicDBObject();
       if ( element.getName() != null && !element.getName().equals( "" ) ) {
         document.put( "name", element.getName() );
@@ -73,65 +74,33 @@ public class MongoElementSerializer implements MongoModelSerializer {
         document.put( "collection", element.getCollection() );
       }
 
-     // BasicDBObject meta = new BasicDBObject();
+      List<DBObject> meta = new ArrayList<DBObject>();
       for ( MetadataRecord r : element.getMetadata() ) {
         BasicDBObject key = new BasicDBObject();
+        key.put("property", r.getProperty());
         key.put( "status", r.getStatus() );
-        key.put( "sources", r.getSources() );
-        String property = r.getProperty();
-        String type = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(property).getType();
-        List<Object> objectValues=new ArrayList<Object>();
-        for (String s : r.getValues()) {
-          objectValues.add(DataHelper.getTypedValue(type,s));
+
+        List<DBObject> sourcedValues=new ArrayList<DBObject>();
+        String type = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty(r.getProperty()).getType();
+
+        for (Map.Entry<String, String> stringStringEntry : r.getSourcedValues().entrySet()) {
+          BasicDBObject sourcedValue=new BasicDBObject();
+          sourcedValue.put("source", stringStringEntry.getKey());
+          sourcedValue.put("value", DataHelper.getTypedValue(type,stringStringEntry.getValue()));
+          Object typedValue = DataHelper.getTypedValue(type, stringStringEntry.getValue());
+          if (type.equals(PropertyType.DATE.name()) && typedValue instanceof String)
+            break;
+          sourcedValues.add(sourcedValue);
         }
-        key.put( "values", objectValues );
-        document.put( r.getProperty(), key );
-
-
-       /* if ( r.getStatus().equals( Status.CONFLICT.name() ) ) {
-          BasicDBObject conflicting;
-          List<Object> values;
-          List<Object> sources;
-          if ( document.containsField( r.getProperty() ) ) {
-            conflicting = (BasicDBObject) document.get( r.getProperty() );
-            values = (List<Object>) conflicting.get( "values" );
-            if ( values == null ) {
-              values = new ArrayList<Object>();
-              values.add( conflicting.get( "value" ) );
-            }
-            sources = (List<Object>) conflicting.get( "sources" );
-            values.addAll(r.getValues());// DataHelper.getTypedValue( r.getProperty().getType(), r.getValue() ) );
-            sources.add( r.getSources().get( 0 ) );
-
-          } else {
-            conflicting = new BasicDBObject();
-            values = new ArrayList<Object>();
-            sources = new ArrayList<Object>();
-
-            if ( r.getValues() == null || r.getValues().equals( "" ) ) {
-             // for ( String s : r.getValues() ) {
-                values.addAll(r.getValues());// DataHelper.getTypedValue( r.getProperty().getType(), s ) );
-            //  }
-              sources.addAll( r.getSources() );
-            } else {
-
-              values.add( DataHelper.getTypedValue( r.getProperty().getType(), r.getValue() ) );
-              sources.add( r.getSources().get( 0 ) );
-            }
-          }
-
-          conflicting.put( "values", values );
-          conflicting.put( "sources", sources );
-          conflicting.put( "status", r.getStatus() );
-          document.put( r.getProperty().getId(), conflicting );
-
-        } else {
-          key.put( "value", DataHelper.getTypedValue( r.getProperty().getType(), r.getValue() ) );
-          key.put( "sources", r.getSources() );
-          document.put( r.getProperty().getId(), key );
+        if (sourcedValues.size()>0) {
+          key.put("sourcedValues", sourcedValues);
+          meta.add(key);
         }
-*/
+
+
+
       }
+      document.put( "metadata", meta );
 
       //if ( !meta.keySet().isEmpty() ) {
       //  document.put( "metadata", meta );
@@ -153,5 +122,9 @@ public class MongoElementSerializer implements MongoModelSerializer {
 
     return document;
   }
+
+
+
+
 
 }

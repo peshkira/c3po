@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A CSV generator that creates a sparse matrix view of the data, where each
@@ -192,9 +193,12 @@ public class CSVGenerator {
 
             for (MetadataRecord mr : mrs) {
                 if (mr.getProperty().equals(p.getKey())) {
-                    for (String s : mr.getSources()) {
-                        if (s.equals(source.toString())) {
-                            value = mr.getValues().get(mr.getSources().indexOf(s));
+                    Map<String, String> sourcedValues = mr.getSourcedValues();
+                    for (Map.Entry<String, String> stringStringEntry : sourcedValues.entrySet()) {
+                        String sourceID=stringStringEntry.getKey();
+
+                        if (sourceID.equals(source.getId())) {
+                            value = stringStringEntry.getValue();
                             break;
                         }
                     }

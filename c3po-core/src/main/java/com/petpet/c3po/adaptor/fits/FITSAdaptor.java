@@ -19,6 +19,9 @@ package com.petpet.c3po.adaptor.fits;
 import java.io.StringReader;
 import java.util.*;
 
+import com.mongodb.QueryBuilder;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,17 +100,42 @@ public class FITSAdaptor extends AbstractAdaptor {
             Element element = createElement(fileinfo);
 
 
-
             readIdentification(identification, element);
             readFileinfo(fileinfo, element);
             readFileStatus(filestatus, element);
             readMetadata(metadata, element);
-            //element.updateStatus();
+            //updateStatus(element);
             return element;
         }  catch ( Exception e ) {
             LOG.warn( "An exception occurred while parsing {}: {}", name, e.getMessage() );
             return new Element();
         }
+    }
+
+    private void updateStatus(Element element) {
+        if (element.getMetadata()==null)
+            return;
+        for (MetadataRecord mr : element.getMetadata()) {
+            int sourceCount = distinctCount(mr.getSourcedValues().keySet());
+            int propValCount = distinctCount(mr.getSourcedValues().values());
+            if (propValCount > 1)
+                mr.setStatus(MetadataRecord.Status.CONFLICT.name());
+            else {
+                if (sourceCount > 1)
+                    mr.setStatus(MetadataRecord.Status.OK.name());
+                else
+                    mr.setStatus(MetadataRecord.Status.SINGLE_RESULT.name());
+            }
+        }
+    }
+
+    private int distinctCount(Collection<String> strings) {
+        List<String> unique=new ArrayList<String>();
+        for (String string : strings) {
+            if (!unique.contains(string))
+                unique.add(string);
+        }
+        return unique.size();
     }
 
     private void readMetadata(org.w3c.dom.Element metadata, Element element) {
@@ -147,13 +175,18 @@ public class FITSAdaptor extends AbstractAdaptor {
             String nodeValue = elementDOM.getTextContent();
             Source source = getSource(toolname, toolversion);
             Property property = getProperty(propertyName);
-            element.addMetadataRecord(property.getKey(), nodeValue, source.toString());
+            String status = elementDOM.getAttribute("status");
+           // if (property.getType().equals(PropertyType.DATE))
+
+            element.addMetadataRecord(property.getKey(), nodeValue, source.getId(), status);
         }
     }
 
 
     private void readIdentification(org.w3c.dom.Element identification, Element element) {
-
+        String status = identification.getAttribute("status");
+        if (status==null || status.equals(""))
+            status="OK";
         NodeList identities = identification.getElementsByTagName("identity");
         for (int i=0; i < identities.getLength();i++){
             org.w3c.dom.Element identity = (org.w3c.dom.Element) identities.item(i);
@@ -167,8 +200,8 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(toolname, toolversion);
                 Property format = getProperty("format");
                 Property mimetype = getProperty("mimetype");
-                element.addMetadataRecord(format.getKey(), formatValue, source.toString());
-                element.addMetadataRecord(mimetype.getKey(), mimetypeValue, source.toString());
+                element.addMetadataRecord(format.getKey(), formatValue, source.getId(), status);
+                element.addMetadataRecord(mimetype.getKey(), mimetypeValue, source.getId(), status);
             }
 
 
@@ -181,7 +214,7 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(externalIdentifierToolname, externalIdentifierToolversion);
                 String externalIdentifierValue = ider.getTextContent();
                 Property puid = getProperty("puid");
-                element.addMetadataRecord(puid.getKey(),externalIdentifierValue,source.toString());
+                element.addMetadataRecord(puid.getKey(),externalIdentifierValue,source.getId(),status);
             }
 
             NodeList versions = identity.getElementsByTagName("version");
@@ -193,7 +226,7 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(versionToolname, versionToolversion);
                 String versionValue = version.getTextContent();
                 Property formatversion = getProperty("formatversion");
-                element.addMetadataRecord(formatversion.getKey(), versionValue, source.toString());
+                element.addMetadataRecord(formatversion.getKey(), versionValue, source.getId(), status);
             }
         }
     }
@@ -240,12 +273,6 @@ public class FITSAdaptor extends AbstractAdaptor {
         return super.getSource( name, version );
     }
 
-
-    //private void getFileExtensionMetadataRecord(String name) {
-    //    Source source = getSource("C3PO", "0.5");
-    //    addMetadataRecord("file_extension", FilenameUtils.getExtension(name), source.getId());
-//
-    //}
 
 
 

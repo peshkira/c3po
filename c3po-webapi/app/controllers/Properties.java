@@ -56,7 +56,7 @@ public class Properties extends Controller {
     public static List<String> getCollectionNames() {
         Logger.debug("Listing collection names");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        List<String> collections = (List<String>) persistence.distinct(Element.class, "collection", new Filter());
+        List<String> collections = new ArrayList<String>();//(List<String>) persistence.distinct(Element.class, "collection", new Filter());
         collections.add(0, "");
         Collections.sort(collections);
         return collections;
@@ -385,7 +385,35 @@ public class Properties extends Controller {
                 result.setType(p.getType());
                 result.setValues(allPropertyValues.get(property));
             } else {
-                Distribution d = Properties.getDistribution(property, null);
+                List<String> properties=new ArrayList<String>();
+                properties.add(property);
+                Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
+                List<Integer> bins=new ArrayList<Integer>();
+                bins.add(5);
+                bins.add(20);
+                bins.add(40);
+                bins.add(100);
+                bins.add(1000);
+                bins.add(10000);
+                bins.add(10000000);
+                binThresholds.put("size", bins);
+                binThresholds.put("wordcount", bins);
+                binThresholds.put("pagecount", bins);
+                Map<String, Map<String, Long>> histograms = persistence.getValues(properties, null, binThresholds);
+                Map<String, Distribution> distibutions=new HashMap<String, Distribution>();
+                Iterator<Map.Entry<String, Map<String, Long>>> iterator = histograms.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, Map<String, Long>> next = iterator.next();
+                    String propertyName = next.getKey();
+                    Property pr = persistence.getCache().getProperty(propertyName);
+                    Distribution d = new Distribution();
+                    d.setPropertyDistribution(next.getValue());
+                    d.setProperty(propertyName);
+                    d.setType(pr.getType());
+                    d.setFilter(null);
+                    distibutions.put(propertyName,d);
+                }
+                Distribution d = distibutions.get(property);
                 Graph graph = Properties.interpretDistribution(d, algorithm, width);
                 result.setProperty(property);
                 result.setType(d.getType());
@@ -398,6 +426,10 @@ public class Properties extends Controller {
             return result;
         }
     }
+
+
+
+
 
 
 

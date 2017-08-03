@@ -16,6 +16,7 @@
 package com.petpet.c3po.dao.mongo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.mongodb.BasicDBObject;
@@ -51,7 +52,7 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
 
   }
 
-  *//**
+  /**
    * Parses the element from a db object returned by the db.
    *
    * @param obj
@@ -90,7 +91,7 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
 
   /**
    * Parses the element from a db object returned by the db.
-   * 
+   *
    * @param obj
    *          the object to parse.
    * @return the Element.
@@ -99,12 +100,31 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
     String coll = (String) obj.get( "collection" );
     String uid = (String) obj.get( "uid" );
     String name = (String) obj.get( "name" );
-
+    List<DBObject> metadata = (List<DBObject>) obj.get("metadata");
     Element e = new Element( coll, uid, name );
-    e.setId( obj.get( "_id" ).toString() );
-    e.setMetadata( new ArrayList<MetadataRecord>() );
+    if (obj.get( "_id" )!=null)
+      e.setId( obj.get( "_id" ).toString() );
+    ArrayList<MetadataRecord> metadataRecords = new ArrayList<>();
+    for (DBObject meta : metadata) {
+      MetadataRecord mr=new MetadataRecord();
+      String property = (String) meta.get("property");
+      String status =(String) meta.get("status");
+      List<DBObject> sourcedValues = (List<DBObject>) meta.get("sourcedValues");
+      HashMap<String,String> hmap=new HashMap<String, String>();
+      for (DBObject sourcedValue : sourcedValues) {
+        String sourceID = (String) sourcedValue.get("source");
+        String value = sourcedValue.get("value").toString();
+        hmap.put(sourceID,value);
+      }
+      mr.setProperty(property);
+      mr.setStatus(status);
+      mr.setSourcedValues(hmap);
+      metadataRecords.add(mr);
+    }
 
-    DBObject meta =  obj;
+    e.setMetadata(metadataRecords  );
+
+    /*DBObject meta =  obj;
     for ( String key : meta.keySet() ) {
       MetadataRecord rec = new MetadataRecord();
 
@@ -121,7 +141,7 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
       //}
 
       // because of boolean and other type conversions.
-      List<?> tmp = (List) prop.get( "values" );
+      List<?> tmp = (List) prop.get( "sourcedValues" );
       if ( tmp != null ) {
         List<String> values = new ArrayList<String>();
         for ( Object o : tmp ) {
@@ -136,7 +156,7 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
       }
 
       e.getMetadata().add( rec );
-    }
+    }*/
 
     return e;
   }

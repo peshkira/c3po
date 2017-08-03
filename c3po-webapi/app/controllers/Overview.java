@@ -15,6 +15,7 @@
  ******************************************************************************/
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import com.petpet.c3po.analysis.ConflictResolutionProcessor;
 import com.petpet.c3po.api.dao.Cache;
@@ -22,6 +23,7 @@ import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.utils.Configurator;
 import helpers.*;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.Map;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import views.html.overview;
 
@@ -147,11 +150,17 @@ public class Overview extends Controller {
     }
 
     public static Result indexFiltered() {
-        Map<String, String[]> stringMap = request().queryString();
-        Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
-        String templateName=null;
-        Filter f=new Filter();
-        for (Map.Entry<String, String[]> stringEntry : stringMap.entrySet()) {
+        Http.RequestBody body = request().body();
+        String path = request().path();
+        String uri = request().uri();
+        uri=uri.replace(path+"?","").replace("&template=Conflict","");
+        Filter f= null;
+        try {
+            f = new Filter(uri);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        /*for (Map.Entry<String, String[]> stringEntry : stringMap.entrySet()) {
             String key = stringEntry.getKey();
             String[] value = stringEntry.getValue();
             if (key.equals("template"))
@@ -159,9 +168,9 @@ public class Overview extends Controller {
             else
                 f.addFilterCondition(new FilterCondition(key,value));
         }
-
+*/
         Filters.setFilterFromSession(f);
-        TemplatesLoader.setCurrentTemplateName(templateName);
+        TemplatesLoader.setCurrentTemplateName("Conflict");
         return redirect("/c3po/overview");
     }
 

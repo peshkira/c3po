@@ -39,7 +39,7 @@ public class ResolveConflictsCommand extends AbstractCLICommand implements Comma
         final long start = System.currentTimeMillis();
 
         final Configurator configurator = Configurator.getDefaultConfigurator();
-        configurator.configure();
+        //configurator.configure();
 
         Map<String, String> options = new HashMap<String, String>();
         options.put( Constants.OPT_COLLECTION_NAME, this.params.getCollection() );

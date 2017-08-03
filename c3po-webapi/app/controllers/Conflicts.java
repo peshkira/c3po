@@ -30,21 +30,22 @@ import common.WebAppConstants;
 import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.Json;
+import play.mvc.Http;
 import play.mvc.Result;
 import views.html.conflicts;
 
 import javax.swing.plaf.metal.MetalRadioButtonUI;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.util.*;
 
 import static play.mvc.Controller.request;
 import static play.mvc.Controller.response;
 import static play.mvc.Controller.session;
 import static play.mvc.Results.internalServerError;
 import static play.mvc.Results.ok;
+import static play.mvc.Results.redirect;
+
 /**
  * Created by artur on 01/04/16.
  */
@@ -339,5 +340,50 @@ public class Conflicts {
 
         JsonNode jsonNode = Json.toJson(overview);
         return ok(jsonNode);
+    }
+
+    public static Result resolveNew(){
+        Http.RequestBody body = request().body();
+        String path = request().path();
+        String uri = request().uri();
+        uri=uri.replace(path+"?","");
+        uri=uri.replace( "%2B", "+").replace("%20"," ");
+        int i = uri.indexOf("&propertyToResolve");
+        String filter=uri.substring(0,i);
+        Filter f= null;
+        try {
+            f = new Filter(filter);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        String resolvingQuery = uri.substring(i+1, uri.length() );
+        String[] split = resolvingQuery.split("&");
+        Map<String,String> resolutions=new HashMap<String, String>();
+
+        String propertyToResolve=null ;
+        String resolveTo=null;
+        for (String s : split) {
+            String[] split1 = s.split("=");
+            String key = split1[0];
+            String value = split1[1];
+
+
+            if (key.equals("propertyToResolve")) {http://localhost:9000/c3po/conflicts/resolve?property=format&source=Droid:3.0&value=Rich Text Format&status=CONFLICT&propertyToResolve=format&resolveTo=Rich Text Format
+                propertyToResolve = value;
+            }
+            else if (key.equals("resolveTo")) {
+                resolveTo = value;
+                if (propertyToResolve != null) {
+                    resolutions.put(propertyToResolve,resolveTo);
+                    propertyToResolve = null;
+                }
+            }
+        }
+
+        ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        long resolve = crp.resolve(f, resolutions);
+
+        Logger.debug("Resolved conflicts: " + resolve);
+        return redirect("/c3po/overview");
     }
 }

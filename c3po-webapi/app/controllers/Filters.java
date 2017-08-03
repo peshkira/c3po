@@ -15,28 +15,29 @@
  ******************************************************************************/
 package controllers;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
-import com.petpet.c3po.api.model.helper.*;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.BetweenFilterCondition;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.PropertyType;
+import com.petpet.c3po.api.model.helper.filtering.PropertyFilterCondition;
 import com.petpet.c3po.utils.Configurator;
-
 import common.WebAppConstants;
 import helpers.Graph;
 import helpers.PropertyValuesFilter;
 import helpers.SessionFilters;
-import helpers.StringParser;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import play.Logger;
 import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.mvc.Result;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Filters extends Controller {
 
@@ -56,77 +57,26 @@ public class Filters extends Controller {
                         propertyValueString = gr.getKeys().get(value);
                 }
             }
-            if (propertyValueString.equals("Other")){
-
-                filter.addFilterCondition(new FilterCondition(propertyName, "NOLONGTAIL"));
+            if (propertyValueString.equals("Other")) {
+                PropertyFilterCondition pfc=new PropertyFilterCondition();
+                pfc.setProperty(propertyName);
+                pfc.getValues().add("NOLONGTAIL");
+                filter.getPropertyFilterConditions().add(pfc);
+                //filter.addFilterCondition(new FilterCondition(propertyName, "NOLONGTAIL"));
                 Filters.setFilterFromSession(filter);
                 return ok();
                 //return ok("Cannot show distribution for 'Rest' value");
 
             }
-            Object propertyValue = null;
-            Property p = persistence.getCache().getProperty(propertyName);
-            PropertyType pType=PropertyType.valueOf(p.getType());
-            switch (pType){
-                case INTEGER:
-                    try {
-                        propertyValue = Integer.parseInt(propertyValueString);
-                    } catch (NumberFormatException ex) {
-                        propertyValue = propertyValueString.equals("Unknown")?null:propertyValueString;
-                    }
-                    break;
-                case FLOAT:
-                    try {
-                        propertyValue = Double.parseDouble(propertyValueString);
-                    } catch (NumberFormatException ex) {
-                        propertyValue = propertyValueString.equals("Unknown")?null:propertyValueString;
-                    }
-                    break;
-                case BOOL:
-                    try {
-                        if (propertyValueString.equals("Unknown"))
-                            propertyValue=null;
-                        else
-                            propertyValue = Boolean.parseBoolean(propertyValueString);
-                    } catch (Exception ex){
-                        if (propertyValueString.equals("Unknown"))
-                            propertyValue = null;
-                        else if (propertyValueString.equals("CONFLICT"))
-                            propertyValue = "CONFLICT";
-                    }
-                    break;
-                case STRING:
-                    propertyValue = propertyValueString;
-                    if (propertyValueString.equals("Unknown"))
-                        propertyValue = null;
-                    break;
-                case DATE:
-                    if (propertyValueString.equals("Unknown"))
-                        propertyValue = null;
-                    else {
-                        DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss z");
-                        try {
-                            propertyValue = dateFormat.parse(propertyValueString);
-                        } catch (ParseException e) {
-                            propertyValue = propertyValueString;
-                        }
-                    }
-                    break;
-            }
-
-            List<FilterCondition> fcs = filter.getConditions();
-            for (FilterCondition fc : fcs) {
-                if (fc.getField().equals(propertyName)) {
-
-                    fc.setValue(propertyValue);
-                    Filters.setFilterFromSession(filter);
-                    return ok();
-
-                }
-            }
-
-            filter.addFilterCondition(new FilterCondition(propertyName, propertyValue));
+            PropertyFilterCondition pfc=new PropertyFilterCondition();
+            pfc.setProperty(propertyName);
+            pfc.getValues().add(propertyValueString);
+            filter.getPropertyFilterConditions().add(pfc);
+            //filter.addFilterCondition(new FilterCondition(propertyName, "NOLONGTAIL"));
             Filters.setFilterFromSession(filter);
+
+            //filter.addFilterCondition(new FilterCondition(propertyName, propertyValue));
+            //Filters.setFilterFromSession(filter);
             return ok();
         }
 
@@ -144,7 +94,17 @@ public class Filters extends Controller {
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<PropertyValuesFilter> result = new ArrayList<PropertyValuesFilter>();
         Filter filter = Filters.getFilterFromSession();
-        List<FilterCondition> fcs = filter.getConditions();
+
+        Map<String, Object> map = new HashMap<String, Object>();
+
+
+        //JsonNode jsonNode = toJSON(filter);
+
+
+        return ok(play.libs.Json.toJson(toJSON(filter)));
+
+
+       /* List<FilterCondition> fcs = filter.getConditions();
         for (FilterCondition fc : fcs) {
             Property p = persistence.getCache().getProperty(fc.getField());
             Object obj = fc.getValue();
@@ -175,7 +135,7 @@ public class Filters extends Controller {
             }
 
         }
-        return ok(play.libs.Json.toJson(result));
+        return ok(play.libs.Json.toJson(result));*/
     }
 
 
@@ -201,17 +161,17 @@ public class Filters extends Controller {
     }
 
     public static void setFilterFromSession(Filter filter) {
-        List<String> toPrint=new ArrayList<String>();
-        String collectionName=null;
-        for (FilterCondition fc: filter.getConditions()){
-            toPrint.add(fc.getField()+" : "+fc.getValue());
+        List<String> toPrint = new ArrayList<String>();
+        String collectionName = null;
+        for (FilterCondition fc : filter.getConditions()) {
+            toPrint.add(fc.getField() + " : " + fc.getValue());
             if (fc.getField().equals("collection"))
-                collectionName=fc.getValue().toString();
+                collectionName = fc.getValue().toString();
         }
-        Logger.debug("Setting the filter session to: " + toPrint.toString());
+        Logger.debug("Setting the filter session to: " + filter.toSRUString());
 
-        if (collectionName==null)
-            collectionName="all";
+        if (collectionName == null)
+            collectionName = "all";
         session().put(WebAppConstants.CURRENT_COLLECTION_SESSION, collectionName);
         String session = session(WebAppConstants.SESSION_ID);
         SessionFilters.addFilter(session, filter);
@@ -243,7 +203,7 @@ public class Filters extends Controller {
                     }
                     fc.setValue(objList.toArray());
                 } else*/
-                    iter.remove();
+                iter.remove();
             }
         }
         Filters.setFilterFromSession(filter);
@@ -268,7 +228,7 @@ public class Filters extends Controller {
         Filter result = new Filter();
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         List<FilterCondition> conditions = filter.getConditions();
-        if (conditions==null || conditions.size()==0)
+        if (conditions == null || conditions.size() == 0)
             return filter;
         for (FilterCondition fc : conditions) {
             String property = fc.getField();
@@ -281,16 +241,17 @@ public class Filters extends Controller {
                     BetweenFilterCondition bfc = getBetweenFilterCondition(value.toString(), property);
                     result.addFilterCondition(bfc);
                 }
-            } if (p.getType().equals(PropertyType.DATE.toString()) ) {
+            }
+            if (p.getType().equals(PropertyType.DATE.toString())) {
                 if (value == null || value.toString().equals("Unknown"))
                     result.addFilterCondition(new FilterCondition(property, null));
                 else {
-                    Calendar c=Calendar.getInstance();
+                    Calendar c = Calendar.getInstance();
                     int year = Integer.parseInt(value.toString());
                     c.setTimeZone(TimeZone.getDefault());
                     c.set(year, 0, 1, 0, 1);
                     Date timeFrom = c.getTime();
-                    c=Calendar.getInstance();
+                    c = Calendar.getInstance();
                     c.set(year, 11, 31, 23, 59);
                     Date timeTo = c.getTime();
 
@@ -307,12 +268,100 @@ public class Filters extends Controller {
                     result.addFilterCondition(bfc);
                 }
 
-            }
-            else {
+            } else {
                 if (value == null || value.toString().equals("Unknown"))
                     result.addFilterCondition(new FilterCondition(property, null));
                 else
                     result.addFilterCondition(new FilterCondition(property, value));
+            }
+        }
+        return result;
+    }
+
+    public static Result getSources() {
+        List<String> sources = new ArrayList<String>();
+        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        Iterator<Source> sourceIterator = persistence.find(Source.class, null);
+        while (sourceIterator.hasNext()) {
+            sources.add(sourceIterator.next().toString());
+        }
+        return ok(play.libs.Json.toJson(sources));
+    }
+
+    public static Result apply() {
+        JsonNode json = request().body().asJson();
+
+        String SRU = toSRU(json);
+        Filter f = null;
+        try {
+            if (SRU.equals(""))
+                f = new Filter();
+            else
+                f = new Filter(SRU);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        if (f != null)
+            setFilterFromSession(f);
+
+
+        return ok();
+    }
+
+
+    private static Object toJSON(Filter filter) {
+
+        List<Object> maps = new ArrayList<Object>();
+        List<PropertyFilterCondition> propertyFilterConditions = filter.getPropertyFilterConditions();
+
+        for (PropertyFilterCondition propertyFilterCondition : propertyFilterConditions) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("propertyname", propertyFilterCondition.getProperty());
+            List<String> statuses = propertyFilterCondition.getStatuses();
+            if (statuses.size() > 0)
+                map.put("propertystatus", statuses.get(0));
+            List<Object> sourcedValues = new ArrayList<Object>();
+            for (Map.Entry<String, String> stringStringEntry : propertyFilterCondition.getSourcedValues().entrySet()) {
+                Map<String, String> sv = new HashMap<String, String>();
+                sv.put("propertyvalue", stringStringEntry.getValue());
+                sv.put("propertyvaluesource", stringStringEntry.getKey());
+                sourcedValues.add(sv);
+            }
+
+            for (String s : propertyFilterCondition.getValues()) {
+                Map<String, String> sv = new HashMap<String, String>();
+                sv.put("propertyvalue", s);
+                sv.put("propertyvaluesource", "");
+                sourcedValues.add(sv);
+            }
+            if (sourcedValues.size() > 0)
+                map.put("sourcedvalues", sourcedValues);
+            maps.add(map);
+        }
+        return maps;
+    }
+
+    private static String toSRU(JsonNode json) {
+        String result = "";
+        Iterator<JsonNode> iterator = json.iterator();
+        while (iterator.hasNext()) {
+            JsonNode next = iterator.next();
+            String propertyname = next.get("propertyname").asText();
+            if (result.equals(""))
+                result += "property=" + propertyname;
+            else
+                result += "&property=" + propertyname;
+            String propertystatus = next.get("propertystatus").asText();
+            if (!propertystatus.equals(""))
+                result += "&status=" + propertystatus;
+            JsonNode sourcedvalues = next.get("sourcedvalues");
+            for (JsonNode sourcedvalue : sourcedvalues) {
+                String propertyvalue = sourcedvalue.get("propertyvalue").asText();
+                String propertyvaluesource = sourcedvalue.get("propertyvaluesource").asText();
+                if (!propertyvaluesource.equals(""))
+                    result += "&source=" + propertyvaluesource;
+                if (!propertyvalue.equals(""))
+                    result += "&value=" + propertyvalue;
             }
         }
         return result;

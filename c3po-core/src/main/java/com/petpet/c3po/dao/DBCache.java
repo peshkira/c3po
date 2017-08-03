@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
@@ -29,6 +30,8 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
 import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.DataHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements the {@link Cache} interface.
@@ -57,6 +60,9 @@ public class DBCache implements Cache {
    * The persistence layer to use.
    */
   private PersistenceLayer persistence;
+
+
+  private static final Logger LOG = LoggerFactory.getLogger( DBCache.class );
 
   /**
    * Creates a new cache with synchronized empty maps.
@@ -91,9 +97,11 @@ public class DBCache implements Cache {
    */
   @Override
   public synchronized Property getProperty( String key ) {
+
     Property property = this.propertyCache.get( key );
 
     if ( property == null ) {
+      LOG.debug("Getting a list of known properties.");
       Iterator<Property> result = this.findProperty( key );
 
       if ( result.hasNext() ) {
@@ -131,6 +139,7 @@ public class DBCache implements Cache {
     Property property = this.propertyCache.get( key );
 
     if ( property == null ) {
+      LOG.debug("Adding new item to the list of known properties.");
       Iterator<Property> result = this.findProperty( key );
 
       if ( result.hasNext() ) {
@@ -167,6 +176,7 @@ public class DBCache implements Cache {
     Source source = this.sourceCache.get( name + ":" + version );
 
     if ( source == null ) {
+      LOG.debug("Adding new item to the list of known sources.");
       Iterator<Source> result = this.findSource( name, version );
 
       if ( result.hasNext() ) {

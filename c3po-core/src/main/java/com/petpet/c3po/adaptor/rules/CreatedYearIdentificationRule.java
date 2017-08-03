@@ -22,38 +22,20 @@ public class CreatedYearIdentificationRule implements PostProcessingRule {
         List<MetadataRecord> metadata = e.getMetadata();
         for (MetadataRecord metadataRecord : metadata) {
             if (metadataRecord.getProperty().equals("created")){
-                //Calendar cal=Calendar.getInstance();
-                if (!metadataRecord.getStatus().equals("CONFLICT")){
-                    String s = metadataRecord.getValues().get(0);
+                MetadataRecord tmp = new MetadataRecord();
+                Property created_yearP = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty("created_year", PropertyType.STRING);
+                tmp.setProperty(created_yearP.getKey());
+                tmp.setStatus(metadataRecord.getStatus());
+                Source c3po = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
+
+                for (String s : metadataRecord.getSourcedValues().values()) {
                     if (s.length()>4) {
                         String substring = s.substring(0, 4);   //TODO: Find a better way to extract year
-                        //cal.setTime(new Date(metadataRecord.getValues().get(0)));
-                        //Integer created_year = cal.get(Calendar.YEAR);
-                        MetadataRecord tmp = new MetadataRecord();
-                        Property created_yearP = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty("created_year", PropertyType.STRING);
-                        tmp.setProperty(created_yearP.getKey());
-
-                        tmp.getValues().add(substring);
-                        tmp.setStatus("SINGLE_RESULT");
-                        Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
-                        tmp.getSources().add(c3PO.toString());
-                        e.getMetadata().add(tmp);
+                        tmp.getSourcedValues().put(c3po.getId(),substring);
                     }
-                    return e;
                 }
-                else{
-                    MetadataRecord tmp=new MetadataRecord();
-                    Property created_yearP = Configurator.getDefaultConfigurator().getPersistence().getCache().getProperty("created_year", PropertyType.STRING);
-                    tmp.setProperty(created_yearP.getKey());
-                    tmp.getValues().add(MetadataRecord.Status.CONFLICT.name());
-                    tmp.setStatus("SINGLE_RESULT");
-                    Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
-                    tmp.getSources().add(c3PO.toString());
-                    e.getMetadata().add(tmp);
-                    return e;
-
-                }
-
+                e.getMetadata().add(tmp);
+                break;
             }
         }
         return e;
