@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Properties;
 
 import com.petpet.c3po.api.dao.Cache;
-import org.apache.log4j.helpers.ISO8601DateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

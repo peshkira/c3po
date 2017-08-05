@@ -141,7 +141,7 @@ public class Controller {
         this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
         this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
         this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
-        this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
+        //this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
         this.knownRules.put(Constants.CNF_CONTENT_TYPE_IDENTIFICATION_RULE, ContentTypeIdentificationRule.class);
         this.knownRules.put(Constants.CNF_FILE_EXTENSION_IDENTIFICATION_RULE, FileExtensionIdentificationRule.class);
         this.knownRules.put(Constants.CNF_CREATED_YEAR_IDENTIFICATION_RULE, CreatedYearIdentificationRule.class);
@@ -607,7 +607,7 @@ public class Controller {
         this.consolidatorPool = Executors.newFixedThreadPool( consThreads );
         List<Consolidator> consolidators = new ArrayList<Consolidator>();
         final String pathToRules=options.get(Constants.CNF_DROOLS_PATH);
-        final String collectionName=options.get(Constants.OPT_COLLECTION_NAME);
+       /* final String collectionName=options.get(Constants.OPT_COLLECTION_NAME);
         final DroolsConflictResolutionProcessingRule resolver = new DroolsConflictResolutionProcessingRule(pathToRules);
         Thread thread = new Thread(new Runnable() {
             public void run() {
@@ -650,7 +650,7 @@ public class Controller {
         }
         System.out.println("Done resolving conflicts");
         cons.setRunning(false);
-        resolver.onCommandFinished();
+        resolver.onCommandFinished();*/
     }
 
     public static void processFast(final File file, final String collectionName){
