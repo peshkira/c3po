@@ -21,19 +21,19 @@ import play.data.DynamicForm;
 import play.mvc.Controller;
 import play.data.Form;
 import play.mvc.Result;
-import com.typesafe.plugin.*;
+//import com.typesafe.plugin.*;
 
 public class Mail extends Controller {
 
   public static Result send() {
     DynamicForm form = play.data.Form.form().bindFromRequest();
-    String email = form.get("email");
-    String message = form.get("message");
+    //String email = form.get("email");
+    //String message = form.get("message");
 
-    Logger.debug("sending feedback message from: " + email);
+    //Logger.debug("sending feedback message from: " + email);
 
-    String to = Play.application().configuration().getString("feedback.mail.to");
-    String subject = Play.application().configuration().getString("feedback.mail.subject");
+   // String to = Play.application().configuration().getString("feedback.mail.to");
+   // String subject = Play.application().configuration().getString("feedback.mail.subject");
 
    // MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
    // mail.setSubject(subject);

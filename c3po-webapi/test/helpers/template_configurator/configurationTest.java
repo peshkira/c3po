@@ -80,7 +80,7 @@ public class configurationTest {
 	public void getPropsTest(){
 		Map<String, String> mapFilter=new TreeMap<>();
 		mapFilter.put("colorspace", "rgb");
-		String[] props=configWritten.getProps(mapFilter);
+		String[] props= configWritten.getProps(mapFilter).toArray(new String[0]);
 		
 		assertEquals(props.length, 6);
 	}
