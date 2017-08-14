@@ -62,6 +62,7 @@ POST          /c3po/template/import          controllers.Templates.importTemplat
 GET           /c3po/conflicts/index          controllers.Conflicts.index()
 GET           /c3po/conflicts                controllers.Conflicts.getRules()
 GET           /c3po/conflicts/csv            controllers.Conflicts.csv()
+POST           /c3po/conflicts/csv            controllers.Conflicts.csv()
 POST          /c3po/conflicts                controllers.Conflicts.createRule()
 DELETE        /c3po/conflicts                controllers.Conflicts.deleteRule()
 POST          /c3po/conflicts/resolve        controllers.Conflicts.resolve()

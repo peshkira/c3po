@@ -7,6 +7,8 @@
     <script type="text/javascript" src="/assets/javascripts/notifIt.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/assets/stylesheets/notifIt.css">
 
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/multi-select.css")" />
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.multi-select.js")"></script>
 
     <script src="http://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
     <style>
@@ -121,25 +123,61 @@
             });
 
             $('#getConflictOverviewButton').on('click', function () {
-                var tableC = $('#conflictoverview');
 
-                tableC=tableC.DataTable( {
-                    paging: false,
-                    searching: false,
-                    info: false,
-                    ajax: '/c3po/conflicts/overview',
-                    aoColumns: [ { sWidth: "80%" }, { sWidth: "20%" }]
 
+                $.ajax({
+                    headers: {
+                        Accept: "application/json; charset=utf-8",
+                    },
+                    type: 'GET',
+                    url: '/c3po/properties',
+                    timeout: 5000,
+                    async: true,
+                    success: function (properties) {
+                        var propselDiv = $('<div class="harmony"><p>Choose properties of interest:</p> </div>').appendTo('#conflictoverview');
+                        var propsel = $('<select id="propSelect" multiple="multiple">').appendTo(propselDiv);
+
+                        $.each(properties, function (i, value) {
+                            $(propsel).append($('<option>').text(value).attr('value', value));
+                        });
+                        $(propsel).multiSelect();
+                    }
                 });
 
+                var selectedProps = $('#conflictoverview select:last').val();
 
+            });
+
+
+            $('#renderConflictOverview').on('click', function () {
+
+                var selectedProps = $('#conflictoverview select:last').val();
+                renderConflictOverview(selectedProps);
 
             });
 
 
 
-
         })
+
+
+        function renderConflictOverview(selectedProps) {
+           // alert(selectedProps);
+            var data = {'selectedProps': selectedProps};
+            $.ajax({
+                type: 'POST',
+                url: '/c3po/conflicts/csv',
+                data: JSON.stringify(selectedProps),
+                contentType: "application/json; charset=utf-8",
+                timeout: 5000,
+                async: true,
+                success: function (data) {
+                    alert("result received");
+                }
+            });
+
+        }
+
 
         function format ( d ) {
             var result='<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
@@ -189,11 +227,8 @@
 
             <a class="green_button" href="javascript:request('/c3po/conflicts/csv')">Download csv</a>
             <a id="getConflictOverviewButton"  class="green_button" href="javascript:void(0);">Get conflict overview table</a>
+            <a id="renderConflictOverview"  class="green_button" href="javascript:void(0);">Render conflict overview</a>
             <table id="conflictoverview" class="display"> </table>
-
-
-
-
 
         </div>
     <div class="content">

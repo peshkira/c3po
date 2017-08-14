@@ -6,7 +6,7 @@ import java.util.*;
 /**
  * Created by artur on 09/12/2016.
  * <p>
- * This class describes an advanced filter condition, useful when operating with complex queries. Due to high granulary of the possible values, this conditions make possible to capture objects accurately.
+ * This class describes an advanced filter condition, useful when operating with complex queries. Due to high granulary of the possible values, these conditions make possible to capture objects accurately.
  */
 public class PropertyFilterCondition {
     /**

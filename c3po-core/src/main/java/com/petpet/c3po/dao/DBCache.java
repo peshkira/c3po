@@ -198,7 +198,29 @@ public class DBCache implements Cache {
 
     @Override
     public Source getSource(String id) {
+      Source source = this.sourceCache.get( id );
 
+      if ( source == null ) {
+        LOG.debug("Adding new item to the list of known sources.");
+        Iterator<Source> result = this.findSource( id );
+
+        if ( result.hasNext() ) {
+          source = result.next();
+          this.sourceCache.put( source.getName() + ":" + source.getVersion(), source );
+          this.sourceCache.put( source.getId(), source );
+          if ( result.hasNext() ) {
+            throw new RuntimeException( "More than one sources found for name: " + source.getName() + " and version: " + source.getVersion() );
+          }
+
+        }
+      }
+
+      return source;
+
+
+
+
+/*
         Iterator<Source> result = this.findSource(id);
 
         if (result.hasNext()) {
@@ -209,7 +231,7 @@ public class DBCache implements Cache {
             return source;
         }
 
-        return null;
+        return null;*/
     }
 
     /**

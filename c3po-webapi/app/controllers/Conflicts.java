@@ -29,6 +29,7 @@ import com.petpet.c3po.utils.Configurator;
 import common.WebAppConstants;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.data.DynamicForm;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -312,7 +313,21 @@ public class Conflicts {
     }
 
     public static Result csv() {
+        DynamicForm form = play.data.Form.form().bindFromRequest();
+        Collection<String> values = form.data().values();
+
         ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        Filter filter = Filters.getFilterFromSession();
+        String url = request().host();
+
+
+        String s = crp.printCSV(url, filter, values);
+
+
+        return ok();
+        //String message = form.get("message");
+
+        /*ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
         Filter filter = Filters.getFilterFromSession();
         String url = request().host();
         String filename= "conflicts_overview_table_" +session(WebAppConstants.SESSION_ID) + ".csv";
@@ -327,6 +342,7 @@ public class Conflicts {
         } catch (FileNotFoundException e) {
             return internalServerError(e.getMessage());
         }
+        */
     }
 
 
