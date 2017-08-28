@@ -88,7 +88,6 @@
                     },
                     type: 'GET',
                     url: '/c3po/properties',
-                    timeout: 5000,
                     async: true,
                     success: function (properties) {
                         // document.getElementById('#selectProperties').innerHTML = '';
@@ -164,7 +163,6 @@
                                 msg: "<b>Success:</b> Rules has been executed. " + oData,
                                 type: "success",
                                 position: "center",
-                                timeout: 3000,
                                 multiline: true,
                                 autohide: false,
                                 callback: function () {
@@ -190,7 +188,6 @@
                                 msg: "<b>Success:</b> Rules removal operation is done. " + oData,
                                 type: "info",
                                 position: "center",
-                                timeout: 3000,
                                 multiline: true,
                                 autohide: false,
                                 callback: function () {
@@ -224,7 +221,6 @@
                     url: '/c3po/conflicts/csv',
                     data: JSON.stringify(selectedProps),
                     contentType: "application/json; charset=utf-8",
-                    timeout: 5000,
                     async: true,
                     success: function (data) {
 
