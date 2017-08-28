@@ -18,6 +18,7 @@ package controllers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -119,23 +120,18 @@ public class Export extends Controller {
 	public static Result exportFilterToCSV() {
 		Logger.debug("Received an exportFilterToCSV call");
 		Map<String, String[]> stringMap = request().queryString();
-		if (stringMap !=null && !stringMap.isEmpty()){
-			Filter f=new Filter();
-			for (Map.Entry<String, String[]> stringEntry : stringMap.entrySet()) {
-				String key = stringEntry.getKey();
-				String[] value = stringEntry.getValue();
-				// if (value.length==1)
-				//     f.addFilterCondition(new FilterCondition(key,value[0]));
-				// else
-				f.addFilterCondition(new FilterCondition(key,value));
-			}
-			Filters.setFilterFromSession(f);
-
-
+		String pathRequest = request().path();
+		String uri = request().uri();
+		uri=uri.replace(pathRequest+"?","").replace("&template=Conflict","");
+		Filter filter= null;
+		try {
+			filter = new Filter(uri);
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
 
 		CSVGenerator generator = getGenerator();
-		Filter filter = Filters.getFilterFromSession();
+		//Filter filter = Filters.getFilterFromSession();
 		String collection= Properties.getCollection();
 		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
 		if (filter==null)

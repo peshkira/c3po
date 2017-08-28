@@ -324,7 +324,7 @@ public class Conflicts {
         String s = crp.printCSV(url, filter, values);
 
 
-        return ok();
+        return ok(s);
         //String message = form.get("message");
 
         /*ConflictResolutionProcessor crp=new ConflictResolutionProcessor();

@@ -11,119 +11,76 @@
     <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.multi-select.js")"></script>
 
     <script src="http://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
     <style>
-    td.details-control {
-        background: url('/assets/images/table/details_open.png') no-repeat center center;
-        cursor: pointer;
-    }
-    tr.shown td.details-control {
-        background: url('/assets/images/table/details_close.png') no-repeat center center;
-    }
+            td.details-control {
+                background: url('/assets/images/table/details_open.png') no-repeat center center;
+                cursor: pointer;
+            }
+
+            tr.shown td.details-control {
+                background: url('/assets/images/table/details_close.png') no-repeat center center;
+            }
 
     </style>
+
+
+    <style>
+
+
+            #conflictOverview thead th{
+                padding:15px;
+                color:#fff;
+                text-shadow:1px 1px 1px #568F23;
+                border:1px solid #93CE37;
+                border-bottom:3px solid #9ED929;
+                background-color:#9DD929;
+                background: #91c525;
+                -webkit-border-top-left-radius:5px;
+                -webkit-border-top-right-radius:5px;
+                -moz-border-radius:5px 5px 0px 0px;
+                border-top-left-radius:5px;
+                border-top-right-radius:5px;
+            }
+
+
+            #conflictOverview thead th:empty{
+                background:transparent;
+                border:none;
+            }
+
+            #conflictOverview tfoot td{
+                color: #9CD009;
+                font-size:32px;
+                text-align:center;
+                padding:10px 0px;
+                text-shadow:1px 1px 1px #444;
+            }
+            #conflictOverview tfoot th{
+                color:#666;
+            }
+
+            #conflictOverview tbody td{
+                background-color:#DEF3CA;
+                border: 1px solid #FFFFFF;
+                -moz-border-radius:2px;
+                -webkit-border-radius:2px;
+                border-radius:2px;
+                color:#666;
+                text-shadow:1px 1px 1px #fff;
+            }
+
+            #conflictOverview tr:nth-child(even) td
+            {
+                background-color: #ffffff;
+            }
+
+    </style>
+
+
+
     <script type="text/javascript">
-        $(document).ready(function(){
-            var table = $('#ruleTable');
-            var data=[];
-            $.ajax({
-                type: 'GET',
-                url: '/c3po/conflicts',
-                async: false,
-                success: function (oData) {
-                    data = oData;
-
-                    table = table.DataTable( {
-                        paging: false,
-                        searching: false,
-                        info: false,
-                        data: data,
-                        aoColumns: [
-
-                            {
-                                "className":      'details-control',
-                                "orderable":      false,
-                                "data":           null,
-                                "defaultContent": ''
-                            },
-                            {title: "Rule name", "data": "name"},
-                            {title: "Rule description", "data": "description"},
-                            {title: "Affected property","data": "element.metadata[].property.key"}
-
-                        ]
-                    });
-
-                }
-            });
-            table.on('click', 'td.details-control', function () {
-                var tr = $(this).closest('tr');
-                var row = table.row( tr );
-
-                if ( row.child.isShown() ) {
-                    // This row is already open - close it
-                    row.child.hide();
-                    tr.removeClass('shown');
-                }
-                else {
-                    // Open this row
-                    row.child( format(row.data()) ).show();
-                    tr.addClass('shown');
-                }
-            } );
-            table.on( 'click', 'tr', function () {
-                $(this).toggleClass('selected');
-            } );
-            $('#runButton').on('click', function () {
-                var ruleNames= $.map(table.rows('.selected').data(), function(item){
-                    return item.name;
-                });
-                $.ajax({
-                    type: 'POST',
-                    url: '/c3po/conflicts/resolve',
-                    data: JSON.stringify(ruleNames),
-                    contentType: "application/json; charset=utf-8",
-                    async: false,
-                    success: function (oData) {
-                        notif({
-                            msg: "<b>Success:</b> Rules has been executed. " + oData,
-                            type: "success",
-                            position: "center",
-                            timeout: 3000,
-                            multiline: true,
-                            autohide: false,
-                            callback: function(){window.location.reload();}
-                        });
-                    }
-                });
-            });
-
-            $('#deleteButton').on('click', function () {
-                var ruleNames= $.map(table.rows('.selected').data(), function(item){
-                    return item.name;
-                });
-                $.ajax({
-                    type: 'DELETE',
-                    url: '/c3po/conflicts',
-                    data: JSON.stringify(ruleNames),
-                    contentType: "application/json; charset=utf-8",
-                    async: false,
-                    success: function (oData) {
-                        notif({
-                            msg: "<b>Success:</b> Rules removal operation is done. " + oData,
-                            type: "info",
-                            position: "center",
-                            timeout: 3000,
-                            multiline: true,
-                            autohide: false,
-                            callback: function(){window.location.reload();}
-                        });
-                    }
-                });
-
-
-            });
-
-            $('#getConflictOverviewButton').on('click', function () {
-
+            $(document).ready(function () {
 
                 $.ajax({
                     headers: {
@@ -134,7 +91,8 @@
                     timeout: 5000,
                     async: true,
                     success: function (properties) {
-                        var propselDiv = $('<div class="harmony"><p>Choose properties of interest:</p> </div>').appendTo('#conflictoverview');
+                        // document.getElementById('#selectProperties').innerHTML = '';
+                        var propselDiv = $('<div class="harmony"><p>Choose properties of interest:</p> </div>').appendTo('#selectProperties');
                         var propsel = $('<select id="propSelect" multiple="multiple">').appendTo(propselDiv);
 
                         $.each(properties, function (i, value) {
@@ -144,77 +102,203 @@
                     }
                 });
 
-                var selectedProps = $('#conflictoverview select:last').val();
 
-            });
+                var table = $('#ruleTable');
+                var data = [];
+                $.ajax({
+                    type: 'GET',
+                    url: '/c3po/conflicts',
+                    async: false,
+                    success: function (oData) {
+                        data = oData;
+
+                        table = table.DataTable({
+                            data: data,
+                            aoColumns: [
+
+                                {
+                                    "className": 'details-control',
+                                    "orderable": false,
+                                    "data": null,
+                                    "defaultContent": ''
+                                },
+                                {title: "Rule name", "data": "name"},
+                                {title: "Rule description", "data": "description"},
+                                {title: "Affected property", "data": "element.metadata[].property.key"}
+
+                            ]
+                        });
+
+                    }
+                });
+                table.on('click', 'td.details-control', function () {
+                    var tr = $(this).closest('tr');
+                    var row = table.row(tr);
+
+                    if (row.child.isShown()) {
+                        // This row is already open - close it
+                        row.child.hide();
+                        tr.removeClass('shown');
+                    }
+                    else {
+                        // Open this row
+                        row.child(format(row.data())).show();
+                        tr.addClass('shown');
+                    }
+                });
+                table.on('click', 'tr', function () {
+                    $(this).toggleClass('selected');
+                });
+                $('#runButton').on('click', function () {
+                    var ruleNames = $.map(table.rows('.selected').data(), function (item) {
+                        return item.name;
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: '/c3po/conflicts/resolve',
+                        data: JSON.stringify(ruleNames),
+                        contentType: "application/json; charset=utf-8",
+                        async: false,
+                        success: function (oData) {
+                            notif({
+                                msg: "<b>Success:</b> Rules has been executed. " + oData,
+                                type: "success",
+                                position: "center",
+                                timeout: 3000,
+                                multiline: true,
+                                autohide: false,
+                                callback: function () {
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                    });
+                });
+
+                $('#deleteButton').on('click', function () {
+                    var ruleNames = $.map(table.rows('.selected').data(), function (item) {
+                        return item.name;
+                    });
+                    $.ajax({
+                        type: 'DELETE',
+                        url: '/c3po/conflicts',
+                        data: JSON.stringify(ruleNames),
+                        contentType: "application/json; charset=utf-8",
+                        async: false,
+                        success: function (oData) {
+                            notif({
+                                msg: "<b>Success:</b> Rules removal operation is done. " + oData,
+                                type: "info",
+                                position: "center",
+                                timeout: 3000,
+                                multiline: true,
+                                autohide: false,
+                                callback: function () {
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                    });
 
 
-            $('#renderConflictOverview').on('click', function () {
+                });
 
-                var selectedProps = $('#conflictoverview select:last').val();
-                renderConflictOverview(selectedProps);
+                $('#getConflictOverviewTable').on('click', function () {
+                    var popup = $('#filterpopup');
+                    popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
+                    var config = popup.children('.popupconfig');
+                    var selectedProps = $('#selectProperties select:last').val();
+                    renderConflictOverview(selectedProps);
 
-            });
+                });
 
 
+            })
 
-        })
+
+            function renderConflictOverview(selectedProps) {
+                // alert(selectedProps);
+                var data = {'selectedProps': selectedProps};
+                $.ajax({
+                    type: 'POST',
+                    url: '/c3po/conflicts/csv',
+                    data: JSON.stringify(selectedProps),
+                    contentType: "application/json; charset=utf-8",
+                    timeout: 5000,
+                    async: true,
+                    success: function (data) {
+
+                        var html = '<table id="conflicts">';
+                        var rows = data.split("\n");
 
 
-        function renderConflictOverview(selectedProps) {
-           // alert(selectedProps);
-            var data = {'selectedProps': selectedProps};
-            $.ajax({
-                type: 'POST',
-                url: '/c3po/conflicts/csv',
-                data: JSON.stringify(selectedProps),
-                contentType: "application/json; charset=utf-8",
-                timeout: 5000,
-                async: true,
-                success: function (data) {
-                    alert("result received");
+                        var header = rows[0].split(" , ");
+                        html += "<thead> <tr>";
+                        for (i = 0; i < header.length; i++) {
+                            html += "<th>" + header[i] + "</th>";
+                        }
+                        html += "</tr> </thead>";
+
+                        for (i = 1; i < rows.length-1; i++) {
+                            html += "<tr>";
+                            var columns = rows[i].split(" , ");
+                            for (j = 0; j < columns.length-2; j++) {
+                                    html += "<td>" + columns[j] + "</td>";
+                            }
+                            html += "<td> <a href=\"" + columns[columns.length-2] +"\">Overview</a> </td>";
+                            html += "<td> <a href=\"" + columns[columns.length-1] +"\">Link</a> </td>";
+                            html += "</tr>";
+                        }
+
+
+                        html += "</table>";
+                        $('#conflictOverview').append(html);
+
+                        //$( "#conflictOverview" ).resizable();
+                        //$( "tr" ).resizable({handles: "se"});
+                        //$( "td" ).resizable({handles: "se"});
+                    }
+                });
+
+            }
+
+
+            function format(d) {
+                var result = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
+                for (var i in d.filter.conditions) {
+                    result += '<tr>';
+                    var fc = d.filter.conditions[i];
+                    result += '<td>' + fc.field + '</td>';
+                    result += '<td>' + fc.value + '</td>';
+                    result += '</tr>';
                 }
+
+                for (var i in d.element.metadata) {
+                    result += '<tr bgcolor="#3EA055">';
+                    var mr = d.element.metadata[i];
+                    result += '<td>' + mr.property.key + '</td>';
+                    result += '<td>' + mr.value + '</td>';
+                    result += '</tr>';
+                }
+
+                result += '</table>';
+                return result;
+            }
+
+            $(window).unload(function () {
+                $('#spinner').css("opacity", "1");
             });
 
-        }
-
-
-        function format ( d ) {
-            var result='<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
-            for (var i in d.filter.conditions) {
-                result +='<tr>';
-                var fc = d.filter.conditions[i];
-                result +='<td>'+fc.field+'</td>';
-                result +='<td>'+fc.value+'</td>';
-                result +='</tr>';
+            function request(path) {
+                startSpinner();
+                $('#spinner').css("opacity", "1");
+                setTimeout(
+                        function () {
+                            window.location = path;
+                            stopSpinner();
+                        },
+                        500);
             }
-
-            for (var i in d.element.metadata) {
-                result +='<tr bgcolor="#3EA055">';
-                var mr = d.element.metadata[i];
-                result +='<td>'+mr.property.key+'</td>';
-                result +='<td>'+mr.value+'</td>';
-                result +='</tr>';
-            }
-
-            result +='</table>';
-            return result;
-        }
-
-        $(window).unload( function () {
-            $('#spinner').css("opacity","1");
-        });
-
-        function request(path) {
-            startSpinner();
-            $('#spinner').css("opacity","1");
-            setTimeout(
-                    function() {
-                        window.location = path;
-                        stopSpinner();
-                    },
-                    500);
-        }
 
     </script>
 
@@ -222,22 +306,25 @@
 
 @main(title, collections, scripts) {
 
-        <div class="content">
-            <h2> Conflict overview table</h2>
+    <div class="content">
+        <h2> Conflict overview table</h2>
 
-            <a class="green_button" href="javascript:request('/c3po/conflicts/csv')">Download csv</a>
-            <a id="getConflictOverviewButton"  class="green_button" href="javascript:void(0);">Get conflict overview table</a>
-            <a id="renderConflictOverview"  class="green_button" href="javascript:void(0);">Render conflict overview</a>
-            <table id="conflictoverview" class="display"> </table>
+            <!--  <a class="green_button" href="javascript:request('/c3po/conflicts/csv')">Download csv</a>
+            <a id="getConflictOverviewButton"  class="green_button" href="javascript:void(0);">Get conflict overview table</a> -->
+        <div id="selectProperties"></div>
+        <a id="getConflictOverviewTable" class="green_button" href="javascript:void(0);">Render conflict overview</a>
+        <div id="conflictOverview"> </div>
 
-        </div>
+    </div>
     <div class="content">
         <h2>Available conflict resolution rules</h2>
         <table id="ruleTable" class="display" width="80%"></table>
 
         <div name="runSection">
             <br> <br>
-        <a  id="runButton" class="green_button" href="javascript:void(0);">Execute conflict resolution with selected rules</a>
-            <a  id="deleteButton" class="red_button" href="javascript:void(0);">Delete selected rules</a>
+            <a id="runButton" class="green_button" href="javascript:void(0);">
+                Execute conflict resolution with selected rules</a>
+            <a id="deleteButton" class="red_button" href="javascript:void(0);">Delete selected rules</a>
+        </div>
     </div>
 }

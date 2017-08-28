@@ -17,11 +17,7 @@ import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import com.petpet.c3po.utils.Configurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.collection.mutable.StringBuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -343,179 +339,6 @@ public class ConflictResolutionProcessor {
 
         return basicDBObjects;
 
-
-    }
-
-    public static File printCSV(String path, String url, Filter filter) {
-        LOG.info("Generating a csv file with conflict overview table");
-        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
-
-        List<String> props = new ArrayList<String>();
-        props.add("format");
-        props.add("format_version");
-        props.add("mimetype");
-
-        List<BasicDBObject> basicDBObjects = getOverview(filter, props);
-
-        getAllProperties(persistence);
-
-        Iterator<Source> sourceIterator = persistence.find(Source.class, null);
-        List<String> sources = new ArrayList<>();
-        String header = "";
-        while (sourceIterator.hasNext()) {
-            Source next = sourceIterator.next();
-            sources.add(next.toString());
-        }
-        header += "Count;";
-        for (String source : sources)
-            header += "Format-" + source + ";";
-
-        for (String source : sources)
-            header += "FormatVersion-" + source + ";";
-
-        for (String source : sources)
-            header += "Mimetype-" + source + ";";
-
-        header += "SampleURL;Query";
-
-
-        int size = basicDBObjects.size();
-        System.out.print(size);
-        List<BasicDBObject> result = new ArrayList<>();
-
-        File file = new File(path);
-
-        // if file doesnt exists, then create it
-        PrintWriter out = null;
-        try {
-            if (!file.createNewFile()) {
-                file.delete();
-                file.createNewFile();
-            }
-            out = new PrintWriter(file);
-        } catch (IOException e) {
-            LOG.error("An error occurred during csv generation {}", e.getMessage());
-        }
-
-        out.println(header);
-
-        Map<String, Double> toSort = new HashMap<String, Double>();
-
-        for (BasicDBObject obj : basicDBObjects) {
-            Filter filter_tmp = new Filter();
-            filter_tmp.setStrict(true);
-            String output = "";
-            Double count = obj.getDouble("value");
-            output += count.intValue();
-            BasicDBObject id1 = (BasicDBObject) obj.get("_id");
-            if (id1.size() == 0) continue;
-            BasicDBObject format = (BasicDBObject) id1.get("format");
-            BasicDBObject format_version = (BasicDBObject) id1.get("format_version");
-            BasicDBObject mimetype = (BasicDBObject) id1.get("mimetype");
-
-            if (format != null && format.get("sourcedValues") != null) {
-                BasicDBList format_sourcedValues = (BasicDBList) format.get("sourcedValues");
-                output += basicDBListsToCSV(format_sourcedValues, sources);
-                PropertyFilterCondition pfc_format = new PropertyFilterCondition();
-                pfc_format.addCondition(PropertyFilterCondition.PropertyFilterConditionType.PROPERTY, "format");
-                // pfc_format.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, "CONFLICT");
-                pfc_format.setSourcedValues(getSourcedValues(format_sourcedValues, sources));
-                filter_tmp.getPropertyFilterConditions().add(pfc_format);
-            } else
-                output += basicDBListsToCSV(new BasicDBList(), sources);
-
-            if (format_version != null && format_version.get("sourcedValues") != null) {
-                BasicDBList format_version_sourcedValues = (BasicDBList) format_version.get("sourcedValues");
-                output += basicDBListsToCSV(format_version_sourcedValues, sources);
-                PropertyFilterCondition pfc_format_version = new PropertyFilterCondition();
-                pfc_format_version.addCondition(PropertyFilterCondition.PropertyFilterConditionType.PROPERTY, "format_version");
-                //pfc_format_version.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, "CONFLICT");
-                pfc_format_version.setSourcedValues(getSourcedValues(format_version_sourcedValues, sources));
-                filter_tmp.getPropertyFilterConditions().add(pfc_format_version);
-            } else
-                output += basicDBListsToCSV(new BasicDBList(), sources);
-
-            if (mimetype != null && mimetype.get("sourcedValues") != null) {
-                BasicDBList mimetype_sourcedValues = (BasicDBList) mimetype.get("sourcedValues");
-                output += basicDBListsToCSV(mimetype_sourcedValues, sources);
-                PropertyFilterCondition pfc_mimetype = new PropertyFilterCondition();
-                pfc_mimetype.addCondition(PropertyFilterCondition.PropertyFilterConditionType.PROPERTY, "mimetype");
-                //pfc_mimetype.addCondition(PropertyFilterCondition.PropertyFilterConditionType.STATUS, "CONFLICT");
-                pfc_mimetype.setSourcedValues(getSourcedValues(mimetype_sourcedValues, sources));
-                filter_tmp.getPropertyFilterConditions().add(pfc_mimetype);
-            } else
-                output += basicDBListsToCSV(new BasicDBList(), sources);
-
-            BasicDBList andQuery = new BasicDBList();
-            BasicDBObject query;
-
-            String getQuery = "";
-
-
-            String s = filter_tmp.toSRUString();
-
-            /*if (format.size() > 0) {
-                    query = new BasicDBObject();
-                    if (format.getString("status").equals("CONFLICT")) {
-                        query.put("format.values", format_values);
-                        for (Object o : format_values) {
-                            getQuery += "format=" + o.toString() + "&";
-                        }
-                    } else {
-                        query.put("format.value", format_values.get(0));
-                        getQuery += "format=" + format_values.get(0).toString() + "&";
-                    }
-                    andQuery.add(query);
-                }
-
-                if (format_version.size() > 0) {
-                    query = new BasicDBObject();
-                    if (format_version.getString("status").equals("CONFLICT")) {
-                        query.put("format_version.values", format_version_values);
-                        for (Object o : format_version_values) {
-                            getQuery += "format_version=" + o.toString() + "&";
-                        }
-                    } else {
-                        query.put("format_version.value", format_version_values.get(0));
-                        getQuery += "format_version=" + format_version_values.get(0).toString() + "&";
-                    }
-                    andQuery.add(query);
-                }
-
-                if (mimetype.size() > 0) {
-                    query = new BasicDBObject();
-                    if (mimetype.getString("status").equals("CONFLICT")) {
-                        query.put("mimetype.values", mimetype_values);
-                        for (Object o : mimetype_values) {
-                            getQuery += "mimetype=" + o.toString() + "&";
-                        }
-                    } else {
-                        query.put("mimetype.value", mimetype.get(0));
-                        getQuery += "mimetype=" + mimetype_values.get(0).toString() + "&";
-                    }
-                    getQuery = getQuery.substring(0, getQuery.length() - 1);
-                    getQuery = getQuery.replace("+", "%2B").replace(" ", "%20");
-                    andQuery.add(query);
-                }*/
-            // query = new BasicDBObject("$and", andQuery);
-            Iterator<Element> elementIterator = persistence.find(Element.class, filter_tmp);
-            output += ";";
-            if (elementIterator.hasNext()) {
-                Element next = elementIterator.next();
-                output += "http://" + url + "/c3po/objects/" + next.getId();
-            }
-            output += ";" + "http://" + url + "/c3po/overview/filter?" + s + "&template=Conflict";
-            output += ";" + "http://" + url + "/c3po/export/csv/filter?" + s;
-            toSort.put(output, count);
-            //out.println(output);
-        }
-
-        toSort = sortByValues(toSort);
-        for (String s : toSort.keySet()) {
-            out.println(s);
-        }
-        out.close();
-        return file;
     }
 
     private static List<String> getAllProperties(MongoPersistenceLayer persistence) {
@@ -573,9 +396,9 @@ public class ConflictResolutionProcessor {
                 result[Integer.valueOf(sourceString)] = valueConflicted;
             }
         }
-        java.lang.StringBuilder sb=new java.lang.StringBuilder();
+        java.lang.StringBuilder sb = new java.lang.StringBuilder();
         for (int i = 0; i < result.length; i++)
-            sb.append( "," + result[i]);
+            sb.append(" , " + result[i]);
         return sb.toString();
     }
 
@@ -584,41 +407,39 @@ public class ConflictResolutionProcessor {
         LOG.info("Generating a csv file with conflict overview table");
         java.lang.StringBuilder sb = new java.lang.StringBuilder();
         MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
-        String header = "Count,Property,";
+        sb.append("Count , Property , ");
         for (String source : getAllSources(persistence))
-            header += source + ",";
+            sb.append(source + " , ");
 
-        header += "Query,";
-        sb.append(header);
+        sb.append( "Query , Export\n");
 
-        Map<String, Double> stringDoubleMap=new HashMap<String,Double>();
+        Map<String, Integer> stringDoubleMap = new HashMap<String, Integer>();
         for (String prop : props) {
             Collection<? extends BasicDBObject> conflictsForProperty = getConflictsForProperty(filter, prop);
             stringDoubleMap.putAll(basicDBObjectsToCSV((List<BasicDBObject>) conflictsForProperty, prop, url));
         }
         stringDoubleMap = sortByValues(stringDoubleMap);
         for (String s : stringDoubleMap.keySet()) {
-            sb.append(s);
+            sb.append(s + "\n");
         }
-
 
         return sb.toString();
     }
 
-    private Map<String, Double> basicDBObjectsToCSV(List<BasicDBObject> basicDBObjects, String prop, String url) {
+    private Map<String, Integer> basicDBObjectsToCSV(List<BasicDBObject> basicDBObjects, String prop, String url) {
         MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
 
         List<String> sources = getAllSources(persistence);
 
-        Map<String, Double> result = new HashMap<String, Double>();
+        Map<String, Integer> result = new HashMap<String, Integer>();
 
         for (BasicDBObject obj : basicDBObjects) {
-            java.lang.StringBuilder sb=new java.lang.StringBuilder();
+            java.lang.StringBuilder sb = new java.lang.StringBuilder();
             Filter filter_tmp = new Filter();
             filter_tmp.setStrict(true);
-            Double count = obj.getDouble("value");
+            Integer count = obj.getInt("value");
             sb.append(count.intValue());
-            sb.append(","+prop);
+            sb.append(" , " + prop);
             BasicDBObject list = (BasicDBObject) obj.get("_id");
             BasicDBObject property = (BasicDBObject) list.get(prop);
             if (property != null && property.get("sourcedValues") != null) {
@@ -633,16 +454,16 @@ public class ConflictResolutionProcessor {
 
             String s = filter_tmp.toSRUString();
 
-           // Iterator<Element> elementIterator = persistence.find(Element.class, filter_tmp);
-          //  sb.append( ",");
-          //  if (elementIterator.hasNext()) {
-          //      Element next = elementIterator.next();
-          //      sb.append( "http://" + url + "/c3po/objects/" + next.getId());
-          //  }
-            sb.append( "," + "http://" + url + "/c3po/overview/filter?" + s + "&template=Conflict");
-            sb.append( "," + "http://" + url + "/c3po/export/csv/filter?" + s);
+            // Iterator<Element> elementIterator = persistence.find(Element.class, filter_tmp);
+            //  sb.append( ",");
+            //  if (elementIterator.hasNext()) {
+            //      Element next = elementIterator.next();
+            //      sb.append( "http://" + url + "/c3po/objects/" + next.getId());
+            //  }
+            sb.append(" , " + "http://" + url + "/c3po/overview/filter?" + s + "&template=Conflict");
+            sb.append(" , " + "http://" + url + "/c3po/export/csv/filter?" + s);
 
-            result.put(sb.toString(),count);
+            result.put(sb.toString(), count);
 
         }
         return result;
