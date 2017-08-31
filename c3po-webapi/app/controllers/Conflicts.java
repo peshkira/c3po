@@ -312,6 +312,49 @@ public class Conflicts {
         return null;
     }
 
+    public static Result table() {
+        DynamicForm form = play.data.Form.form().bindFromRequest();
+        Collection<String> values = form.data().values();
+
+        ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        Filter filter = Filters.getFilterFromSession();
+        String url = request().host();
+
+
+        String s = crp.printCSV(url, filter, values);
+        String filenameSuffix="";
+        for (String value : values) {
+            filenameSuffix+="_" +value;
+        }
+        File file=new File(System.getProperty( "user.home" ) + File.separator +"conflicts" +filenameSuffix+".csv");
+        try {
+            FileWriter fw=new FileWriter(file);
+            fw.write(s);
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ok(s);
+        //String message = form.get("message");
+
+        /*ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
+        Filter filter = Filters.getFilterFromSession();
+        String url = request().host();
+        String filename= "conflicts_overview_table_" +session(WebAppConstants.SESSION_ID) + ".csv";
+        String path = System.getProperty( "user.home" ) + File.separator +filename;
+
+        File file = crp.printCSV(path, url, filter);
+
+        try {
+            response().setContentType("text/csv");
+            response().setHeader("Content-disposition","attachment; filename="+filename);
+            return ok(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            return internalServerError(e.getMessage());
+        }
+        */
+    }
+
     public static Result csv() {
         DynamicForm form = play.data.Form.form().bindFromRequest();
         Collection<String> values = form.data().values();
@@ -322,9 +365,22 @@ public class Conflicts {
 
 
         String s = crp.printCSV(url, filter, values);
+        File file=new File(System.getProperty( "user.home" ) + File.separator +"conflicts");
+        try {
+            FileWriter fw=new FileWriter(file);
+            fw.write(s);
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-
-        return ok(s);
+        try {
+            response().setContentType("text/csv");
+            response().setHeader("Content-disposition","attachment; filename="+"conflicts");
+            return ok(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            return internalServerError(e.getMessage());
+        }
         //String message = form.get("message");
 
         /*ConflictResolutionProcessor crp=new ConflictResolutionProcessor();

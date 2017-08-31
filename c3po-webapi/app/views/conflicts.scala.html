@@ -201,11 +201,18 @@
                 });
 
                 $('#getConflictOverviewTable').on('click', function () {
-                    var popup = $('#filterpopup');
-                    popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
-                    var config = popup.children('.popupconfig');
+                  //  var popup = $('#filterpopup');
+                   // popup.children('.popupreason').text('Please choose the number of samples and the algorithm you like to use.');
+                  //  var config = popup.children('.popupconfig');
                     var selectedProps = $('#selectProperties select:last').val();
                     renderConflictOverview(selectedProps);
+
+                });
+
+
+                $('#downloadConflictsCSV').on('click', function () {
+                    var selectedProps = $('#selectProperties select:last').val();
+                    downloadConflictOverview(selectedProps);
 
                 });
 
@@ -213,12 +220,30 @@
             })
 
 
-            function renderConflictOverview(selectedProps) {
+            function downloadConflictOverview(selectedProps) {
                 // alert(selectedProps);
                 var data = {'selectedProps': selectedProps};
                 $.ajax({
                     type: 'POST',
                     url: '/c3po/conflicts/csv',
+                    data: JSON.stringify(selectedProps),
+                    contentType: "application/json; charset=utf-8",
+                    async: true,
+                    success: function (data) {
+                        alert(data);
+                    }
+                });
+
+            }
+
+
+
+            function renderConflictOverview(selectedProps) {
+                // alert(selectedProps);
+                var data = {'selectedProps': selectedProps};
+                $.ajax({
+                    type: 'POST',
+                    url: '/c3po/conflicts/table',
                     data: JSON.stringify(selectedProps),
                     contentType: "application/json; charset=utf-8",
                     async: true,
@@ -249,10 +274,6 @@
 
                         html += "</table>";
                         $('#conflictOverview').append(html);
-
-                        //$( "#conflictOverview" ).resizable();
-                        //$( "tr" ).resizable({handles: "se"});
-                        //$( "td" ).resizable({handles: "se"});
                     }
                 });
 
@@ -305,11 +326,14 @@
     <div class="content">
         <h2> Conflict overview table</h2>
 
-            <!--  <a class="green_button" href="javascript:request('/c3po/conflicts/csv')">Download csv</a>
-            <a id="getConflictOverviewButton"  class="green_button" href="javascript:void(0);">Get conflict overview table</a> -->
+
+            <!-- <a id="downloadConflictsCSV" class="green_button" href="javascript:void(0)">Download csv</a>
+               <a id="getConflictOverviewButton"  class="green_button" href="javascript:void(0);">Get conflict overview table</a> -->
         <div id="selectProperties"></div>
         <a id="getConflictOverviewTable" class="green_button" href="javascript:void(0);">Render conflict overview</a>
+
         <div id="conflictOverview"> </div>
+
 
     </div>
     <div class="content">
