@@ -249,7 +249,7 @@ public class ConflictResolutionProcessor {
             BasicDBObject id1 = (BasicDBObject) obj.get("_id");
             if (id1.size() == 0) continue;
             Filter f = new Filter();
-            f.setStrict(true);
+            //f.setStrict(true);  Loosen filter strictness.
             for (String property : properties) {
                 PropertyFilterCondition pfc = getFilterCondition(property, id1);
                 f.getPropertyFilterConditions().add(pfc);
@@ -436,7 +436,7 @@ public class ConflictResolutionProcessor {
         for (BasicDBObject obj : basicDBObjects) {
             java.lang.StringBuilder sb = new java.lang.StringBuilder();
             Filter filter_tmp = new Filter();
-            filter_tmp.setStrict(true);
+           // filter_tmp.setStrict(true); Loosen filter strictness.
             Integer count = obj.getInt("value");
             sb.append(count.intValue());
             sb.append(" , " + prop);
