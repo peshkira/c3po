@@ -15,11 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.dao;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.dao.Cache;
@@ -51,6 +47,8 @@ public class DBCache implements Cache {
    */
   private Map<String, Source> sourceCache;
 
+  private Map<String, List<String>> valuesCache;
+
   /**
    * A map of arbitrary objects.
    */
@@ -71,6 +69,7 @@ public class DBCache implements Cache {
     this.propertyCache = Collections.synchronizedMap( new HashMap<String, Property>() );
     this.sourceCache = Collections.synchronizedMap( new HashMap<String, Source>() );
     this.misc = Collections.synchronizedMap( new HashMap<Object, Object>() );
+    this.valuesCache=Collections.synchronizedMap(new HashMap<String, List<String>>());
   }
 
   /**
@@ -120,6 +119,42 @@ public class DBCache implements Cache {
 
     return property;
   }
+
+  @Override
+  public synchronized List<String> getValues(String property) {
+    List<String> values = this.valuesCache.get(property);
+    if (values==null){
+      LOG.debug("Getting a list of known values.");
+      Iterator<String> result=this.findValue( property );
+      List<String> vals=new ArrayList<String>();
+      while (result.hasNext()){
+        vals.add(result.next());
+      }
+      this.valuesCache.put(property,vals);
+    }
+    return this.valuesCache.get(property);
+  }
+
+  private Iterator<String> findValue(String property) {
+    List<String> properties=new ArrayList<String>();
+    properties.add(property);
+    Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
+    List<Integer> bins=new ArrayList<Integer>();
+    bins.add(5);
+    bins.add(20);
+    bins.add(40);
+    bins.add(100);
+    bins.add(1000);
+    bins.add(10000);
+    bins.add(10000000);
+    binThresholds.put("size", bins);
+    binThresholds.put("wordcount", bins);
+    binThresholds.put("pagecount", bins);
+    Map<String, Map<String, Long>> histograms = persistence.getHistograms(properties, new Filter(), binThresholds);
+    return histograms.get(property).keySet().iterator();
+
+  }
+
 
   /**
    * Looks in the cache for a property with the given key. If the property is

@@ -19,6 +19,8 @@ import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.PropertyType;
 
+import java.util.List;
+
 /**
  * A simple Read Only cache for {@link Property}, {@link Source} and any kind of
  * other objects.
@@ -38,6 +40,8 @@ public interface ReadOnlyCache {
    * @return the cached property.
    */
   Property getProperty( String key );
+
+  List<String> getValues(String property);
   
   /**
    * Retrieves the source designated by the given name and version. Depending on
