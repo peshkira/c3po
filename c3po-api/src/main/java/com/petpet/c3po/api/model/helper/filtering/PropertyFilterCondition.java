@@ -30,12 +30,23 @@ public class PropertyFilterCondition {
      */
     List<String> sources;
 
+    public Boolean getStrict() {
+        return strict;
+    }
+
+    public void setStrict(Boolean strict) {
+        this.strict = strict;
+    }
+
+    Boolean strict=false;
+
     public PropertyFilterCondition() {
         sourcedValues = new HashMap<String, String>();
         statuses = new ArrayList<String>();
         property = new String();
         values = new ArrayList<String>();
         sources = new ArrayList<String>();
+        strict = false;
     }
     public PropertyFilterCondition(String SRUString) throws ParseException{
         this();
@@ -66,6 +77,9 @@ public class PropertyFilterCondition {
                         getValues().add(value);
                     }
                 }
+                else if (key.equals("strict")){
+                    setStrict(true);
+                }
             }
         }
         catch (Exception e){
@@ -91,6 +105,10 @@ public class PropertyFilterCondition {
         }
         for (String value : getValues()) {
             result+="value"+"="+neutralizeStringForSRU(value);
+            result+="&";
+        }
+        if (getStrict()){
+            result+="strict=true";
             result+="&";
         }
         return result;

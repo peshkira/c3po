@@ -86,8 +86,6 @@ public class Filter implements Serializable {
         this.raw = raw;
     }
 
-    private boolean strict=false;
-
     private String raw;
 
     /**
@@ -111,10 +109,6 @@ public class Filter implements Serializable {
 
     public Filter(String SRUString) throws ParseException {
         this();
-        if (SRUString.contains("&strict=true")) {
-            setStrict(true);
-            SRUString=SRUString.replace("&strict=true","");
-        }
         SRUString=SRUString.replace( "%2B", "+").replace("%20"," ");
         int i = SRUString.indexOf("&property");
         while (i > -1){
@@ -262,9 +256,6 @@ public class Filter implements Serializable {
         for (PropertyFilterCondition pfc: propertyFilterConditions){
             result +=pfc.toSRUString();
         }
-        if (isStrict()){
-            result+="strict=true&";
-        }
         if (result.endsWith("&"))
             result=result.substring(0,result.length()-1);
         result=result.replace("+", "%2B").replace(" ", "%20");
@@ -273,11 +264,4 @@ public class Filter implements Serializable {
 
     }
 
-    public boolean isStrict() {
-        return strict;
-    }
-
-    public void setStrict(boolean strict) {
-        this.strict = strict;
-    }
 }

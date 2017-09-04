@@ -345,7 +345,6 @@ Anything else that is interesting about inputs, outputs,settings,params
 
     public Iterator<Element> getSamplesForValues(List<String> values){
         Filter f= new Filter(this.filter);
-        f.setStrict(false);
         for (int i = 0; i < properties.size(); i++) {
             String val = values.get(i);
             String prop = properties.get(i);
@@ -371,6 +370,7 @@ Anything else that is interesting about inputs, outputs,settings,params
                 else
                     pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
                 //BetweenFilterCondition betweenFilterCondition = BetweenFilterCondition.getBetweenFilterCondition(val, prop);
+                pfc.setStrict(false);
                 f.getPropertyFilterConditions().add(pfc);//addFilterCondition(betweenFilterCondition);
             }
             if (property.getType().equals(PropertyType.BOOL.name())){
@@ -381,6 +381,7 @@ Anything else that is interesting about inputs, outputs,settings,params
                 }
                 else
                     pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                pfc.setStrict(false);
                 f.getPropertyFilterConditions().add(pfc);
                 //f.addFilterCondition(new FilterCondition(properties.get(i), Boolean.parseBoolean(values.get(i))));
             }
@@ -392,6 +393,7 @@ Anything else that is interesting about inputs, outputs,settings,params
                 }
                 else
                     pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.VALUE,val);
+                pfc.setStrict(false);
                 f.getPropertyFilterConditions().add(pfc);
                 //f.addFilterCondition(new FilterCondition(properties.get(i), values.get(i)));
             }

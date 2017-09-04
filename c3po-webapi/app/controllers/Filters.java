@@ -320,6 +320,7 @@ public class Filters extends Controller {
             List<String> statuses = propertyFilterCondition.getStatuses();
             if (statuses.size() > 0)
                 map.put("propertystatus", statuses.get(0));
+            map.put("strict", propertyFilterCondition.getStrict());
             List<Object> sourcedValues = new ArrayList<Object>();
             for (Map.Entry<String, String> stringStringEntry : propertyFilterCondition.getSourcedValues().entrySet()) {
                 Map<String, String> sv = new HashMap<String, String>();
@@ -354,6 +355,9 @@ public class Filters extends Controller {
             String propertystatus = next.get("propertystatus").asText();
             if (!propertystatus.equals(""))
                 result += "&status=" + propertystatus;
+            boolean strict = next.get("strict").asBoolean();
+            if (strict)
+                result += "&strict=true";
             JsonNode sourcedvalues = next.get("sourcedvalues");
             for (JsonNode sourcedvalue : sourcedvalues) {
                 String propertyvalue = sourcedvalue.get("propertyvalue").asText();

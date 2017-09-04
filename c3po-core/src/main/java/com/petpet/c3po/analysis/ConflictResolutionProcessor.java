@@ -249,9 +249,9 @@ public class ConflictResolutionProcessor {
             BasicDBObject id1 = (BasicDBObject) obj.get("_id");
             if (id1.size() == 0) continue;
             Filter f = new Filter();
-            //f.setStrict(true);  Loosen filter strictness.
             for (String property : properties) {
                 PropertyFilterCondition pfc = getFilterCondition(property, id1);
+                pfc.setStrict(true);
                 f.getPropertyFilterConditions().add(pfc);
             }
             String query = f.toSRUString();
@@ -436,7 +436,6 @@ public class ConflictResolutionProcessor {
         for (BasicDBObject obj : basicDBObjects) {
             java.lang.StringBuilder sb = new java.lang.StringBuilder();
             Filter filter_tmp = new Filter();
-           // filter_tmp.setStrict(true); Loosen filter strictness.
             Integer count = obj.getInt("value");
             sb.append(count.intValue());
             sb.append(" , " + prop);
@@ -445,10 +444,13 @@ public class ConflictResolutionProcessor {
             if (property != null && property.get("sourcedValues") != null) {
                 BasicDBList sourcedValues = (BasicDBList) property.get("sourcedValues");
                 sb.append(basicDBListsToCSV(sourcedValues, sources));
-
                 PropertyFilterCondition pfc = new PropertyFilterCondition();
+                pfc.setStrict(true);
                 pfc.addCondition(PropertyFilterCondition.PropertyFilterConditionType.PROPERTY, prop);
                 pfc.setSourcedValues(getSourcedValues(sourcedValues, sources));
+                List<String> statuses=new ArrayList<String>();
+                statuses.add("CONFLICT");
+                pfc.setStatuses(statuses);
                 filter_tmp.getPropertyFilterConditions().add(pfc);
             }
 
@@ -490,14 +492,15 @@ public class ConflictResolutionProcessor {
                 "    for (mr in this.metadata){\n" +
                 "        metadataRecord=this.metadata[mr];\n" +
                 "        if(metadataRecord.property == property){\n" +
-                "            result[property]={};\n" +
-                "            result[property].status=metadataRecord.status;\n" +
-                "            result[property].sourcedValues=new Array();\n" +
-                "            for(var source in metadataRecord.sourcedValues){\n" +
-                "                result[property].sourcedValues.push(metadataRecord.sourcedValues[source]);\n" +
-                "            }\n" +
+
                 "            if (metadataRecord.status == 'CONFLICT'){\n" +
                 "                conflicted=true;\n" +
+                "                result[property]={};\n" +
+                "                result[property].status=metadataRecord.status;\n" +
+                "                result[property].sourcedValues=new Array();\n" +
+                "                for(var source in metadataRecord.sourcedValues){\n" +
+                "                   result[property].sourcedValues.push(metadataRecord.sourcedValues[source]);\n" +
+                "                }\n" +
                 "            }\n" +
                 "        }\n" +
                 "    }\n" +

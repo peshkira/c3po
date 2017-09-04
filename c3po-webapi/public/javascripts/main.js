@@ -183,6 +183,15 @@ function renderPFC(pfc, div, properties) {
     selectPropertyStatus.append($('<option>').text("RESOLVED").attr('value', "RESOLVED"));
     selectPropertyStatus[0].value = pfc.propertystatus;
 
+    //Property strictness
+
+    holderPFC.append('<text>Strict values: </text>');
+    if (pfc.strict){
+        var checkPropertyStrictness = $(' <input type="checkbox" id="checkPropertyStrictness" checked>').appendTo(holderPFC);
+    } else {
+        var checkPropertyStrictness = $(' <input type="checkbox" id="checkPropertyStrictness">').appendTo(holderPFC);
+    }
+
     //Property sourced values
 
     var sources = getSources();
@@ -376,6 +385,7 @@ function applyFilter() {
         var result = {};
         result.propertyname = pfc.querySelector('#selectPropertyName').value;
         result.propertystatus = pfc.querySelector('#selectPropertyStatus').value;
+        result.strict=pfc.querySelector('#checkPropertyStrictness').checked;
         result.sourcedvalues = [];
         var sourcedvalues = pfc.querySelector('#holderSourcedValues');
         for (var j = 0; j < sourcedvalues.childNodes.length; j++) {
@@ -470,6 +480,10 @@ function addNewPropertiesSelectHolder(properties) {
     propertystatus.append($('<option>').text("SINGLE_RESULT").attr('value', "SINGLE_RESULT"));
     propertystatus.append($('<option>').text("CONFLICT").attr('value', "CONFLICT"));
     propertystatus.append($('<option>').text("RESOLVED").attr('value', "RESOLVED"));
+
+    pfc.append('<text>Strict values: </text>');
+    var checkPropertyStrictness = $(' <input type="checkbox" id="checkPropertyStrictness">').appendTo(pfc);
+
     var propertysourcedvalues = $('<div id="holderSourcedValues">').appendTo(pfc);
 
 
