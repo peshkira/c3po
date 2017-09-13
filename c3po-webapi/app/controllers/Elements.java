@@ -99,18 +99,6 @@ public class Elements extends Controller {
 		if (iterator.hasNext()) {
 			Element result = iterator.next();
 			List<MetadataRecord> metadata = result.getMetadata();
-			/*for(MetadataRecord mr: metadata){
-				List<String> sources = mr.getSources();
-				List<String> sourcesFullName= new ArrayList<String>();
-				for (String s: sources) {
-					Source source = persistence.getCache().getSource(s);
-					if (source!=null)
-						sourcesFullName.add(source.getName()+":"+source.getVersion());
-					else
-						sourcesFullName.add("Null");
-				}
-				mr.setSources(sourcesFullName);
-			}*/
 			if (iterator.hasNext()) {
 				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
 			}
@@ -161,7 +149,6 @@ public class Elements extends Controller {
 		while (sourceIterator.hasNext()){
 			Source next = sourceIterator.next();
 			sourceNames.add(next.toString());
-			//sourceNames.add(next.getName() + " (" + next.getVersion()+ ")");
 		}
 		List<MetadataRecord> metadata = element.getMetadata();
 		ArrayNode result = new ArrayNode(new JsonNodeFactory(false));
@@ -181,11 +168,12 @@ public class Elements extends Controller {
 				String source = stringStringEntry.getKey();
 				String value = stringStringEntry.getValue();
 			}
-			for (int i=0; i< sourceNames.size();i++){
-				if (sources.contains(String.valueOf(i)))
-					tmp.put(sourceNames.get(i),values.get(sources.indexOf(String.valueOf(i))));
-				 else
-					tmp.put(sourceNames.get(i),nullStr);
+			for (String sourceName : sourceNames) {
+				if (sources.contains(sourceName)){
+					tmp.put(sourceName,mr.getSourcedValues().get(sourceName));
+				} else {
+					tmp.put(sourceName,nullStr);
+				}
 			}
 
 			result.add(tmp);

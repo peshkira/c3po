@@ -45,16 +45,102 @@ public class ConflictResolutionProcessor {
 
     public long resolve(Filter filter) {
         long result = 0;
-        PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
         for (Rule r : rules) {
-            persistence.update(r.getElement(), r.getFilter());
+            Iterator<Element> elementIterator = persistence.find(Element.class, r.getFilter());
+            Element sample = elementIterator.next();
+
+            List<String> properties = new ArrayList<>();
+            for (MetadataRecord metadataRecord : sample.getMetadata()) {
+                properties.add(metadataRecord.getProperty());
+            }
+
+            List<MetadataRecord> metadataRecords=assemblyRecords(r.getMetadataRecordList());
+            for (MetadataRecord metadataRecord : metadataRecords) {
+                BasicDBObject object=serialize(metadataRecord,properties, sample);
+                persistence.update(object, r.getFilter());
+            }
+
+
             Map<String, Object> map = persistence.getResult();
             if (map.get("count") != null)
-                result += (int) map.get("count");
+                result +=(long) map.get("count");
         }
         // updateContentType(filter);
         return result;
     }
+
+    private BasicDBObject serialize(MetadataRecord metadataRecordToDelete, List<String> properties, Element sample) {
+        MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
+        BasicDBObject result=new BasicDBObject();
+
+        for (MetadataRecord metadataRecord : sample.getMetadata()) {
+            if (metadataRecord.getProperty().equals(metadataRecordToDelete.getProperty())){
+                for (String s : metadataRecordToDelete.getSourcedValues().keySet()) {
+                    metadataRecord.getSourcedValues().remove(s);
+                }
+                BasicDBList sourcedValuesList = new BasicDBList();
+                for (Map.Entry<String, String> stringStringEntry : metadataRecord.getSourcedValues().entrySet()) {
+                    String key = stringStringEntry.getKey();
+                    String value = stringStringEntry.getValue();
+                    BasicDBObject sourcedvalue=new BasicDBObject();
+                    sourcedvalue.append("source", key);
+                    sourcedvalue.append("value", value);
+                    sourcedValuesList.add(sourcedvalue);
+                }
+                result.append("metadata."+properties.indexOf(metadataRecord.getProperty())+".sourcedValues", sourcedValuesList);
+
+                if (metadataRecordToDelete.getStatus().equals("RESOLVED")){
+                    result.append("metadata."+properties.indexOf(metadataRecord.getProperty())+".status", metadataRecordToDelete.getStatus());
+                }
+                break;
+            }
+        }
+
+
+        return result;
+    }
+
+    private List<MetadataRecord> assemblyRecords(List<MetadataRecord> metadataRecords) {
+        List<MetadataRecord> result=new ArrayList<MetadataRecord>();
+        List<String> processedProperties=new ArrayList<String>();
+        for (MetadataRecord metadataRecord : metadataRecords) {
+            if (!processedProperties.contains(metadataRecord.getProperty())) {
+                processedProperties.add(metadataRecord.getProperty());
+                List<MetadataRecord> tmpRecords = getAllRecordsWithProperty(metadataRecord.getProperty(), metadataRecords);
+                MetadataRecord tmprecord = combineRecords(tmpRecords);
+                result.add(tmprecord);
+            }
+        }
+        return result;
+    }
+
+    private MetadataRecord combineRecords(List<MetadataRecord> tmpRecords) {
+        MetadataRecord result=new MetadataRecord();
+        for (MetadataRecord tmpRecord : tmpRecords) {
+            if (tmpRecord.getProperty()!=null && result.getProperty()==null){
+                result.setProperty(tmpRecord.getProperty());
+            }
+            if (tmpRecord.getStatus().equals("RESOLVED")){
+                result.setStatus(tmpRecord.getStatus());
+            }
+            if (!tmpRecord.getSourcedValues().isEmpty()){
+                result.getSourcedValues().putAll(tmpRecord.getSourcedValues());
+            }
+        }
+        return result;
+    }
+
+    private List<MetadataRecord> getAllRecordsWithProperty(String property, List<MetadataRecord> metadataRecords) {
+        List<MetadataRecord> result=new ArrayList<MetadataRecord>();
+        for (MetadataRecord metadataRecord : metadataRecords) {
+            if (metadataRecord.getProperty().equals(property)) {
+                result.add(metadataRecord);
+            }
+        }
+        return result;
+    }
+
 
     public long resolve(Filter filter, Map<String, String> resolutions) {
         long result = 0;

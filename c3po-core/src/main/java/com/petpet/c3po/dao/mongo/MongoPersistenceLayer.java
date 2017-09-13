@@ -24,13 +24,11 @@ import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.dao.DBCache;
-import com.petpet.c3po.utils.Configurator;
 import com.petpet.c3po.utils.DataHelper;
 import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -136,7 +134,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     private Map<String, DBCollection> collections;
 
     private MongoFilterSerializer filterSerializer;
-    private WriteResult writeResult;
+    private long writeResult;
 
     /**
      * The constructor initializes all needed objects, such as the serializers and
@@ -174,11 +172,11 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         if (writeResult.getField("nRemoved")!=null)
             result.put("nRemoved",writeResult.getField("nRemoved"));
         */
-        result.put("count", writeResult.getN());
+        result.put("count", writeResult);
         return result;
     }
 
-    private void setResult(WriteResult result) {
+    private void setResult(long result) {
         this.writeResult = result;
     }
 
@@ -372,7 +370,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBObject serialize = serializer.serialize(object);
 
         WriteResult insert = dbCollection.insert(serialize);
-        setResult(insert);
+      //  setResult(insert);
 
     }
 
@@ -392,10 +390,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     public <T extends Model> void update(T object, Filter f) {
         DBObject filter = this.getCachedFilter(f);
         String filterString = filter.toString();
-       // if (filter.keySet().isEmpty()) {
+        // if (filter.keySet().isEmpty()) {
         ///    LOG.warn("Cannot update an object without a filter");
-      //      return;
-      //  }
+        //      return;
+        //  }
 
         if (object == null) {
             LOG.warn("Cannot update a null object");
@@ -407,8 +405,35 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBObject objectToUpdate = serializer.serialize(object);
         BasicDBObject set = new BasicDBObject("$set", objectToUpdate);
         String setString = set.toString();
+
+        long count = count(Element.class, filter);
+        dbCollection.update(filter, set, false, true);
+        setResult(count);
+    }
+
+
+    public <T extends Model> void update(BasicDBObject objectToUpdate, Filter f) {
+
+        DBObject filter = this.getCachedFilter(f);
+        String filterString = filter.toString();
+        // if (filter.keySet().isEmpty()) {
+        ///    LOG.warn("Cannot update an object without a filter");
+        //      return;
+        //  }
+
+        if (objectToUpdate == null) {
+            LOG.warn("Cannot update a null object");
+            return;
+        }
+
+        DBCollection dbCollection = this.getCollection(Element.class);
+        BasicDBObject set = new BasicDBObject("$set", objectToUpdate);
+        long count = count(Element.class, f);
+
+        LOG.debug("Updating db with filter '{}' and dbObject '{}' ", filter.toString(), set.toString());
+
         WriteResult update = dbCollection.update(filter, set, false, true);
-        setResult(update);
+        setResult(count);
     }
 
     /**
@@ -424,7 +449,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
 
         WriteResult remove = dbCollection.remove(serializer.serialize(object));
-        setResult(remove);
+       // setResult(remove);
 
     }
 
@@ -438,7 +463,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBCollection dbCollection = this.getCollection(clazz);
         WriteResult remove = dbCollection.remove(query);
         clearCache();
-        setResult(remove);
+     //   setResult(remove);
 
     }
 

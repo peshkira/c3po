@@ -37,33 +37,7 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
   public MongoElementDeserialzer() {
   }
 
-/*  *//**
-   * Deserializes {@link DBObject}s to elements.
-   *//*
-  @Override
-  public Element deserialize( Object object ) {
-    if ( object == null || !(object instanceof DBObject) ) {
-      return null;
-    }
 
-    DBObject dbObject = (DBObject) object;
-
-    return this.parseElement( dbObject );
-
-  }
-
-  /**
-   * Parses the element from a db object returned by the db.
-   *
-   * @param obj
-   *          the object to parse.
-   * @return the Element.
-   *//*
-  private Element parseElement( final DBObject obj ) {
-    Gson gson=new Gson();
-   Element element = gson.fromJson(obj.toString(), Element.class);
-    return element;
-  }*/
   /**
    * Needs a reference to the persistence layer in order to obtain the sources
    * for each meta data record.
@@ -112,7 +86,7 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
       List<DBObject> sourcedValues = (List<DBObject>) meta.get("sourcedValues");
       HashMap<String,String> hmap=new HashMap<String, String>();
       for (DBObject sourcedValue : sourcedValues) {
-        String sourceID = (String) sourcedValue.get("source");
+        String sourceID = sourcedValue.get("source").toString();
         String value = sourcedValue.get("value").toString();
         hmap.put(sourceID,value);
       }
@@ -123,40 +97,6 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
     }
 
     e.setMetadata(metadataRecords  );
-
-    /*DBObject meta =  obj;
-    for ( String key : meta.keySet() ) {
-      MetadataRecord rec = new MetadataRecord();
-
-      if (key.equals("_id") ||key.equals("collection") || key.equals("name") || key.equals("uid") )
-        continue;
-      DBObject prop = (DBObject) meta.get( key );
-      Property p = this.persistence.getCache().getProperty( key );
-      rec.setProperty( p.getKey() );
-      rec.setStatus( prop.get( "status" ).toString() );
-
-      //Object value = prop.get( "value" );
-      //if ( value != null ) {
-      //  rec.setValue( value.toString() );
-      //}
-
-      // because of boolean and other type conversions.
-      List<?> tmp = (List) prop.get( "sourcedValues" );
-      if ( tmp != null ) {
-        List<String> values = new ArrayList<String>();
-        for ( Object o : tmp ) {
-          values.add( o.toString() );
-        }
-        rec.setValues( values );
-      }
-
-      List<String> src = (List<String>) prop.get( "sources" );
-      if ( src != null && !src.isEmpty() ) {
-        rec.setSources( src);
-      }
-
-      e.getMetadata().add( rec );
-    }*/
 
     return e;
   }

@@ -178,7 +178,7 @@ public class FITSAdaptor extends AbstractAdaptor {
             String status = elementDOM.getAttribute("status");
            // if (property.getType().equals(PropertyType.DATE))
 
-            element.addMetadataRecord(property.getKey(), nodeValue, source.getId(), status);
+            element.addMetadataRecord(property.getKey(), nodeValue, source.toString(), status);
         }
     }
 
@@ -200,8 +200,8 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(toolname, toolversion);
                 Property format = getProperty("format");
                 Property mimetype = getProperty("mimetype");
-                element.addMetadataRecord(format.getKey(), formatValue, source.getId(), status);
-                element.addMetadataRecord(mimetype.getKey(), mimetypeValue, source.getId(), status);
+                element.addMetadataRecord(format.getKey(), formatValue, source.toString(), status);
+                element.addMetadataRecord(mimetype.getKey(), mimetypeValue, source.toString(), status);
             }
 
 
@@ -214,7 +214,7 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(externalIdentifierToolname, externalIdentifierToolversion);
                 String externalIdentifierValue = ider.getTextContent();
                 Property puid = getProperty("puid");
-                element.addMetadataRecord(puid.getKey(),externalIdentifierValue,source.getId(),status);
+                element.addMetadataRecord(puid.getKey(),externalIdentifierValue,source.toString(),status);
             }
 
             NodeList versions = identity.getElementsByTagName("version");
@@ -226,7 +226,7 @@ public class FITSAdaptor extends AbstractAdaptor {
                 Source source = getSource(versionToolname, versionToolversion);
                 String versionValue = version.getTextContent();
                 Property formatversion = getProperty("formatversion");
-                element.addMetadataRecord(formatversion.getKey(), versionValue, source.getId(), status);
+                element.addMetadataRecord(formatversion.getKey(), versionValue, source.toString(), status);
             }
         }
     }

@@ -280,7 +280,7 @@
                             <!--ko foreach: {data: $root.ColumNames, as: 'columnName'}-->
                         <td >
                                 <!-- ko if: $parent[columnName]    -->
-                                    <!-- ko ifnot:  columnName==='Status'  ||  columnName==='Property'   -->
+                                    <!-- ko ifnot: columnName==='Property'   -->
                                 <input class="my-checked-property-value" data-bind="attr: {  data_source: columnName, data_property:$parent['Property']  }, value: $parent[columnName] " type="checkbox" />
                                     <!-- /ko -->
                                 <!-- /ko -->

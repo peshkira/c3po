@@ -3,8 +3,10 @@ package com.petpet.c3po.analysis.conflictResolution;
 
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by artur on 31/03/16.
@@ -40,17 +42,15 @@ public class Rule implements Serializable {
 
     Filter filter;
 
-    public Element getElement() {
-        return element;
+    public List<MetadataRecord> getMetadataRecordList() {
+        return metadataRecordList;
     }
 
-    public void setElement(Element element) {
-        this.element = element;
-        if (this.element.getId()!=null)
-        {
-            this.element.setId(null);
-        }
+    public void setMetadataRecordList(List<MetadataRecord> metadataRecordList) {
+        this.metadataRecordList = metadataRecordList;
     }
+
+    List<MetadataRecord> metadataRecordList;
 
     Element element;
 

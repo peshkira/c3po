@@ -29,7 +29,7 @@ public class ContentTypeIdentificationRule implements PostProcessingRule {
                 Source c3po = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
                 for (String value : values) {
                     String content_type= ContentTypeMapping.getMappingByName(value);
-                    tmp.getSourcedValues().put(c3po.getId(),content_type);
+                    tmp.getSourcedValues().put(c3po.toString(),content_type);
                 }
                 break;
             }

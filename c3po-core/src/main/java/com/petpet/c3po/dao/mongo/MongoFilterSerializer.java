@@ -140,13 +140,7 @@ public class MongoFilterSerializer {
                 if (propertyFilterCondition.getSources().size()>0){
                     List<Object> list=new ArrayList<Object>();
                     for (String source : propertyFilterCondition.getSources()){
-                        Source s = null;
-                        if (source.contains(":")) {
-                            String[] split = source.split(":");
-                            s = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource(split[0], split[1]);
-                        } else
-                            s = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource(source);
-                        list.add(s.getId());
+                        list.add(source);
                     }
                     BasicDBObject all =new BasicDBObject("$all", list);
                     if (propertyFilterCondition.getStrict())
@@ -245,16 +239,11 @@ public class MongoFilterSerializer {
         BasicDBObject result = new BasicDBObject();
 
         String key = stringStringEntry.getKey();
-        Source s = null;
-        if (key.contains(":")) {
-            String[] split = key.split(":");
-            s = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource(split[0], split[1]);
-        } else
-            s = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource(stringStringEntry.getKey());
+
         BasicDBObject elemMatch = new BasicDBObject();
 
         BasicDBObject content = new BasicDBObject();
-        content.put("source", s.getId());
+        content.put("source", key);
         content.put("value", normalizeValue(stringStringEntry.getValue(), propertyName));
         elemMatch.put("$elemMatch", content);
         result.put("metadata.sourcedValues", elemMatch);

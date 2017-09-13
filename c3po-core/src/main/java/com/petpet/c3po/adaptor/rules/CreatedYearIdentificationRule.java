@@ -31,7 +31,7 @@ public class CreatedYearIdentificationRule implements PostProcessingRule {
                 for (String s : metadataRecord.getSourcedValues().values()) {
                     if (s.length()>4) {
                         String substring = s.substring(0, 4);   //TODO: Find a better way to extract year
-                        tmp.getSourcedValues().put(c3po.getId(),substring);
+                        tmp.getSourcedValues().put(c3po.toString(),substring);
                     }
                 }
                 e.getMetadata().add(tmp);

@@ -23,7 +23,7 @@ public class FileExtensionIdentificationRule implements PostProcessingRule {
         tmp.setProperty(new Property("file_extension", PropertyType.STRING).getKey());
         tmp.setStatus("SINGLE_RESULT");
         Source c3PO = Configurator.getDefaultConfigurator().getPersistence().getCache().getSource("C3PO", "0.6");
-        tmp.getSourcedValues().put(c3PO.getId(),file_extension);
+        tmp.getSourcedValues().put(c3PO.toString(),file_extension);
         e.getMetadata().add(tmp);
         return e;
     }
