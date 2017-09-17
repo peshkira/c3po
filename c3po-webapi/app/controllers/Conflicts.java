@@ -3,6 +3,8 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.petpet.c3po.analysis.ConflictResolutionProcessor;
 import com.petpet.c3po.analysis.conflictResolution.Rule;
 import com.petpet.c3po.api.model.helper.Filter;
@@ -37,8 +39,22 @@ public class Conflicts {
     public static Result getRules() {
         if (rules.isEmpty())
             loadRules();
-        JsonNode jsonNode = Json.toJson(rules);
-        return ok(jsonNode);
+
+
+        BasicDBList result=new BasicDBList();
+
+        for (Rule rule : rules) {
+            BasicDBObject tmpObject=new BasicDBObject();
+            tmpObject.append("name", rule.getName());
+            tmpObject.append("description", rule.getDescription());
+            tmpObject.append("filter", rule.getFilter().toString());
+            tmpObject.append("metadataRecordList", rule.getMetadataRecordList().toString());
+            result.add(tmpObject);
+        }
+
+
+//        Json.toJson(rules);
+        return ok(Json.toJson(result));
     }
 
     public static Result createRule() {

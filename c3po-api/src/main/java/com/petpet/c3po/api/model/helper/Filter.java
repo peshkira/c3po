@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class is used to define a filter for a c3po data model class. It has a
@@ -239,14 +240,25 @@ public class Filter implements Serializable {
     }
 
     public String toString() {
-        String result = "";
-        for (FilterCondition condition : conditions) {
-            result += condition.getField() + ":" + condition.getValue() + ",";
-        }
-        if (conditions.size() > 0)
-            result = result.substring(0, result.length() - 1);
+        StringBuilder result=new StringBuilder();
 
-        return result;
+        for (PropertyFilterCondition propertyFilterCondition : getPropertyFilterConditions()) {
+            result.append("{");
+            result.append("property: " + propertyFilterCondition.getProperty()+ ", ");
+            if (!propertyFilterCondition.getStatuses().isEmpty()){
+                result.append("status: " + propertyFilterCondition.getStatuses().get(0).toString()+ ", ");
+            }
+            if (!propertyFilterCondition.getSourcedValues().isEmpty()) {
+                for (Map.Entry<String, String> stringStringEntry : propertyFilterCondition.getSourcedValues().entrySet()) {
+                    result.append(stringStringEntry.getKey()+": "+stringStringEntry.getValue()+", ");
+                }
+            }
+            result.append("}");
+        }
+
+
+
+        return result.toString();
 
     }
 

@@ -115,15 +115,10 @@
                             data: data,
                             aoColumns: [
 
-                                {
-                                    "className": 'details-control',
-                                    "orderable": false,
-                                    "data": null,
-                                    "defaultContent": ''
-                                },
                                 {title: "Rule name", "data": "name"},
                                 {title: "Rule description", "data": "description"},
-                                {title: "Affected property", "data": "element.metadata[].property.key"}
+                                {title: "Filter query", "data": "filter"},
+                                {title: "Removed values", "data": "metadataRecordList"}
 
                             ]
                         });
