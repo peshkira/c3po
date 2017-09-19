@@ -174,8 +174,8 @@ public class ConflictResolutionProcessor {
             BasicDBObject metadata2 = new BasicDBObject("property", propertyToResolve);
             metadata2.append("status", "RESOLVED");
             BasicDBList sourcedValues = new BasicDBList();
-            String sourceIDC3PO = persistence.getCache().getSource("C3PO", "0.6").getId();
-            BasicDBObject sourcedValue = new BasicDBObject("source", sourceIDC3PO);
+            String sourceC3PO = persistence.getCache().getSource("C3PO", "0.6").toString();
+            BasicDBObject sourcedValue = new BasicDBObject("source", sourceC3PO);
             sourcedValue.append("value", resolveTo);
             sourcedValues.add(sourcedValue);
             metadata2.append("sourcedValues", sourcedValues);
@@ -368,8 +368,7 @@ public class ConflictResolutionProcessor {
         if (sourcedValues != null && sourcedValues.size() > 0) {
             for (Object obj : sourcedValues) {
                 BasicDBObject sourcedValue = (BasicDBObject) obj;
-                String sourceID = sourcedValue.getString("source");
-                String source = persistenceLayer.getCache().getSource(sourceID).toString();
+                String source = sourcedValue.getString("source");
                 String value = sourcedValue.getString("value");
                 pfc.getSourcedValues().put(source, value);
             }
@@ -444,8 +443,7 @@ public class ConflictResolutionProcessor {
         if (sourcedValues != null) {
             for (int i = 0; i < sourcedValues.size(); i++) {
                 String valueConflicted = ((BasicDBObject) sourcedValues.get(i)).get("value").toString();
-                String sourceString = ((BasicDBObject) sourcedValues.get(i)).get("source").toString();
-                String source = persistenceLayer.getCache().getSource(sourceString).toString();
+                String source = ((BasicDBObject) sourcedValues.get(i)).get("source").toString();
                 result.put(source, valueConflicted);
             }
         }
@@ -479,7 +477,7 @@ public class ConflictResolutionProcessor {
                 //  Integer sourceID = Integer.parseInt(source.get(i).toString());
                 //  Source source1 = persistenceLayer.getCache().getSource(source.get(i).toString());
                 String sourceString = ((BasicDBObject) sourcedValues.get(i)).get("source").toString();
-                result[Integer.valueOf(sourceString)] = valueConflicted;
+                result[sources.indexOf(sourceString)] = valueConflicted;
             }
         }
         java.lang.StringBuilder sb = new java.lang.StringBuilder();
