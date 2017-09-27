@@ -31,6 +31,7 @@ import views.html.samples;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 public class Samples extends Controller {
@@ -105,11 +106,19 @@ public class Samples extends Controller {
         Logger.debug("Exporting the samples");
         String path = "exports/" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip";
         File file = new File(path);
+
+        if (file.getParentFile() != null && !file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
         try {
+            file.createNewFile();
             response().setContentType("application/zip");
             response().setHeader("Content-disposition", "attachment; filename=" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip");
             return ok(new FileInputStream(file));
         } catch (FileNotFoundException e) {
+            return internalServerError(e.getMessage());
+        } catch (IOException e) {
             return internalServerError(e.getMessage());
         }
 

@@ -65,9 +65,9 @@ public class Conflicts {
         Filter tmpFilter=new Filter();
         tmpFilter.addFilterCondition(new FilterCondition("uid", uid ));
 
-        Filter ruleFilter=new Filter();
+        Filter ruleFilter=Filters.getFilterFromSession();
 
-        JsonNode conditions = json.get("conditions");
+        /*JsonNode conditions = json.get("conditions");
         for (JsonNode condition: conditions){
             PropertyFilterCondition pfc=new PropertyFilterCondition();
             Iterator<String> stringIterator = condition.fieldNames();
@@ -87,7 +87,7 @@ public class Conflicts {
                 }
             }
             ruleFilter.getPropertyFilterConditions().add(pfc);
-        }
+        }*/
         List<MetadataRecord> metadataRecords=new ArrayList<MetadataRecord>();
 
         JsonNode valuesToDelete = json.get("valuesToDelete");
