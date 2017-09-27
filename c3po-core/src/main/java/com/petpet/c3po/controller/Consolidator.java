@@ -94,14 +94,14 @@ public class Consolidator implements Runnable {
     public void run() {
         Element el=null;
         try {
-            el = queue.poll(100, TimeUnit.SECONDS);
+            el = queue.poll(10, TimeUnit.SECONDS);
             process( el );
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         this.running = true;
-        while (!(queue.isEmpty() && !isRunning()))
+        while (!(queue.isEmpty() ))// && !isRunning()))
         {
             Element el1=null;
             try {
@@ -134,7 +134,7 @@ public class Consolidator implements Runnable {
     public void process( Element element ) {
         if ( element == null ) {
             LOG.debug( "Cannot consolidate null element" );
-
+            System.out.println( "Cannot consolidate null element" );
             return;
         }
 

@@ -92,7 +92,7 @@ public class ConflictResolutionProcessorTest {
         pfcs.add(pfc2);
 
         rule.setFilter(filter);
-        rule.setElement(element);
+       // rule.setElement(element);
         List<Rule> rules=new ArrayList<Rule>();
         rules.add(rule);
         crp.setRules(rules);
