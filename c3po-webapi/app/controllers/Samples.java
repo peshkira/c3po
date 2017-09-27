@@ -102,7 +102,7 @@ public class Samples extends Controller {
     }
 
     public static Result exportResults() {
-        Logger.debug("Exporting the template config file");
+        Logger.debug("Exporting the samples");
         String path = "exports/" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip";
         File file = new File(path);
         try {
