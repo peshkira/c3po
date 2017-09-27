@@ -9,6 +9,7 @@ RUN apt-get update \
     && apt-get -y install mongodb-org git sbt openjdk-8-jdk screen
 
 RUN echo "#!/bin/bash \n\
+
 set -e \n\
 mkdir -p /c3po \n\
 git clone -b dev https://github.com/datascience/c3po /c3po \n\
@@ -24,9 +25,8 @@ RUN echo "#!/bin/bash \n\
 set -e \n\
 echo 'Now, C3PO will import metadata from FITS files..' \n\
 mkdir -p /data/db \n\
-rm -rf /data/FITS \n\
 nohup mongod --dbpath /data/db & \n\
-mongo --eval \"printjson(db.serverStatus())\" \n\ 
+java -jar /c3po/c3po-cmd/target/scala-2.11/c3po-cmd-assembly-0.1-SNAPSHOT.jar gather -c dockerised -i /data/FITS -r \n\
 cd /c3po \n\
 sbt \"project c3po-webapi\" run \n\
 " >> /import.sh
