@@ -986,7 +986,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "    property = '" + property + "';\n" +
                     "    for (mr in this.metadata){\n" +
                     "        metadataRecord=this.metadata[mr];\n" +
-                    "        if(metadataRecord.property == property)\n" +
+                    "        if(metadataRecord.length>0 && metadataRecord.property == property)\n" +
                     "        {\n" +
                     "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
@@ -1023,7 +1023,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "    thresholds = " + getBinThresholds(bins) + ";\n" +
                     "    for (mr in this.metadata){\n" +
                     "        metadataRecord=this.metadata[mr];\n" +
-                    "        if(metadataRecord.property == property){\n" +
+                    "        if(metadataRecord.length>0 && metadataRecord.property == property){\n" +
                     "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
@@ -1066,7 +1066,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "    property = '" + property + "';\n" +
                     "    for (mr in this.metadata){\n" +
                     "        metadataRecord=this.metadata[mr];\n" +
-                    "        if(metadataRecord.property == property){\n" +
+                    "        if(metadataRecord.length>0 && metadataRecord.property == property){\n" +
                     "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
