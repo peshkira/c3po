@@ -983,24 +983,27 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         String reduce = "";
         if (propType.equals(PropertyType.STRING.toString()) || propType.equals(PropertyType.BOOL.toString())) {
             map= "function() {\n" +
-                    "    property = '" + property + "';\n" +
-                    "    for (mr in this.metadata){\n" +
-                    "        metadataRecord=this.metadata[mr];\n" +
-                    "        if(metadataRecord.length>0 && metadataRecord.property == property)\n" +
+                    "    var property = '" + property + "';\n" +
+                    "    for (var mr in this.metadata){\n" +
+                    "        var metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property)\n" +
                     "        {\n" +
                     "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
                     "                    value: 'CONFLICT'\n" +
                     "                }, 1);\n" +
+                    "                return;\n" +
                     "            } else {\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: metadataRecord.sourcedValues[0].value\n" +
-                    "                }, 1);\n" +
-                    "\n" +
+                    "                if (metadataRecord.sourcedValues!=null){\n" +
+                    "                    emit({\n" +
+                    "                        property: property,\n" +
+                    "                        value: metadataRecord.sourcedValues[0].value\n" +
+                    "                    }, 1);\n" +
+                    "                    return;\n" +
+                    "                }\n" +
                     "            }\n" +
-                    "            return;\n" +
+                    "            \n" +
                     "        }\n" +
                     "    }\n" +
                     "    emit({\n" +
@@ -1019,22 +1022,23 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         } else if (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
             map="function() {\n" +
-                    "    property = '" + property + "';\n" +
-                    "    thresholds = " + getBinThresholds(bins) + ";\n" +
-                    "    for (mr in this.metadata){\n" +
-                    "        metadataRecord=this.metadata[mr];\n" +
-                    "        if(metadataRecord.length>0 && metadataRecord.property == property){\n" +
+                    "    var property = '" + property + "';\n" +
+                    "    var thresholds = " + getBinThresholds(bins) + ";\n" +
+                    "    for (var mr in this.metadata){\n" +
+                    "        var metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property){\n" +
                     "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
                     "                    value: 'CONFLICT'\n" +
                     "                }, 1);\n" +
                     "            } else {\n" +
-                    "                var val=metadataRecord.sourcedValues[0].value;\n" +
+                    "                if (metadataRecord.sourcedValues!=null){" +
+                    "               var val=metadataRecord.sourcedValues[0].value;\n" +
                     "                var skipped=false;\n" +
                     "                if (thresholds.length > 0)\n" +
                     "                    for (t in thresholds){\n" +
-                    "                        threshold = thresholds[t];  \n" +
+                    "                        var threshold = thresholds[t];  \n" +
                     "                        if (val>=threshold[0] && val<=threshold[1]){\n" +
                     "                             emit({\n" +
                     "                                property: property,\n" +
@@ -1046,7 +1050,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "                    }\n" +
                     "            }\n" +
                     "            return;\n" +
-                    "        }\n" +
+                    "        }}\n" +
                     "    }\n" +
                     "    emit({\n" +
                     "        property: property,\n" +
@@ -1063,24 +1067,28 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
         } else if (propType.equals(PropertyType.DATE.toString())) {
             map = "function() {\n" +
-                    "    property = '" + property + "';\n" +
-                    "    for (mr in this.metadata){\n" +
-                    "        metadataRecord=this.metadata[mr];\n" +
-                    "        if(metadataRecord.length>0 && metadataRecord.property == property){\n" +
+                    "    var property = '" + property + "';\n" +
+                    "    for (var mr in this.metadata){\n" +
+                    "        var metadataRecord=this.metadata[mr];\n" +
+                    "        if(metadataRecord.property == property)\n" +
+                    "        {\n" +
                     "            if (metadataRecord.status == 'CONFLICT'){\n" +
                     "                emit({\n" +
                     "                    property: property,\n" +
                     "                    value: 'CONFLICT'\n" +
                     "                }, 1);\n" +
+                    "                return;\n" +
                     "            } else {\n" +
-                    "                var date = new Date(metadataRecord.sourcedValues[0].value);\n" +
-                    "                var val=date.getFullYear();\n" +
-                    "                emit({\n" +
-                    "                    property: property,\n" +
-                    "                    value: val\n" +
-                    "                }, 1);\n" +
+                    "                if (metadataRecord.sourcedValues!=null){\n" +
+                    "                    var date = new Date(metadataRecord.sourcedValues[0].value);\n" +
+                    "                    var val=date.getFullYear();\n" +
+                    "                    emit({\n" +
+                    "                        property: property,\n" +
+                    "                        value: val\n" +
+                    "                    }, 1);\n" +
+                    "                    return;\n" +
+                    "                }\n" +
                     "            }\n" +
-                    "            return;\n" +
                     "        }\n" +
                     "    }\n" +
                     "    emit({\n" +

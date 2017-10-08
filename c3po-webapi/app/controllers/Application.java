@@ -31,7 +31,7 @@ import views.html.index;
 public class Application extends Controller {
 
 	public static String[] PROPS = { "mimetype", "format", "format_version", "valid", "wellformed",
-			"creating_application_name", "created" };
+			"creating_application_name", "created_year" };
 	private static boolean initialized;
 	public static void buildSession() {
 		if (initialized)
