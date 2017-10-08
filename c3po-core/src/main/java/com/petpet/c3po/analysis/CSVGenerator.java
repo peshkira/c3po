@@ -195,9 +195,9 @@ public class CSVGenerator {
                 if (mr.getProperty().equals(p.getKey())) {
                     Map<String, String> sourcedValues = mr.getSourcedValues();
                     for (Map.Entry<String, String> stringStringEntry : sourcedValues.entrySet()) {
-                        String sourceID=stringStringEntry.getKey();
+                        String sourceName=stringStringEntry.getKey();
 
-                        if (sourceID.equals(source.getId())) {
+                        if (sourceName.equals(source.toString())) {
                             value = stringStringEntry.getValue();
                             break;
                         }
