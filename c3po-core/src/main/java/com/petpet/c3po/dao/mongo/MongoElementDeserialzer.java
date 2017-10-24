@@ -84,11 +84,12 @@ public class MongoElementDeserialzer implements MongoModelDeserializer {
             String status = (String) meta.get("status");
             List<DBObject> sourcedValues = (List<DBObject>) meta.get("sourcedValues");
             HashMap<String, String> hmap = new HashMap<String, String>();
-            for (DBObject sourcedValue : sourcedValues) {
-                String sourceID = sourcedValue.get("source").toString();
-                String value = sourcedValue.get("value").toString();
-                hmap.put(sourceID, value);
-            }
+            if (sourcedValues!=null)
+                for (DBObject sourcedValue : sourcedValues) {
+                    String sourceID = sourcedValue.get("source").toString();
+                    String value = sourcedValue.get("value").toString();
+                    hmap.put(sourceID, value);
+                }
             mr.setProperty(property);
             mr.setStatus(status);
             mr.setSourcedValues(hmap);
