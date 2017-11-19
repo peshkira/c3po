@@ -48,8 +48,11 @@ public class ConflictResolutionProcessor {
         MongoPersistenceLayer persistence = (MongoPersistenceLayer) Configurator.getDefaultConfigurator().getPersistence();
         for (Rule r : rules) {
             Iterator<Element> elementIterator = persistence.find(Element.class, r.getFilter());
-            Element sample = elementIterator.next();
 
+            if (elementIterator.hasNext()==false)
+                continue;
+
+            Element sample = elementIterator.next();
             List<String> properties = new ArrayList<>();
             for (MetadataRecord metadataRecord : sample.getMetadata()) {
                 properties.add(metadataRecord.getProperty());
@@ -75,7 +78,7 @@ public class ConflictResolutionProcessor {
         BasicDBObject result=new BasicDBObject();
 
         for (MetadataRecord metadataRecord : sample.getMetadata()) {
-            if (metadataRecord.getProperty().equals(metadataRecordToDelete.getProperty())){
+            if (metadataRecordToDelete.getProperty().equals(metadataRecord.getProperty())){
                 for (String s : metadataRecordToDelete.getSourcedValues().keySet()) {
                     metadataRecord.getSourcedValues().remove(s);
                 }
