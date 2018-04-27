@@ -1,11 +1,12 @@
 import sbt._
 import Keys._
+import play.sbt.PlayJava
 import sbtassembly.AssemblyPlugin.autoImport._
 
 object BuildSettings {
 
   val buildOrganization = "com.petpet"
-  val buildVersion = "0.5.0"
+  val buildVersion = "0.6.0"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := buildOrganization,
@@ -39,7 +40,7 @@ object C3PO extends Build {
 
   lazy val c3powebapi = Project(
     "c3po-webapi",
-    file("c3po-webapi")).enablePlugins(play.PlayJava).settings( //play.sbt.Play
+    file("c3po-webapi")).enablePlugins(PlayJava).settings( //play.sbt.Play
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-mailer" % "3.0.1"
     )).settings(commonSettings) dependsOn (c3pocore)
