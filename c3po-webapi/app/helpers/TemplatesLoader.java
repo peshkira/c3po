@@ -15,13 +15,14 @@ import org.simpleframework.xml.core.Persister;
 import play.Logger;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 
 @Root
 public class TemplatesLoader {
     static final String PATH_TEMPLATE_CONFIG = System.getProperty("user.home") + File.separator + ".c3po.template_config";
     static TemplatesLoader templatesLoader = new TemplatesLoader(new File(PATH_TEMPLATE_CONFIG));
-    static List<String> userAddedProperties ;
+    static List<String> userAddedProperties;
     static String[] defaultProps = {};
     @ElementList
     List<TemplateFilter> filters;
@@ -61,8 +62,8 @@ public class TemplatesLoader {
             templatesLoader.loadFromFile(new File(PATH_TEMPLATE_CONFIG));
         }
 
-        List<String> templateProperties=new ArrayList<String>();
-        if (getCurrentTemplateName()!=null) {
+        List<String> templateProperties = new ArrayList<String>();
+        if (getCurrentTemplateName() != null) {
             for (Template tmpl : templates) {
                 if (tmpl.getName().equals(getCurrentTemplateName())) {
                     templateProperties.addAll(getProperties(tmpl));
@@ -83,7 +84,7 @@ public class TemplatesLoader {
             Application.PROPS = templateProperties.toArray(new String[0]);
     }
 
-    public static void resetTemplates(){
+    public static void resetTemplates() {
         templatesLoader = new TemplatesLoader(new File(PATH_TEMPLATE_CONFIG));
 
     }
@@ -121,7 +122,7 @@ public class TemplatesLoader {
 
     public List<Template> getTemplates() {
         return templates;
-     }
+    }
 
 
     public List<TemplateFilter> getFilters() {
@@ -145,6 +146,19 @@ public class TemplatesLoader {
             }
         } catch (Exception e) {
             Logger.debug("No template config file was found. Using default values");
+
+            try {
+                InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("default.templateconfig");
+                configRead = serlzr.read(TemplatesLoader.class, resourceAsStream);
+                if (configRead != null) {
+                    setFilters(configRead.getFilters());
+                    setTemplates(configRead.getTemplates());
+
+                }
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+
         }
 
 
@@ -221,13 +235,13 @@ public class TemplatesLoader {
         return (templates != null && !templates.isEmpty());
     }
 
-    public static void updateConfig(File file){
+    public static void updateConfig(File file) {
         templatesLoader.loadFromFile(file);
 
     }
 
-    public static void updateConfig(){
-        templatesLoader.loadFromFile(new File( PATH_TEMPLATE_CONFIG ));
+    public static void updateConfig() {
+        templatesLoader.loadFromFile(new File(PATH_TEMPLATE_CONFIG));
 
     }
 
