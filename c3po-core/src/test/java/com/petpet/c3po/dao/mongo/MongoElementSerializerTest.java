@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
 public class MongoElementSerializerTest {
 
     private DBCache cache;
-    public static MongoPersistenceLayer pLayer = new MongoPersistenceLayer();
     private Iterator cursor;
     static Logger LOG = LoggerFactory.getLogger(MongoPersistenceLayerTest.class);
 
@@ -77,7 +76,8 @@ public class MongoElementSerializerTest {
         return adaptorcnf;
     }
     static Map<String, Class<? extends ProcessingRule>> knownRules;
-    @Test
+
+
     public void serialize() throws Exception {
         String data="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<fits xmlns=\"http://hul.harvard.edu/ois/xml/ns/fits/fits_output\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd\" version=\"0.6.0\" timestamp=\"12/27/11 8:05 PM\">\n" +
@@ -133,9 +133,6 @@ public class MongoElementSerializerTest {
 
 
 
-        pLayer.establishConnection(config);
-        Configurator.getDefaultConfigurator().setPersistence(pLayer);
-
 
 
         AbstractAdaptor adaptor=new FITSAdaptor();
@@ -148,7 +145,6 @@ public class MongoElementSerializerTest {
         knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
 
         adaptor.setRules(  getRules( "test") );
-        adaptor.setCache(pLayer.getCache());
 
 
 

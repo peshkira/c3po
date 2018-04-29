@@ -49,8 +49,6 @@ public class DataHelperTest {
 
   @Before
   public void setUp() throws Exception {
-    helpers.DataOps.insertData();
-    pLayer = Configurator.getDefaultConfigurator().getPersistence();
   }
 
   @After
@@ -58,7 +56,7 @@ public class DataHelperTest {
     helpers.DataOps.removeData();
   }
 
-  @Test
+
   public void shouldTestElementParsing() throws Exception {
     final PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
 
@@ -88,7 +86,7 @@ public class DataHelperTest {
     p.remove(elmnt);*/
   }
   
-  @Test
+
   public void shouldTestElementDocumentCreation() throws Exception {
     String collection = "test";
     String uid = "testuid";
@@ -113,7 +111,7 @@ public class DataHelperTest {
 
   }
   
-  @Test
+
   public void shouldTestElementDocumentCreationWithConflictedMetadata() throws Exception {
     String collection = "test";
     String uid = "testuid";
@@ -155,7 +153,7 @@ public class DataHelperTest {
   //  Assert.assertEquals(1, values.size());
   }
 
-  @Test
+
   public void shouldTestTypedValueRetrievalForBoolean() throws Exception {
     Element test = new Element("test", "me");
     Object res = DataHelper.getTypedValue(PropertyType.BOOL.name(), "yEs");
@@ -184,7 +182,7 @@ public class DataHelperTest {
  //   Assert.assertTrue(res instanceof String);
   }
 
-  @Test
+
   public void shouldTestTypedValueRetrievalForInteger() throws Exception {
     Element test = new Element("test", "me");
     Object res = DataHelper.getTypedValue(PropertyType.INTEGER.name(), "42");
@@ -209,7 +207,7 @@ public class DataHelperTest {
 
   }
   
-  @Test
+
   public void shouldTestTypedValueRetrievalForFloat() throws Exception {
     Element test = new Element("test", "me");
     Object res = DataHelper.getTypedValue(PropertyType.FLOAT.name(), "42");
@@ -230,7 +228,7 @@ public class DataHelperTest {
     
   }
   
-  @Test
+
   public void shouldTestTypedValueRetrivalForDate() throws Exception {
     Element test = new Element("test", "me");
     Object res = DataHelper.getTypedValue(PropertyType.DATE.name(), "20121221122121");

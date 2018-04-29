@@ -42,8 +42,6 @@ public class MongoPersistenceLayerTest {
 
     @Before
     public void setUp() throws Exception {
-        helpers.DataOps.insertData();
-        pLayer = Configurator.getDefaultConfigurator().getPersistence();
     }
 
     @After
@@ -51,7 +49,7 @@ public class MongoPersistenceLayerTest {
         helpers.DataOps.removeData();
     }
 
-    @Test
+
     public void shouldTestFind() {
         if (this.pLayer.isConnected()) {
             Iterator<Element> iter = pLayer.find(Element.class, null);
@@ -63,7 +61,7 @@ public class MongoPersistenceLayerTest {
         }
     }
 
-    @Test
+
     public void shouldTestFindOne() throws Exception {
         //if (this.pLayer.isConnected()) {
 
@@ -80,7 +78,7 @@ public class MongoPersistenceLayerTest {
        // }
     }
 
-    @Test
+
     public void shouldTestRemoveAll() throws Exception {
         if (this.pLayer.isConnected()) {
             //  this.insertTestData();
@@ -92,7 +90,7 @@ public class MongoPersistenceLayerTest {
         }
     }
 
-    @Test
+
     public void shouldTestRemoveOne() throws Exception {
         if (this.pLayer.isConnected()) {
             //   this.insertTestData();
@@ -113,7 +111,7 @@ public class MongoPersistenceLayerTest {
         }
     }
 
-    @Test
+
     public void shouldTestInsert() throws Exception {
 
             Iterator<Element> iter = pLayer.find(Element.class, null);
@@ -121,7 +119,7 @@ public class MongoPersistenceLayerTest {
             assertTrue(iter.hasNext());
     }
 
-    @Test
+
     public void shouldTestUpdate() throws Exception {
             Filter element1 = new Filter(new FilterCondition("uid", "/home/petrov/taverna/tmp/303/303034.csv"));
             Iterator<Element> iter = this.pLayer.find(Element.class, element1);
@@ -142,7 +140,7 @@ public class MongoPersistenceLayerTest {
             Assert.assertEquals(updated, e.getName());
     }
 
-    @Test
+
     public void shouldTestUpdateAll() throws Exception {
 
 
@@ -167,7 +165,7 @@ public class MongoPersistenceLayerTest {
 
     }
 
-    @Test
+
     public void shouldTestNumericAggregation() throws Exception {
         if (this.pLayer.isConnected()) {
             // this.insertTestData();
@@ -185,7 +183,7 @@ public class MongoPersistenceLayerTest {
     }
 
 
-    @Test
+
     public void shouldTestAggregation() throws Exception {
 
         MongoPersistenceLayer pLayer = (MongoPersistenceLayer) this.pLayer;
@@ -195,7 +193,7 @@ public class MongoPersistenceLayerTest {
 
     }
 
-    @Test
+
     public void shouldDebugAggregation() throws Exception {
 
 
@@ -233,7 +231,7 @@ public class MongoPersistenceLayerTest {
 
     }
 
-    @Test
+
     public void shouldTestCountConflicts() throws Exception{
         MongoPersistenceLayer pLayer = (MongoPersistenceLayer) this.pLayer;
         List<String> props=new ArrayList<String>();
@@ -245,7 +243,7 @@ public class MongoPersistenceLayerTest {
         Assert.assertEquals(3,result);
     }
 
-    @Test
+
     public void SuperMapReduceTest() throws Exception {
 
         Map<String, List<Integer>> binThresholds = new HashMap<String, List<Integer>>();

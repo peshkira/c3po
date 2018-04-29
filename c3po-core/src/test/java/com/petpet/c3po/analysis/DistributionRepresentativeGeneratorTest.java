@@ -30,96 +30,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class DistributionRepresentativeGeneratorTest extends TestCase {
 
-    public void testExecute() throws Exception {
-
-
-        List<String> props = new ArrayList<String>();
-        props.add("mimetype");
-        props.add("puid");
-
-        String alg = "distsampling";
-        int size = 50;
-        String name = "test";
-
-
-
-        RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm( alg );
-        Map<String, Object> samplesOptions = new HashMap<String, Object>();
-        samplesOptions.put( "properties", props );
-        samplesGen.setOptions( samplesOptions );
-        samplesGen.setFilter( new Filter( new FilterCondition( "collection", name ) ) );
-
-
-        List<String> result = samplesGen.execute(size);
-        int i=0;
-
-
-    }
-    MongoPersistenceLayer pLayer;
     Map<String, String> config;
     private static final Logger LOG = LoggerFactory.getLogger(DistributionRepresentativeGeneratorTest.class);
     Map<String, Class<? extends ProcessingRule>> knownRules;
     Map<String, Class<? extends AbstractAdaptor>> knownAdaptors;
-    public void setUp() throws Exception {
 
-        Configurator defaultConfigurator = Configurator.getDefaultConfigurator();
-
-        pLayer = new MongoPersistenceLayer();
-        defaultConfigurator.setPersistence(pLayer);
-
-        config = new HashMap<String, String>();
-        config.put("db.host", "localhost");
-        config.put("db.port", "27017");
-        config.put("db.name", "c3po_test_db");
-        config.put(Constants.OPT_COLLECTION_NAME, "test");
-        config.put(Constants.OPT_COLLECTION_LOCATION, "src/test/resources/fits/");
-        config.put(Constants.OPT_INPUT_TYPE, "FITS");
-        config.put(Constants.OPT_RECURSIVE, "True");
-        Map<String, String> adaptorcnf = this.getAdaptorConfig( config, "FITS" );
-        DataHelper.init();
-        XMLUtils.init();
-        FITSHelper.init();
-        knownAdaptors = new HashMap<String, Class<? extends AbstractAdaptor>>();
-        knownAdaptors.put( "FITS", FITSAdaptor.class );
-
-
-        pLayer.establishConnection(config);
-        AbstractAdaptor adaptor=new FITSAdaptor();
-
-        LocalFileGatherer lfg=new LocalFileGatherer(config);
-        LinkedBlockingQueue<Element> q=new LinkedBlockingQueue<Element>(10000);
-
-
-        knownRules = new HashMap<String, Class<? extends ProcessingRule>>();
-
-
-        knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
-        knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
-
-
-        LOG.debug( "Initializing helpers." );
-
-
-       // knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class∂∂∂ );
-       // knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
-       // knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
-
-        adaptor.setConfig(adaptorcnf);
-
-        List<ProcessingRule> rules = this.getRules( "test");
-        lfg.run();
-        adaptor.setGatherer(lfg);
-        adaptor.setQueue(q);
-        adaptor.configure();
-        adaptor.setRules( rules );
-        adaptor.setCache(pLayer.getCache());
-
-        adaptor.run();
-        while(!q.isEmpty()){
-            pLayer.insert(q.poll());
-        }
-
-    }
 
     private List<ProcessingRule> getRules( String name ) {
         List<ProcessingRule> rules = new ArrayList<ProcessingRule>();
@@ -185,16 +100,5 @@ public class DistributionRepresentativeGeneratorTest extends TestCase {
         }
         return adaptor;
     }
-    public void tearDown() throws Exception {
-        if (this.pLayer.isConnected()) {
-            this.pLayer.clearCache();
-            this.pLayer.remove(Element.class, null);
-            this.pLayer.remove(Property.class, null);
-            try {
-                this.pLayer.close();
-            } catch (C3POPersistenceException e) {
-                LOG.warn("Could not close the connection in a clear fashion");
-            }
-        }
-    }
+
 }

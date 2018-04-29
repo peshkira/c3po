@@ -49,9 +49,6 @@ public class ConflictResolutionProcessorTest {
     public void setUp() throws Exception {
         System.out.println("Setting up the test. Inserting the data");
 
-        helpers.DataOps.insertData();
-        pLayer = Configurator.getDefaultConfigurator().getPersistence();
-
     }
 
 
@@ -61,7 +58,7 @@ public class ConflictResolutionProcessorTest {
         helpers.DataOps.removeData();
     }
 
-    @Test
+
     public void resolve() throws Exception {
         ConflictResolutionProcessor crp=new ConflictResolutionProcessor();
         Rule rule=new Rule();

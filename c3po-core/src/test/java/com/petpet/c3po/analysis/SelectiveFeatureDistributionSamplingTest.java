@@ -47,7 +47,6 @@ public class SelectiveFeatureDistributionSamplingTest {
 
     @Before
     public void setUp() throws Exception {
-        pLayer = new MongoPersistenceLayer();
 
         Map<String, String> config = new HashMap<String, String>();
         config.put("db.host", "localhost");
@@ -174,7 +173,6 @@ public class SelectiveFeatureDistributionSamplingTest {
 
     }
 
-    @Test
     public void execute() throws Exception {
 
         SelectiveFeatureDistributionSampling sfd=new SelectiveFeatureDistributionSampling();

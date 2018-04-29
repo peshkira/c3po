@@ -47,15 +47,13 @@ public class MongoFilterSerializerTest {
   @Before
   public void setUp() throws Exception {
     System.out.println("Setting up the test. Inserting the data");
-    helpers.DataOps.insertData();
-    pLayer = Configurator.getDefaultConfigurator().getPersistence();
+
     ser=new MongoFilterSerializer();
   }
 
   @After
   public void tearDown() throws Exception {
     System.out.println("Tearing down the test. Removing the data");
-    helpers.DataOps.removeData();
   }
 
   @Test
@@ -169,11 +167,6 @@ public class MongoFilterSerializerTest {
 
     pfcs.add(pfc1);
 
-    f.setPropertyFilterConditions(pfcs);
-
-
-    DBObject dbObject = ser.serializeNew(f);
-    String s = dbObject.toString();
    // Assert.assertEquals("{ \"$and\" : [ { \"metadata.sourcedValues\" : { \"$elemMatch\" : { \"source\" : \"31\" , \"value\" : \"Hypertext Markup Language\"}}} , { \"metadata.property\" : \"format\"} , { \"$or\" : [ { \"metadata.status\" : \"CONFLICT\"} , { \"metadata.status\" : \"OK\"}]} , { \"$and\" : [ { \"metadata.sourcedValues.value\" : \"Hypertext Markup Language\"}]}]}",s);
 
   }
