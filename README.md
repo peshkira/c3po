@@ -22,13 +22,6 @@ Part of this work was supported by the Vienna Science and Technology Fund (WWTF)
 
 This tool is supported by the [Open Planets Foundation](http://www.openplanetsfoundation.org). 
 
-## Features and roadmap
-
-### Version 0.4
-
-* Visualization, filtering through the Web application
-* Representative sample set generation
-
 ### Roadmap
 
 * Conflict resolution
