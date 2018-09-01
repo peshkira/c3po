@@ -27,7 +27,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.petpet.c3po.adaptor.rules.*;
-import com.petpet.c3po.gatherer.FileMetadataStream;
 import org.apache.commons.io.FileUtils;
 import org.dom4j.Document;
 import org.slf4j.Logger;
@@ -138,7 +137,7 @@ public class Controller {
         // TODO - answer by Peter: The cache can be retrieved statically from the Configurator!
         this.knownRules.put( Constants.CNF_ELEMENT_IDENTIFIER_RULE, CreateElementIdentifierRule.class );
         this.knownRules.put( Constants.CNF_EMPTY_VALUE_RULE, EmptyValueProcessingRule.class );
-        this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, FormatVersionResolutionRule.class );
+        this.knownRules.put( Constants.CNF_VERSION_RESOLUTION_RULE, IdenticalValueConflictResolutionRule.class );
         this.knownRules.put( Constants.CNF_HTML_INFO_RULE, HtmlInfoProcessingRule.class );
         this.knownRules.put( Constants.CNF_INFER_DATE_RULE, InferDateFromFileNameRule.class );
         //this.knownRules.put( Constants.CNF_DROOLS_CONFLICT_RESOLUTION_RULE, DroolsConflictResolutionProcessingRule.class );
