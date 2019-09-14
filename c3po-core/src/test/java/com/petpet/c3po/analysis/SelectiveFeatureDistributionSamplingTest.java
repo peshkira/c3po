@@ -204,10 +204,10 @@ public class SelectiveFeatureDistributionSamplingTest {
         f.addFilterCondition(new FilterCondition("mimetype", "application"));
         Map<String, Object> samplesOptions = new HashMap<String, Object>();
         samplesOptions.put("properties", props );
-        samplesOptions.put("pcoverage", "1" );
-        samplesOptions.put("tcoverage", "1");
+        samplesOptions.put("targetPropertyCoverage", "1" );
+        samplesOptions.put("targetTupleCoverage", "1");
         samplesOptions.put("proportion", proportion );
-        samplesOptions.put("threshold", "50" );
+        samplesOptions.put("fileThreshold", "50" );
         samplesOptions.put("bins", binThresholds);
         sfd.setOptions(samplesOptions);
         sfd.readOptions();
