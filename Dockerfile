@@ -26,7 +26,7 @@ mkdir -p /data/db \n\
 nohup mongod --dbpath /data/db & \n\
 java -jar /c3po/c3po-cmd/target/scala-2.11/c3po-cmd-assembly-0.1-SNAPSHOT.jar gather -c dockerised -i /data/FITS -r \n\
 cd /c3po \n\
-sbt \"project c3po-webapi\" run \n\
+.\sbt \"project c3po-webapi\" run \n\
 " >> /import.sh
 
 ENTRYPOINT ["bash","/import.sh"]
