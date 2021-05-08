@@ -368,9 +368,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBCollection dbCollection = this.getCollection(object.getClass());
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
         DBObject serialize = serializer.serialize(object);
-
-        WriteResult insert = dbCollection.insert(serialize);
-      //  setResult(insert);
+        if(dbCollection != null && serialize != null) {
+            WriteResult insert = dbCollection.insert(serialize);
+        //  setResult(insert);
+        }
 
     }
 
