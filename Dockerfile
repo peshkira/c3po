@@ -12,7 +12,7 @@ RUN echo "#!/bin/bash \n\
 
 set -e \n\
 mkdir -p /c3po \n\
-git clone -b dev https://github.com/datascience/c3po /c3po \n\
+git clone -b master https://github.com/datascience/c3po /c3po \n\
 cd /c3po \n\
 sbt clean compile assembly \n\
 " >> /locknload.sh
