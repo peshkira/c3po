@@ -64,17 +64,16 @@ object C3PO extends Build {
     "c3po-core",
     file("c3po-core"),
     settings = Seq(libraryDependencies ++= Seq(
-      "com.opencsv" % "opencsv" % "3.3",
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.1",
+      "com.opencsv" % "opencsv" % "5.2",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.12.3",
       "com.google.code.gson" % "gson" % "2.3.1",
       "org.mongodb" % "mongo-java-driver" % "3.4.0",
-      "org.apache.commons" % "commons-compress" % "1.2",
-      "org.apache.commons" % "commons-digester3" % "3.2",
+      "org.apache.commons" % "commons-compress" % "1.20",
       "dom4j" % "dom4j" % "1.6.1",
       "org.simpleframework" % "simple-xml" % "2.7.1",
       "log4j" % "log4j" % "1.2.17",
-      "junit" % "junit" % "4.12",
-      "org.mockito" % "mockito-all" % "1.10.19",
+      "junit" % "junit" % "4.13.2",
+      "org.mockito" % "mockito-all" % "2.0.2-beta",
       "org.assertj" % "assertj-core" % "3.12.2" % Test,
       "org.awaitility" % "awaitility" % "3.1.6" % Test,
       "com.novocode" % "junit-interface" % "0.10" % "test"
@@ -85,8 +84,8 @@ object C3PO extends Build {
     file("c3po-api"),
     settings = Seq(
       libraryDependencies ++= Seq(
-        "org.slf4j" % "slf4j-api" % "1.7.21",
-        "commons-io" % "commons-io" % "2.4",
+        "org.slf4j" % "slf4j-api" % "2.0.0-alpha1",
+        "commons-io" % "commons-io" % "2.8.0",
         "org.assertj" % "assertj-core" % "3.12.2" % Test,
         "org.awaitility" % "awaitility" % "3.1.6" % Test,
         "com.novocode" % "junit-interface" % "0.10" % "test"

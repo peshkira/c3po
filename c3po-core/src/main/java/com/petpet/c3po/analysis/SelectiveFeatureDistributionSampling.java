@@ -179,7 +179,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         String outputFileLocation = System.getProperty("java.io.tmpdir") + "/tuples.csv";
 
         try {
-            CSVWriter writer = new CSVWriter(new FileWriter(outputFileLocation), '\t');
+            CSVWriter writer = new CSVWriter(new FileWriter(outputFileLocation));
             String[] header = new String[properties.size() + 1];
             int i = 0;
             for (String property : properties) {
