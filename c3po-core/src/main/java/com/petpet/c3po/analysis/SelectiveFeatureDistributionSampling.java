@@ -334,6 +334,7 @@ Anything else that is interesting about inputs, outputs,settings,params
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Samples found: " + sampleElements.size());
         csvGenerator.write(sampleElements.iterator(), props, outputFileLocation);
         return outputFileLocation;
     }

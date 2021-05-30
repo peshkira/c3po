@@ -15,11 +15,28 @@
  ******************************************************************************/
 package com.petpet.c3po.dao.mongo;
 
-import com.mongodb.*;
+import com.mongodb.AggregationOptions;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.Cursor;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MapReduceCommand;
+import com.mongodb.MapReduceOutput;
+import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.MongoException;
+import com.mongodb.WriteResult;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.api.model.*;
+import com.petpet.c3po.api.model.ActionLog;
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.Model;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.NumericStatistics;
 import com.petpet.c3po.api.model.helper.PropertyType;
@@ -29,8 +46,11 @@ import com.petpet.c3po.utils.exceptions.C3POPersistenceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static com.mongodb.MapReduceCommand.OutputType.INLINE;
 
@@ -62,7 +82,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
      */
     private static final String CNF_DB_NAME = "db.name";
 
-    private static final String CNF_DB_URI="db.uri";
+    private static final String CNF_DB_URI = "db.uri";
 
     /**
      * The elements collection in the document store.
@@ -204,14 +224,11 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         try {
             String uri = config.get(CNF_DB_URI);
             String name = config.get(CNF_DB_NAME);
-            if (uri!=null && uri.length()>0)
-            {
+            if (uri != null && uri.length() > 0) {
                 MongoClientURI mongoClientURI = new MongoClientURI(uri);
                 mongo = new MongoClient(mongoClientURI);
                 this.db = this.mongo.getDB(name);
-            }
-
-            else {
+            } else {
                 String host = config.get(CNF_DB_HOST);
                 int port = Integer.parseInt(config.get(CNF_DB_PORT));
 
@@ -315,7 +332,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBObject query = this.getCachedFilter(filter);
         LOG.debug("Finding objects with the query:");
         LOG.debug(query.toString());
-        String debugString=query.toString();
+        String debugString = query.toString();
         DBCollection dbCollection = this.getCollection(clazz);
         MongoModelDeserializer modelDeserializer = this.getDeserializer(clazz);
 
@@ -368,9 +385,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBCollection dbCollection = this.getCollection(object.getClass());
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
         DBObject serialize = serializer.serialize(object);
-        if(dbCollection != null && serialize != null) {
+        if (dbCollection != null && serialize != null) {
             WriteResult insert = dbCollection.insert(serialize);
-        //  setResult(insert);
+            //  setResult(insert);
         }
 
     }
@@ -450,7 +467,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         MongoModelSerializer serializer = this.getSerializer(object.getClass());
 
         WriteResult remove = dbCollection.remove(serializer.serialize(object));
-       // setResult(remove);
+        // setResult(remove);
 
     }
 
@@ -464,7 +481,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         DBCollection dbCollection = this.getCollection(clazz);
         WriteResult remove = dbCollection.remove(query);
         clearCache();
-     //   setResult(remove);
+        //   setResult(remove);
 
     }
 
@@ -489,23 +506,22 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     }
 
 
-    public long countConflicts(Filter filter, List<String> properties){
+    public long countConflicts(Filter filter, List<String> properties) {
         LOG.info("Calculating conflicts count");
         DBCollection collection = this.getCollection(Element.class);
         List<DBObject> list = new ArrayList<DBObject>();
         list.add(new BasicDBObject("$match", this.getCachedFilter(filter)));
         list.add(new BasicDBObject("$unwind", "$metadata"));
-        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("uid", 1).append("property","$metadata.property")));
-        list.add(new BasicDBObject("$match", new BasicDBObject( "property", new BasicDBObject("$in",properties))));
+        list.add(new BasicDBObject("$project", new BasicDBObject("status", "$metadata.status").append("uid", 1).append("property", "$metadata.property")));
+        list.add(new BasicDBObject("$match", new BasicDBObject("property", new BasicDBObject("$in", properties))));
         list.add(new BasicDBObject("$group", new BasicDBObject("_id", "$uid").append("statuses", new BasicDBObject("$addToSet", "$status"))));
         BasicDBList in = new BasicDBList();
         in.add("CONFLICT");
-        list.add(new BasicDBObject("$match", new BasicDBObject( "statuses", new BasicDBObject("$in",in))));
+        list.add(new BasicDBObject("$match", new BasicDBObject("statuses", new BasicDBObject("$in", in))));
         list.add(new BasicDBObject("$group", new BasicDBObject("_id", null).append("count", new BasicDBObject("$sum", 1))));
         Iterable<DBObject> resultIterable = collection.aggregate(list).results();
-        BasicDBObject result =(BasicDBObject) resultIterable.iterator().next();
+        BasicDBObject result = (BasicDBObject) resultIterable.iterator().next();
         return result.getLong("count");
-
 
 
     }
@@ -526,16 +542,19 @@ public class MongoPersistenceLayer implements PersistenceLayer {
 
     public List<BasicDBObject> mapReduceRaw(String map, String reduce, Filter filter) {
         long start = System.currentTimeMillis();
-        DBObject query = this.getCachedFilter(filter);
-        DBCollection elmnts = getCollection(Element.class);
-        MapReduceCommand cmd = new MapReduceCommand(elmnts, map, reduce, null, INLINE, query);
-
-        MapReduceOutput output = elmnts.mapReduce(cmd);
-        Iterator<DBObject> iterator = output.results().iterator();
         List<BasicDBObject> results = new ArrayList<BasicDBObject>();
-        while (iterator.hasNext()) {
-            results.add((BasicDBObject) iterator.next());
+        if (this.connected) {
+            DBObject query = this.getCachedFilter(filter);
+            DBCollection elmnts = getCollection(Element.class);
+            MapReduceCommand cmd = new MapReduceCommand(elmnts, map, reduce, null, INLINE, query);
 
+            MapReduceOutput output = elmnts.mapReduce(cmd);
+            Iterator<DBObject> iterator = output.results().iterator();
+
+            while (iterator.hasNext()) {
+                results.add((BasicDBObject) iterator.next());
+
+            }
         }
         //List<BasicDBObject> results = ArrayList<BasicDBObject> () ( output.results());getCommandResult().get( "results" );
         long end = System.currentTimeMillis();
@@ -769,6 +788,9 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         if (binThresholds == null) {
             binThresholds = new HashMap<String, List<Integer>>();
         }
+        if (!this.connected) {
+            return histograms;
+        }
         for (String property : properties) {
             DBObject dbObject = null;
             //List<BasicDBObject> aggregation = aggregate(property, filter, false);
@@ -798,7 +820,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     }
 
 
-    public Map<String, Long> parseAggregation(List<BasicDBObject> aggregation, String propert, Boolean getStats ) {
+    public Map<String, Long> parseAggregation(List<BasicDBObject> aggregation, String propert, Boolean getStats) {
         Map<String, Long> histogram = new HashMap<String, Long>();
 
         if (aggregation == null) {
@@ -810,8 +832,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                 if (!getStats) {
                     long count = basicDBObject.getLong("count");
                     histogram.put(id, count);
-                }
-                else {
+                } else {
                     long sum, min, max, avg, std, var, count;
                     try {
                         count = basicDBObject.getLong("count");
@@ -844,7 +865,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                         std = 0;
                     }
                     try {
-                        var = std*std;
+                        var = std * std;
                     } catch (Exception ex) {
                         var = 0;
                     }
@@ -856,7 +877,8 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     histogram.put("var", var);
                     histogram.put("count", count);
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
         return histogram;
     }
@@ -865,20 +887,23 @@ public class MongoPersistenceLayer implements PersistenceLayer {
     @Override
     public <T extends Model> Map<String, Map<String, Long>> getStats(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds) {
         Map<String, Map<String, Long>> histograms = new HashMap<String, Map<String, Long>>();
+        if (!this.connected) {
+            return histograms;
+        }
         for (String property : properties) {
             DBObject dbObject = null;
             dbObject = mapReduceStats(0, property, filter);
             Map<String, Long> stringLongMap = parseMapReduce(dbObject, property);
 
-           // List<BasicDBObject> aggregation = aggregate(property, filter, true);
-           // Map<String, Long> stringLongMap = parseAggregation(aggregation, property, true);
+            // List<BasicDBObject> aggregation = aggregate(property, filter, true);
+            // Map<String, Long> stringLongMap = parseAggregation(aggregation, property, true);
             histograms.put(property, stringLongMap);
         }
         return histograms;
     }
 
 
-    public List<BasicDBObject> aggregate(String property, Filter filter, Boolean getStats ) {
+    public List<BasicDBObject> aggregate(String property, Filter filter, Boolean getStats) {
         LOG.debug("Starting aggregation for the following property: {}", property);
         long start = System.currentTimeMillis();
         Property prop = getCache().getProperty(property);
@@ -887,7 +912,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         List<BasicDBObject> result = new ArrayList<BasicDBObject>();
         DBCollection collection = this.getCollection(Element.class);
         BasicDBList basicAggregationStages = new BasicDBList();
-        BasicDBList basicDBList=new BasicDBList();
+        BasicDBList basicDBList = new BasicDBList();
 
         if (propType.equals(PropertyType.STRING.toString())) {
             basicAggregationStages = getBasicAggregationStages(property, filter, "$sourcedValue.value");
@@ -910,32 +935,30 @@ public class MongoPersistenceLayer implements PersistenceLayer {
             basicAggregationStages = getBasicAggregationStages(property, filter, "$sourcedValue.value");
         }
         if (getStats)
-            basicAggregationStages.add(new BasicDBObject("$group", new BasicDBObject("_id","$property").
-                                                                                append("stdDev", new BasicDBObject("$stdDevPop", "$value")).
-                                                                                append("min", new BasicDBObject("$min", "$value")).
-                                                                                append("max", new BasicDBObject("$max", "$value")).
-                                                                                append("avg", new BasicDBObject("$avg", "$value")).
-                                                                                append("sum", new BasicDBObject("$sum", "$value")).
-                                                                                append("count", new BasicDBObject("$sum", 1))));
+            basicAggregationStages.add(new BasicDBObject("$group", new BasicDBObject("_id", "$property").
+                    append("stdDev", new BasicDBObject("$stdDevPop", "$value")).
+                    append("min", new BasicDBObject("$min", "$value")).
+                    append("max", new BasicDBObject("$max", "$value")).
+                    append("avg", new BasicDBObject("$avg", "$value")).
+                    append("sum", new BasicDBObject("$sum", "$value")).
+                    append("count", new BasicDBObject("$sum", 1))));
         else {
             if (propType.equals(PropertyType.INTEGER.toString()))
-                basicAggregationStages.add( new BasicDBObject("$bucketAuto", new BasicDBObject("groupBy", "$value").append("buckets", 10)));
-           // basicAggregationStages.add(new BasicDBObject("$group", new BasicDBObject("_id", "$value").append("count", new BasicDBObject("$sum", 1))));
+                basicAggregationStages.add(new BasicDBObject("$bucketAuto", new BasicDBObject("groupBy", "$value").append("buckets", 10)));
+            // basicAggregationStages.add(new BasicDBObject("$group", new BasicDBObject("_id", "$value").append("count", new BasicDBObject("$sum", 1))));
         }
         //AggregationOutput aggregate = collection.aggregate(basicAggregationStages);
 
         String s = basicAggregationStages.toString();
-        List<DBObject> pipeline=new ArrayList<DBObject>();
+        List<DBObject> pipeline = new ArrayList<DBObject>();
         for (Object basicAggregationStage : basicAggregationStages) {
             pipeline.add((DBObject) basicAggregationStage);
         }
         AggregationOptions build = AggregationOptions.builder().allowDiskUse(true).build();
         Cursor aggregate = collection.aggregate(pipeline, build);
-       // while(aggregate.hasNext()){
-       //     result.add((BasicDBObject) aggregate.next());
-      //  }
-
-
+        // while(aggregate.hasNext()){
+        //     result.add((BasicDBObject) aggregate.next());
+        //  }
 
 
         //Iterable<DBObject> resultIterable = collection.aggregate(pipeline,build).results();
@@ -980,10 +1003,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         Property prop = getCache().getProperty(property);
         String propType = prop.getType();
         String map = "";
-        String map2="";
+        String map2 = "";
         String reduce = "";
         if (propType.equals(PropertyType.STRING.toString()) || propType.equals(PropertyType.BOOL.toString())) {
-            map= "function() {\n" +
+            map = "function() {\n" +
                     "    var property = '" + property + "';\n" +
                     "    for (var mr in this.metadata){\n" +
                     "        var metadataRecord=this.metadata[mr];\n" +
@@ -1022,7 +1045,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "}";
 
         } else if (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
-            map="function() {\n" +
+            map = "function() {\n" +
                     "    var property = '" + property + "';\n" +
                     "    var thresholds = " + getBinThresholds(bins) + ";\n" +
                     "    for (var mr in this.metadata){\n" +
@@ -1146,10 +1169,10 @@ public class MongoPersistenceLayer implements PersistenceLayer {
         Property prop = getCache().getProperty(property);
         String propType = prop.getType();
         String map = "";
-        String map2="";
+        String map2 = "";
         String reduce = "";
         if (propType.equals(PropertyType.STRING.toString()) || propType.equals(PropertyType.BOOL.toString())) {
-            map= "function() {\n" +
+            map = "function() {\n" +
                     "    property = '" + property + "';\n" +
                     "    for (mr in this.metadata){\n" +
                     "        metadataRecord=this.metadata[mr];\n" +
@@ -1182,7 +1205,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "}";
 
         } else if (propType.equals(PropertyType.INTEGER.toString()) || propType.equals(PropertyType.FLOAT.toString())) {
-            map="function() {\n" +
+            map = "function() {\n" +
                     "    property = '" + property + "';\n" +
                     "    thresholds = " + getBinThresholds(bins) + ";\n" +
                     "    for (mr in this.metadata)" +
@@ -1359,7 +1382,7 @@ public class MongoPersistenceLayer implements PersistenceLayer {
                     "}"
 
 
-                        ;
+            ;
             finalize = "function finalize(key, value) {\n" +
                     "    value.avg = value.sum / value.count;\n" +
                     "    value.variance = value.diff / value.count;\n" +

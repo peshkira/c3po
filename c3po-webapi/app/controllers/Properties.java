@@ -2,9 +2,10 @@ package controllers;
 
 
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
-import com.petpet.c3po.api.model.helper.*;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.Configurator;
 import helpers.Distribution;
 import helpers.Graph;
@@ -16,7 +17,12 @@ import play.mvc.Result;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static helpers.StringParser.DistibutionRangeValueToString;
 
@@ -78,20 +84,20 @@ public class Properties extends Controller {
         return badRequest("The accept header is not supported");
     }
 
-    public static Graph interpretDistribution(Distribution d, String algorithm, String width){
-        Graph result =null;
-        if (d==null || d.getProperty()==null)
+    public static Graph interpretDistribution(Distribution d, String algorithm, String width) {
+        Graph result = null;
+        if (d == null || d.getProperty() == null)
             return result;
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         Property p = persistence.getCache().getProperty(d.getProperty());
-        PropertyType pType=PropertyType.valueOf(p.getType());
-        switch (pType){
+        PropertyType pType = PropertyType.valueOf(p.getType());
+        switch (pType) {
             case INTEGER:
             case FLOAT:
-               // Distribution mergedDistribution = processNumericDistribution(d, algorithm, width);
-              //  result = new Graph(mergedDistribution.getProperty(), mergedDistribution.getPropertyValues(), mergedDistribution.getPropertyValueCounts());
+                // Distribution mergedDistribution = processNumericDistribution(d, algorithm, width);
+                //  result = new Graph(mergedDistribution.getProperty(), mergedDistribution.getPropertyValues(), mergedDistribution.getPropertyValueCounts());
 
-              //  break;
+                //  break;
             case DATE:
             case BOOL:
             case STRING:
@@ -127,9 +133,9 @@ public class Properties extends Controller {
             bin_width = (int) ((max - min) / bins_count);
         }
         bins_count++;
-        if (min.equals(max)){  //TODO: fix this case
-            bins_count=1;
-            bin_width= max.intValue();
+        if (min.equals(max)) {  //TODO: fix this case
+            bins_count = 1;
+            bin_width = max.intValue();
         }
         long[] binDistribution = new long[bins_count];
         Map<String, Long> propertyDistribution = d.getPropertyDistribution();
@@ -146,8 +152,8 @@ public class Properties extends Controller {
                 double propertyValue = Double.parseDouble(key);
                 if (propertyValue < 0)
                     continue;
-                int bin_id=0;
-                if (bins_count!=1)
+                int bin_id = 0;
+                if (bins_count != 1)
                     bin_id = (int) (propertyValue / bin_width);
                 binDistribution[bin_id] += propertyValueCount;
             }
@@ -172,7 +178,7 @@ public class Properties extends Controller {
     }
 
     public static Distribution getDistribution(String property, Filter filter) {
-        List<String> properties=new ArrayList<String>();
+        List<String> properties = new ArrayList<String>();
         properties.add(property);
         Map<String, Distribution> distributions = getDistributions(properties, filter);
         return distributions.get(property);
@@ -191,13 +197,13 @@ public class Properties extends Controller {
     }
 
 
-    public static Map<String, Distribution> getDistributions(List<String> properties, Filter filter){
+    public static Map<String, Distribution> getDistributions(List<String> properties, Filter filter) {
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         if (filter == null)
             filter = new Filter();
         Filter tmpFilter = Filters.normalize(filter);
-        Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
-        List<Integer> bins=new ArrayList<Integer>();
+        Map<String, List<Integer>> binThresholds = new HashMap<String, List<Integer>>();
+        List<Integer> bins = new ArrayList<Integer>();
         bins.add(5);
         bins.add(20);
         bins.add(40);
@@ -208,30 +214,32 @@ public class Properties extends Controller {
         binThresholds.put("size", bins);
         binThresholds.put("wordcount", bins);
         binThresholds.put("pagecount", bins);
-        Map<String, Map<String, Long>> stats=null;
-        if (properties.contains("size")){
-            List<String> statsProperties=new ArrayList<String>();
+        Map<String, Map<String, Long>> stats = null;
+        if (properties.contains("size")) {
+            List<String> statsProperties = new ArrayList<String>();
             statsProperties.add("size");
             stats = persistence.getStats(statsProperties, tmpFilter, binThresholds);
             properties.remove("size");
         }
         Map<String, Map<String, Long>> histograms = persistence.getHistograms(properties, tmpFilter, binThresholds);
-        if (stats!=null){
+        if (stats != null) {
             Map<String, Long> size = stats.get("size");
             histograms.put("size", size);
         }
-        Map<String, Distribution> distibutions=new HashMap<String, Distribution>();
+        Map<String, Distribution> distibutions = new HashMap<String, Distribution>();
         Iterator<Map.Entry<String, Map<String, Long>>> iterator = histograms.entrySet().iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Map.Entry<String, Map<String, Long>> next = iterator.next();
-            String propertyName = next.getKey();
-            Property p = persistence.getCache().getProperty(propertyName);
-            Distribution d = new Distribution();
-            d.setPropertyDistribution(next.getValue());
-            d.setProperty(propertyName);
-            d.setType(p.getType());
-            d.setFilter(filter);
-            distibutions.put(propertyName,d);
+            if (next != null && next.getValue() != null) {
+                String propertyName = next.getKey();
+                Property p = persistence.getCache().getProperty(propertyName);
+                Distribution d = new Distribution();
+                d.setPropertyDistribution(next.getValue());
+                d.setProperty(propertyName);
+                d.setType(p.getType());
+                d.setFilter(filter);
+                distibutions.put(propertyName, d);
+            }
         }
         return distibutions;
     }
@@ -242,7 +250,7 @@ public class Properties extends Controller {
         Map<String, Long> result = new HashMap<String, Long>();
         Property p = persistence.getCache().getProperty(property);
         if (p.getType().equals(PropertyType.INTEGER.toString()) || p.getType().equals(PropertyType.FLOAT.toString())) {
-            List<String> properties=new ArrayList<String>();
+            List<String> properties = new ArrayList<String>();
             properties.add(property);
             Map<String, Distribution> distributions = getDistributions(properties, filter);
             Distribution distribution = distributions.get(property);
@@ -360,7 +368,7 @@ public class Properties extends Controller {
         final String a = form.get("alg");
         final String w = form.get("width");
         PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-        PropertyValuesFilter f= getValues(p,a,w,null);
+        PropertyValuesFilter f = getValues(p, a, w, null);
         return ok(play.libs.Json.toJson(f));
     }
 
@@ -380,15 +388,15 @@ public class Properties extends Controller {
         } else {
 
             PropertyValuesFilter result = new PropertyValuesFilter();
-            if (allPropertyValues.containsKey(property)){
+            if (allPropertyValues.containsKey(property)) {
                 result.setProperty(property);
                 result.setType(p.getType());
                 result.setValues(allPropertyValues.get(property));
             } else {
-                List<String> properties=new ArrayList<String>();
+                List<String> properties = new ArrayList<String>();
                 properties.add(property);
-                Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
-                List<Integer> bins=new ArrayList<Integer>();
+                Map<String, List<Integer>> binThresholds = new HashMap<String, List<Integer>>();
+                List<Integer> bins = new ArrayList<Integer>();
                 bins.add(5);
                 bins.add(20);
                 bins.add(40);
@@ -400,9 +408,9 @@ public class Properties extends Controller {
                 binThresholds.put("wordcount", bins);
                 binThresholds.put("pagecount", bins);
                 Map<String, Map<String, Long>> histograms = persistence.getValues(properties, null, binThresholds);
-                Map<String, Distribution> distibutions=new HashMap<String, Distribution>();
+                Map<String, Distribution> distibutions = new HashMap<String, Distribution>();
                 Iterator<Map.Entry<String, Map<String, Long>>> iterator = histograms.entrySet().iterator();
-                while (iterator.hasNext()){
+                while (iterator.hasNext()) {
                     Map.Entry<String, Map<String, Long>> next = iterator.next();
                     String propertyName = next.getKey();
                     Property pr = persistence.getCache().getProperty(propertyName);
@@ -411,14 +419,14 @@ public class Properties extends Controller {
                     d.setProperty(propertyName);
                     d.setType(pr.getType());
                     d.setFilter(null);
-                    distibutions.put(propertyName,d);
+                    distibutions.put(propertyName, d);
                 }
                 Distribution d = distibutions.get(property);
                 Graph graph = Properties.interpretDistribution(d, algorithm, width);
                 result.setProperty(property);
                 result.setType(d.getType());
                 result.setValues(graph.getKeys());
-                allPropertyValues.put(property,graph.getKeys());
+                allPropertyValues.put(property, graph.getKeys());
             }
             result.setSelected(selectedValue);
             if (selectedValue != null)
@@ -426,12 +434,6 @@ public class Properties extends Controller {
             return result;
         }
     }
-
-
-
-
-
-
 
 
     public static double getMin(List<String> values) {
@@ -478,7 +480,8 @@ public class Properties extends Controller {
         }
         return value;
     }
-    static Map<String, List<String>> allPropertyValues=new HashMap<String, List<String>>();
+
+    static Map<String, List<String>> allPropertyValues = new HashMap<String, List<String>>();
 
 
 }
