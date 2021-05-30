@@ -33,9 +33,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Samples extends Controller {
 
+    private static final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    static Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     public static Result index() {
         final List<String> names = Properties.getCollectionNames();
         return ok(samples.render(names));
@@ -43,6 +48,7 @@ public class Samples extends Controller {
 
     public static Result getSamples(String alg, int size, String props) {
         Logger.debug("Received a getSamples call, sampling with alg " + alg + " size " + size + " props " + props);
+        timestamp = new Timestamp(System.currentTimeMillis());
         final PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
         final Filter filter = Filters.getFilterFromSession();
         final RepresentativeGenerator sg = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
@@ -80,7 +86,7 @@ public class Samples extends Controller {
             options.put("bins", binThresholds);
 
 
-            options.put("location", "exports/" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip");
+            options.put("location", System.getProperty("java.io.tmpdir") +"/"+"sfd_results_" + sdf2.format(timestamp) + ".zip");
             List<String> tmp_props = new ArrayList<String>();
             for (int i = 4; i < list.size(); i++)
                 tmp_props.add(list.get(i));
@@ -104,7 +110,7 @@ public class Samples extends Controller {
 
     public static Result exportResults() {
         Logger.debug("Exporting the samples");
-        String path = "exports/" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip";
+        String path = System.getProperty("java.io.tmpdir") +"/"+"sfd_results_" + sdf2.format(timestamp) + ".zip";
         File file = new File(path);
 
         if (file.getParentFile() != null && !file.getParentFile().exists()) {
@@ -114,7 +120,7 @@ public class Samples extends Controller {
         try {
             file.createNewFile();
             response().setContentType("application/zip");
-            response().setHeader("Content-disposition", "attachment; filename=" + session(WebAppConstants.SESSION_ID) + "_sfd_results.zip");
+            response().setHeader("Content-disposition", "attachment; filename=" + "sfd_results_" + sdf2.format(timestamp) + ".zip");
             return ok(new FileInputStream(file));
         } catch (FileNotFoundException e) {
             return internalServerError(e.getMessage());

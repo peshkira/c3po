@@ -152,11 +152,14 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         String writeTuplesToCSV = writeTuplesToCSV();
         String writePTTables = writePTTables();
         String outputFileLocation = System.getProperty("java.io.tmpdir") + "/sfd_results.zip";
-        if (location != null)
+        if (location != null) {
             outputFileLocation = location;
+        }
         try {
+
             File f = new File(outputFileLocation);
             f.createNewFile();
+            System.out.println("Writing a file to " + outputFileLocation);
             FileOutputStream fos = new FileOutputStream(outputFileLocation);
             ZipOutputStream zos = new ZipOutputStream(fos);
             addToZipFile(writeSamplesToCSV, zos);
@@ -177,6 +180,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
 
     private String writeTuplesToCSV() {
         String outputFileLocation = System.getProperty("java.io.tmpdir") + "/tuples.csv";
+        System.out.println("Writing a file to " + outputFileLocation);
 
         try {
             CSVWriter writer = new CSVWriter(new FileWriter(outputFileLocation));
@@ -226,6 +230,7 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
 
 
         String outputFileLocation = System.getProperty("java.io.tmpdir") + "/PTtable.csv";
+        System.out.println("Writing a file to " + outputFileLocation);
         File f = new File(outputFileLocation);
         try {
             f.createNewFile();
@@ -298,6 +303,7 @@ Anything else that is interesting about inputs, outputs,settings,params
 
 
         String outputFileLocation = System.getProperty("java.io.tmpdir") + "/results.xml";
+        System.out.println("Writing a file to " + outputFileLocation);
         File f = new File(outputFileLocation);
         try {
             f.createNewFile();
@@ -321,6 +327,7 @@ Anything else that is interesting about inputs, outputs,settings,params
         final Iterator<Property> allprops = pl.find(Property.class, null);
         final List<Property> props = csvGenerator.getProperties(allprops);
         String outputFileLocation = System.getProperty("java.io.tmpdir") + "/samples.csv";
+        System.out.println("Writing a file to " + outputFileLocation);
         File f = new File(outputFileLocation);
         try {
             f.createNewFile();
@@ -543,8 +550,11 @@ Anything else that is interesting about inputs, outputs,settings,params
             fileThreshold = (int) Integer.parseInt((String) options.get("fileThreshold"));
         if (options.get("proportion") != null)
             proportion = (String) options.get("proportion");
-        if (options.get("location") != null)
+        if (options.get("location") != null) {
             location = (String) options.get("location");
+            System.out.println("Set location for the zip-file export to" + location);
+        }
+
         if (options.get("bins") != null)
             bins = (Map<String, List<Integer>>) options.get("bins");
     }
