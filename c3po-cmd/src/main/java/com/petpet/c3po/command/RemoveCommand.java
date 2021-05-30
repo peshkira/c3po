@@ -69,7 +69,7 @@ public class RemoveCommand extends AbstractCLICommand {
     final long start = System.currentTimeMillis();
 
     final Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure();
+    //configurator.configure();
 
     Controller ctrl = new Controller( configurator );
 

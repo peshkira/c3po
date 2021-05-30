@@ -124,16 +124,20 @@ public class DistributionRepresentativeGenerator extends RepresentativeGenerator
 
     for ( Combination c : combinations ) {
       if ( c.count > 0 && result.size() < limit ) {
-        double percent = c.count * 100 / overallCount;
-        int tmpLimit = (int) Math.round( percent / 100 * limit );
 
-        Iterator<Element> cursor = pl.find( Element.class, c.query );
+          Iterator<Element> cursor = pl.find( Element.class, c.query );
+          if (cursor.hasNext())
+              result.add( cursor.next().getId() );
+        //double percent = c.count * 100 / overallCount;
+        //int tmpLimit = (int) Math.round( percent / 100 * limit );
+
+        //Iterator<Element> cursor = pl.find( Element.class, c.query );
         // System.out.println(c.query + " count: " + c.count + " percent: " +
         // percent + "% absolute: " + tmpLimit);
-        while ( cursor.hasNext() && tmpLimit != 0 && result.size() < limit ) {
-          result.add( cursor.next().getUid() );
-          tmpLimit--;
-        }
+        //while ( cursor.hasNext() && tmpLimit != 0 && result.size() < limit ) {
+        //  result.add( cursor.next().getUid() );
+        //  tmpLimit--;
+        //}
       }
 
     }

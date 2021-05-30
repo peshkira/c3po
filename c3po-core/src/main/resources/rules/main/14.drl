@@ -1,0 +1,81 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+  * If Jhove and Droid both report xhmtl, ignore others, because they are typically right
+ */
+rule "if Jhove and Droid report xhtml, ignore others"
+        salience 200
+    when
+        $e : Element()
+        $mdGoodFormat1 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            MetadataUtil.isFromTool(this, "Jhove"),
+            value == "XHTML"
+        ) from $e.metadata
+        $mdGoodMime1 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            MetadataUtil.haveSameSources(this, $mdGoodFormat1)
+        ) from $e.metadata
+
+        $mdGoodFormat2 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            MetadataUtil.isFromTool(this, "Droid"),
+            value == "Extensible Hypertext Markup Language"
+        ) from $e.metadata
+        $mdGoodMime2 : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            MetadataUtil.haveSameSources(this, $mdGoodFormat2)
+        ) from $e.metadata
+
+        $mdBadMime : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            ! MetadataUtil.isFromTool(this, "Jhove"),
+            ! MetadataUtil.isFromTool(this, "Droid")
+        ) from $e.metadata
+        $mdBadFormat : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            MetadataUtil.haveSameSources(this, $mdBadMime)
+        ) from $e.metadata
+
+
+    then
+        logger.log(loglevel,"Jhove+Droid xhtml string issue: ");
+        logger.logMetadataRecordValue(loglevel,$mdGoodMime1);
+        logger.logMetadataRecord(loglevel,$mdGoodFormat1);
+        logger.logMetadataRecordValue(loglevel,$mdGoodMime2);
+        logger.logMetadataRecord(loglevel,$mdGoodFormat2);
+
+        logger.logMetadataRecordValue(loglevel,$mdBadMime);
+        logger.logMetadataRecord(loglevel,$mdBadFormat);
+        
+
+        modify ($e) {
+            ignoreMetadata($mdBadFormat),
+            ignoreMetadata($mdBadMime),
+            ignoreMetadata($mdGoodFormat2),
+            ignoreMetadata($mdGoodMime2)
+        }
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+
+end

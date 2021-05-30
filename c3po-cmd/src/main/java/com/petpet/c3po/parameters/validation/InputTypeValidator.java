@@ -31,7 +31,7 @@ public class InputTypeValidator implements IValueValidator<String> {
   /**
    * The supported metadata types.
    */
-  private static final String[] SUPPORTED_METADATA = { "FITS", "TIKA" };
+  private static final String[] SUPPORTED_METADATA = { "FITS", "TIKA" ,"BrowserShot"};
 
   /**
    * @throws ParameterException

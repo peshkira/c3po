@@ -1,90 +1,77 @@
-/*******************************************************************************
- * Copyright 2013 Petar Petrov <me@petarpetrov.org>
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
 package helpers;
 
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Created by artur on 23/03/16.
+ */
 public class Statistics {
-  
-  private String count;
-  
-  private String size;
-  
-  private String avg;
-  
-  private String min;
-  
-  private String max;
-  
-  private String sd;
-  
-  private String var;
+    private List<Double> data;
 
-  public String getCount() {
-    return count;
-  }
+    public Statistics(List<Double> data) {
+        this.data = data;
+    }
 
-  public void setCount(String count) {
-    this.count = count;
-  }
+    public double getSum() {
+        double sum = 0.0;
+        for (double d : data) {
+            sum += d;
+        }
+        return sum;
+    }
 
-  public String getSize() {
-    return size;
-  }
+    public double getCount(){
+        return data.size();
+    }
 
-  public void setSize(String size) {
-    this.size = size;
-  }
+    public double getMean() {
+        double sum = 0.0;
+        for (double d : data) {
+            sum += d;
+        }
+        return sum / (double) data.size();
+    }
 
-  public String getAvg() {
-    return avg;
-  }
+    public double getVariance() {
+        double mean = getMean();
+        double tmp = 0;
+        for (double d : data) {
+            tmp += (mean - d) * (mean - d);
+        }
+        return tmp / (double) data.size();
+    }
 
-  public void setAvg(String avg) {
-    this.avg = avg;
-  }
+    public double getMax(){
+        double max=Double.MIN_VALUE;
+        for (double d : data) {
+            if (max<d)
+                max=d;
+        }
+        return max;
+    }
 
-  public String getMin() {
-    return min;
-  }
+    public double getMin(){
+        double min=Double.MAX_VALUE;
+        for (double d : data) {
+            if (min>d)
+                min=d;
+        }
+        return min;
+    }
 
-  public void setMin(String min) {
-    this.min = min;
-  }
+    public double getStdDev() {
+        return Math.sqrt(getVariance());
+    }
 
-  public String getMax() {
-    return max;
-  }
+    public double median() {
+        Collections.sort(data);
 
-  public void setMax(String max) {
-    this.max = max;
-  }
-
-  public String getSd() {
-    return sd;
-  }
-
-  public void setSd(String sd) {
-    this.sd = sd;
-  }
-
-  public String getVar() {
-    return var;
-  }
-
-  public void setVar(String var) {
-    this.var = var;
-  }
+        if (data.size() % 2 == 0) {
+            return (data.get((data.size() / 2) - 1) + data.get(data.size() / 2)) / 2.0;
+        } else {
+            return data.get(data.size() / 2);
+        }
+    }
 
 }

@@ -69,7 +69,7 @@ public class SamplesCommand extends AbstractCLICommand implements Command {
     long start = System.currentTimeMillis();
 
     Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure();
+    //configurator.configure();
 
     Map<String, Object> options = new HashMap<String, Object>();
     options.put( Constants.OPT_COLLECTION_NAME, this.params.getCollection() );

@@ -1,0 +1,34 @@
+package c3po.custom
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+/**
+ * Treat sampling_frequency_unit : 'in.' from Jhove or NLNZ as "inches"
+ */
+rule "set sampling_frequency_unit : 'in.' from Jhove or NLNZ to 'inches'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "sampling_frequency_unit",
+            value == "in.",
+            (MetadataUtil.isFromTool(this, "Jhove") || MetadataUtil.isFromTool(this, "NLNZ Metadata Extractor"))
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Jhove/NLNZ sampling_frequency_unit issue: ");
+        logger.logMetadataRecord(loglevel,$md);
+        
+        String newValue = "inches";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set format_version to \""+newValue+"\"!");
+end
+

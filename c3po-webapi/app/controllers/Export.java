@@ -18,10 +18,16 @@ package controllers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import com.petpet.c3po.api.model.Property;
+import helpers.TemplatesLoader;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.Element;
+//import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import play.Logger;
@@ -30,185 +36,218 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import views.html.export;
 
-import com.mongodb.BasicDBObject;
+
 import com.petpet.c3po.analysis.CSVGenerator;
 import com.petpet.c3po.analysis.ProfileGenerator;
 import com.petpet.c3po.analysis.RepresentativeAlgorithmFactory;
 import com.petpet.c3po.analysis.RepresentativeGenerator;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.ActionLog;
-import com.petpet.c3po.datamodel.Filter;
+//import com.petpet.c3po.datamodel.ActionLog;
+//import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.ActionLogHelper;
 import com.petpet.c3po.utils.Configurator;
 
+import common.WebAppConstants;
+
+import com.petpet.c3po.api.model.ActionLog;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
+
+
 public class Export extends Controller {
 
-  public static Result index() {
-    return ok(export.render("c3po - Export Data", Application.getCollectionNames()));
-  }
+	public static Result index() {
+		Logger.debug("Received an index call in export");
+		return ok(export.render("c3po - Export Data", Properties.getCollectionNames(), TemplatesLoader.templatesToString()));//export.render("c3po - Export Data", Application.getCollectionNames()));
+	}
 
-  public static Result profile() {
-    Logger.debug("Received a profile generation call");
-    final String accept = request().getHeader("Accept");
+	public static Result profile() {
+		Logger.debug("Received a profile generation call");
+		final String accept = request().getHeader("Accept");
 
-    final DynamicForm form = form().bindFromRequest();
-    final String c = form.get("collection");
-    final String e = form.get("includeelements");
+		final DynamicForm form = play.data.Form.form().bindFromRequest();
+		final String c = form.get("collection");
+		final String e = form.get("includeelements");
 
-    Filter filter = Application.getFilterFromSession();
-    boolean include = false;
+		Filter filter = Filters.getFilterFromSession();
+		boolean include = false;
 
-    if (filter == null) {
-      if (c == null) {
-        return badRequest("No collection parameter provided\n");
-      } else if (!Application.getCollectionNames().contains(c)) {
-        return notFound("No collection with name " + c + " was found\n");
-      }
+		if (filter == null) {
+			if (c == null) {
+				return badRequest("No collection parameter provided\n");
+			} else if (!Properties.getCollectionNames().contains(c)) {
+				return notFound("No collection with name " + c + " was found\n");
+			}
 
-      filter = new Filter(c, null, null);
-    }
+			filter = new Filter();
+			filter.addFilterCondition(new FilterCondition("collection", c));
+		}
 
-    if (e != null) {
-      include = Boolean.valueOf(e);
-    }
+		if (e != null) {
+			include = Boolean.valueOf(e);
+		}
 
-    if (accept.contains("*/*") || accept.contains("application/xml")) {
-      return profileAsXml(filter, include);
-    }
+		if (accept.contains("*/*") || accept.contains("application/xml")) {
+			return profileAsXml(filter, include);
+		}
 
-    Logger.debug("The accept header is not supported: " + accept);
-    return badRequest("The provided accept header '" + accept + "' is not supported");
-  }
+		Logger.debug("The accept header is not supported: " + accept);
+		return badRequest("The provided accept header '" + accept + "' is not supported");
+	}
 
-  public static Result exportAllToCSV() {
-    CSVGenerator generator = getGenerator();
+	public static Result exportAllToCSV() {
+		Logger.debug("Received an exportAllToCSV call");
+		CSVGenerator generator = getGenerator();
+		String collection= Properties.getCollection();
+		String path="";
+		if (collection!=null)
+			path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
+		else
+			path = "exports/" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
+		generator.exportAll(collection, path);
 
-    Filter filter = Application.getFilterFromSession();
+		File file = new File(path);
 
-    String collection = filter.getCollection();
-    String path = "exports/" + collection + "_" + filter.getDescriminator() + "_matrix.csv";
-    generator.exportAll(collection, path);
+		try {
+			response().setContentType("text/csv");
+			response().setHeader("Content-disposition","attachment; filename=all.csv");
+			return ok(new FileInputStream(file));
+		} catch (FileNotFoundException e) {
+			return internalServerError(e.getMessage());
+		}
+	}
 
-    File file = new File(path);
+	public static Result exportFilterToCSV() {
+		Logger.debug("Received an exportFilterToCSV call");
+		Map<String, String[]> stringMap = request().queryString();
+		String pathRequest = request().path();
+		String uri = request().uri();
+		uri=uri.replace(pathRequest+"?","").replace("&template=Conflict","");
+		Filter filter= null;
+		try {
+			filter = new Filter(uri);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 
-    try {
-      return ok(new FileInputStream(file));
-    } catch (FileNotFoundException e) {
-      return internalServerError(e.getMessage());
-    }
-  }
+		CSVGenerator generator = getGenerator();
+		//Filter filter = Filters.getFilterFromSession();
+		String collection= Properties.getCollection();
+		String path = "exports/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_matrix.csv";
+		if (filter==null)
+			exportAllToCSV();
+		generator.export(filter, path);
 
-  public static Result exportFilterToCSV() {
-    CSVGenerator generator = getGenerator();
+		File file = new File(path);
 
-    Filter filter = Application.getFilterFromSession();
+		try {
+			response().setContentType("text/csv");
+			response().setHeader("Content-disposition","attachment; filename=filter.csv");
+			return ok(new FileInputStream(file));
+		} catch (FileNotFoundException e) {
+			return internalServerError(e.getMessage());
+		}
+	}
 
-    String collection = filter.getCollection();
-    String path = "exports/" + collection + "_" + filter.getDescriminator() + "_matrix.csv";
-    generator.export(filter, path);
+	private static CSVGenerator getGenerator() {
+		PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+		CSVGenerator generator = new CSVGenerator(p);
 
-    File file = new File(path);
+		return generator;
 
-    try {
-      return ok(new FileInputStream(file));
-    } catch (FileNotFoundException e) {
-      return internalServerError(e.getMessage());
-    }
-  }
+	}
 
-  private static CSVGenerator getGenerator() {
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    CSVGenerator generator = new CSVGenerator(p);
+	private static Result profileAsXml(Filter filter, boolean includeelements) {
+		Logger.debug("Received a profileAsXml call in export");
+		File result = generateProfile(filter, includeelements);
 
-    return generator;
+		return ok(result);
+	}
 
-  }
+	private static File generateProfile(Filter filter, boolean includeelements) {
+		StringBuilder pathBuilder = new StringBuilder();
+		String collection= Properties.getCollection();
+		String path = "profiles/" + collection + "_" + session(WebAppConstants.SESSION_ID) + "_profile.xml";
+		Logger.debug("Looking for collection profile " + path);
 
-  private static Result profileAsXml(Filter filter, boolean includeelements) {
-    File result = generateProfile(filter, includeelements);
+		File file = new File(path);
 
-    return ok(result);
-  }
+		if (!file.exists() || isCollectionUpdated(collection) || isNewFilter(file, filter)) {
+			Logger.debug("File does not exist. Generating profile for filter " + filter.toString());
+			Configurator configurator = Configurator.getDefaultConfigurator();
+			PersistenceLayer p = configurator.getPersistence();
+			String alg = configurator.getStringProperty("c3po.samples.algorithm");
+			RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
+			ProfileGenerator generator = new ProfileGenerator(p, samplesGen);
+			Document profile = generator.generateProfile(filter);
 
-  private static File generateProfile(Filter filter, boolean includeelements) {
-    StringBuilder pathBuilder = new StringBuilder();
-    pathBuilder.append("profiles/").append(filter.getCollection()).append("_").append(filter.getDescriminator());
-    if (includeelements) {
-      pathBuilder.append("_").append("elements");
-    }
+			generator.write(profile, path);
+			file = new File(path);
 
-    pathBuilder.append(".xml");
+			ActionLogHelper alHelper = new ActionLogHelper(p);
+			alHelper.recordAction(new ActionLog(collection, ActionLog.ANALYSIS_ACTION));
+		}
 
-    String path = pathBuilder.toString();
+		return file;
+	}
 
-    Logger.debug("Looking for collection profile " + path);
+	private static boolean isCollectionUpdated(String collection) {
+		PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+		ActionLogHelper alHelper = new ActionLogHelper(p);
+		ActionLog lastAction = alHelper.getLastAction(collection);
 
-    File file = new File(path);
+		boolean isUpdated = true;
 
-    if (!file.exists() || isCollectionUpdated(filter.getCollection()) || isNewFilter(file, filter)) {
-      Logger.debug("File does not exist. Generating profile for filter " + filter.getDocument());
-      Configurator configurator = Configurator.getDefaultConfigurator();
-      PersistenceLayer p = configurator.getPersistence();
-      String alg = configurator.getStringProperty("c3po.samples.algorithm");
-      RepresentativeGenerator samplesGen = new RepresentativeAlgorithmFactory().getAlgorithm(alg);
-      ProfileGenerator generator = new ProfileGenerator(p, samplesGen);
-      Document profile = generator.generateProfile(filter, includeelements);
+		if (lastAction != null) {
+			if (lastAction.getAction().equals(ActionLog.UPDATED_ACTION)) {
+				isUpdated = false;
+			}
+		}
 
-      generator.write(profile, path);
-      file = new File(path);
+		return isUpdated;
+	}
 
-      ActionLogHelper alHelper = new ActionLogHelper(p);
-      alHelper.recordAction(new ActionLog(filter.getCollection(), ActionLog.PROFILE_ACTION));
-    }
+	private static boolean isNewFilter(File file, Filter filter) {
+		long profileFiltersCount = -1;
+		long profileObjectsCount = -1;
 
-    return file;
-  }
+		boolean isNew = true;
+		try {
+			final SAXReader reader = new SAXReader();
+			Document doc = reader.read(file);
+			org.dom4j.Element partition = doc.getRootElement().element("partition");
+			profileFiltersCount = partition.element("filter").element("parameters").elements().size();
+			profileObjectsCount = Long.parseLong(partition.attributeValue("count"));
 
-  private static boolean isCollectionUpdated(String collection) {
-    PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
-    ActionLogHelper alHelper = new ActionLogHelper(p);
-    ActionLog lastAction = alHelper.getLastAction(collection);
+		} catch (final DocumentException e) {
+			//do nothing...
+			//just regenerate the profile...
+		}
+		return isNew; 
 
-    boolean isUpdated = true;
+	}
 
-    if (lastAction != null) {
-      if (lastAction.getAction().equals(ActionLog.PROFILE_ACTION)) {
-        isUpdated = false;
-      }
-    }
+    public static Result printHistogramToCSV(String property) {
+		String result="";
+		PersistenceLayer p = Configurator.getDefaultConfigurator().getPersistence();
+		Property realProperty = p.getCache().getProperty(property);
+		if (realProperty==null)
+			return ok("There is no such property");
+		Filter filterFromSession = Filters.getFilterFromSession();
 
-    return isUpdated;
-  }
+		List<String> properties=new ArrayList<String>();
+		properties.add(property);
+		Map<String, Map<String, Long>> histograms = p.getHistograms(properties, filterFromSession, null);
+		Map<String, Long> histogram = histograms.get(property);
+		result = histogramToCSV(histogram);
+		return ok(result);
+	}
 
-  private static boolean isNewFilter(File file, Filter filter) {
-    long profileFiltersCount = -1;
-    long profileObjectsCount = -1;
-    
-    boolean isNew = true;
-    try {
-      final SAXReader reader = new SAXReader();
-      Document doc = reader.read(file);
-      Element partition = doc.getRootElement().element("partition");
-      profileFiltersCount = partition.element("filter").element("parameters").elements().size();
-      profileObjectsCount = Long.parseLong(partition.attributeValue("count"));
-
-    } catch (final DocumentException e) {
-      //do nothing...
-      //just regenerate the profile...
-    }
-
-    PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
-    long filtersCount = persistence.count(Constants.TBL_FILTERS,
-        new BasicDBObject("descriminator", filter.getDescriminator()));
-    long filterObjectsCount = persistence.count(Constants.TBL_ELEMENTS, Application.getFilterQuery(filter));
-
-    if (filtersCount == profileFiltersCount && profileObjectsCount == filterObjectsCount) {
-      isNew = false;
-    }
-    
-    return isNew; 
-
-  }
-
+	private static String histogramToCSV(Map<String, Long> histogram) {
+		String result="value,count,\n";
+		for (Map.Entry<String, Long> stringLongEntry : histogram.entrySet()) {
+			result+=stringLongEntry.getKey()+","+stringLongEntry.getValue()+", \n";
+		}
+		return result;
+	}
 }

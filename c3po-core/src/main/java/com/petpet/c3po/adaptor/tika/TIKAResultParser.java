@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * A TIKA Result parser. Thanks to Per for his contribution
  * 
- * @author Per Møldrup-Dalum
+ * @author Per
  * 
  */
 public class TIKAResultParser {

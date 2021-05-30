@@ -66,6 +66,11 @@ public class InferDateFromFileNameRule implements PostProcessingRule {
     return 10;
   }
 
+  @Override
+  public void onCommandFinished() {
+    // do nothing
+  }
+
   /**
    * Tries to extract the meta data for the created property and sets it if
    * successful, otherwise it returns the unmodified element.
@@ -104,7 +109,7 @@ public class InferDateFromFileNameRule implements PostProcessingRule {
         try {
           Long.valueOf( date );
 
-          MetadataRecord c = new MetadataRecord( created, date );
+          MetadataRecord c = new MetadataRecord( created.getKey(), date );
           e.getMetadata().add( c );
 
         } catch ( NumberFormatException nfe ) {

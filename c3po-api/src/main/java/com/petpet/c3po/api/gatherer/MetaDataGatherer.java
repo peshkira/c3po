@@ -16,6 +16,7 @@
 package com.petpet.c3po.api.gatherer;
 
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.petpet.c3po.api.model.helper.MetadataStream;
 
@@ -48,6 +49,9 @@ public interface MetaDataGatherer extends Runnable {
    * @return
    */
   boolean hasNext();
+
+   LinkedBlockingQueue<MetadataStream> getQueue();
+
 
   /**
    * Whether or not the gatherer has finished its work.

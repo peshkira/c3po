@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.0" timestamp="1/6/12 11:25 AM">
+  <identification>
+    <identity format="Portable Document Format" mimetype="application/pdf" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Jhove" toolversion="1.5" />
+      <tool toolname="file utility" toolversion="5.03" />
+      <tool toolname="Exiftool" toolversion="7.74" />
+      <tool toolname="Droid" toolversion="3.0" />
+      <tool toolname="NLNZ Metadata Extractor" toolversion="3.4GA" />
+      <tool toolname="ffident" toolversion="0.2" />
+      <version toolname="Jhove" toolversion="1.5">1.6</version>
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">fmt/20</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.5">4391286</size>
+    <creatingApplicationName toolname="Jhove" toolversion="1.5">Acrobat Distiller 8.1.0 (Windows)/PScript5.dll Version 5.2.2</creatingApplicationName>
+    <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2012:01:06 09:33:39+01:00</lastmodified>
+    <created toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2008:11:24 14:23:17-06:00</created>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303043.pdf</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303043.pdf</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">77166bcf2ab2e6fadb721547967c7aa8</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1325838819000</fslastmodified>
+  </fileinfo>
+  <filestatus>
+    <well-formed toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</well-formed>
+    <valid toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</valid>
+  </filestatus>
+  <metadata>
+    <document>
+      <title toolname="Jhove" toolversion="1.5">Illinois 303(d) list Decision Document Attachment 3</title>
+      <author toolname="Jhove" toolversion="1.5">epauser</author>
+      <language toolname="Jhove" toolversion="1.5">EN-US</language>
+      <pageCount toolname="Jhove" toolversion="1.5">67</pageCount>
+      <isTagged toolname="Jhove" toolversion="1.5">yes</isTagged>
+      <hasOutline toolname="Jhove" toolversion="1.5">no</hasOutline>
+      <hasAnnotations toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">no</hasAnnotations>
+      <isRightsManaged toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">no</isRightsManaged>
+      <isProtected toolname="Exiftool" toolversion="7.74">no</isProtected>
+      <hasForms toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">no</hasForms>
+    </document>
+  </metadata>
+</fits>
+

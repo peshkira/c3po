@@ -15,11 +15,7 @@
  ******************************************************************************/
 package com.petpet.c3po.analysis;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,13 +74,16 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
         result.add( iter.next().getUid() );
       }
     } else {
-      NumericStatistics statistics = this.pl.getNumericStatistics( pl.getCache().getProperty( "size" ), this
-          .getFilter() );
+      List<String> properties=new ArrayList<String>();
+      properties.add("size");
+      Map<String, Map<String, Long>> histograms = this.pl.getStats(properties, this.getFilter(), null);
+      Map<String, Long> sizeHistogram = histograms.get("size");
 
-      double min = statistics.getMin();
-      double max = statistics.getMax();
-      double avg = statistics.getAverage();
-      double sd = statistics.getStandardDeviation();
+
+      double min =sizeHistogram.get("min");
+      double max = sizeHistogram.get("max");
+      double avg = sizeHistogram.get("avg");
+      double sd =sizeHistogram.get("std");
 
       double low = Math.floor( (avg - sd / 10) );
       double high = Math.ceil( (avg + sd / 10) );
@@ -103,15 +102,15 @@ public class SizeRepresentativeGenerator extends RepresentativeGenerator {
       Iterator<Element> avgCursor = this.pl.find( Element.class, avgFilter );
 
       if ( minCursor.hasNext() && result.size() < limit ) {
-        result.add( minCursor.next().getUid() );
+        result.add( minCursor.next().getId() );
       }
 
       if ( maxCursor.hasNext() && result.size() < limit ) {
-        result.add( maxCursor.next().getUid() );
+        result.add( maxCursor.next().getId() );
       }
 
       while ( avgCursor.hasNext() && result.size() < limit ) {
-        result.add( avgCursor.next().getUid() );
+        result.add( avgCursor.next().getId() );
       }
 
     }

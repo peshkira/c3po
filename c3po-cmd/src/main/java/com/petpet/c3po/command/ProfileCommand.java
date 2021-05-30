@@ -54,7 +54,7 @@ public class ProfileCommand extends AbstractCLICommand implements Command {
     final long start = System.currentTimeMillis();
 
     final Configurator configurator = Configurator.getDefaultConfigurator();
-    configurator.configure();
+   // configurator.configure();
 
     Map<String, Object> options = new HashMap<String, Object>();
     options.put( Constants.OPT_COLLECTION_NAME, this.params.getCollection() );

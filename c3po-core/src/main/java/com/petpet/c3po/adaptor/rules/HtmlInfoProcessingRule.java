@@ -110,4 +110,8 @@ public class HtmlInfoProcessingRule implements PreProcessingRule {
     return false;
   }
 
+  @Override
+  public void onCommandFinished() {
+    // do nothing
+  }
 }

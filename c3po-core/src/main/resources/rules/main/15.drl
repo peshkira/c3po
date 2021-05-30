@@ -1,0 +1,67 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+ * If Jhove report a mimetype as "text/html" (and all those tools report the same format string) 
+ * and some other tools report "application/xhtml+xml" (and all agree on the same format string), ignore the text/html mimetype and format.
+ */
+rule "ignore text/html and corresponding format by Jhove (and others) if application/xhtml+xml is available"
+        salience 150
+    when 
+        $e : Element()
+        $mdBadMime : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "mimetype",
+            value == "text/html",
+            MetadataUtil.isFromTool(this, "Jhove") 
+        ) from $e.metadata
+        $mdBadFormat : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format",
+            MetadataUtil.haveSameSources(this, $mdBadMime)
+        ) from $e.metadata
+
+        $mdGoodMime : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "mimetype", 
+            value == "application/xhtml+xml"
+        ) from $e.metadata
+        $mdGoodFormat : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format",
+            MetadataUtil.haveSameSources(this, $mdGoodMime)
+        ) from $e.metadata
+        
+    then
+        logger.log(loglevel,"text/html vs. application/xhtml+xml issue: ");
+        
+        logger.logMetadataRecordValue(loglevel,$mdBadMime);
+        logger.logMetadataRecordValue(loglevel,$mdBadFormat);
+        logger.logMetadataRecordSources(loglevel,$mdBadFormat.getSources());
+
+        logger.logMetadataRecordValue(loglevel,$mdGoodMime);
+        logger.logMetadataRecordValue(loglevel,$mdGoodFormat);
+        logger.logMetadataRecordSources(loglevel,$mdGoodFormat.getSources());
+                
+        modify ($e) {
+            ignoreMetadata($mdBadMime),
+            ignoreMetadata($mdBadFormat)
+        }
+        
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+end
+

@@ -1,0 +1,55 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+ * If Exiftool reports another format than others AND at least 2 times other tools claim it to be "Portable Document Format", 
+ * ignore Exiftool (and the like).
+ */
+rule "Resolve Exiftool PDF format string"
+        salience 100
+    when 
+        $e : Element()
+        $mdBad : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format", 
+            MetadataUtil.isFromTool(this, "Exiftool") 
+        ) from $e.metadata
+        Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
+            count( $id )
+        )
+
+        $mdGood : MetadataRecord(
+            status=="CONFLICT", 
+            property.id == "format", 
+            ! MetadataUtil.isFromTool(this, "Exiftool"), 
+            value == "Portable Document Format"
+        ) from $e.metadata
+        Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
+            count( $id )
+        )
+        
+    then
+        logger.log(loglevel,"Exiftool PDF format string issue: ");
+        logger.logMetadataRecord(loglevel,$mdBad);
+        logger.logMetadataRecord(loglevel,$mdGood);
+        
+        modify ($e) {
+            ignoreMetadata($mdBad)
+        }
+        logger.log(loglevel,"    -> ignore "+$mdBad);
+        
+end
+

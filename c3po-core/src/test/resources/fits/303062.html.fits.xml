@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.0" timestamp="1/6/12 10:19 AM">
+  <identification>
+    <identity format="Hypertext Markup Language" mimetype="text/html" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Jhove" toolversion="1.5" />
+      <tool toolname="Exiftool" toolversion="7.74" />
+      <tool toolname="Droid" toolversion="3.0" />
+      <tool toolname="NLNZ Metadata Extractor" toolversion="3.4GA" />
+      <tool toolname="ffident" toolversion="0.2" />
+      <version toolname="NLNZ Metadata Extractor" toolversion="3.4GA">null</version>
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">fmt/96</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.5">17024</size>
+    <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2012:01:06 09:33:47+01:00</lastmodified>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303062.html</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303062.html</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">9ce95a6853aff7646a939e20fd0a737f</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1325838827000</fslastmodified>
+  </fileinfo>
+  <filestatus>
+    <well-formed toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</well-formed>
+    <valid toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">false</valid>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Unrecognized or missing DOCTYPE declaration; validation continuing as HTML 3.2</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 21, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 23, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 26, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 28, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 31, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 33, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 35, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 37, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 40, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 43, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 46, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 48, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 50, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 52, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 54, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 55, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 57, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 58, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 63, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 68, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 72, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 73, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 82, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 88, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 89, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 95, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 102, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 108, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 119, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 125, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 126, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 138, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 149, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 153, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 154, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 164, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 171, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 185, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 199, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 218, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 226, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 227, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 230, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 233, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 236, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 239, Column = 12</message>
+    <message toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">Undefined attribute for element Name = font, Attribute = face, Line = 241, Column = 12</message>
+  </filestatus>
+  <metadata>
+    <text>
+      <markupBasis toolname="Jhove" toolversion="1.5">HTML</markupBasis>
+      <markupBasisVersion toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">null</markupBasisVersion>
+    </text>
+  </metadata>
+</fits>
+

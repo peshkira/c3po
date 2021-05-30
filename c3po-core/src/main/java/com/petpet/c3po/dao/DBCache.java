@@ -15,19 +15,19 @@
  ******************************************************************************/
 package com.petpet.c3po.dao;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
+import com.petpet.c3po.api.adaptor.AbstractAdaptor;
 import com.petpet.c3po.api.dao.Cache;
 import com.petpet.c3po.api.dao.PersistenceLayer;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
 import com.petpet.c3po.api.model.helper.Filter;
 import com.petpet.c3po.api.model.helper.FilterCondition;
+import com.petpet.c3po.api.model.helper.PropertyType;
 import com.petpet.c3po.utils.DataHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements the {@link Cache} interface.
@@ -47,6 +47,8 @@ public class DBCache implements Cache {
    */
   private Map<String, Source> sourceCache;
 
+  private Map<String, List<String>> valuesCache;
+
   /**
    * A map of arbitrary objects.
    */
@@ -57,6 +59,9 @@ public class DBCache implements Cache {
    */
   private PersistenceLayer persistence;
 
+
+  private static final Logger LOG = LoggerFactory.getLogger( DBCache.class );
+
   /**
    * Creates a new cache with synchronized empty maps.
    */
@@ -64,6 +69,7 @@ public class DBCache implements Cache {
     this.propertyCache = Collections.synchronizedMap( new HashMap<String, Property>() );
     this.sourceCache = Collections.synchronizedMap( new HashMap<String, Source>() );
     this.misc = Collections.synchronizedMap( new HashMap<Object, Object>() );
+    this.valuesCache=Collections.synchronizedMap(new HashMap<String, List<String>>());
   }
 
   /**
@@ -90,9 +96,11 @@ public class DBCache implements Cache {
    */
   @Override
   public synchronized Property getProperty( String key ) {
+
     Property property = this.propertyCache.get( key );
 
     if ( property == null ) {
+      LOG.debug("Getting a list of known properties.");
       Iterator<Property> result = this.findProperty( key );
 
       if ( result.hasNext() ) {
@@ -104,8 +112,80 @@ public class DBCache implements Cache {
         }
 
       } else {
-        property = this.createProperty( key );
+        property = this.putProperty( key, null );
 
+      }
+    }
+
+    return property;
+  }
+
+  @Override
+  public synchronized List<String> getValues(String property) {
+    List<String> values = this.valuesCache.get(property);
+    if (values==null){
+      LOG.debug("Getting a list of known values.");
+      Iterator<String> result=this.findValue( property );
+      List<String> vals=new ArrayList<String>();
+      while (result.hasNext()){
+        vals.add(result.next());
+      }
+      this.valuesCache.put(property,vals);
+    }
+    return this.valuesCache.get(property);
+  }
+
+  private Iterator<String> findValue(String property) {
+    List<String> properties=new ArrayList<String>();
+    properties.add(property);
+    Map<String, List<Integer>> binThresholds=new HashMap<String, List<Integer>>();
+    List<Integer> bins=new ArrayList<Integer>();
+    bins.add(5);
+    bins.add(20);
+    bins.add(40);
+    bins.add(100);
+    bins.add(1000);
+    bins.add(10000);
+    bins.add(10000000);
+    binThresholds.put("size", bins);
+    binThresholds.put("wordcount", bins);
+    binThresholds.put("pagecount", bins);
+    Map<String, Map<String, Long>> histograms = persistence.getHistograms(properties, new Filter(), binThresholds);
+    return histograms.get(property).keySet().iterator();
+
+  }
+
+
+  /**
+   * Looks in the cache for a property with the given key. If the property is
+   * found in the cache it is retrieved (no matter if the type matches), if it
+   * is not found in the cache, the db is queried. Supposedly the property is
+   * found in the db, then it is loaded into the cache and it is returned (no
+   * matter if the type matches). If no property with the given key is found in
+   * the db, then a new property with the given key and type is created, stored
+   * into the db, added to the cache and then it is returned.
+   * 
+   * @param key
+   *          the name of the property.
+   * @return the property.
+   */
+  @Override
+  public Property getProperty( String key, PropertyType type ) {
+    Property property = this.propertyCache.get( key );
+
+    if ( property == null ) {
+      LOG.debug("Adding new item to the list of known properties.");
+      Iterator<Property> result = this.findProperty( key );
+
+      if ( result.hasNext() ) {
+        property = result.next();
+        this.propertyCache.put( key, property );
+
+        if ( result.hasNext() ) {
+          throw new RuntimeException( "More than one properties found for key: " + key );
+        }
+      } else {
+        property = this.putProperty( key, type );
       }
     }
 
@@ -131,6 +211,7 @@ public class DBCache implements Cache {
     Source source = this.sourceCache.get( name + ":" + version );
 
     if ( source == null ) {
+      LOG.debug("Adding new item to the list of known sources.");
       Iterator<Source> result = this.findSource( name, version );
 
       if ( result.hasNext() ) {
@@ -150,7 +231,45 @@ public class DBCache implements Cache {
     return source;
   }
 
-  /**
+    @Override
+    public Source getSource(String id) {
+      Source source = this.sourceCache.get( id );
+
+      if ( source == null ) {
+        LOG.debug("Adding new item to the list of known sources.");
+        Iterator<Source> result = this.findSource( id );
+
+        if ( result.hasNext() ) {
+          source = result.next();
+          this.sourceCache.put( source.getName() + ":" + source.getVersion(), source );
+          this.sourceCache.put( source.getId(), source );
+          if ( result.hasNext() ) {
+            throw new RuntimeException( "More than one sources found for name: " + source.getName() + " and version: " + source.getVersion() );
+          }
+
+        }
+      }
+
+      return source;
+
+
+
+
+/*
+        Iterator<Source> result = this.findSource(id);
+
+        if (result.hasNext()) {
+            Source source = result.next();
+            if ( result.hasNext() ) {
+                throw new RuntimeException( "More than one sources found for id: " + id);
+            }
+            return source;
+        }
+
+        return null;*/
+    }
+
+    /**
    * {@inheritDoc}
    */
   @Override
@@ -176,6 +295,15 @@ public class DBCache implements Cache {
     this.misc.clear();
   }
 
+  /**
+   * Looks for the given source within the DB.
+   * 
+   * @param name
+   *          the name to look for.
+   * @param version
+   *          the version to look for.
+   * @return the Sources that matched the query.
+   */
   private Iterator<Source> findSource( String name, String version ) {
 
     FilterCondition fc1 = new FilterCondition( "name", name );
@@ -186,6 +314,22 @@ public class DBCache implements Cache {
 
   }
 
+    private Iterator<Source> findSource(String id) {
+
+        FilterCondition fc1 = new FilterCondition( "_id", id);
+        Filter f = new Filter(Arrays.asList(fc1));
+
+        return this.persistence.find(Source.class, f);
+    }
+
+
+    /**
+   * Looks for the given property with the given key in the db.
+   * 
+   * @param key
+   *          the key to look for.
+   * @return the property.
+   */
   private Iterator<Property> findProperty( String key ) {
 
     FilterCondition fc = new FilterCondition( "key", key );
@@ -195,6 +339,15 @@ public class DBCache implements Cache {
 
   }
 
+  /**
+   * Creates a new source and inserts it within the db and the cache.
+   * 
+   * @param name
+   *          the name of the source
+   * @param version
+   *          the version of the source.
+   * @return the new source.
+   */
   private Source createSource( String name, String version ) {
     Source s = new Source( name, version );
 
@@ -204,8 +357,17 @@ public class DBCache implements Cache {
     return s;
   }
 
-  private Property createProperty( String key ) {
-    Property p = new Property( key );
+  /**
+   * Creates a new property and inserts it within the db and the cache.
+   * 
+   * @param key
+   *          the key of the prop.
+   * @param type
+   *          the type of the prop.
+   * @return the new source.
+   */
+  private Property putProperty( String key, PropertyType type ) {
+    Property p = new Property( key, type );
     p.setType( DataHelper.getPropertyType( key ) );
 
     this.persistence.insert( p );

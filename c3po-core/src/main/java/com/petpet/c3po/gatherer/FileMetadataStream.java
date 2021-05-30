@@ -19,7 +19,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -54,8 +53,7 @@ public class FileMetadataStream implements MetadataStream {
    * @param fileName
    *          a human readable identifier of the object that this metadata
    *          stream describes.
-   * @param data
-   *          the actial meta data in string form.
+
    */
   public FileMetadataStream(String fileName) {
     this.fileName = fileName;
@@ -77,10 +75,24 @@ public class FileMetadataStream implements MetadataStream {
     return data;
   }
 
+
+  public String getData(File file) {
+    String data = null;
+    try {
+      InputStream is = new BufferedInputStream( new FileInputStream( file ), 8192 );
+      data = this.readStream( this.fileName, is );
+    } catch ( FileNotFoundException e ) {
+      LOG.warn( "An error occurred while openning the stream to {}. Error: {}", fileName, e.getMessage() );
+    }
+
+    return data;
+  }
+
+
   /**
    * Reads the given input stream into memory and returns it. The stream is
    * closed.
-   * 
+   *
    * @param name
    *          the name of the file/object holding the stream.
    * @param data
@@ -91,11 +103,10 @@ public class FileMetadataStream implements MetadataStream {
     String result = null;
     try {
       result = IOUtils.toString( data );
-    } catch ( IOException e ) {
-      LOG.warn( "An error occurred, while reading the stream for {}: {}", name, e.getMessage() );
     } catch ( Exception e ) {
       LOG.warn( "An error occurred, while reading the stream for {}: {}", name, e.getMessage() );
-    } finally {
+    }
+    finally {
       IOUtils.closeQuietly( data );
     }
     return result;

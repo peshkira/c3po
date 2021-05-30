@@ -1,0 +1,38 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+/**
+ * Treat application/rtf mimetypes as text/rtf 
+ */
+rule "set application/rtf mimetypes to text/rtf"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "mimetype",
+            value matches ".*application/rtf.*"
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"mimetype=application/rtf issue: ");
+        logger.logMetadataRecord(loglevel,$md);
+        
+        $md.setValue("text/rtf");
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set mimetype to \"text/rtf\"!");
+        
+end

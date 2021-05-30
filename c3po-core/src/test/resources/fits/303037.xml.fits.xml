@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.0" timestamp="1/6/12 9:43 AM">
+  <identification status="CONFLICT">
+    <identity format="Extensible Markup Language" mimetype="text/xml" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Jhove" toolversion="1.5" />
+      <tool toolname="OIS XML Metadata" toolversion="0.2" />
+      <version toolname="Jhove" toolversion="1.5">1.0</version>
+    </identity>
+    <identity format="XMP" mimetype="text/xml" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Exiftool" toolversion="7.74" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.5">21391</size>
+    <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2012:01:06 09:33:58+01:00</lastmodified>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303037.xml</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303037.xml</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">3e53ab52f8c268e8a0fb88a4f10c56d9</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1325838838000</fslastmodified>
+  </fileinfo>
+  <filestatus>
+    <well-formed toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</well-formed>
+    <valid toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</valid>
+  </filestatus>
+  <metadata>
+    <text>
+      <charset toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">UTF-8</charset>
+      <markupBasis toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">XML</markupBasis>
+      <markupBasisVersion toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">1.0</markupBasisVersion>
+    </text>
+  </metadata>
+</fits>
+

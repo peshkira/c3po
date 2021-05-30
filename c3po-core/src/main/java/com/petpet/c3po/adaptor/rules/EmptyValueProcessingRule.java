@@ -50,4 +50,8 @@ public class EmptyValueProcessingRule implements PreProcessingRule {
     return 990;
   }
 
+  @Override
+  public void onCommandFinished() {
+    // do nothing
+  }
 }

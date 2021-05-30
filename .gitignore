@@ -12,3 +12,8 @@ c3po-webapi/war/
 */*.csv
 */logs/
 */log
+*.iml
+.idea/
+# vagrant related local settings, should never end up in the repo
+.vagrant_settings/maven_settings.xml
+.vagrant_settings/proxy_settings.conf

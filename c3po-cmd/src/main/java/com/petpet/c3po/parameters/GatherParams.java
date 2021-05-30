@@ -52,7 +52,7 @@ public class GatherParams implements Params {
    * The type of meta data that will be gathered. Default is 'FITS' Supports
    * '-t' and '--type'.
    */
-  @Parameter( names = { "-t", "--type" }, arity = 1, validateValueWith = InputTypeValidator.class, description = "Optional parameter to define the meta data type. Use one of 'FITS' or 'TIKA', to select the type of the input files. Default is FITS" )
+  @Parameter( names = { "-t", "--type" }, arity = 1, validateValueWith = InputTypeValidator.class, description = "Optional parameter to define the meta data type. Use one of 'FITS', 'TIKA' or 'BrowserShot' , to select the type of the input files. Default is FITS" )
   private String type = "FITS";
 
   public String getCollection() {

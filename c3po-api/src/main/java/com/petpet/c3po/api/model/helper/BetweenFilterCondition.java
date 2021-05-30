@@ -127,4 +127,18 @@ public class BetweenFilterCondition extends FilterCondition {
     return this.hValue;
   }
 
+  public static BetweenFilterCondition getBetweenFilterCondition(String string, String propertyName) {
+    //String[] split = string.split(" \\|");
+    String[] values = string.split("-");
+    int left = Integer.parseInt(values[0]);
+    int right = Integer.parseInt(values[1]);
+    BetweenFilterCondition result = new BetweenFilterCondition(propertyName,
+            BetweenFilterCondition.Operator.GTE,
+            left,
+            BetweenFilterCondition.Operator.LTE,
+            right);
+
+    return result;
+  }
+
 }

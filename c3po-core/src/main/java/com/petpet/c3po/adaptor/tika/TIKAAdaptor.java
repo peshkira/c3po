@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.petpet.c3po.api.adaptor.AbstractAdaptor;
-import com.petpet.c3po.api.dao.ReadOnlyCache;
 import com.petpet.c3po.api.model.Element;
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
@@ -89,7 +88,6 @@ public class TIKAAdaptor extends AbstractAdaptor {
     }
 
     Element element = new Element( name, name );
-    ReadOnlyCache cache = this.getCache();
     List<MetadataRecord> records = new ArrayList<MetadataRecord>();
 
     for ( String key : metadata.keySet() ) {
@@ -98,12 +96,12 @@ public class TIKAAdaptor extends AbstractAdaptor {
       key = TIKAHelper.getPropertyKeyByTikaName( key );
 
       if ( key != null ) {
-        Property prop = cache.getProperty( key );
+        Property prop = this.getProperty( key );
         if ( prop.getType().equals( PropertyType.INTEGER.name() ) || prop.getType().equals( PropertyType.FLOAT.name() ) ) {
           value = value.split( " " )[0];
         }
-        MetadataRecord record = new MetadataRecord( prop, value );
-        Source source = cache.getSource( "Tika", this.version );
+        MetadataRecord record = new MetadataRecord( prop.getKey(), value );
+        Source source = this.getSource( "Tika", this.version );
         record.setSources( Arrays.asList( source.getId() ) );
         records.add( record );
       }

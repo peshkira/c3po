@@ -15,6 +15,7 @@
  ******************************************************************************/
 package helpers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GraphData {
@@ -22,6 +23,7 @@ public class GraphData {
   private List<Graph> graphs;
 
   public GraphData() {
+    graphs=new ArrayList<Graph>();
     
   }
   

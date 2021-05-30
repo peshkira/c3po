@@ -1,51 +1,30 @@
-C3PO
-===================================================
-[![Build Status](https://travis-ci.org/peshkira/c3po.png?branch=master)](https://travis-ci.org/peshkira/c3po)
+# C3PO: Clever, Crafty Content Profiling of Objects
 
-Clever, Crafty, Content Profiling of Objects (c3po) is a software tool, which uses meta data extracted from
-files of a digital collection as input to generate a profile of the content set. It is designed in a way so
-that different meta data formats originating from different tools can be easily integrated. Currently it
-supports FITS meta data and Apache TIKA meta data.
+Analyze your content with C3PO.
 
-The tool follows a three part profiling process and provides facilities for data export and further
-analysis of the content, such as helpful visualisations of the meta data characteristics, partitioning
-of the collection into homogeneous sets based on any known characteristic. For each chosen partition of
-the content, a special machine-readable profile can be generated that contains aggregations and
-distributions for many of the properties. The profile optionally contains the set of chosen sample objects
-that are representative.
+### How to install and use
 
-Releases
-------------------------
-Please refer to [BinTray](http://dl.bintray.com/peshkira/c3po)
+Installation and usage instructions are available in our wiki [here](https://github.com/datascience/c3po/wiki).
 
-Setup
-------------------------
-Please refer to the [Usage Guide](https://github.com/peshkira/c3po/wiki/Usage-Guide).
+### Troubleshooting
 
-Development
-------------------------
-Please refer to the [Dev Guide](https://github.com/peshkira/c3po/wiki/Development-Guide).
+If you encounter any problems, please let us know by submitting an issue [here](https://github.com/datascience/c3po/issues?state=open).
 
-Screenshot
-------------------------
-![Collection Overview](https://dl.dropbox.com/u/8290338/blog/c3po_overview.png "Collection Overview")
+### Licence
 
-More Information
-------------------------
-You can find more information in the following links:
-- [Website](http://ifs.tuwien.ac.at/imp/c3po)
-- [Blog Post](http://www.openplanetsfoundation.org/blogs/2012-11-19-c3po-content-profiling-tool-preservation-analysis)
-- [Screencast](https://vimeo.com/53069664)
+C3PO is released under [Apache version 2.0 license](LICENSE.txt).
 
-Road Map
-------------------------
-* consolidate based on resource name
-* bundle optional! FITS execution in c3po (to make it easier for demo purposes)
-* create a consistent REST API
-* refactor the web app to use the new REST API and the new core
-* read data from memory instead of file system and allow adaptors to skip the 
-memory read 
-* make use of a controlled vocabulary for properties. If nothing better exists, then use FITS as default.
-* implement HBASE backend
-* ...
-* scale to half a billion objects
+### Acknowledgements
+
+Part of this work was supported by the Vienna Science and Technology Fund (WWTF) through project ICT12-046 (BenchmarkDP) and by the 7th Framework Program, IST, through the SCAPE project, Contract 270137.
+
+### Support
+
+This tool is supported by the [Open Planets Foundation](http://www.openplanetsfoundation.org). 
+
+### Roadmap
+
+* Conflict resolution
+* A controlled vocabulary for properties
+* Templating mechanism 
+

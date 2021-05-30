@@ -1,8 +1,7 @@
-@(collections: List[String], graphs: helpers.GraphData, stats: helpers.Statistics)
+@(collections: List[String], graphs: helpers.GraphData, stats: helpers.StatisticsToPrint, currentTemplate: String)
 @import helper._
 
 @scripts = {
-<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="@routes.Assets.at("javascripts/excanvas.js")"></script><![endif]-->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery.jqplot.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.barRenderer.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/jqplot.pieRenderer.min.js")"></script>
@@ -62,10 +61,12 @@ $(document).ready(function(){
             Average :  @stats.getAvg() <br />
             SD :  @stats.getSd() <br />
             Var :  @stats.getVar() <br />
+            Id. conflict rate: @stats.getConflicts()<br />
             
          </div>
           }
 </div>
+<p>Activated template: @currentTemplate</p>
 </div>    
 }
 

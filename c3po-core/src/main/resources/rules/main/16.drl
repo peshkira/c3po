@@ -1,0 +1,54 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+ * If Jhove reports HTML Transitional and at least 2 times other tools claim it to be "Hypertext Markup Language",
+ * ignore Droid (and the like).
+ */
+rule "Resolve Jhove HTML Transitional format string"
+        salience 250
+    when
+        $e : Element()
+        $mdBad : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            value == "HTML Transitional",
+            MetadataUtil.isFromTool(this, "Jhove")
+        ) from $e.metadata
+        Number( $badSourceCount : intValue) from accumulate( $id: String() from $mdBad.sources;
+            count( $id )
+        )
+
+        $mdGood : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            value == "Hypertext Markup Language"
+        ) from $e.metadata
+        Number( intValue >= 2*$badSourceCount) from accumulate( $id: String() from $mdGood.sources;
+            count( $id )
+        )
+
+    then
+        logger.log(loglevel,"Jhove HTML Transitional format string issue: ");
+        logger.logMetadataRecord(loglevel,$mdBad);
+        logger.logMetadataRecord(loglevel,$mdGood);
+
+        modify ($e) {
+            ignoreMetadata($mdBad)
+        }
+        logger.log(loglevel,"    -> ignore "+$mdBad);
+
+end
