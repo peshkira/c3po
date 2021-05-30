@@ -125,7 +125,10 @@ public class SelectiveFeatureDistributionSampling extends RepresentativeGenerato
         cumulativeNumberOfDistinctTuples = 0;
         int tmp_threshold = 0;
         Iterator<Map.Entry<List<String>, Integer>> tuplesIterator = tuples.entrySet().iterator();
-        while ((cumulativePropertyCoverageInCollection < targetPropertyCoverage && cumulativeNumberOfDistinctTuples < TargetNumberOfDistinctTuplesForSamples && tmp_threshold < fileThreshold) && tuplesIterator.hasNext()) {
+        while ((cumulativePropertyCoverageInCollection < targetPropertyCoverage &&
+                cumulativeNumberOfDistinctTuples < TargetNumberOfDistinctTuplesForSamples &&
+                tmp_threshold < fileThreshold) &&
+                tuplesIterator.hasNext()) {
             Map.Entry<List<String>, Integer> tuple = tuplesIterator.next();
             int numberOfFilesWithTuple = tuple.getValue();
             double tmp_populationCoverageOfTupleInColleciton = numberOfFilesWithTuple / (double) numberOfFilesInCollection;

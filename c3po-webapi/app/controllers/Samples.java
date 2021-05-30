@@ -63,9 +63,9 @@ public class Samples extends Controller {
         if (alg.equals("sfd")) {
             List<String> list = Arrays.asList(props.split(","));
             HashMap<String, Object> options = new HashMap<String, Object>();
-            options.put("pcoverage", list.get(0));
-            options.put("tcoverage", list.get(1));
-            options.put("threshold", list.get(2));
+            options.put("targetPropertyCoverage", list.get(0));
+            options.put("targetTupleCoverage", list.get(1));
+            options.put("fileThreshold", list.get(2));
             options.put("proportion", list.get(3));
 
 
