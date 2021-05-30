@@ -15,10 +15,6 @@ object BuildSettings {
   )
 }
 
-//assemblyJarName in assembly := "c3po-cmd.jar"
-//mainClass in assembly := Some("play.core.server.ProdServerStart")
-//fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value)
-
 
 object C3PO extends Build {
 
@@ -44,7 +40,7 @@ object C3PO extends Build {
     file("c3po-webapi")).enablePlugins(PlayJava).settings( //play.sbt.Play
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-mailer" % "3.0.1",
-
+      "org.webjars" % "bootstrap" % "3.3.4",
       "org.assertj" % "assertj-core" % "3.12.2" % Test,
       "org.awaitility" % "awaitility" % "3.1.6" % Test,
       "com.novocode" % "junit-interface" % "0.10" % "test"
