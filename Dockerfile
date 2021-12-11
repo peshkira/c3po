@@ -51,6 +51,7 @@ env \n\
 echo 'Now, C3PO will import metadata from FITS files..' \n\
 mkdir -p /data/db \n\
 nohup mongod --dbpath /data/db & \n\
+sleep 10 & \n\
 java -jar /c3po/c3po-cmd.jar gather -c indocker -i /data/FITS -r \n\
 ls \n\
 pwd \n\
