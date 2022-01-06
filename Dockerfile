@@ -50,7 +50,8 @@ EXPOSE 9000
 
 RUN echo "#!/bin/bash \n\
 set -e \n\
-env \n\
+echo The number of files found in /data/FITS: \n\
+find /data/FITS -type f | wc -l \n\
 echo 'Now, C3PO will import metadata from FITS files..' \n\
 mkdir -p /data/db \n\
 nohup mongod --dbpath /data/db & \n\
