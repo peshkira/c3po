@@ -116,22 +116,50 @@ public final class Constants {
    * The key for the infer date processing rule.
    */
   public static final String CNF_INFER_DATE_RULE = "c3po.rule.infer_date_from_file_name";
+  
+  /**
+   * The key for the Browsershot Dissimilarity Count Rule 
+   */
+  public static final String CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE = "c3po.rule.browsershot_dissimilarity_count";
+
+  /**
+   * The key for the drools conflict resolution processing rule.
+   */
+  public static final String CNF_DROOLS_CONFLICT_RESOLUTION_RULE = "c3po.rule.drools_conflict_resolution_processing";
+
+  public static final String CNF_DROOLS_PATH="c3po.rule.drools_path";
+
+  /**
+   * The key for the content type indentification rule.
+   */
+  public static final String CNF_CONTENT_TYPE_IDENTIFICATION_RULE = "c3po.rule.content_type_identification";
+
+  /**
+   * The key for the file extension indentification rule.
+   */
+  public static final String CNF_FILE_EXTENSION_IDENTIFICATION_RULE = "c3po.rule.file_extension_identification";
+
+  /**
+   * The key for the created year indentification rule.
+   */
+  public static final String CNF_CREATED_YEAR_IDENTIFICATION_RULE = "c3po.rule.created_year_identification";
 
   /**
    * An array of the configurable processing rule keys.
    */
   public static final String[] RULE_KEYS = { CNF_ELEMENT_IDENTIFIER_RULE, CNF_VERSION_RESOLUTION_RULE,
-      CNF_EMPTY_VALUE_RULE, CNF_INFER_DATE_RULE, CNF_HTML_INFO_RULE };
+      CNF_EMPTY_VALUE_RULE, CNF_INFER_DATE_RULE, CNF_HTML_INFO_RULE,  CNF_BROWSERSHOT_DISSIMILARITY_COUNT_RULE , CNF_DROOLS_CONFLICT_RESOLUTION_RULE, CNF_CONTENT_TYPE_IDENTIFICATION_RULE, CNF_FILE_EXTENSION_IDENTIFICATION_RULE, CNF_CREATED_YEAR_IDENTIFICATION_RULE};
 
   /**
    * The version of the core module.
    */
-  public static final String CORE_VERSION = "0.4.0-SNAPSHOT";
+  public static final String CORE_VERSION = "0.5.0-SNAPSHOT";
 
   /**
    * The version of the api module.
    */
-  public static final String API_VERSION = "0.4.0-SNAPSHOT";
+  public static final String API_VERSION = "0.5.0-SNAPSHOT";
+
 
   /**
    * The same as {@link Constants#AGGREGATE_MAP} but it aggregates the desired
@@ -148,6 +176,7 @@ public final class Constants {
 
   @Deprecated
   public static final String PROPERTIES_IN_COLLECTION_REDUCE = "function reduce(key, values) {return null;}";
+
 
   private Constants() {
 

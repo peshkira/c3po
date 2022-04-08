@@ -26,5 +26,7 @@ public class WebAppConstants {
   public static final String CLIENT_FILTER_PANE_SHOW = "client.filter.show";
   
   public static final String CLIENT_COLLECTION_PANE_SHOW = "client.collections.show";
+  
+  public static final String CLIENT_TEMPLATES_PANE_SHOW = "client.templates.show";
 
 }

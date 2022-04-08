@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.petpet.c3po.dao.mongo.MongoPersistenceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +73,8 @@ public final class Configurator {
    * @return the configurator.
    */
   public static Configurator getDefaultConfigurator() {
+    if (ConfiguratorHolder.UNIQUE_INSTANCE.getPersistence()==null)
+      ConfiguratorHolder.UNIQUE_INSTANCE.configure();
     return ConfiguratorHolder.UNIQUE_INSTANCE;
   }
 
@@ -191,7 +194,7 @@ public final class Configurator {
       LOG.error( "Default config file not found! {}", e.getMessage() );
     }
 
-    LOG.info( "Lookig for user defined config file: {}", USER_PROPERTIES );
+    LOG.info( "Looking for user defined config file: {}", USER_PROPERTIES );
 
     final File f = new File( USER_PROPERTIES );
 
@@ -286,7 +289,7 @@ public final class Configurator {
    * Inits the default persistence layer and the cache.
    */
   private void initDefaultPersistence() {
-    this.persistence = new DefaultPersistenceLayer();
+    this.persistence = new MongoPersistenceLayer();
 
     this.initCache();
   }
@@ -331,6 +334,18 @@ public final class Configurator {
     DataHelper.init();
     // initialize any other helpers...
   }
+
+
+    public void setPersistence(PersistenceLayer layer)
+    {
+        if (layer != null) {
+            this.persistence=layer;
+            initializeHelpers();
+        }
+
+    }
+
+
 
   /**
    * Static instance holder.

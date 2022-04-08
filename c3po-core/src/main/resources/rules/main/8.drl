@@ -1,0 +1,31 @@
+package c3po.custom
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+ * Ignore fractional exposure_time by NLNZ Metadata Extractor
+ */
+rule "ignore fractional exposure_time by NLNZ Metadata Extractor'"
+        salience 160
+    when 
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "exposure_time",
+            value matches "[0-9]*\\.[0-9E\\-]*",
+            MetadataUtil.isFromTool(this, "NLNZ Metadata Extractor")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"NLNZ fractional exposure_time issue: ");
+        logger.logMetadataRecord(loglevel,$md);
+        modify ($e) {
+            ignoreMetadata($md)
+        }
+        logger.log(loglevel,"    -> ignore "+$md);
+end

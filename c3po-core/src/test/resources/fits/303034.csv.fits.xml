@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.0" timestamp="1/6/12 11:35 AM">
+  <identification status="CONFLICT">
+    <identity format="Plain text" mimetype="text/plain" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Jhove" toolversion="1.5" />
+      <tool toolname="file utility" toolversion="5.03" />
+    </identity>
+    <identity format="Comma Separated Values" mimetype="text/csv" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="Droid" toolversion="3.0" />
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">x-fmt/18</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.5">317482</size>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303034.csv</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303034.csv</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">54729431fda4b81c442e42c526b6996b</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1325838832000</fslastmodified>
+  </fileinfo>
+  <filestatus>
+    <well-formed toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</well-formed>
+    <valid toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">true</valid>
+  </filestatus>
+  <metadata>
+    <text>
+      <linebreak toolname="Jhove" toolversion="1.5" status="SINGLE_RESULT">LF</linebreak>
+      <charset toolname="Jhove" toolversion="1.5">US-ASCII</charset>
+    </text>
+  </metadata>
+</fits>
+

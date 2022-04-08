@@ -1,0 +1,360 @@
+@(collections: List[String], element: com.petpet.c3po.api.model.Element)
+
+@scripts = {
+    <script type="text/javascript" href="/assets/javascripts/header.js"></script>
+
+    <link rel="stylesheet" href="/assets/stylesheets/table.css" type="text/css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css" type="text/css">
+    <link rel="stylesheet" href=" https://cdn.datatables.net/select/1.1.2/css/select.dataTables.min.css" type="text/css">
+
+    <script src="http://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js" type="text/javascript"></script>\
+    <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script src="https://cdn.datatables.net/select/1.1.2/js/dataTables.select.min.js" type="text/javascript"></script>
+
+
+    <link rel="stylesheet" href="/assets/stylesheets/examples.css" type="text/css"/>
+    <link rel="stylesheet" href="/assets/stylesheets/slick.grid.css" type="text/css"/>
+    <link rel="stylesheet" href="/assets/stylesheets/smoothness/jquery-ui-1.11.3.custom.css" type="text/css"/>
+    <style>
+    .slick-cell.copied {
+        background: blue;
+        background: rgba(0, 0, 255, 0.2);
+        -webkit-transition: 0.5s background;
+    }
+    </style>
+
+    <script src="/assets/javascripts/firebugx.js"></script>
+
+    <script src="/assets/javascripts/jquery-1.11.2.min.js"></script>
+    <script src="/assets/javascripts/jquery-ui-1.11.3.min.js"></script>
+    <script src="/assets/javascripts/jquery.event.drag-2.2.js"></script>
+
+    <script src="/assets/javascripts/slick.core.js"></script>
+    <script src="/assets/javascripts/plugins/slick.autotooltips.js"></script>
+    <script src="/assets/javascripts/plugins/slick.cellrangedecorator.js"></script>
+    <script src="/assets/javascripts/plugins/slick.cellrangeselector.js"></script>
+    <script src="/assets/javascripts/plugins/slick.cellcopymanager.js"></script>
+    <script src="/assets/javascripts/plugins/slick.cellselectionmodel.js"></script>
+    <script src="/assets/javascripts/slick.editors.js"></script>
+    <script src="/assets/javascripts/slick.grid.js"></script>
+
+
+    <script>
+
+            function createRule(property, value, source) {
+                $("#overlay").addClass('activeoverlay');
+                var popup = $('#filterpopup');
+                popup.css({'display': 'block', 'z-index': 11});
+                var popupconfig = popup.children('.popupconfig');
+
+                popup.children('.popupreason').html('Do you want to create a new conflict resolution rule?');
+                var ruleName = $('<input type="text" id="ruleName" value="Type in the rule name">').appendTo(popupconfig);
+                var table = $('<table id="ruleTable" class="display" width="80%"></table>').appendTo(popupconfig);
+                var dropDown = $('<select id="dropDown"></select>').appendTo(popupconfig);
+                var addButton = $('<a name="addCondition" class="grey_button" href="javascript:void(0);">Add condition</a>').appendTo(popupconfig);
+                var deleteButton = $('<a name="deleteCondition" class="grey_button" href="javascript:void(0);">Delete selected condition</a>').appendTo(popupconfig);
+                var submitButton = $('<a class="green_button" href="javascript:void(0);">Create rule</a>').appendTo(popupconfig);
+
+                var elem = "";
+                var objectID = window.location.href.split('/').pop();
+                $.ajax({
+                    type: 'GET',
+                    url: '/c3po/object/' + objectID,
+                    async: false,
+                    success: function (oData) {
+                        elem = oData;
+                    }
+                });
+
+                var conditions = [];
+                for (var i in elem.metadata) {
+                    var p = elem.metadata[i].property.key;
+                    var v = elem.metadata[i].value;
+                    if (v != null)
+                        conditions.push({"property": p, "value": v});
+                    else if (elem.metadata[i].status == "CONFLICT") {
+                        v = "CONFLICT";
+                        conditions.push({"property": p, "value": v});
+                    }
+                }
+
+                dropDown.append(new Option("Select a new condition to add"));
+                for (var i in conditions) {
+                    dropDown.append(new Option(conditions[i].property + " : " + conditions[i].value));
+                }
+
+                var filter = [];
+                $.ajax({
+                    type: 'GET',
+                    url: '/c3po/filters',
+                    async: false,
+                    success: function (oData) {
+                        filter = oData;
+                    }
+                });
+
+
+                var dataRule = [];
+                for (var i in filter) {
+                    var row = [];
+                    row.push(filter[i].property);
+                    row.push(filter[i].selected);
+                    row.push("condition");
+                    dataRule.push(row);
+                }
+                var actionRow = [property, value, "action"];
+                dataRule.push(actionRow);
+
+
+                var table = table.DataTable({
+                    paging: false,
+                    searching: false,
+                    info: false,
+                    data: dataRule,
+                    columns: [
+                        {title: "Property"},
+                        {title: "Value"},
+                        {title: "Component"}
+                    ]
+                });
+
+
+                table.on('click', 'tr', function () {
+                    if ($(this).hasClass('selected')) {
+                        $(this).removeClass('selected');
+                    }
+                    else {
+                        table.$('tr.selected').removeClass('selected');
+                        $(this).addClass('selected');
+                    }
+                });
+
+                deleteButton.on('click', function () {
+                    var rows = table.rows('.selected').data();
+                    if (rows) {
+                        var row = rows[0];
+                        if (row[2] && row[2] == "condition")
+                            table.row('.selected').remove().draw(false);
+                    }
+                });
+
+                addButton.on('click', function () {
+                    var i = document.getElementById("dropDown").selectedIndex;
+                    if (i != null) {
+                        var p = conditions[i - 1].property;
+                        var v = conditions[i - 1].value;
+                        if (p != null && v != null)
+                            table.row.add([p, v, "condition"]).draw(true);
+                    }
+                });
+
+                submitButton.on('click', function () {
+
+                    var payLoad = [];
+                    table.rows().every(function () {
+                        var d = this.data();
+                        payLoad.push(d);
+                    });
+                    payLoad.push([ruleName.val(), ruleName.val(), "name"]);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/c3po/conflicts',
+                        dataType: 'json',
+                        data: JSON.stringify(payLoad),
+                        contentType: "application/json; charset=utf-8",
+                        async: false,
+                        success: function (oData) {
+                            hideValueOptionDialog(false);
+                        },
+                        error: function (oData) {
+                            $('.popupreason').fadeOut('fast', function () {
+                                $(this).css({'color': 'red'}).html('An error occurred while sending the email! Error message is: <br />' + oData.responseText).fadeIn('slow');
+                            })
+                        }
+                    });
+
+
+                });
+
+            }
+
+
+            $('document').ready(function () {
+
+
+                var grid;
+                var data = [];
+                var options = {
+                    editable: true,
+                    enableAddRow: true,
+                    enableCellNavigation: true,
+                    asyncEditorLoading: false,
+                    autoEdit: false
+                };
+
+                var columns = [
+                    {
+                        id: "selector",
+                        name: "",
+                        field: "num",
+                        width: 30
+                    }
+                ];
+
+                for (var i = 0; i < 100; i++) {
+                    columns.push({
+                        id: i,
+                        name: String.fromCharCode("A".charCodeAt(0) + (i / 26) | 0) +
+                        String.fromCharCode("A".charCodeAt(0) + (i % 26)),
+                        field: i,
+                        width: 60,
+                        editor: FormulaEditor
+                    });
+                }
+
+                /***
+                 * A proof-of-concept cell editor with Excel-like range selection and insertion.
+                 */
+                function FormulaEditor(args) {
+                    var _self = this;
+                    var _editor = new Slick.Editors.Text(args);
+                    var _selector;
+
+                    $.extend(this, _editor);
+
+                    function init() {
+                        // register a plugin to select a range and append it to the textbox
+                        // since events are fired in reverse order (most recently added are executed first),
+                        // this will override other plugins like moverows or selection model and will
+                        // not require the grid to not be in the edit mode
+                        _selector = new Slick.CellRangeSelector();
+                        _selector.onCellRangeSelected.subscribe(_self.handleCellRangeSelected);
+                        args.grid.registerPlugin(_selector);
+                    }
+
+                    this.destroy = function () {
+                        _selector.onCellRangeSelected.unsubscribe(_self.handleCellRangeSelected);
+                        grid.unregisterPlugin(_selector);
+                        _editor.destroy();
+                    };
+
+                    this.handleCellRangeSelected = function (e, args) {
+                        _editor.setValue(
+                                _editor.getValue() +
+                                grid.getColumns()[args.range.fromCell].name +
+                                args.range.fromRow +
+                                ":" +
+                                grid.getColumns()[args.range.toCell].name +
+                                args.range.toRow
+                        );
+                    };
+
+
+                    init();
+                }
+
+
+                $(function () {
+                    for (var i = 0; i < 100; i++) {
+                        var d = (data[i] = {});
+                        d["num"] = i;
+                    }
+
+                    grid = new Slick.Grid("#myGrid", data, columns, options);
+
+                    grid.setSelectionModel(new Slick.CellSelectionModel());
+                    grid.registerPlugin(new Slick.AutoTooltips());
+
+                    // set keyboard focus on the grid
+                    grid.getCanvasNode().focus();
+
+                    var copyManager = new Slick.CellCopyManager();
+                    grid.registerPlugin(copyManager);
+
+                    copyManager.onPasteCells.subscribe(function (e, args) {
+                        if (args.from.length !== 1 || args.to.length !== 1) {
+                            throw "This implementation only supports single range copy and paste operations";
+                        }
+
+                        var from = args.from[0];
+                        var to = args.to[0];
+                        var val;
+                        for (var i = 0; i <= from.toRow - from.fromRow; i++) {
+                            for (var j = 0; j <= from.toCell - from.fromCell; j++) {
+                                if (i <= to.toRow - to.fromRow && j <= to.toCell - to.fromCell) {
+                                    val = data[from.fromRow + i][columns[from.fromCell + j].field];
+                                    data[to.fromRow + i][columns[to.fromCell + j].field] = val;
+                                    grid.invalidateRow(to.fromRow + i);
+                                }
+                            }
+                        }
+                        grid.render();
+                    });
+
+                    grid.onAddNewRow.subscribe(function (e, args) {
+                        var item = args.item;
+                        var column = args.column;
+                        grid.invalidateRow(data.length);
+                        data.push(item);
+                        grid.updateRowCount();
+                        grid.render();
+                    });
+                })
+
+
+
+
+            })
+
+    </script>
+
+}
+
+@main("c3po", collections, scripts) {
+    @if(element != null) {
+        <div id="objects" class="content">
+            <h2>@element.getName()</h2>
+            <div class="element_general">
+                <p>
+                    UID: @element.getUid()<br />
+                    Collection: @element.getCollection()
+                </p>
+            </div>
+
+
+            <div style="width:600px;">
+                <div id="myGrid" style="width:100%;height:500px;"></div>
+            </div>
+
+
+
+
+            <div class ="element_data">
+                <h3> Meta Data </h3>
+                <ul>
+                @for(mr <- element.getMetadata()) {
+                    @if(mr.getValue() == null) {
+                        <li class="conflict">
+                            @mr.getProperty().getKey() :
+
+                            @for((value, i) <- mr.getValues().zipWithIndex) {
+                                <a onclick="createRule('@mr.getProperty().getKey()', '@value', '@mr.getSources().get(i)');" href="javascript:void(0);" >@value
+                                    [@mr.getSources().get(i)]</a>,
+                            }
+                        </li>
+
+                    } else {
+                        <li>@mr.getProperty().getKey() : @mr.getValue() [@mr.getSources()]</li>
+                    }
+                }
+                </ul>
+            </div>
+        </div>
+
+
+    }
+}
+

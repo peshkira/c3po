@@ -36,20 +36,20 @@ public abstract class RepresentativeGenerator {
    * going to be used. Note, that the filter can only specify the collection,
    * meaning that all data should be considered.
    */
-  private Filter filter;
+  protected Filter filter;
 
   /**
    * A simple map to hold the configuration of the representative generator if
    * any is needed at all.
    */
-  private Map<String, Object> options;
+  protected Map<String, Object> options;
 
   /**
    * Retrieves a list of identifiers for the representative sample objects. It
    * is the responsibility of the method to decide how many objects should be
    * returned. Usually a small number of up to 10 is good for planning
    * experiments.
-   * 
+   *
    * @return the list of sample object identifiers.
    */
   public abstract List<String> execute();

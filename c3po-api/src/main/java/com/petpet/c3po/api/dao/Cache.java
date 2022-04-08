@@ -15,6 +15,9 @@
  ******************************************************************************/
 package com.petpet.c3po.api.dao;
 
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.helper.PropertyType;
+
 /**
  * A simple cache that allows easy retrieval of common objects as properties and
  * sources of meta data, but also putting any kind of object or clearing it..
@@ -23,6 +26,20 @@ package com.petpet.c3po.api.dao;
  * 
  */
 public interface Cache extends ReadOnlyCache {
+
+  /**
+   * Retrieves the property designated by the given key and type. Depending on
+   * the implementation it might return null or a new property if there was no
+   * property with the given key. If a property with the given key was already
+   * present, it will be returned no matter if the type matches.
+   * 
+   * @param key
+   *          the key to look for.
+   * @param type
+   *          the type of the property.
+   * @return the cached property.
+   */
+  Property getProperty( String key, PropertyType type );
 
   /**
    * Puts the given value to the given key. This object does not have to be

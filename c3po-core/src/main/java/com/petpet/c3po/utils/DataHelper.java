@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import com.petpet.c3po.api.dao.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,12 +111,12 @@ public final class DataHelper {
    *          the record to merge.
    */
   public static void mergeMetadataRecord( Element e, MetadataRecord mr ) {
-
+    Cache cache = Configurator.getDefaultConfigurator().getPersistence().getCache();
     if ( e == null || mr == null ) {
       return;
     }
 
-    List<MetadataRecord> oldMetadata = e.removeMetadata( mr.getProperty().getId() );
+    List<MetadataRecord> oldMetadata = e.removeMetadata( mr.getProperty() );
     if ( oldMetadata.size() == 0 ) {
 
       e.getMetadata().add( mr );
@@ -124,32 +125,33 @@ public final class DataHelper {
 
       MetadataRecord oldMR = oldMetadata.get( 0 );
       if ( oldMR.getStatus().equals( Status.CONFLICT.name() ) ) {
-
-        String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
-        if ( !oldMR.getValues().contains( newVal ) ) {
-          mr.setStatus( Status.CONFLICT.name() );
-          oldMetadata.add( mr );
+        for (String val : mr.getValues()) {
+          String newVal = getTypedValue(cache.getProperty(mr.getProperty()).getType(), val).toString();
+          if (!oldMR.getValues().contains(newVal)) {
+            mr.setStatus(Status.CONFLICT.name());
+            oldMetadata.add(mr);
+            break;
+          }
         }
-
       } else {
-        String oldVal = getTypedValue( oldMR.getProperty().getType(), oldMR.getValue() ).toString();
-        String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
+  //      String oldVal = getTypedValue( cache.getProperty(oldMR.getProperty()).getType(), oldMR.getValue() ).toString();  TODO:fix this
+   //     String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
 
-        if ( !oldVal.equals( newVal ) ) {
+   //     if ( !oldVal.equals( newVal ) ) {
           oldMR.setStatus( Status.CONFLICT.name() );
           mr.setStatus( Status.CONFLICT.name() );
           oldMetadata.add( mr );
-        }
+  //      }
       }
     } else {
 
       boolean exists = false;
       for ( MetadataRecord old : oldMetadata ) {
-        String oldVal = getTypedValue( old.getProperty().getType(), old.getValue() ).toString();
-        String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
-        if ( oldVal.equals( newVal ) ) {
+ //       String oldVal = getTypedValue( old.getProperty().getType(), old.getValue() ).toString();  TODO:fix this
+ //       String newVal = getTypedValue( mr.getProperty().getType(), mr.getValue() ).toString();
+ //       if ( oldVal.equals( newVal ) ) {
           exists = true;
-        }
+ //       }
       }
 
       if ( !exists ) {

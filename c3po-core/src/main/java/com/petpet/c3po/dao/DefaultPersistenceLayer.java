@@ -122,23 +122,7 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
     return this.persistence.getCache();
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public NumericStatistics getNumericStatistics( Property p, Filter filter ) throws UnsupportedOperationException {
-    return this.persistence.getNumericStatistics( p, filter );
-  }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public <T extends Model> Map<String, Long> getValueHistogramFor( Property p, Filter filter )
-      throws UnsupportedOperationException {
-
-    return this.persistence.getValueHistogramFor( p, filter );
-  }
 
   /**
    * {@inheritDoc}
@@ -186,5 +170,26 @@ public class DefaultPersistenceLayer implements PersistenceLayer {
   public <T extends Model> void update( T object, Filter f ) {
     this.persistence.update( object, f );
   }
+
+  @Override
+  public Map<String, Object> getResult() {
+    return this.persistence.getResult();
+  }
+
+  @Override
+  public <T extends Model> Map<String, Map<String, Long>> getHistograms(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds) throws UnsupportedOperationException {
+    return null;
+  }
+
+  @Override
+  public <T extends Model> Map<String, Map<String, Long>> getValues(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds) {
+    return null;
+  }
+
+  @Override
+  public <T extends Model> Map<String, Map<String, Long>> getStats(List<String> properties, Filter filter, Map<String, List<Integer>> binThresholds) {
+    return null;
+  }
+
 
 }

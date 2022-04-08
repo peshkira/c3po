@@ -1,68 +1,127 @@
-@(collections: List[String], elements: List[com.petpet.c3po.datamodel.Element])
-@import helper._
+@(collections: List[String], elements: List[com.petpet.c3po.api.model.Element])
 
 @scripts = {
-<script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+
+
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/header.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-ui-1.8.21.min.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
+
+    <script type="text/javascript">
+
+            $(function () {
+
+                function url_query(query, dflt) {
+                    query = query.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                    var expr = "[\\?&]" + query + "=([^&#]*)";
+                    var regex = new RegExp(expr);
+                    var results = regex.exec(window.location.href);
+                    if (results !== null) {
+                        return results[1];
+                        return decodeURIComponent(results[1].replace(/\+/g, " "));
+                    } else {
+                        return dflt;
+                    }
+                }
+
+                var c_offset = url_query("offset", 0);
+                var c_batch = url_query("batch", 25);
+
+                $('#prev').click(function () {
+                    var diff = parseInt(c_offset) - c_batch;
+                    var offset = (diff > 0) ? diff : 0;
+                    window.location.search = 'offset=' + offset;
+                });
+
+                $('#next').click(function () {
+                    window.location.search = 'offset=' + (parseInt(c_offset) + parseInt(c_batch));
+                });
+
+
+
+                var inps = document.querySelectorAll('input');
+                [].forEach.call(inps, function (inp) {
+                    inp.onchange = function (e) {
+                        console.log(this.files);
+                        for (var i = 0; i < this.files.length; i++) {
+                            console.log(this.files[i]);
+                            upload(this.files[i]);
+                        }
+
+
+                    };
+                });
+
+
+                function upload(file){
+
+                    var formData = new FormData();
+                    formData.append('file', file);
+                    $.ajax({
+                        url: '/c3po/objects/uploadFile',
+                        data: formData,
+                        type: 'POST',
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            //call your jQuery action here
+                            //alert('Upload completed: ' + data);
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            alert(textStatus + ': ' + errorThrown);
+                        }
+                    });
+
+
+                };
+
+
+
+            });
+
+
+
+
+
+    </script>
+
 }
 
-@main("c3po - objects", collections, scripts){
-<script type="text/javascript">
 
-       $(function(){
+@main("c3po - objects", collections, scripts) {
 
-           function url_query( query, dflt ) {
-               query = query.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-               var expr = "[\\?&]"+query+"=([^&#]*)";
-               var regex = new RegExp( expr );
-               var results = regex.exec( window.location.href );
-               if( results !== null ) {
-                   return results[1];
-                   return decodeURIComponent(results[1].replace(/\+/g, " "));
-               } else {
-                   return dflt;
-               }
-           }
-            
-            var c_offset = url_query("offset", 0);
-            var c_batch = url_query("batch", 25);
-           
-            $('#prev').click(function() {
-                var diff = parseInt(c_offset) - c_batch;
-                var offset = (diff > 0) ? diff : 0;
-                window.location.search = 'offset='+offset;
-            });   
+    @if(elements != null) {
+        <div id="objects" class="content">
+            <h2>Objects</h2>
 
-            $('#next').click(function(){
-                window.location.search = 'offset='+ (parseInt(c_offset) + parseInt(c_batch));
-              });   
-       });
-</script>  
-  
-  @if(elements != null) {
-     <div id="objects" class="content">     
-     <h2>Objects</h2>
-     
-       @if(elements.isEmpty()) {
-          The query returned an empty set. May be there are no more objects in the database or it is empty.
-       } else {
-          
-          @for(e <- elements) {
-              <a href="/c3po/objects/@e.getId()">@e.getName()</a><br/>
-          }
-       }
-       
-       <div class="objectsnavigator">
-         <div id="prev">
-              <a id="prev" class="green_button">Prev</a>
-          </div>
-          <div id="next">
-              <a id="next" class="green_button">Next</a>
-          </div>
+            @if(elements.isEmpty) {
+                The query returned an empty set. May be there are no more objects in the database or it is empty.
+            } else {
+
+                @for(e <- elements) {
+                    <a href="/c3po/objects/@e.getId()">@e.getName()</a> <br/>
+                }
+            }
+
+            <div class="objectsnavigator">
+                <div id="prev">
+                    <a id="prev" class="green_button">Prev</a>
+                </div>
+                <div id="next">
+                    <a id="next" class="green_button">Next</a>
+                </div>
+            </div>
         </div>
-     </div>
-   } else {
-    <div id="objects" class="content">     
-     <h2>Please select a collection</h2>
-     </div>
-   } 
+    } else {
+        <div id="objects" class="content">
+            <h2>Please select a collection</h2>
+        </div>
+    }
+
+
+    <p>Directory: <input type="file" webkitdirectory mozdirectory /></p>
+
+
+
+
 }

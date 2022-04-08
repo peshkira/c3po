@@ -19,25 +19,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.petpet.c3po.command.*;
+import com.petpet.c3po.parameters.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.petpet.c3po.command.Command;
-import com.petpet.c3po.command.ExportCommand;
-import com.petpet.c3po.command.GatherCommand;
-import com.petpet.c3po.command.HelpCommand;
-import com.petpet.c3po.command.ProfileCommand;
-import com.petpet.c3po.command.RemoveCommand;
-import com.petpet.c3po.command.SamplesCommand;
-import com.petpet.c3po.command.VersionCommand;
-import com.petpet.c3po.parameters.ExportParams;
-import com.petpet.c3po.parameters.GatherParams;
-import com.petpet.c3po.parameters.Params;
-import com.petpet.c3po.parameters.ProfileParams;
-import com.petpet.c3po.parameters.RemoveParams;
-import com.petpet.c3po.parameters.SamplesParams;
 
 /**
  * This is the entry point for the command line interface.
@@ -55,7 +43,7 @@ public class C3PO {
   /**
    * The version of the command line interface.
    */
-  public static final String VERSION = "0.4.0-SNAPSHOT";
+  public static final String VERSION = "0.5.0-SNAPSHOT";
 
   /**
    * A map of the supported commands for this CLI.
@@ -72,7 +60,7 @@ public class C3PO {
    * the application supports. Most of them have then a combination of different
    * parameters.
    */
-  private static final String[] MODES = { "help", "version", "gather", "profile", "samples", "export", "remove" };
+  private static final String[] MODES = { "help", "version", "gather", "profile", "samples", "export", "remove", "deconflict" };
 
   /**
    * Creates the CLI and initializes the maps with all commands and parameters.
@@ -86,6 +74,7 @@ public class C3PO {
     params.put( MODES[4], new SamplesParams() );
     params.put( MODES[5], new ExportParams() );
     params.put( MODES[6], new RemoveParams() );
+    params.put(MODES[7], new DeconflictParams());
 
     commands = new HashMap<String, Command>();
     commands.put( MODES[0], new HelpCommand( params ) );
@@ -95,6 +84,7 @@ public class C3PO {
     commands.put( MODES[4], new SamplesCommand() );
     commands.put( MODES[5], new ExportCommand() );
     commands.put( MODES[6], new RemoveCommand() );
+    commands.put( MODES[7], new ResolveConflictsCommand() );
   }
 
   /**

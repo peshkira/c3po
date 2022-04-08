@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.6.0" timestamp="1/6/12 9:43 AM">
+  <identification>
+    <identity format="Microsoft Word" mimetype="application/msword" toolname="FITS" toolversion="0.6.0">
+      <tool toolname="file utility" toolversion="5.03" />
+      <tool toolname="Exiftool" toolversion="7.74" />
+      <tool toolname="Droid" toolversion="3.0" />
+      <tool toolname="NLNZ Metadata Extractor" toolversion="3.4GA" />
+      <tool toolname="ffident" toolversion="0.2" />
+      <version toolname="Droid" toolversion="3.0">97-2003</version>
+      <externalIdentifier toolname="Droid" toolversion="3.0" type="puid">fmt/40</externalIdentifier>
+    </identity>
+  </identification>
+  <fileinfo>
+    <lastmodified toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">2012:01:06 09:33:12+01:00</lastmodified>
+    <created toolname="Exiftool" toolversion="7.74" status="CONFLICT">2003:07:08 17:25:00</created>
+    <created toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="CONFLICT">2003-07-08 19:25:00</created>
+    <creatingApplicationName toolname="Exiftool" toolversion="7.74">Microsoft Word 10.0</creatingApplicationName>
+    <creatingApplicationVersion toolname="Exiftool" toolversion="7.74" status="CONFLICT">10 (107b)</creatingApplicationVersion>
+    <creatingApplicationVersion toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="CONFLICT">0x4055</creatingApplicationVersion>
+    <filepath toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303048.doc</filepath>
+    <filename toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">/home/petrov/taverna/tmp/303/303048.doc</filename>
+    <size toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">292864</size>
+    <md5checksum toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">88ded0496b74b8485fe7f4a8d67ee558</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.1" status="SINGLE_RESULT">1325838792000</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata>
+    <document>
+      <pageCount toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">1</pageCount>
+      <title toolname="Exiftool" toolversion="7.74">ABRIDGED</title>
+      <author toolname="Exiftool" toolversion="7.74">David P. Smith</author>
+      <isRightsManaged toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">no</isRightsManaged>
+      <isProtected toolname="Exiftool" toolversion="7.74" status="SINGLE_RESULT">no</isProtected>
+      <wordCount toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">18647</wordCount>
+      <characterCount toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">106292</characterCount>
+      <language toolname="NLNZ Metadata Extractor" toolversion="3.4GA" status="SINGLE_RESULT">U.S. English</language>
+    </document>
+  </metadata>
+</fits>
+

@@ -15,108 +15,191 @@
  ******************************************************************************/
 package controllers;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.petpet.c3po.api.model.Property;
+import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.MetadataRecord;
 import org.bson.types.ObjectId;
 
 import play.Logger;
+import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import views.html.element;
 import views.html.elements;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
 import com.petpet.c3po.api.dao.PersistenceLayer;
-import com.petpet.c3po.common.Constants;
-import com.petpet.c3po.datamodel.Element;
-import com.petpet.c3po.datamodel.Filter;
 import com.petpet.c3po.utils.Configurator;
-import com.petpet.c3po.utils.DataHelper;
-import common.WebAppConstants;
 
+
+import com.petpet.c3po.api.model.Element;
+import com.petpet.c3po.api.model.helper.Filter;
+import com.petpet.c3po.api.model.helper.FilterCondition;
 public class Elements extends Controller {
 
-  public static Result index() {
-    return list();
+	private static int getQueryParameter(String parameter, int dflt) {
+		String[] strings = request().queryString().get(parameter);
+		if (strings == null || strings.length == 0) {
+			return dflt;
+		}
+		return Integer.parseInt(strings[0]);
+	}
 
-  }
+	public static Result index() {
+		Logger.debug("Received an index call in elements");
+		List<String> names = Properties.getCollectionNames();
 
-  public static Result list() {
-    String collection = session().get(WebAppConstants.CURRENT_COLLECTION_SESSION);
+		int batch = getQueryParameter("batch", 25);
+		int offset = getQueryParameter("offset", 0);
 
-    int batch = getQueryParameter("batch", 25);
-    int offset = getQueryParameter("offset", 0);
+		Filter filter = Filters.getFilterFromSession();
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Iterator<Element> elementsIterator = persistence.find( Element.class, filter );
+		List<Element> result=new ArrayList<Element>();
+		while ( offset > 0 ) {
+			if ( elementsIterator.hasNext() ) {
+				elementsIterator.next();
+				offset--;
+			} else {
+				break;
+			}
+		}
 
-    return listElements(collection, batch, offset);
+		while ( batch > 0 ) {
+			if ( elementsIterator.hasNext() ) {
+				Element element = elementsIterator.next();
+				result.add( element );
+				batch--;
+			} else {
+				break;
+			}
 
-  }
+		}
+		return ok(elements.render(names, result));
+	}
 
-  private static int getQueryParameter(String parameter, int dflt) {
-    String[] strings = request().queryString().get(parameter);
-    if (strings == null || strings.length == 0) {
-      return dflt;
-    }
 
-    return Integer.parseInt(strings[0]);
 
-  }
+	public static Result show(String id) {
+		Logger.debug("Received a show call in elements, with id: " + id);
+		List<String> names = Properties.getCollectionNames();
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Filter filter=new Filter();
+		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
+		Iterator<Element> iterator=persistence.find(Element.class, filter);
+		if (iterator.hasNext()) {
+			Element result = iterator.next();
+			List<MetadataRecord> metadata = result.getMetadata();
+			if (iterator.hasNext()) {
+				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+			}
+			return ok( element.render(names, result) );
+		} else {
+			return notFound( "{error: \"Element not found\"}" ) ;
+		}
 
-  public static Result show(String id) {
-    Logger.info("Select element with id: " + id);
-    final List<String> names = Application.getCollectionNames();
-    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
-    DBCursor cursor = pl.find(Constants.TBL_ELEMENTS, new BasicDBObject("_id", new ObjectId(id)));
+	}
 
-    if (cursor.count() == 0) {
-      Logger.info("Cursor selected " + cursor.count());
-      return notFound("No such element exists in the db.");
-    } else if (cursor.count() > 1) {
-      Logger.info("Cursor selected " + cursor.count());
-      return notFound("One or more objects with this id exist");
-    } else {
+	public static Result get(String id) {
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Filter filter=new Filter();
+		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
+		Iterator<Element> iterator=persistence.find(Element.class, filter);
+		if (iterator.hasNext()) {
+			Element result = iterator.next();
+			if (iterator.hasNext()) {
+				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+			}
+			return ok(elementToJSON(result));
+		} else {
+			return notFound( "{error: \"Element not found\"}" ) ;
+		}
+	}
 
-      Element elmnt = DataHelper.parseElement(cursor.next(), pl);
+	public static Result getRaw(String id) {
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Filter filter=new Filter();
+		filter.addFilterCondition(new FilterCondition("_id", new ObjectId(id) ));
+		Iterator<Element> iterator=persistence.find(Element.class, filter);
+		if (iterator.hasNext()) {
+			Element result = iterator.next();
+			if (iterator.hasNext()) {
+				return internalServerError( "There were two or more elements with the given unique identifier: " + id );
+			}
+			return ok(play.libs.Json.toJson(result));
+		} else {
+			return notFound( "{error: \"Element not found\"}" ) ;
+		}
+	}
 
-      return ok(element.render(names, elmnt));
-    }
+	private static ArrayNode elementToJSON(Element element){
 
-  }
+		PersistenceLayer persistence = Configurator.getDefaultConfigurator().getPersistence();
+		Iterator<Source> sourceIterator = persistence.find(Source.class, null);
+		List<String> sourceNames=new ArrayList<String>();
+		while (sourceIterator.hasNext()){
+			Source next = sourceIterator.next();
+			sourceNames.add(next.toString());
+		}
+		List<MetadataRecord> metadata = element.getMetadata();
+		ArrayNode result = new ArrayNode(new JsonNodeFactory(false));
+		String nullStr=null;
+		for(MetadataRecord mr: metadata){
+			List<String> values = mr.getValues();
+			List<String> sources = mr.getSources();
+			String propertyKey = mr.getProperty();
+			Property property = persistence.getCache().getProperty(propertyKey);
 
-  public static Result listElements(String collection, int batch, int offset) {
-    final List<String> names = Application.getCollectionNames();
+			ObjectNode tmp=Json.newObject();
 
-    if (collection == null) {
-      return ok(elements.render(names, null));
-    }
+			tmp.put("Property", property.getKey());
 
-    final List<Element> result = new ArrayList<Element>();
-    final PersistenceLayer pl = Configurator.getDefaultConfigurator().getPersistence();
+			tmp.put("Status", mr.getStatus());
+			for (Map.Entry<String, String> stringStringEntry : mr.getSourcedValues().entrySet()) {
+				String source = stringStringEntry.getKey();
+				String value = stringStringEntry.getValue();
+			}
+			for (String sourceName : sourceNames) {
+				if (sources.contains(sourceName)){
+					tmp.put(sourceName,mr.getSourcedValues().get(sourceName));
+				} else {
+					tmp.put(sourceName,nullStr);
+				}
+			}
 
-    BasicDBObject query = new BasicDBObject();
-    query.put("collection", collection);
-    Filter filter = Application.getFilterFromSession();
-    if (filter != null) {
-      query = Application.getFilterQuery(filter);
-      System.out.println("Objects Query: " + query);
-    }
+			result.add(tmp);
+		}
+		return result;
 
-    final DBCursor cursor = pl.getDB().getCollection(Constants.TBL_ELEMENTS).find(query).skip(offset).limit(batch);
 
-    Logger.info("Cursor has: " + cursor.count() + " objects");
 
-    while (cursor.hasNext()) {
-      final Element e = DataHelper.parseElement(cursor.next(), pl);
 
-      if (e.getName() == null) {
-        e.setName("missing name");
-      }
+	}
 
-      result.add(e);
-    }
-
-    return ok(elements.render(names, result));
-  }
+	public static Result uploadFile() {
+		try {
+			Http.MultipartFormData body = request().body().asMultipartFormData();
+			Http.MultipartFormData.FilePart fileP = body.getFile("file");
+			if (fileP != null) {
+				File file = fileP.getFile();
+				System.out.println(file.getName());
+				com.petpet.c3po.controller.Controller.processFast(file, "uploaded");  //TODO: this is broken...
+				return ok();
+			} else {
+				return badRequest("Upload Error");
+			}
+		} catch (Exception e){
+			return badRequest("Upload Error");
+		}
+	}
 
 }

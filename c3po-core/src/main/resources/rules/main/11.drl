@@ -1,0 +1,63 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+  * if Droid reports "Microsoft Powerpoint Presentation", but Exiftool does not report PPT/S, 
+  * ignore it (Droids alone has false positives on "Microsoft Powerpoint Presentation")
+  * 
+  * This is a pre-cleaning step to remove totally wrong mimetypes or formats.
+  *
+  * Make sure that this has a higher priority than the other Droid PPT rules!
+ */
+rule "PPT: ignore Droid Microsoft Powerpoint Presentation false positives format and mimetypes"
+        salience 800
+    when
+        $e : Element()
+        Number (intValue == 0) from accumulate(
+            $md : MetadataRecord( 
+                (value=="PPT" || value=="PPS") && property.id == "format" 
+            ) from $e.metadata;
+            count($md)
+        )
+
+        $mdBadFormat : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "format",
+            MetadataUtil.isFromTool(this, "Droid"),
+            value == "Microsoft Powerpoint Presentation"
+        ) from $e.metadata
+        $mdBadMime : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            MetadataUtil.haveSameSources(this, $mdBadFormat)
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Droid PPT false positive precleaning: ");
+        
+        logger.logMetadataRecordValue(loglevel,$mdBadMime);
+        logger.logMetadataRecordValue(loglevel,$mdBadFormat);
+        logger.logMetadataRecordSources(loglevel,$mdBadFormat.getSources());
+
+        modify ($e) {
+            ignoreMetadata($mdBadFormat),
+            ignoreMetadata($mdBadMime)
+        }
+        
+        logger.log(loglevel,"    -> ignore "+$mdBadFormat);
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+
+end

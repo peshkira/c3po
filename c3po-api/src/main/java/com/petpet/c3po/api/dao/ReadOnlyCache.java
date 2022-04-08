@@ -17,6 +17,9 @@ package com.petpet.c3po.api.dao;
 
 import com.petpet.c3po.api.model.Property;
 import com.petpet.c3po.api.model.Source;
+import com.petpet.c3po.api.model.helper.PropertyType;
+
+import java.util.List;
 
 /**
  * A simple Read Only cache for {@link Property}, {@link Source} and any kind of
@@ -38,6 +41,8 @@ public interface ReadOnlyCache {
    */
   Property getProperty( String key );
 
+  List<String> getValues(String property);
+  
   /**
    * Retrieves the source designated by the given name and version. Depending on
    * the implementation it might return null or a new source if there was no
@@ -50,6 +55,17 @@ public interface ReadOnlyCache {
    * @return
    */
   Source getSource( String name, String version );
+
+  /**
+   * Retrieves the source designated by the given id. Depending on
+   * the implementation it might return null or a new source if there was no
+   * source with the given name and version.
+   *
+   * @param id
+   * 		  the id of the tool.
+   * @return
+   */
+  Source getSource(String id);
 
   /**
    * Any other non-persistence layer object that can be cached.

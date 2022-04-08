@@ -1,0 +1,38 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+/**
+ * Treat format "XLS" like "Microsoft Excel Format" from Exiftool
+ */
+rule "set format XLS to Microsoft Excel Format from Exiftool"
+        salience 160
+    when
+        $e : Element()
+        $md : MetadataRecord(
+            property.id == "format",
+            value == "XLS",
+            MetadataUtil.isFromTool(this, "Exiftool")
+        ) from $e.metadata
+
+    then
+        logger.log(loglevel,"Exiftool Microsoft Excel format naming issue: ");
+
+        String newValue = "Microsoft Excel Format";
+        $md.setValue(newValue);
+        modify ($e) {
+            getId()
+        }
+        logger.log(loglevel,"    -> set "+$md.getProperty().getId()+" to \""+newValue+"\"!");
+end

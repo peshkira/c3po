@@ -1,0 +1,56 @@
+package c3po.custom
+
+import java.util.List
+import java.util.Set
+
+import com.petpet.c3po.api.model.Element
+import com.petpet.c3po.api.model.helper.MetadataRecord
+import com.petpet.c3po.api.model.helper.MetadataRecord.Status
+import com.petpet.c3po.api.model.Source
+import com.petpet.c3po.adaptor.rules.drools.LogCollector
+import com.petpet.c3po.dao.MetadataUtil
+
+global com.petpet.c3po.adaptor.rules.drools.LogCollector logger;
+global java.lang.Integer loglevel;
+
+
+/**
+  * if Exiftool and Droid both report power point presentation, ignore others, 
+  * (format and mimetype) because if those two agree, they are right.
+  *
+  * (Droids alone has false positives on "Microsoft Powerpoint Presentation")
+  * 
+ */
+rule "PPT: ignore others mimetypes if Droid reports Microsoft Powerpoint Presentation format - after precleaning"
+        salience 799
+    when
+        $e : Element()
+        $mdGoodFormat : MetadataRecord(
+            property.id == "format",
+            MetadataUtil.isFromTool(this, "Droid"),
+            value == "Microsoft Powerpoint Presentation"
+        ) from $e.metadata
+        $mdGoodMime : MetadataRecord(
+            status=="CONFLICT",
+            property.id == "mimetype",
+            MetadataUtil.isFromTool(this, "Droid"),
+            value matches ".*powerpoint.*"
+        ) from $e.metadata;
+
+        $mdBadMime : MetadataRecord(
+            property.id == "mimetype",
+            value != $mdGoodMime.value
+        ) from $e.metadata;
+
+    then
+        logger.log(loglevel,"Droid PPT mimetype cleaning: ");
+        
+        logger.logMetadataRecord(loglevel,$mdGoodMime);
+        logger.logMetadataRecord(loglevel,$mdBadMime);
+
+        modify ($e) {
+            ignoreMetadata($mdBadMime)
+        }
+        
+        logger.log(loglevel,"    -> ignore "+$mdBadMime);
+end
